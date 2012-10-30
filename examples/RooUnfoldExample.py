@@ -10,13 +10,13 @@
 #
 # ==============================================================================
 
-from ROOT import gRandom, TH1, TH1D, cout, gSystem, TCanvas, TLegend
+from ROOT import gRandom, cout, gSystem
 gSystem.Load('/software/RooUnfold-1.1.1/libRooUnfold.so')
 from ROOT import RooUnfoldResponse
 from ROOT import RooUnfold
 from ROOT import RooUnfoldBayes
-# from ROOT import RooUnfoldSvd
-# from ROOT import RooUnfoldTUnfold
+from ROOT import RooUnfoldSvd
+from ROOT import RooUnfoldTUnfold
 from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
@@ -80,18 +80,5 @@ plt.xlabel('var')
 plt.ylabel('Events')
 plt.title('Unfolding')
 plt.legend()
-plt.savefig('RooUnfoldExample.png')
+plt.savefig('plots/RooUnfoldBayesExample.png')
 print 'Done'
-
-#c = TCanvas("c", 'c', 1600,1200)
-#hReco.SetLineColor(2);
-#hReco.Draw();
-#hMeas.Draw("SAME");
-#hTrue.SetLineColor(8);
-#hTrue.Draw("SAME");
-#leg = Legend.create_legend_in('top right')
-#leg.AddEntry(hReco, 'measured', 'F')
-#leg.AddEntry(hMeas, 'measured after unfolding', 'F')
-#leg.AddEntry(hTrue, 'true', 'F')
-#leg.Draw()
-#c.SaveAs('RooUnfoldExample.png')
