@@ -11,20 +11,27 @@ title = {
 
 x_axis_title = {
               'fontsize':30,
-              'position' : (1, 1),
+              'position' : (1., 0.),
               'horizontalalignment': 'right'
               }
 
 y_axis_title = {
               'fontsize':30,
-              'position' : (1, 1),
+              'position' : (0., 1.),
 #              'horizontalalignment': 'right'
                 'verticalalignment': 'top'
               }
 
-axis_label = {
+axis_label_major = {
+                    'which':'major',
               'labelsize':24,
               'length':20,
+              'width': 1
+              }
+axis_label_minor = {
+                    'which':'minor',
+              'labelsize':24,
+              'length':10,
               'width': 1
               }
 
