@@ -9,6 +9,9 @@ import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from rootpy.utils import asrootpy
 from array import array
+from tools.Unfolding import Unfolding
+
+method = 'RooUnfoldSvd' # = 'RooUnfoldBayes | RooUnfoldSvd | RooUnfoldBinByBin | RooUnfoldInvert | RooUnfoldTUnfold
 
 bins = array('d', [0, 25, 45, 70, 100, 1000])
 nbins = len(bins) - 1
@@ -20,11 +23,8 @@ h_response = inputFile.unfoldingAnalyserElectronChannel.response_AsymBins
 h_truth.Scale(lumiweight)
 h_measured.Scale(lumiweight)
 h_response.Scale(lumiweight)
-# h_truth.Rebin(10)
-# h_measured.Rebin(10)
-# h_response.Rebin(10)
 #test values
-h_data = Hist([0, 25, 45, 70, 100, 1000])
+h_data = Hist(bins.tolist())
 h_data.SetBinContent(1, 2146)
 h_data.SetBinError(1, 145)
 h_data.SetBinContent(2, 3399)
@@ -36,40 +36,27 @@ h_data.SetBinError(4, 53)
 h_data.SetBinContent(5, 1722)
 h_data.SetBinError(5, 91)
 
+unfolding = Unfolding(h_truth, h_measured, h_response, method)
+unfolding.unfold(h_data)
+unfolding.saveUnfolding('Unfolding_' + method + '.png')
 
-response = RooUnfoldResponse (h_measured, h_truth, h_response)
-# unfold= RooUnfoldBayes     (response, h_data, 4)
-unfold= RooUnfoldBinByBin     (response, h_data)
-#unfold = RooUnfoldSvd(response, h_data, 6, 1000)
-hReco = unfold.Hreco();
-unfold.PrintTable (cout, h_truth);
-h_unfolded = asrootpy(hReco)
-h_unfolded.SetMarkerStyle(20)
-h_unfolded.SetLineColor('black')
-h_truth.SetLineColor('red')
-h_measured.SetLineColor('blue')
-h_data.SetLineColor('blue')
-
-h_unfolded.SetFillStyle(0)
-h_truth.SetFillStyle(0)
-h_data.SetFillStyle(0)
+fakes = asrootpy(unfolding.unfoldResponse.Hfakes())
+h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
+h_fakes.Scale(lumiweight)
+fakes.Scale(1000000)
+fakes.SetColor('red')
+h_fakes.SetColor('blue')
+fakes.SetFillStyle(0)
+h_fakes.SetFillStyle(0)
 
 plt.figure(figsize=(16, 10), dpi=100)
-rplt.hist(h_truth, label=r'SM $\mathrm{t}\bar{\mathrm{t}}$ truth', stacked=False)
-rplt.hist(h_data, label=r'$\mathrm{t}\bar{\mathrm{t}}$ from fit', stacked=False)
-rplt.errorbar(h_unfolded, label='unfolded')
+rplt.hist(fakes, label=r'fakes from RM', stacked=False)
+rplt.hist(h_fakes, label=r'fakes from MC', stacked=False)
 plt.xlabel('$E_{\mathrm{T}}^{miss}$')
-plt.axis([0, 1000, 0, 60000])
+#plt.axis([0, 1000, 0, 5000])
 plt.ylabel('Events')
 plt.title('Unfolding')
 plt.legend()
-plt.savefig('Unfolding.png')
+plt.savefig('Fakes.png')
 
-#plt.figure(figsize=(16, 10), dpi=100)
-#rplt.hist(h_response, label='response matrix')
-#h_response.Draw()
-#plt.xlabel('reconstructed $E_{\mathrm{T}}^{miss}$')
-#plt.ylabel('Generated $E_{\mathrm{T}}^{miss}$')
-#plt.title('Response Matrix')
-#plt.savefig('ResponseMatrix.png')
 print 'Done'
