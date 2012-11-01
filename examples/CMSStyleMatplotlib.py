@@ -29,7 +29,9 @@ h.SetLineColor('green')
 
 # the histogram of the data
 plt.figure(figsize=(16, 12), dpi=200)
-rplt.hist(h, label=r'$\mathrm{Histogram\ of\ IQ:}\ \mu=100,\ \sigma=15$', alpha = 0.7)
+axes = plt.axes()
+axes.minorticks_on()
+rplt.hist(h, label=r'$\epsilon$(Something complicated)', alpha = 0.7)
 plt.xlabel('Discovery', CMS.x_axis_title)
 plt.ylabel('Probability of a discovery', CMS.y_axis_title)
 #plt.title(r'combined, CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV',
@@ -41,5 +43,7 @@ plt.ylabel('Probability of a discovery', CMS.y_axis_title)
 plt.title(r'$\mu$+jets, CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
 # plt.annotate('look at this', xy=(60, 0.005), xytext=(50, 0.01),
 #            arrowprops=dict(facecolor='black', shrink=0.05))
-plt.tick_params(**CMS.axis_label)#labelsize = 24)
+plt.tick_params(**CMS.axis_label_major)
+plt.tick_params(**CMS.axis_label_minor)
+plt.legend()
 plt.savefig('plots/CMSStyleMatplotlib.png')
