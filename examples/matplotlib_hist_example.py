@@ -8,7 +8,7 @@ import ROOT
 # Setting this to True (default in rootpy)
 # changes how the histograms look in ROOT...
 ROOT.TH1.SetDefaultSumw2(False)
-
+ROOT.gROOT.SetBatch(True)
 
 # create normal distributions
 mu1, mu2, sigma1, sigma2 = 100, 140, 15, 5
@@ -61,6 +61,7 @@ legend.AddEntry(h3, 'P')
 legend.Draw()
 canvas.Modified()
 canvas.Update()
+canvas.SaveAs('plots/RootHist.png')
 
 # plot with matplotlib
 fig = plt.figure(figsize=(7, 5), dpi=100, facecolor='white')
@@ -74,4 +75,4 @@ rplt.errorbar(h3, xerr=False, emptybins=False, axes=axes)
 plt.xlabel('Mass', position=(1., 0.), ha='right')
 plt.ylabel('Events', position=(0., 1.), va='top')
 plt.legend(numpoints=1)
-plt.show()
+plt.savefig('plots/MatplotlibHist.png')
