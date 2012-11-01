@@ -1,8 +1,8 @@
 from ROOT import gSystem, gROOT, cout, TH1F
 gROOT.SetBatch(True)
-gSystem.Load('/software/RooUnfold-1.1.1/libRooUnfold.so')
-from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
-from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
+#gSystem.Load('/software/RooUnfold-1.1.1/libRooUnfold.so')
+#from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
+#from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from rootpy.io import File
 from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt
@@ -19,9 +19,11 @@ lumiweight = 164.5 * 5050 / 7543741.0
 inputFile = File('../data/unfolding_merged.root', 'read')
 h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth', bins))
 h_measured = asrootpy(inputFile.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
+h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
 h_response = inputFile.unfoldingAnalyserElectronChannel.response_AsymBins
 h_truth.Scale(lumiweight)
 h_measured.Scale(lumiweight)
+h_fakes.Scale(lumiweight)
 h_response.Scale(lumiweight)
 #test values
 h_data = Hist(bins.tolist())
@@ -36,22 +38,21 @@ h_data.SetBinError(4, 53)
 h_data.SetBinContent(5, 1722)
 h_data.SetBinError(5, 91)
 
-unfolding = Unfolding(h_truth, h_measured, h_response, method)
-unfolding.unfold(h_data)
-unfolding.saveUnfolding('Unfolding_' + method + '.png')
+unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method)
+#unfolding.unfold(h_data)
+#unfolding.saveUnfolding('Unfolding_' + method + '.png')
+unfolding.closureTest()
+unfolding.saveClosureTest('Unfolding_' + method + '_closure.png')
 
 fakes = asrootpy(unfolding.unfoldResponse.Hfakes())
-h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
-h_fakes.Scale(lumiweight)
-fakes.Scale(1000000)
 fakes.SetColor('red')
 h_fakes.SetColor('blue')
-fakes.SetFillStyle(0)
-h_fakes.SetFillStyle(0)
+fakes.SetFillStyle('\\')
+h_fakes.SetFillStyle('/')
 
 plt.figure(figsize=(16, 10), dpi=100)
 rplt.hist(fakes, label=r'fakes from RM', stacked=False)
-rplt.hist(h_fakes, label=r'fakes from MC', stacked=False)
+rplt.hist(h_fakes, label=r'fakes from MC', stacked=False, alpha = 0.5)
 plt.xlabel('$E_{\mathrm{T}}^{miss}$')
 #plt.axis([0, 1000, 0, 5000])
 plt.ylabel('Events')
