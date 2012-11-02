@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 class Unfolding:
 
-    def __init__(self, truth, measured, response, fakes, method='RooUnfoldSvd'):
+    def __init__(self, truth, measured, response, fakes=None, method='RooUnfoldSvd'):
         if not method in unfoldCfg.availablemethods:
             raise ValueError('Unknown unfolding method "%s". Available methods: %s' % (method, str(self.availablemethods)))
         self.method = method        
@@ -67,7 +67,10 @@ class Unfolding:
         return self.unfolded_closure
     
     def _makeUnfoldResponse(self):
-        return RooUnfoldResponse (self.measured, self.truth, self.fakes, self.response)
+        if self.fakes:
+            return RooUnfoldResponse (self.measured, self.truth, self.fakes, self.response)
+        else:
+            return RooUnfoldResponse (self.measured, self.truth, self.response)
 
     def saveClosureTest(self, outputfile, **kwargs):
         if not self.unfolded_closure:
@@ -80,9 +83,8 @@ class Unfolding:
         rplt.hist(self.measured, label=r'measured', stacked=False)
         rplt.errorbar(self.unfolded_closure, label='unfolded')
         plt.xlabel('$E_{\mathrm{T}}^{miss}$')
-        plt.axis([0, 1000, 0, 60000])
         plt.ylabel('Events')
-        plt.title('Unfolding')
+        plt.title('Unfolding closure test')
         plt.legend()
         plt.savefig('Unfolding_' + self.method + '_closureTest.png')
     
@@ -97,7 +99,6 @@ class Unfolding:
         rplt.hist(self.data, label=r'$\mathrm{t}\bar{\mathrm{t}}$ from fit', stacked=False)
         rplt.errorbar(self.unfolded_data, label='unfolded')
         plt.xlabel('$E_{\mathrm{T}}^{miss}$')
-        plt.axis([0, 1000, 0, 60000])
         plt.ylabel('Events')
         plt.title('Unfolding')
         plt.legend()
