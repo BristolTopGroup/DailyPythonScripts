@@ -10,8 +10,6 @@ gSystem.Load(unfoldCfg.library)
 from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from rootpy.utils import asrootpy
-import rootpy.plotting.root2matplotlib as rplt
-import matplotlib.pyplot as plt
 
 
 class Unfolding:
@@ -72,58 +70,5 @@ class Unfolding:
         else:
             return RooUnfoldResponse (self.measured, self.truth, self.response)
 
-    def saveClosureTest(self, outputfile, **kwargs):
-        if not self.unfolded_closure:
-            print 'Run closureTest function first'
-            return
-        self.setDrawStyles()
-        # TODO: change this to be more generic
-        plt.figure(figsize=(16, 10), dpi=100)
-        rplt.hist(self.truth, label=r'truth', stacked=False)
-        rplt.hist(self.measured, label=r'measured', stacked=False)
-        rplt.errorbar(self.unfolded_closure, label='unfolded')
-        plt.xlabel('$E_{\mathrm{T}}^{miss}$')
-        plt.ylabel('Events')
-        plt.title('Unfolding closure test')
-        plt.legend()
-        plt.savefig('Unfolding_' + self.method + '_closureTest.png')
-    
-    def saveUnfolding(self, outputfile, **kwargs):
-        if not self.unfolded_data:
-            print 'Run unfold function first'
-            return
-        self.setDrawStyles()
-        # TODO: change this to be more generic
-        plt.figure(figsize=(16, 10), dpi=100)
-        rplt.hist(self.truth, label=r'SM $\mathrm{t}\bar{\mathrm{t}}$ truth', stacked=False)
-        rplt.hist(self.data, label=r'$\mathrm{t}\bar{\mathrm{t}}$ from fit', stacked=False)
-        rplt.errorbar(self.unfolded_data, label='unfolded')
-        plt.xlabel('$E_{\mathrm{T}}^{miss}$')
-        plt.ylabel('Events')
-        plt.title('Unfolding')
-        plt.legend()
-        plt.savefig(outputfile)
-    
-    def setDrawStyles(self):
-        if self.unfolded_data:
-            self.unfolded_data.SetFillStyle(unfoldCfg.unfolded_fillStyle)
-            self.unfolded_data.SetColor(unfoldCfg.unfolded_color)
-            self.unfolded_data.SetMarkerStyle(unfoldCfg.unfolded_markerStyle)
-        
-        if self.unfolded_closure:
-            self.unfolded_closure.SetFillStyle(unfoldCfg.unfolded_fillStyle)
-            self.unfolded_closure.SetColor(unfoldCfg.unfolded_color)
-            self.unfolded_closure.SetMarkerStyle(unfoldCfg.unfolded_markerStyle)
-        
-        self.truth.SetFillStyle(unfoldCfg.truth_fillStyle)
-        self.truth.SetColor(unfoldCfg.truth_color)
-        
-        self.measured.SetFillStyle(unfoldCfg.measured_fillStyle)
-        self.measured.SetColor(unfoldCfg.measured_color)
-        
-        if(self.data):
-            self.data.SetFillStyle(unfoldCfg.measured_fillStyle)
-            self.data.SetColor(unfoldCfg.measured_color)
-        
     def printTable(self):
         self.unfoldObject.PrintTable(cout, self.truth)
