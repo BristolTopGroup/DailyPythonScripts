@@ -10,7 +10,7 @@ gSystem.Load(unfoldCfg.library)
 from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from rootpy.utils import asrootpy
-
+from math import sqrt
 
 class Unfolding:
 
@@ -31,7 +31,7 @@ class Unfolding:
     
     def unfold(self, data):
         self.data = data
-        if not self.unfoldResponse:
+        if not self.unfoldObject:
             if not self.unfoldResponse:
                 self.unfoldResponse = self._makeUnfoldResponse()
             if self.method == 'RooUnfoldBayes':
@@ -58,7 +58,7 @@ class Unfolding:
             elif self.method == 'RooUnfoldInvert':
                 self.closure_test = RooUnfoldInvert     (self.unfoldResponse, self.measured)
             elif self.method == 'RooUnfoldTUnfold':
-                self.closure_test = RooUnfoldInvert     (self.unfoldResponse, self.measured)
+                self.closure_test = RooUnfoldTUnfold     (self.unfoldResponse, self.measured)
             elif self.method == 'RooUnfoldSvd':
                 self.closure_test = RooUnfoldSvd(self.unfoldResponse, self.measured, unfoldCfg.SVD_k_value, unfoldCfg.SVD_n_toy)
         self.unfolded_closure = asrootpy(self.closure_test.Hreco())
@@ -72,3 +72,36 @@ class Unfolding:
 
     def printTable(self):
         self.unfoldObject.PrintTable(cout, self.truth)
+    
+    def Reset(self):
+        if self.unfoldObject:
+            self.unfoldObject = None
+        if self.closure_test:
+            self.closure_test = None
+            
+    def chi2(self):
+        chi2 = 99999999, 0
+        if self.unfolded_data and self.truth:
+            diff = self.truth - self.unfolded_data
+            values = list(diff)
+            errors = []
+            for bin_i in range(len(values)):
+                errors.append(diff.GetBinError(bin_i + 1))
+            values = [abs(value) for value in values]
+            errorsSquared = [error* error for error in errors]
+            value = sum(values)
+            error = sqrt(sum(errorsSquared))
+            chi2 = value, error
+        return chi2
+    
+    def pull(self):
+        result = [9999999]
+        if self.unfolded_data and self.truth:
+            diff = self.unfolded_data - self.truth 
+            errors = []
+            values = list(diff)
+            for bin_i in range(len(values)):
+                errors.append(self.unfolded_data.GetBinError(bin_i + 1))
+            result = [value/error for value, error in zip(values, errors)]
+        return result
+            
