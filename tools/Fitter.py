@@ -6,6 +6,9 @@ Created on 30 Oct 2012
 
 from ROOT import TMinuit, TMath, Long, Double
 from array import array
+import numpy
+from scipy.optimize import curve_fit
+
 
 class Fitter:
     
@@ -129,4 +132,29 @@ class TMinuitFitter(Fitter):
             param_index += 1
         self.results = results
         return results
+
+class CurveFitter():
+    defined_functions = ['gaus', 'gauss'] 
+    
+    @staticmethod
+    def gauss(x, *p):
+        A, mu, sigma = p
+        return A*numpy.exp(-(x-mu)**2/(2.*sigma**2))
+    
+    @staticmethod
+    def fit(hist, function, params):
+        if type(function) == type('s'):#string input
+            if not function in CurveFitter.defined_functions:
+                raise Exception('Unknown function')
+            if function == 'gaus' or function == 'gauss':
+                function = CurveFitter.gauss
+        x,y = list(hist.x()), list(hist.y())
+#        print x
+#        print list(x)
+#        print numpy.linspace(40, 200, 100)
         
+        coeff, var_matrix = curve_fit(function, x, y, p0=params)
+        print coeff, var_matrix
+        #this should be transferred into rootpy.TF1
+        hist_fit = function(x, *coeff)
+        return hist_fit, x
