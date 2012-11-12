@@ -45,5 +45,5 @@ plt.title(r'$\mu$+jets, CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt
 #            arrowprops=dict(facecolor='black', shrink=0.05))
 plt.tick_params(**CMS.axis_label_major)
 plt.tick_params(**CMS.axis_label_minor)
-plt.legend()
+plt.legend(numpoints=1)
 plt.savefig('plots/CMSStyleMatplotlib.png')
