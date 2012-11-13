@@ -101,7 +101,27 @@ class Unfolding:
             errors = []
             values = list(diff)
             for bin_i in range(len(values)):
-                errors.append(self.unfolded_data.GetBinError(bin_i + 1))
+                errors.append(diff.GetBinError(bin_i + 1))
+            result = [value/error for value, error in zip(values, errors)]
+        return result
+    
+    def pull_inputErrorOnly(self):
+        result = [9999999]
+        if self.unfolded_data and self.truth:
+            # set unfolded_data errors to stat errors from data
+            temp = self.unfolded_data.Clone()
+            temp_list = list(temp)
+            data_list = list(self.data)
+            for bin_i in range(len(temp_list)):
+                rel_error_data = self.data.GetBinError(bin_i + 1)/data_list[bin_i]
+                print rel_error_data, 'compared to:', temp.GetBinError(bin_i + 1)/temp_list[bin_i] 
+                temp.SetBinError(bin_i+1, rel_error_data*temp_list[bin_i])
+            
+            diff = temp - self.truth
+            errors = []
+            values = list(diff)
+            for bin_i in range(len(values)):
+                errors.append(diff.GetBinError(bin_i + 1))
             result = [value/error for value, error in zip(values, errors)]
         return result
             
