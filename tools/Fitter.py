@@ -186,10 +186,10 @@ class CurveFit():
     @staticmethod
     def fit(hist, function, params):
         if type(function) == type('s'):#string input
-            if not function in CurveFitter.defined_functions:
+            if not function in CurveFit.defined_functions:
                 raise Exception('Unknown function')
             if function == 'gaus' or function == 'gauss':
-                function = CurveFitter.gauss
+                function = CurveFit.gauss
         x,y = list(hist.x()), list(hist.y())
         
         coeff, var_matrix = curve_fit(function, x, y, p0=params)
