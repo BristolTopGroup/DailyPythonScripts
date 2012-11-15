@@ -4,7 +4,7 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 import unittest
-from tools.Fitter import TMinuitFitter
+from tools.Fitter import TMinuitFit
 from rootpy.plotting import Hist
 
 import numpy as np
@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         histograms = {'signal': h2,
                       'bkg1': h1,
                       'data': h3}
-        self.minuitFitter = TMinuitFitter(histograms, dataLabel='data')
+        self.minuitFitter = TMinuitFit(histograms, dataLabel='data')
         self.minuitFitter.fit()
 
 

@@ -9,9 +9,52 @@ from array import array
 import numpy
 from scipy.optimize import curve_fit
 
-
-class Fitter:
-    
+#
+#class Fitter:
+#    
+#    def __init__(self, histograms, dataLabel='data'):
+#        self.performedFit = False
+#        self.results = {}
+#        self.normalisation = {}
+#        self.dataLabel = dataLabel
+#        self.histograms = histograms
+#        self.templates = {}
+#        self.module = None
+#        # samples = all inputs except data
+#        keys = sorted(histograms.keys())
+#        keys.remove(dataLabel)
+#        self.samples = keys
+#        
+#        self.templates, self.normalisation = Fitter.generateTemplatesAndNormalisation(histograms)
+#        self.vectors = Fitter.vectorise(self.templates)
+#        # create templates
+#        
+#    @staticmethod
+#    def generateTemplatesAndNormalisation(histograms):
+#        normalisation = {}
+#        templates = {}
+#        for sample, histogram in histograms.iteritems():
+#            normalisation[sample] = histogram.Integral()
+#            temp = histogram.Clone(sample + '_' + 'template')
+#            nEntries = temp.Integral()
+#            if not nEntries == 0:
+#                temp.Scale(1 / nEntries)
+#            templates[sample] = temp
+#        return templates, normalisation
+#            
+#    @staticmethod
+#    def vectorise(histograms):
+#        values = {}
+#        for sample in histograms.keys():
+#            hist = histograms[sample]
+#            nBins = hist.GetNbinsX()
+#            for bin_i in range(1, nBins + 1):
+#                if not values.has_key(sample):
+#                    values[sample] = []
+#                values[sample].append(hist.GetBinContent(bin_i))
+#        return values
+        
+class TemplateFit():
     def __init__(self, histograms, dataLabel='data'):
         self.performedFit = False
         self.results = {}
@@ -25,8 +68,8 @@ class Fitter:
         keys.remove(dataLabel)
         self.samples = keys
         
-        self.templates, self.normalisation = Fitter.generateTemplatesAndNormalisation(histograms)
-        self.vectors = Fitter.vectorise(self.templates)
+        self.templates, self.normalisation = TemplateFit.generateTemplatesAndNormalisation(histograms)
+        self.vectors = TemplateFit.vectorise(self.templates)
         # create templates
         
     @staticmethod
@@ -54,13 +97,12 @@ class Fitter:
                 values[sample].append(hist.GetBinContent(bin_i))
         return values
         
-        
-class TMinuitFitter(Fitter):
+class TMinuitFit(TemplateFit):
     
     fitfunction = None
     
     def __init__(self, histograms={}, dataLabel='data', method='logLikelihood'):
-        Fitter.__init__(self, histograms, dataLabel)
+        TemplateFit.__init__(self, histograms, dataLabel)
         self.method = method
         
     def fit(self):
@@ -133,7 +175,7 @@ class TMinuitFitter(Fitter):
         self.results = results
         return results
 
-class CurveFitter():
+class CurveFit():
     defined_functions = ['gaus', 'gauss'] 
     
     @staticmethod
@@ -149,9 +191,6 @@ class CurveFitter():
             if function == 'gaus' or function == 'gauss':
                 function = CurveFitter.gauss
         x,y = list(hist.x()), list(hist.y())
-#        print x
-#        print list(x)
-#        print numpy.linspace(40, 200, 100)
         
         coeff, var_matrix = curve_fit(function, x, y, p0=params)
         print coeff, var_matrix
