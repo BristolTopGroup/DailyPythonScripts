@@ -4,14 +4,14 @@ gROOT.SetBatch(True)
 #from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 #from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from rootpy.io import File
-from rootpy.plotting import Hist
+from rootpy.plotting import Hist, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from rootpy.utils import asrootpy
 from array import array
 from tools.Unfolding import Unfolding
 import config.RooUnfold as unfoldCfg
-
+from config import CMS, RooUnfold
 def saveClosureTest(unfolding, outputfile, **kwargs):
     
     if not unfolding.unfolded_closure:
@@ -66,23 +66,114 @@ def setDrawStyles(unfolding):
         unfolding.data.SetFillStyle(unfoldCfg.measured_fillStyle)
         unfolding.data.SetColor(unfoldCfg.measured_color)
 
+def checkOnMC(unfolding, method):
+    global bins, nbins
+    RooUnfold.SVD_n_toy = 1000
+    pulls = []
+    for sub in range(2,9):
+        inputFile2 = File('../data/unfolding_merged_sub%d.root' % sub, 'read')
+        h_data = asrootpy(inputFile2.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
+        nEvents = inputFile2.EventFilter.EventCounter.GetBinContent(1)
+        lumiweight = 164.5 * 5050 / nEvents
+#        print sub, nEvents
+        h_data.Scale(lumiweight)
+        doUnfoldingSequence(unfolding, h_data, method, '_sub%d' %sub)
+        pull = unfolding.pull_inputErrorOnly()
+#        unfolding.printTable()
+        print pull
+        pulls.append(pull)
+        unfolding.Reset()
+    allpulls = []
 
+    for pull in pulls:
+        allpulls.extend(pull)
+    h_allpulls = Hist(100,-30,30)
+    filling = h_allpulls.Fill
+    for entry in allpulls:
+        filling(entry)
+    fit = h_allpulls.Fit('gaus', 'WW')
+    h_fit = asrootpy(h_allpulls.GetFunction("gaus").GetHistogram())
+    canvas = Canvas(width=1600, height=1000)
+    canvas.SetLeftMargin(0.15)
+    canvas.SetBottomMargin(0.15)
+    canvas.SetTopMargin(0.10)
+    canvas.SetRightMargin(0.05)
+    h_allpulls.Draw()
+    fit.Draw('same')
+    canvas.SaveAs('Pull_allBins_withFit.png')
+    
+    
+    
+    plt.figure(figsize=(16, 10), dpi=100)
+    rplt.errorbar(h_allpulls, label=r'Pull distribution for all bins',  emptybins=False)
+    rplt.hist(h_fit, label=r'fit')
+    plt.xlabel('(unfolded-true)/error', CMS.x_axis_title)
+    plt.ylabel('entries', CMS.y_axis_title)
+    plt.title('Pull distribution for all bins', CMS.title)
+    plt.tick_params(**CMS.axis_label_major)
+    plt.tick_params(**CMS.axis_label_minor)
+    plt.legend(numpoints=1)
+    plt.savefig('Pull_allBins.png')
+    
+    #individual bins
+    for bin_i in range(nbins):
+        h_pull = Hist(100,-30,30)
+        for pull in pulls:
+            h_pull.Fill(pull[bin_i])
+        plt.figure(figsize=(16, 10), dpi=100)
+        rplt.errorbar(h_pull, label=r'Pull distribution for bin %d' % (bin_i + 1), emptybins=False)
+        plt.xlabel('(unfolded-true)/error', CMS.x_axis_title)
+        plt.ylabel('entries', CMS.y_axis_title)
+        plt.title('Pull distribution for  bin %d' % (bin_i + 1), CMS.title)
+        plt.savefig('Pull_bin_%d.png' % (bin_i + 1))
+    
+    
+    
+def doUnfoldingSequence(unfolding, h_data, method, outputfile_suffix = '', doClosureTest = False, checkFakes = False):
+    unfolding.unfold(h_data)
+    saveUnfolding(unfolding, 'Unfolding_' + method + outputfile_suffix + '.png')
+    if doClosureTest:
+        unfolding.closureTest()
+        saveClosureTest(unfolding, 'Unfolding_' + method + outputfile_suffix + '_closure.png')
+    
+    
+    if checkFakes:
+        fakes = asrootpy(unfolding.unfoldResponse.Hfakes())
+        fakes.SetColor('red')
+        h_fakes.SetColor('blue')
+        fakes.SetFillStyle('\\')
+        h_fakes.SetFillStyle('/')
+        #cross check: are the fakes the same?
+        plt.figure(figsize=(16, 10), dpi=100)
+        rplt.hist(fakes, label=r'fakes from unfolding', stacked=False)
+        rplt.hist(h_fakes, label=r'fakes from MC', stacked=False, alpha = 0.5)
+        plt.xlabel('$E_{\mathrm{T}}^{miss}$')
+        plt.ylabel('Events')
+        plt.title('Unfolding')
+        plt.legend()
+        plt.savefig('Fakes' + outputfile_suffix + '.png')
+    
 if __name__ == "__main__":
 
-    method = 'RooUnfoldTUnfold' # = 'RooUnfoldBayes | RooUnfoldSvd | RooUnfoldBinByBin | RooUnfoldInvert | RooUnfoldTUnfold
+    method = 'RooUnfoldSvd' # = 'RooUnfoldBayes | RooUnfoldSvd | RooUnfoldBinByBin | RooUnfoldInvert | RooUnfoldTUnfold
     
     bins = array('d', [0, 25, 45, 70, 100, 1000])
     nbins = len(bins) - 1
-    lumiweight = 164.5 * 5050 / 7543741.0
-    inputFile = File('../data/unfolding_merged.root', 'read')
+    inputFile = File('../data/unfolding_merged_sub1.root', 'read')
     h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth', bins))
     h_measured = asrootpy(inputFile.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
     h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
     h_response = inputFile.unfoldingAnalyserElectronChannel.response_withoutFakes_AsymBins #response_AsymBins
+    nEvents = inputFile.EventFilter.EventCounter.GetBinContent(1)
+    lumiweight = 164.5 * 5050 / nEvents
     h_truth.Scale(lumiweight)
     h_measured.Scale(lumiweight)
     h_fakes.Scale(lumiweight)
     h_response.Scale(lumiweight)
+    unfolding = Unfolding(h_truth, h_measured, h_response, method = method)
+    #should be identical to
+    #unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method)
+    
     #test values for real data input
     h_data = Hist(bins.tolist())
     h_data.SetBinContent(1, 2146)
@@ -96,28 +187,6 @@ if __name__ == "__main__":
     h_data.SetBinContent(5, 1722)
     h_data.SetBinError(5, 91)
     
-    unfolding = Unfolding(h_truth, h_measured, h_response, method = method)
-    #should be identical to
-    #unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method)
-    unfolding.unfold(h_data)
-    saveUnfolding(unfolding, 'Unfolding_' + method + '.png')
-    unfolding.closureTest()
-    saveClosureTest(unfolding, 'Unfolding_' + method + '_closure.png')
-    
-    fakes = asrootpy(unfolding.unfoldResponse.Hfakes())
-    fakes.SetColor('red')
-    h_fakes.SetColor('blue')
-    fakes.SetFillStyle('\\')
-    h_fakes.SetFillStyle('/')
-    
-    #cross check: are the fakes the same?
-    plt.figure(figsize=(16, 10), dpi=100)
-    rplt.hist(fakes, label=r'fakes from unfolding', stacked=False)
-    rplt.hist(h_fakes, label=r'fakes from MC', stacked=False, alpha = 0.5)
-    plt.xlabel('$E_{\mathrm{T}}^{miss}$')
-    plt.ylabel('Events')
-    plt.title('Unfolding')
-    plt.legend()
-    plt.savefig('Fakes.png')
-    
+    checkOnMC(unfolding, method)
+    doUnfoldingSequence(unfolding, h_data, method)
     print 'Done'

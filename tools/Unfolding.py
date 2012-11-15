@@ -4,7 +4,7 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 
-from ROOT import gSystem, cout
+from ROOT import gSystem, cout, TDecompSVD
 import config.RooUnfold as unfoldCfg
 gSystem.Load(unfoldCfg.library)
 from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
@@ -112,16 +112,31 @@ class Unfolding:
             temp = self.unfolded_data.Clone()
             temp_list = list(temp)
             data_list = list(self.data)
+            unfolded_errors = self.get_unfolded_data_errors()
             for bin_i in range(len(temp_list)):
-                rel_error_data = self.data.GetBinError(bin_i + 1)/data_list[bin_i]
-                print rel_error_data, 'compared to:', temp.GetBinError(bin_i + 1)/temp_list[bin_i] 
-                temp.SetBinError(bin_i+1, rel_error_data*temp_list[bin_i])
-            
-            diff = temp - self.truth
+                temp.SetBinError(bin_i+1, unfolded_errors[bin_i])
+            #set truth errors to 0
+            temp_truth = self.truth.Clone()
+            for bin_i in range(len(temp_truth)):
+                temp_truth.SetBinError(bin_i +1, 0)
+                
+            diff = temp - temp_truth
             errors = []
             values = list(diff)
             for bin_i in range(len(values)):
                 errors.append(diff.GetBinError(bin_i + 1))
             result = [value/error for value, error in zip(values, errors)]
         return result
+    
+    def get_unfolded_data_errors(self):
+        #get the data errors
+        input_errors = self.unfoldObject.Emeasured()
+        input_errors.Print()
+        unfolded_errors = input_errors.Clone()
+        #get the response matrix
+        decomposition = TDecompSVD(self.unfoldResponse.Mresponse());
+        #apply R-1 to data errors
+        decomposition.Solve(unfolded_errors);
+        
+        return unfolded_errors
             
