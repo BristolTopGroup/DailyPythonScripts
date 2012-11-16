@@ -12,3 +12,8 @@ rootpy >=0.6 (HEAD version recommended) - http://rootpy.org/
 
 For unfolding:
 https://github.com/kreczko/RooUnfold
+
+Disclaimer
+==================
+All plots/histograms provided by this package are based on either toy MC or simulated events from the CMS experiment.
+Real data is not included at any point.
