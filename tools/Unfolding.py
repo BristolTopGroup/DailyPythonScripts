@@ -16,7 +16,7 @@ class Unfolding:
 
     def __init__(self, truth, measured, response, fakes=None, method='RooUnfoldSvd'):
         if not method in unfoldCfg.availablemethods:
-            raise ValueError('Unknown unfolding method "%s". Available methods: %s' % (method, str(self.availablemethods)))
+            raise ValueError('Unknown unfolding method "%s". Available methods: %s' % (method, str(unfoldCfg.availablemethods)))
         self.method = method        
         self.truth = truth
         self.measured = measured
