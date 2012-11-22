@@ -4,7 +4,7 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 import unittest
-from tools.Fitter import TMinuitFit
+from tools.Fitting import TMinuitFit
 from rootpy.plotting import Hist
 
 import numpy as np
