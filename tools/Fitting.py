@@ -9,68 +9,40 @@ from array import array
 import numpy
 from scipy.optimize import curve_fit
 
-#
-#class Fitter:
-#    
-#    def __init__(self, histograms, dataLabel='data'):
-#        self.performedFit = False
-#        self.results = {}
-#        self.normalisation = {}
-#        self.dataLabel = dataLabel
-#        self.histograms = histograms
-#        self.templates = {}
-#        self.module = None
-#        # samples = all inputs except data
-#        keys = sorted(histograms.keys())
-#        keys.remove(dataLabel)
-#        self.samples = keys
-#        
-#        self.templates, self.normalisation = Fitter.generateTemplatesAndNormalisation(histograms)
-#        self.vectors = Fitter.vectorise(self.templates)
-#        # create templates
-#        
-#    @staticmethod
-#    def generateTemplatesAndNormalisation(histograms):
-#        normalisation = {}
-#        templates = {}
-#        for sample, histogram in histograms.iteritems():
-#            normalisation[sample] = histogram.Integral()
-#            temp = histogram.Clone(sample + '_' + 'template')
-#            nEntries = temp.Integral()
-#            if not nEntries == 0:
-#                temp.Scale(1 / nEntries)
-#            templates[sample] = temp
-#        return templates, normalisation
-#            
-#    @staticmethod
-#    def vectorise(histograms):
-#        values = {}
-#        for sample in histograms.keys():
-#            hist = histograms[sample]
-#            nBins = hist.GetNbinsX()
-#            for bin_i in range(1, nBins + 1):
-#                if not values.has_key(sample):
-#                    values[sample] = []
-#                values[sample].append(hist.GetBinContent(bin_i))
-#        return values
-        
 class TemplateFit():
-    def __init__(self, histograms, dataLabel='data'):
+    def __init__(self, histograms, data_label='data'):
         self.performedFit = False
         self.results = {}
         self.normalisation = {}
-        self.dataLabel = dataLabel
+        self.data_label = data_label
         self.histograms = histograms
         self.templates = {}
         self.module = None
         # samples = all inputs except data
         keys = sorted(histograms.keys())
-        keys.remove(dataLabel)
+        keys.remove(data_label)
         self.samples = keys
         
         self.templates, self.normalisation = TemplateFit.generateTemplatesAndNormalisation(histograms)
         self.vectors = TemplateFit.vectorise(self.templates)
-        # create templates
+        #check for consistency
+        #vectos and templates all same size!!
+        data_length = len(self.vectors[data_label])
+        error = False
+        for sample in self.vectors.keys():
+            current_length = len(self.vectors[sample])
+            if not data_length == current_length:
+                if current_length < data_length: 
+                    for entry in range(current_length, data_length):
+                        self.vectors[sample].append(0.)
+                else:
+                    print 'Error:'
+                    print 'Sample "', sample, '" has different length'
+                    print 'Expected:', data_length, ', found:', current_length
+                    error = True
+        if error:
+            import sys
+            sys.exit(-1)
         
     @staticmethod
     def generateTemplatesAndNormalisation(histograms):
@@ -116,7 +88,7 @@ class TMinuitFit(TemplateFit):
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long(2)
         
-        N_total = self.normalisation[self.dataLabel] * 2
+        N_total = self.normalisation[self.data_label] * 2
         N_min = 0
         
         param_index = 0
@@ -140,7 +112,7 @@ class TMinuitFit(TemplateFit):
     
     def logLikelihood(self, nParameters, gin, f, par, iflag):
         lnL = 0.0
-        data_vector = self.vectors[self.dataLabel]
+        data_vector = self.vectors[self.data_label]
         
         vector_entry = 0
         for data in data_vector:
@@ -149,7 +121,7 @@ class TMinuitFit(TemplateFit):
             for sample in self.samples:
                 x_i += par[param_index] * self.vectors[sample][vector_entry]
                 param_index += 1
-            data_i = self.normalisation[self.dataLabel] * data
+            data_i = self.normalisation[self.data_label] * data
             if not data == 0 and not x_i == 0:
                 L = TMath.Poisson(data_i, x_i)
                 lnL += TMath.log(L)
@@ -170,7 +142,7 @@ class TMinuitFit(TemplateFit):
             temp_par = Double(0)
             temp_err = Double(0)
             self.module.GetParameter(param_index, temp_par, temp_err)
-            results[sample] = {'value': temp_par, 'error':temp_err}
+            results[sample] = (temp_par, temp_err)
             param_index += 1
         self.results = results
         return results
