@@ -9,6 +9,7 @@ from tools.Calculation import calculate_xsection, calculate_normalised_xsection,
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding
 from tools.Fitting import TMinuitFit
+from tools.file_utilities import write_data_to_JSON
 
 def unfold_results(results, h_truth, h_measured, h_response, method):
     global bin_edges
@@ -103,7 +104,9 @@ def get_fitted_normalisation_from_JSON(input_files, met_type):
 def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
     global met_bins_ROOT
     electron_results = {}
+    electron_initial_values = {}
     muon_results = {}
+    muon_initial_values = {}
     for met_bin in met_bins_ROOT:
         electron_histograms, muon_histograms = get_histograms(input_files={
                                   'TTJet': TTJet_file,
@@ -120,6 +123,8 @@ def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
         # prepare histograms
         # normalise histograms
         # TODO
+        
+        # store pre-fit information
         
         # create signal histograms
         h_electron_eta_signal = electron_histograms['TTJet'] + electron_histograms['SingleTop']
@@ -138,42 +143,58 @@ def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
                                       })
         
         fitter_electron.fit()
-        results_electron = fitter_electron.readResults()
+        fit_results_electron = fitter_electron.readResults()
+        normalisation_electron = fitter_electron.normalisation
         
-        TTJet_SingleTop_ratio_electron = electron_histograms['TTJet'].Integral() / electron_histograms['SingleTop'].Integral()
-        N_ttbar_electron, N_SingleTop_electron = decombine_result(results_electron['signal'], TTJet_SingleTop_ratio_electron)
+        N_ttbar_before_fit_electron = electron_histograms['TTJet'].Integral()
+        N_SingleTop_before_fit_electron = electron_histograms['SingleTop'].Integral()
+        
+        TTJet_SingleTop_ratio_electron = N_ttbar_before_fit_electron / N_SingleTop_before_fit_electron
+        N_ttbar_electron, N_SingleTop_electron = decombine_result(fit_results_electron['signal'], TTJet_SingleTop_ratio_electron)
         
         
-        results_electron['TTJet'] = N_ttbar_electron
-        results_electron['SingleTop'] = N_SingleTop_electron
-        #this needs to
-        if electron_results == {}:#empty
-            for sample in results_electron.keys():
-                electron_results[sample] = [results_electron[sample]]
+        fit_results_electron['TTJet'] = N_ttbar_electron
+        fit_results_electron['SingleTop'] = N_SingleTop_electron
+        normalisation_electron['TTJet'] = N_ttbar_before_fit_electron
+        normalisation_electron['SingleTop'] = N_SingleTop_before_fit_electron
+        # this needs to
+        if electron_results == {}:  # empty
+            for sample in fit_results_electron.keys():
+                electron_results[sample] = [fit_results_electron[sample]]
+                electron_initial_values[sample] = [normalisation_electron[sample]]
         else:
-            for sample in results_electron.keys():
-                electron_results[sample].append(results_electron[sample])
+            for sample in fit_results_electron.keys():
+                electron_results[sample].append(fit_results_electron[sample])
+                electron_initial_values[sample].append(normalisation_electron[sample])
         
         fitter_muon.fit()
-        results_muon = fitter_muon.readResults()
+        fit_results_muon = fitter_muon.readResults()
+        normalisation_muon = fitter_muon.normalisation
         
-        TTJet_SingleTop_ratio_muon = muon_histograms['TTJet'].Integral() / muon_histograms['SingleTop'].Integral()
-        N_ttbar_muon, N_SingleTop_muon = decombine_result(results_muon['signal'], TTJet_SingleTop_ratio_muon)
-        results_muon['TTJet'] = N_ttbar_muon
-        results_muon['SingleTop'] = N_SingleTop_muon
+        N_ttbar_before_fit_muon = muon_histograms['TTJet'].Integral()
+        N_SingleTop_before_fit_muon = muon_histograms['SingleTop'].Integral()
+        TTJet_SingleTop_ratio_muon = N_ttbar_before_fit_muon / N_SingleTop_before_fit_muon
+        N_ttbar_muon, N_SingleTop_muon = decombine_result(fit_results_muon['signal'], TTJet_SingleTop_ratio_muon)
         
-        if muon_results == {}:#empty
-            for sample in results_muon.keys():
-                muon_results[sample] = [results_muon[sample]]
+        fit_results_muon['TTJet'] = N_ttbar_muon
+        fit_results_muon['SingleTop'] = N_SingleTop_muon
+        normalisation_muon['TTJet'] = N_ttbar_before_fit_muon
+        normalisation_muon['SingleTop'] = N_SingleTop_before_fit_muon
+        
+        if muon_results == {}:  # empty
+            for sample in fit_results_muon.keys():
+                muon_results[sample] = [fit_results_muon[sample]]
+                muon_initial_values[sample] = [normalisation_muon[sample]]
         else:
-            for sample in results_muon.keys():
-                muon_results[sample].append(results_muon[sample])
-#        muon_results.append(results_muon)
+            for sample in fit_results_muon.keys():
+                muon_results[sample].append(fit_results_muon[sample])
+                muon_initial_values[sample].append(normalisation_muon[sample])
         
-    return electron_results, muon_results
+    return electron_results, muon_results, electron_initial_values, muon_initial_values
 
 def get_systematic_errors(central_results, channel):
-    pass        
+    pass    
+    
 if __name__ == '__main__':
     # setup
     bin_edges = [0, 25, 45, 70, 100, 1000]
@@ -192,37 +213,48 @@ if __name__ == '__main__':
     data_file_muon = File(path_to_files + 'central/SingleMu_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root')
     muon_QCD_file = File(path_to_files + 'QCD_data_mu.root')
     
-    results_electron, results_muon = get_fitted_normalisation(input_files={
+    fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon = get_fitted_normalisation(
+                input_files={
                                   'TTJet': TTJet_file,
                                   'SingleTop': SingleTop_file,
                                   'V+Jets':VJets_file,
                                   'data_electron': data_file_electron,
                                   'data_muon': data_file_muon
                                   },
-                   met_type='patType1CorrectedPFMet',
-                   b_tag_bin='2orMoreBtags',
+                met_type='patType1CorrectedPFMet',
+                b_tag_bin='2orMoreBtags',
                    )
+    
+    write_data_to_JSON(fit_results_electron, 'fit_results_electron.txt')
+    write_data_to_JSON(fit_results_muon, 'fit_results_muon.txt')
+    write_data_to_JSON(initial_values_electron, 'initial_values_electron.txt')
+    write_data_to_JSON(initial_values_muon, 'initial_values_muon.txt')
 
-    TTJet_fit_results_electron = results_electron['TTJet']
-    TTJet_fit_results_muon = results_muon['TTJet']
+    TTJet_fit_results_electron = fit_results_electron['TTJet']
+    TTJet_fit_results_muon = fit_results_muon['TTJet']
     # mock input
-#    TTJet_fit_results_electron = [(2146, 145), (3399, 254), (3723, 69), (2256, 53), (1722, 91)]
     MADGRAPH_results_electron = [(2146, 145), (3399, 254), (3723, 69), (2256, 53), (1722, 91)]
     
     # get fit values for systematics
-    #for systematics we only need the TTJet results!
+    # for systematics we only need the TTJet results!
     # unfold all above
     h_truth, h_measured, h_response = get_unfold_histogram_tuple(file_for_unfolding, 'electron')
+    MADGRAPH_results_electron = hist_to_value_error_tuplelist(h_truth)
     TTJet_fit_results_electron_unfolded = unfold_results(TTJet_fit_results_electron,
                                                          h_truth,
                                                          h_measured,
                                                          h_response,
                                                          'RooUnfoldSvd')
+    
+    write_data_to_JSON(TTJet_fit_results_electron, 'TTJet_fit_results_electron.txt')
+    write_data_to_JSON(TTJet_fit_results_electron_unfolded, 'TTJet_fit_results_electron_unfolded.txt')
+    write_data_to_JSON(MADGRAPH_results_electron, 'MADGRAPH_results_electron.txt')
     # calculate the x-sections and
     bin_widths = [25, 20, 25, 30, 150]
     xsection = calculate_xsection(TTJet_fit_results_electron_unfolded, 5050, 0.15)  # L in pb1
     normalisedToOne_xsection = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=True)
     normalised_xsection = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=False)
+    normalised_xsection_gen = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=False)
     normalised_xsection_nounfolding = calculate_normalised_xsection(TTJet_fit_results_electron, bin_widths, normalise_to_one=False)
     
     sum_xsec, sum_xsec_error = 0, 0
@@ -232,6 +264,6 @@ if __name__ == '__main__':
     print 'Total x-sec:', sum_xsec, '+-', sum_xsec_error
     
     
-    for value, value_nounfolding in zip(normalised_xsection, normalised_xsection_nounfolding):
-        print 'unfolded:', value, '\t no unfolding:', value_nounfolding
+    for gen, value, value_nounfolding in zip(normalised_xsection_gen, normalised_xsection, normalised_xsection_nounfolding):
+        print 'gen:', gen, 'unfolded:', value, '\t no unfolding:', value_nounfolding
         
