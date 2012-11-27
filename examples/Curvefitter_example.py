@@ -4,7 +4,7 @@ Created on 8 Nov 2012
 @author: kreczko
 '''
 
-from tools.Fitter import CurveFit
+from tools.Fitting import CurveFit
 import numpy as np
 from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt

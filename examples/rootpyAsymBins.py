@@ -25,7 +25,7 @@ rplt.errorbar(rootpyhist, label='test')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title('Testing')
-plt.legend()
+plt.legend(numpoints=1)
 plt.axis([bins[0], bins[-1], 0, nbins*1.2])
 plt.savefig('plots/AsymBinsExample.png')
 print 'Done'

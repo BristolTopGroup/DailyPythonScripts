@@ -72,7 +72,7 @@ def checkOnMC(unfolding, method):
     pulls = []
     for sub in range(2,9):
         inputFile2 = File('../data/unfolding_merged_sub%d.root' % sub, 'read')
-        h_data = asrootpy(inputFile2.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
+        h_data = asrootpy(inputFile2.unfoldingAnalyserMuonChannel.measured.Rebin(nbins, 'measured', bins))
         nEvents = inputFile2.EventFilter.EventCounter.GetBinContent(1)
         lumiweight = 164.5 * 5050 / nEvents
 #        print sub, nEvents
@@ -100,7 +100,7 @@ def checkOnMC(unfolding, method):
     canvas.SetRightMargin(0.05)
     h_allpulls.Draw()
     fit.Draw('same')
-    canvas.SaveAs('Pull_allBins_withFit.png')
+    canvas.SaveAs('plots/Pull_allBins_withFit.png')
     
     
     
@@ -113,7 +113,7 @@ def checkOnMC(unfolding, method):
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
     plt.legend(numpoints=1)
-    plt.savefig('Pull_allBins.png')
+    plt.savefig('plots/Pull_allBins.png')
     
     #individual bins
     for bin_i in range(nbins):
@@ -131,10 +131,10 @@ def checkOnMC(unfolding, method):
     
 def doUnfoldingSequence(unfolding, h_data, method, outputfile_suffix = '', doClosureTest = False, checkFakes = False):
     unfolding.unfold(h_data)
-    saveUnfolding(unfolding, 'Unfolding_' + method + outputfile_suffix + '.png')
+    saveUnfolding(unfolding, 'plots/Unfolding_' + method + outputfile_suffix + '.png')
     if doClosureTest:
         unfolding.closureTest()
-        saveClosureTest(unfolding, 'Unfolding_' + method + outputfile_suffix + '_closure.png')
+        saveClosureTest(unfolding, 'plots/Unfolding_' + method + outputfile_suffix + '_closure.png')
     
     
     if checkFakes:
@@ -151,7 +151,7 @@ def doUnfoldingSequence(unfolding, h_data, method, outputfile_suffix = '', doClo
         plt.ylabel('Events')
         plt.title('Unfolding')
         plt.legend()
-        plt.savefig('Fakes' + outputfile_suffix + '.png')
+        plt.savefig('plots/Fakes' + outputfile_suffix + '.png')
     
 if __name__ == "__main__":
 
@@ -160,10 +160,10 @@ if __name__ == "__main__":
     bins = array('d', [0, 25, 45, 70, 100, 1000])
     nbins = len(bins) - 1
     inputFile = File('../data/unfolding_merged_sub1.root', 'read')
-    h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth', bins))
-    h_measured = asrootpy(inputFile.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
-    h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
-    h_response = inputFile.unfoldingAnalyserElectronChannel.response_withoutFakes_AsymBins #response_AsymBins
+    h_truth = asrootpy(inputFile.unfoldingAnalyserMuonChannel.truth.Rebin(nbins, 'truth', bins))
+    h_measured = asrootpy(inputFile.unfoldingAnalyserMuonChannel.measured.Rebin(nbins, 'measured', bins))
+    h_fakes = asrootpy(inputFile.unfoldingAnalyserMuonChannel.fake.Rebin(nbins, 'truth', bins))
+    h_response = inputFile.unfoldingAnalyserMuonChannel.response_withoutFakes_AsymBins #response_AsymBins
     nEvents = inputFile.EventFilter.EventCounter.GetBinContent(1)
     lumiweight = 164.5 * 5050 / nEvents
     h_truth.Scale(lumiweight)

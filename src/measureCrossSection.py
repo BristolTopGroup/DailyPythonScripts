@@ -225,10 +225,10 @@ if __name__ == '__main__':
                 b_tag_bin='2orMoreBtags',
                    )
     
-    write_data_to_JSON(fit_results_electron, 'fit_results_electron.txt')
-    write_data_to_JSON(fit_results_muon, 'fit_results_muon.txt')
-    write_data_to_JSON(initial_values_electron, 'initial_values_electron.txt')
-    write_data_to_JSON(initial_values_muon, 'initial_values_muon.txt')
+    write_data_to_JSON(fit_results_electron, 'data/fit_results_electron.txt')
+    write_data_to_JSON(fit_results_muon, 'data/fit_results_muon.txt')
+    write_data_to_JSON(initial_values_electron, 'data/initial_values_electron.txt')
+    write_data_to_JSON(initial_values_muon, 'data/initial_values_muon.txt')
 
     TTJet_fit_results_electron = fit_results_electron['TTJet']
     TTJet_fit_results_muon = fit_results_muon['TTJet']
@@ -246,9 +246,9 @@ if __name__ == '__main__':
                                                          h_response,
                                                          'RooUnfoldSvd')
     
-    write_data_to_JSON(TTJet_fit_results_electron, 'TTJet_fit_results_electron.txt')
-    write_data_to_JSON(TTJet_fit_results_electron_unfolded, 'TTJet_fit_results_electron_unfolded.txt')
-    write_data_to_JSON(MADGRAPH_results_electron, 'MADGRAPH_results_electron.txt')
+    write_data_to_JSON(TTJet_fit_results_electron, 'data/TTJet_fit_results_electron.txt')
+    write_data_to_JSON(TTJet_fit_results_electron_unfolded, 'data/TTJet_fit_results_electron_unfolded.txt')
+    write_data_to_JSON(MADGRAPH_results_electron, 'data/MADGRAPH_results_electron.txt')
     # calculate the x-sections and
     bin_widths = [25, 20, 25, 30, 150]
     xsection = calculate_xsection(TTJet_fit_results_electron_unfolded, 5050, 0.15)  # L in pb1
