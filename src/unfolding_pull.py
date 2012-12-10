@@ -48,7 +48,7 @@ def check_unfolding_truth(files, method):
         for pull in pulls:
             h_pull.Fill(pull[bin_i])
         fit = h_pull.Fit('gaus', 'WWS')
-        output_file = 'plots/Pull_reco_bin%d_withFit_%s_%s.png' %(bin_i, method, options.channel)
+        output_file = 'plots/Pull_truth_bin%d_withFit_%s_%s.png' %(bin_i, method, options.channel)
         plot_pull(h_pull, fit, output_file)
 
 def check_unfolding_reco(files, method):
@@ -123,7 +123,7 @@ def plot_pull(h_pull, fit, output_file):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-c", "--channel",
-                  action="store_false", dest="channel", default='muon',
+                  action="store_false", dest="channel", default='electron',
                   help="Electron or Muon")
     (options, args) = parser.parse_args()
     
