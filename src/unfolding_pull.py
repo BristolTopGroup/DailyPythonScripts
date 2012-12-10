@@ -39,14 +39,8 @@ def check_unfolding_truth(files, method):
     for entry in allpulls:
         filling(entry)
     fit = h_allpulls.Fit('gaus', 'WWS')
-    canvas = Canvas(width=1600, height=1000)
-    canvas.SetLeftMargin(0.15)
-    canvas.SetBottomMargin(0.15)
-    canvas.SetTopMargin(0.10)
-    canvas.SetRightMargin(0.05)
-    h_allpulls.Draw()
-    fit.Draw('same')
-    canvas.SaveAs('plots/Pull_truth_allBins_withFit_%s_%s.png' %(method, options.channel))
+    output_file = 'plots/Pull_truth_allBins_withFit_%s_%s.png' %(method, options.channel)
+    plot_pull(h_allpulls, fit, output_file)
     
     #individual bins
     for bin_i in range(nbins):
@@ -54,14 +48,8 @@ def check_unfolding_truth(files, method):
         for pull in pulls:
             h_pull.Fill(pull[bin_i])
         fit = h_pull.Fit('gaus', 'WWS')
-        canvas = Canvas(width=1600, height=1000)
-        canvas.SetLeftMargin(0.15)
-        canvas.SetBottomMargin(0.15)
-        canvas.SetTopMargin(0.10)
-        canvas.SetRightMargin(0.05)
-        h_pull.Draw()
-        fit.Draw('same')
-        canvas.SaveAs('plots/Pull_reco_bin%d_withFit_%s_%s.png' %(bin_i, method, options.channel))
+        output_file = 'plots/Pull_reco_bin%d_withFit_%s_%s.png' %(bin_i, method, options.channel)
+        plot_pull(h_pull, fit, output_file)
 
 def check_unfolding_reco(files, method):
     global nbins
@@ -88,14 +76,8 @@ def check_unfolding_reco(files, method):
     for entry in allpulls:
         filling(entry)
     fit = h_allpulls.Fit('gaus', 'WWS')
-    canvas = Canvas(width=1600, height=1000)
-    canvas.SetLeftMargin(0.15)
-    canvas.SetBottomMargin(0.15)
-    canvas.SetTopMargin(0.10)
-    canvas.SetRightMargin(0.05)
-    h_allpulls.Draw()
-    fit.Draw('same')
-    canvas.SaveAs('plots/Pull_reco_allBins_withFit_%s_%s.png' %(method, options.channel))
+    output_file = 'plots/Pull_reco_allBins_withFit_%s_%s.png' %(method, options.channel)
+    plot_pull(h_allpulls, fit, output_file)
     
     #individual bins
     for bin_i in range(nbins):
@@ -103,14 +85,8 @@ def check_unfolding_reco(files, method):
         for pull in pulls:
             h_pull.Fill(pull[bin_i])
         fit = h_pull.Fit('gaus', 'WWS')
-        canvas = Canvas(width=1600, height=1000)
-        canvas.SetLeftMargin(0.15)
-        canvas.SetBottomMargin(0.15)
-        canvas.SetTopMargin(0.10)
-        canvas.SetRightMargin(0.05)
-        h_pull.Draw()
-        fit.Draw('same')
-        canvas.SaveAs('plots/Pull_reco_bin%d_withFit_%s_%s.png' %(bin_i, method, options.channel))
+        output_file = 'plots/Pull_reco_bin%d_withFit_%s_%s.png' % (bin_i, method, options.channel)
+        plot_pull(h_pull, fit, output_file)
 
 def get_histograms(input_file):
     h_truth, h_measured, h_response = None, None, None
@@ -133,6 +109,16 @@ def get_histograms(input_file):
     
     return h_truth, h_measured, h_response
 
+def plot_pull(h_pull, fit, output_file):
+    canvas = Canvas(width=1600, height=1000)
+    canvas.SetLeftMargin(0.15)
+    canvas.SetBottomMargin(0.15)
+    canvas.SetTopMargin(0.10)
+    canvas.SetRightMargin(0.05)
+    h_pull.Draw()
+    if fit:
+        fit.Draw('same')
+    canvas.SaveAs(output_file)
 
 if __name__ == "__main__":
     parser = OptionParser()
