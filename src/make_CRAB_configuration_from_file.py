@@ -1,10 +1,13 @@
 #A script for using CRABConfigs.py to write CRAB configuration filesfor datasets specified in datasetInput.txt.
 #Best to run this script in the configurations folder of NTupleTools, so that the created CRAB configuration files go into the correct locations/folders.
+#With current filepaths (as commited), make_CRAB_configuration.py should be in the same folder as this 
+#make_CRAB_configuration_from_file.py script, dataset_input.py should be in the data folder and das_client should be in the ../tools folder relative to 
+#this script.
 #Simply run with: python make_CRAB_configuration_from_file.py
 import commands as commands
 
 #open datasetInput.txt for reading
-filename = '../data/dataset_input.txt'
+filename = 'data/dataset_input.txt'
 file=open(filename, 'rU')
 
 #loop through lines and create configuration file for each line
