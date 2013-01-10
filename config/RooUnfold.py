@@ -11,7 +11,7 @@ library = '/storage/Workspace/Analysis/RooUnfold/libRooUnfold.so'
 availablemethods = ['RooUnfoldTUnfold', 'RooUnfoldBayes',
                         'RooUnfoldSvd','RooUnfoldBinByBin',
                         'RooUnfoldInvert', 'RooUnfoldTUnfold']
-SVD_k_value = 6
+SVD_k_value = 5
 SVD_n_toy = 1000
 Bayes_n_repeat = 4
 
