@@ -1,0 +1,84 @@
+#If a line is commented out, there must be a space between the # at the start and the first word.
+
+jobtype scheduler use_server version datasetpath pset numberevents numberlumis numberjobs lumi_mask useData dataType skim mail whiteList blackList
+
+#Data (LeptonPlus3Jets skim)
+# cmssw glidein 1 v9a /SingleElectron/Run2012A-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleElectron LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleElectron/Run2012A-recover-06Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt 1 SingleElectron LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleElectron/Run2012B-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleElectron LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleElectron/Run2012C-24Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt 1 SingleElectron LeptonPlus3Jets None None None
+
+# cmssw glidein 1 v9a /SingleMu/Run2012A-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleMu LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012A-recover-06Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt 1 SingleMu LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012A-20Nov2012-v2/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleMu LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012B-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleMu LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012C-24Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt 1 SingleMu LeptonPlus3Jets None None None
+
+#Data (Lepton skim)
+# cmssw glidein 1 v9a /SingleElectron/Run2012A-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleElectron Lepton None None None
+cmssw glidein 1 v9a /SingleElectron/Run2012A-recover-06Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt 1 SingleElectron Lepton None None None
+cmssw glidein 1 v9a /SingleElectron/Run2012B-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleElectron Lepton None None None
+cmssw glidein 1 v9a /SingleElectron/Run2012C-24Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt 1 SingleElectron Lepton None None None
+
+# cmssw glidein 1 v9a /SingleMu/Run2012A-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleMu Lepton None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012A-recover-06Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190782-190949_8TeV_06Aug2012ReReco_Collisions12_JSON.txt 1 SingleMu Lepton None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012A-20Nov2012-v2/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleMu Lepton None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012B-13Jul2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt 1 SingleMu Lepton None None None
+# cmssw glidein 1 v9a /SingleMu/Run2012C-24Aug2012-v1/AOD BristolAnalysis/NTupleTools/test/makeTuples_cfg.py 0 -1 2000 Cert_198022-198523_8TeV_24Aug2012ReReco_Collisions12_JSON.txt 1 SingleMu Lepton None None None
+
+#Monte Carlo
+# cmssw glidein 1 v9a /TTJets_SemiLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A_ext-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 TTJets_SemiLeptMGDecays LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 1600 None 0 TTJets_FullLeptMGDecays LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TTJets_HadronicMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A_ext-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 TTJets_HadronicMGDecays LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TT_Mtt-700to1000_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 400 None 0 TT_Mtt-700to1000_CT10 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TT_Mtt-1000toInf_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 200 None 0 TT_Mtt-1000toInf_CT10 LeptonPlus3Jets None None None
+
+# cmssw glidein 1 v9a /QCD_Pt_20_30_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_20_30_EMEnriched LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_30_80_EMEnriched LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_80_170_EMEnriched LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt_170_250_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_170_250_EMEnriched LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt_250_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_250_350_EMEnriched LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_350_EMEnriched LeptonPlus3Jets None None None
+
+# cmssw glidein 1 v9a /GJets_HT-200To400_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 1400 None 0 GJets_HT-200To400 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /GJets_HT-400ToInf_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 200 None 0 GJets_HT-400ToInf LeptonPlus3Jets None None None
+
+# cmssw glidein 1 v9a /QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v3/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_20_MuEnrichedPt_15 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-15to20_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 200 None 0 QCD_Pt-15to20_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-20to30_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 1000 None 0 QCD_Pt-20to30_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-30to50_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt-30to50_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-50to80_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt-50to80_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-80to120_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt-80to120_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-120to170_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt-120to170_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-170to300_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt-170to300_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-300to470_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt-300to470_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-470to600_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 500 None 0 QCD_Pt-470to600_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-600to800_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 500 None 0 QCD_Pt-600to800_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-800to1000_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 500 None 0 QCD_Pt-800to1000_MuEnrichedPt5 LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt-1000_MuEnrichedPt5_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 500 None 0 QCD_Pt-1000_MuEnrichedPt5 LeptonPlus3Jets None None None
+
+# cmssw glidein 1 v9a /TT_Mtt-700to1000_CT10_scaleup_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 TT_Mtt-700to1000_CT10_scaleup LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TT_Mtt-1000toInf_CT10_scaleup_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 200 None 0 TT_Mtt-1000toInf_CT10_scaleup LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TT_Mtt-700to1000_CT10_scaledown_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 TT_Mtt-700to1000_CT10_scaledown LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /TT_Mtt-1000toInf_CT10_scaledown_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 200 None 0 TT_Mtt-1000toInf_CT10_scaledown LeptonPlus3Jets None None None
+# cmssw glidein 1 v9a /QCD_Pt_20_30_BCtoE_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 QCD_Pt_20_30_BCtoE Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_30_80_BCtoE_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 QCD_Pt_30_80_BCtoE Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_80_170_BCtoE_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 QCD_Pt_80_170_BCtoE Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_170_250_BCtoE_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 QCD_Pt_170_250_BCtoE Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_250_350_BCtoE_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 QCD_Pt_250_350_BCtoE Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_350_BCtoE_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 300 None 0 QCD_Pt_350_BCtoE Lepton None None None
+
+# cmssw glidein 1 v9a /GJets_HT-200To400_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 1400 None 0 GJets_HT-200To400 Lepton None None None
+# cmssw glidein 1 v9a /GJets_HT-400ToInf_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 200 None 0 GJets_HT-400ToInf Lepton None None None
+
+# cmssw glidein 1 v9a /QCD_Pt_20_30_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_20_30_EMEnriched Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_30_80_EMEnriched Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_80_170_EMEnriched Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_170_250_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_170_250_EMEnriched Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_250_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_250_350_EMEnriched Lepton None None None
+# cmssw glidein 1 v9a /QCD_Pt_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_Pt_350_EMEnriched Lepton None None None
+
+# cmssw glidein 1 v9a /QCD_HT-100To250_TuneZ2star_8TeV-madgraph-pythia/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_HT-100To250 Lepton None None None
+# cmssw glidein 1 v9a /QCD_HT-250To500_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_HT-250To500 Lepton None None None
+# cmssw glidein 1 v9a /QCD_HT-500To1000_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_HT-500To1000 Lepton None None None
+# cmssw glidein 1 v9a /QCD_HT-1000ToInf_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM BristolAnalysis/NTupleTools/test/makeTuples_cfg.py -1 0 2000 None 0 QCD_HT-1000ToInf Lepton None None None
