@@ -3,11 +3,6 @@ Created on 31 Oct 2012
 
 @author: kreczko
 '''
-
-#library = '/software/RooUnfold-1.1.1/libRooUnfold.so'
-#testing
-library = '/storage/Workspace/Analysis/RooUnfold/libRooUnfold.so'
-
 availablemethods = ['RooUnfoldTUnfold', 'RooUnfoldBayes',
                         'RooUnfoldSvd','RooUnfoldBinByBin',
                         'RooUnfoldInvert', 'RooUnfoldTUnfold']

@@ -1,9 +1,9 @@
 [submodule "external/rootpy"]
 	path = external/rootpy
 	url = git://github.com/rootpy/rootpy.git
-[submodule "external/uncertainties"]
-	path = external/uncertainties
-	url = git://github.com/lebigot/uncertainties.git
 [submodule "external/RooUnfold"]
 	path = external/RooUnfold
 	url = git@github.com:kreczko/RooUnfold.git
+[submodule "external/virtualenv"]
+	path = external/virtualenv
+	url = git://github.com/pypa/virtualenv.git
