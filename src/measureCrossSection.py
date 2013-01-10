@@ -34,6 +34,12 @@ def get_unfold_histogram_tuple(inputfile, channel):
     h_truth = asrootpy(folder.truth.Rebin(n_bins, 'truth', bin_edge_array))
     h_measured = asrootpy(folder.measured.Rebin(n_bins, 'measured', bin_edge_array))
     h_response = folder.response_withoutFakes_AsymBins  # response_AsymBins
+    
+    nEvents = inputfile.EventFilter.EventCounter.GetBinContent(1)#number of processed events 
+    lumiweight = 164.5 * 5050 / nEvents #ttbar x-section = 164.5pb, lumi = 5050pb-1
+    h_truth.Scale(lumiweight)
+    h_measured.Scale(lumiweight)
+    h_response.Scale(lumiweight)
     return h_truth, h_measured, h_response
 
 def get_histograms(input_files, met_type, met_bin, b_tag_bin, rebin=1):
@@ -195,6 +201,15 @@ def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
 def get_systematic_errors(central_results, channel):
     pass    
     
+def write_fit_results_and_initial_values(fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon):    
+    write_data_to_JSON(fit_results_electron, 'data/fit_results_electron.txt')
+    write_data_to_JSON(fit_results_muon, 'data/fit_results_muon.txt')
+    write_data_to_JSON(initial_values_electron, 'data/initial_values_electron.txt')
+    write_data_to_JSON(initial_values_muon, 'data/initial_values_muon.txt')
+    
+def write_cross_section():
+    pass
+
 if __name__ == '__main__':
     # setup
     bin_edges = [0, 25, 45, 70, 100, 1000]
@@ -202,6 +217,14 @@ if __name__ == '__main__':
     met_bins_ROOT = ['0-25', '25-45', '45-70', '70-100', '100-inf']
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-12-241_V4/'
     file_for_unfolding = File(path_to_files + 'unfolding_merged.root', 'read')
+    file_for_powheg = File(path_to_files + 'unfolding_TTJets_7TeV_powheg.root', 'read')
+    file_for_pythia = File(path_to_files + 'unfolding_TTJets_7TeV_pythia.root', 'read')
+    file_for_mcatnlo = File(path_to_files + 'unfolding_merged.root', 'read')
+    
+    file_for_scaledown = File(path_to_files + 'unfolding_TTJets_7TeV_scaledown.root', 'read')
+    file_for_scaleup = File(path_to_files + 'unfolding_TTJets_7TeV_scaleup.root', 'read')
+    file_for_matchingdown = File(path_to_files + 'unfolding_TTJets_7TeV_matchingdown.root', 'read')
+    file_for_matchingup = File(path_to_files + 'unfolding_TTJets_7TeV_matchingup.root', 'read')
     # possible options:
     # --continue : continue from saved - skips ROOT files, reads from JSON?
     
@@ -224,22 +247,27 @@ if __name__ == '__main__':
                 met_type='patType1CorrectedPFMet',
                 b_tag_bin='2orMoreBtags',
                    )
+    write_fit_results_and_initial_values(fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon)
     
-    write_data_to_JSON(fit_results_electron, 'data/fit_results_electron.txt')
-    write_data_to_JSON(fit_results_muon, 'data/fit_results_muon.txt')
-    write_data_to_JSON(initial_values_electron, 'data/initial_values_electron.txt')
-    write_data_to_JSON(initial_values_muon, 'data/initial_values_muon.txt')
-
+    #continue with only TTJet
     TTJet_fit_results_electron = fit_results_electron['TTJet']
     TTJet_fit_results_muon = fit_results_muon['TTJet']
-    # mock input
-    MADGRAPH_results_electron = [(2146, 145), (3399, 254), (3723, 69), (2256, 53), (1722, 91)]
     
-    # get fit values for systematics
+    # get t values for systematics
     # for systematics we only need the TTJet results!
     # unfold all above
+    
     h_truth, h_measured, h_response = get_unfold_histogram_tuple(file_for_unfolding, 'electron')
     MADGRAPH_results_electron = hist_to_value_error_tuplelist(h_truth)
+    POWHEG_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_powheg, 'electron')[1])
+    PYTHIA_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_pythia, 'electron')[1])
+    MCATNLO_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_mcatnlo, 'electron')[1])
+    
+    matchingdown_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingdown, 'electron')[1])
+    matchingup_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingup, 'electron')[1])
+    scaledown_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaledown, 'electron')[1])
+    scaleup_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaleup, 'electron')[1])
+    
     TTJet_fit_results_electron_unfolded = unfold_results(TTJet_fit_results_electron,
                                                          h_truth,
                                                          h_measured,
@@ -247,23 +275,57 @@ if __name__ == '__main__':
                                                          'RooUnfoldSvd')
     
     write_data_to_JSON(TTJet_fit_results_electron, 'data/TTJet_fit_results_electron.txt')
-    write_data_to_JSON(TTJet_fit_results_electron_unfolded, 'data/TTJet_fit_results_electron_unfolded.txt')
-    write_data_to_JSON(MADGRAPH_results_electron, 'data/MADGRAPH_results_electron.txt')
+    normalisation_electron_unfolded = {
+                                       'TTJet' : TTJet_fit_results_electron_unfolded,
+                                       'MADGRAPH': MADGRAPH_results_electron,
+                                       #other generators
+                                       'POWHEG': POWHEG_results_electron,
+                                       'PYTHIA': PYTHIA_results_electron,
+                                       'MCATNLO': MCATNLO_results_electron,
+                                       #systematics
+                                       'matchingdown': matchingdown_results_electron,
+                                       'matchingup': matchingup_results_electron,
+                                       'scaledown': scaledown_results_electron,
+                                       'scaleup': scaleup_results_electron
+                                       }
+    write_data_to_JSON(normalisation_electron_unfolded, 'data/normalisation_electron_unfolded.txt')
+    
     # calculate the x-sections and
     bin_widths = [25, 20, 25, 30, 150]
-    xsection = calculate_xsection(TTJet_fit_results_electron_unfolded, 5050, 0.15)  # L in pb1
-    normalisedToOne_xsection = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=True)
-    normalised_xsection = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=False)
-    normalised_xsection_gen = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=False)
-    normalised_xsection_nounfolding = calculate_normalised_xsection(TTJet_fit_results_electron, bin_widths, normalise_to_one=False)
+    TTJet_xsection = calculate_xsection(TTJet_fit_results_electron, 5050, 0.15)  # L in pb1
+    TTJet_xsection_unfolded = calculate_xsection(TTJet_fit_results_electron_unfolded, 5050, 0.15)  # L in pb1
+    MADGRAPH_xsection = calculate_xsection(MADGRAPH_results_electron, 5050, 0.15)  # L in pb1
+    
+    xsection_electron_unfolded = {'TTJet' : TTJet_xsection_unfolded,
+                                       'MADGRAPH': MADGRAPH_xsection
+                                       }
+    write_data_to_JSON(xsection_electron_unfolded, 'data/xsection_electron_unfolded.txt')
+    
+    TTJet_normalised_to_one_xsection = calculate_normalised_xsection(TTJet_fit_results_electron, bin_widths, normalise_to_one=True)
+    TTJet_normalised_to_one_xsection_unfolded = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=True)
+    MADGRAPH_normalised_to_one_xsection = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=True)
+    
+    normalised_to_one_xsection_electron_unfolded = {'TTJet' : TTJet_normalised_to_one_xsection_unfolded,
+                                       'MADGRAPH': MADGRAPH_normalised_to_one_xsection
+                                       }
+    write_data_to_JSON(normalised_to_one_xsection_electron_unfolded, 'data/normalised_to_one_xsection_electron_unfolded.txt')
+    
+    TTJet_normalised_xsection = calculate_normalised_xsection(TTJet_fit_results_electron, bin_widths, normalise_to_one=False)
+    TTJet_normalised_xsection_unfolded = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=False)
+    MADGRAPH__normalised_xsection = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=False)
+    
+    normalised_xsection_electron_unfolded = {'TTJet' : TTJet_normalised_xsection_unfolded,
+                                       'MADGRAPH': MADGRAPH__normalised_xsection
+                                       }
+    write_data_to_JSON(normalised_xsection_electron_unfolded, 'data/normalised_xsection_electron_unfolded.txt')
     
     sum_xsec, sum_xsec_error = 0, 0
-    for value, error in xsection:
+    for value, error in TTJet_xsection_unfolded:
         sum_xsec += value
         sum_xsec_error += error
     print 'Total x-sec:', sum_xsec, '+-', sum_xsec_error
     
     
-    for gen, value, value_nounfolding in zip(normalised_xsection_gen, normalised_xsection, normalised_xsection_nounfolding):
+    for gen, value, value_nounfolding in zip(MADGRAPH__normalised_xsection, TTJet_normalised_xsection_unfolded, TTJet_normalised_xsection):
         print 'gen:', gen, 'unfolded:', value, '\t no unfolding:', value_nounfolding
         

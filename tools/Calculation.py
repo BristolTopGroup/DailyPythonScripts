@@ -60,3 +60,15 @@ def decombine_result(combined_result, original_ratio):
     sample_1 = combined_result * original_ratio/(1+original_ratio)
     sample_2 = combined_result - sample_1
     return (sample_1.nominal_value, sample_1.std_dev()), (sample_2.nominal_value, sample_2.std_dev())
+
+def combine_results(result1, result2):
+    samples = result1.keys()
+    if not samples == result2.keys():
+        print 'Error - combine_results: results have a different set of keys!'
+        return None
+    combined_result = {}
+    for sample in result1.keys():
+        value1, error1 = result1[sample]
+        value2, error2 = result2[sample]
+        combined_result[sample] = (value1 + value2, error1 + error2)
+    return combined_result

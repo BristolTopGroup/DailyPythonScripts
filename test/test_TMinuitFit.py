@@ -6,6 +6,7 @@ Created on 31 Oct 2012
 import unittest
 from tools.Fitting import TMinuitFit
 from rootpy.plotting import Hist
+from math import sqrt
 
 import numpy as np
 N_bkg1 = 9000
@@ -53,14 +54,14 @@ class Test(unittest.TestCase):
 
     def testNormalisation(self):
         normalisation = self.minuitFitter.normalisation
-        self.assertAlmostEqual(normalisation["data"], N_data, delta = 1)
-        self.assertAlmostEqual(normalisation["bkg1"], N_bkg1, delta = 1)
-        self.assertAlmostEqual(normalisation["signal"], N_signal, delta = 1)
+        self.assertAlmostEqual(normalisation["data"], N_data, delta = sqrt(N_data))
+        self.assertAlmostEqual(normalisation["bkg1"], N_bkg1, delta = sqrt(N_bkg1))
+        self.assertAlmostEqual(normalisation["signal"], N_signal, delta = sqrt(N_signal))
         
     def testSignalResult(self):
         results = self.minuitFitter.readResults()
-        self.assertAlmostEqual(N_signal_obs, results['signal']['value'], delta = results['signal']['error'])
-        self.assertAlmostEqual(N_bkg1_obs, results['bkg1']['value'], delta = results['bkg1']['error'])
+        self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta = results['signal'][1])
+        self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta = results['bkg1'][1])
         
 
 

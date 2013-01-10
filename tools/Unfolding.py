@@ -11,7 +11,6 @@ from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from rootpy.utils import asrootpy
 from math import sqrt
-
 class Unfolding:
 
     def __init__(self, truth, measured, response, fakes=None, method='RooUnfoldSvd'):
@@ -44,6 +43,8 @@ class Unfolding:
                 self.unfoldObject = RooUnfoldTUnfold     (self.unfoldResponse, data)
             elif self.method == 'RooUnfoldSvd':
                 self.unfoldObject = RooUnfoldSvd(self.unfoldResponse, data, unfoldCfg.SVD_k_value, unfoldCfg.SVD_n_toy)
+        #remove unfold reports (faster)
+        self.unfoldObject.SetVerbose(0)
         self.unfolded_data = asrootpy(self.unfoldObject.Hreco())
         return self.unfolded_data
     
@@ -131,7 +132,7 @@ class Unfolding:
     def get_unfolded_data_errors(self):
         #get the data errors
         input_errors = self.unfoldObject.Emeasured()
-        input_errors.Print()
+#        input_errors.Print()
         unfolded_errors = input_errors.Clone()
         #get the response matrix
         decomposition = TDecompSVD(self.unfoldResponse.Mresponse());

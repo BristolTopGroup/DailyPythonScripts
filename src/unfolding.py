@@ -72,7 +72,7 @@ def checkOnMC(unfolding, method):
     pulls = []
     for sub in range(2,9):
         inputFile2 = File('../data/unfolding_merged_sub%d.root' % sub, 'read')
-        h_data = asrootpy(inputFile2.unfoldingAnalyserMuonChannel.measured.Rebin(nbins, 'measured', bins))
+        h_data = asrootpy(inputFile2.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
         nEvents = inputFile2.EventFilter.EventCounter.GetBinContent(1)
         lumiweight = 164.5 * 5050 / nEvents
 #        print sub, nEvents
@@ -160,10 +160,10 @@ if __name__ == "__main__":
     bins = array('d', [0, 25, 45, 70, 100, 1000])
     nbins = len(bins) - 1
     inputFile = File('../data/unfolding_merged_sub1.root', 'read')
-    h_truth = asrootpy(inputFile.unfoldingAnalyserMuonChannel.truth.Rebin(nbins, 'truth', bins))
-    h_measured = asrootpy(inputFile.unfoldingAnalyserMuonChannel.measured.Rebin(nbins, 'measured', bins))
-    h_fakes = asrootpy(inputFile.unfoldingAnalyserMuonChannel.fake.Rebin(nbins, 'truth', bins))
-    h_response = inputFile.unfoldingAnalyserMuonChannel.response_withoutFakes_AsymBins #response_AsymBins
+    h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth', bins))
+    h_measured = asrootpy(inputFile.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
+    h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
+    h_response = inputFile.unfoldingAnalyserElectronChannel.response_withoutFakes_AsymBins #response_AsymBins
     nEvents = inputFile.EventFilter.EventCounter.GetBinContent(1)
     lumiweight = 164.5 * 5050 / nEvents
     h_truth.Scale(lumiweight)
