@@ -38,3 +38,6 @@ def fetch_grid_file(grid_path):
 
 def delete_grid_folder(folder, recursive = False):
     pass
+
+def remote_copy_folder(location, destination):
+    pass
