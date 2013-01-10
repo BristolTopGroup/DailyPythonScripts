@@ -1,27 +1,16 @@
 DailyPythonScripts
 ==================
-
 Python scripts for the daily tasks in particle physics
 
+To setup run
+./setup_standalone.sh
+
+To setup environment (using virtualenv for python):
+source environment.sh
 
 Dependencies
 ==================
 ROOT >=5.30 - http://root.cern.ch
-
-rootpy >=0.6 (HEAD version recommended)
-http://rootpy.org/
-or
-https://github.com/rootpy/rootpy
-
-Python uncertainties package
-https://github.com/lebigot/uncertainties
-or 
-http://pypi.python.org/pypi/uncertainties/
-
-For unfolding:
-hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold.html (doesn't take fakes in constructor)
-or
-https://github.com/kreczko/RooUnfold (takes fakes in constructor)
 
 Disclaimer
 ==================

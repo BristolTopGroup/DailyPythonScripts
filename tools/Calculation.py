@@ -3,7 +3,7 @@ Created on 20 Nov 2012
 
 @author: kreczko
 '''
-from tools.uncertainties import ufloat
+from uncertainties import ufloat
 
 def calculate_xsection(inputs, luminosity, efficiency = 1.):
     '''

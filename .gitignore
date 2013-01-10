@@ -3,7 +3,11 @@
 *.log
 #these two potentially include non-approved data == don't make them public
 src/plots/*
+examples/plots/*
 src/data/*
 src/log_*
 tools/*.png
-
+# generated during setup
+external/vpython/
+external/lib
+config/RooUnfold.py
