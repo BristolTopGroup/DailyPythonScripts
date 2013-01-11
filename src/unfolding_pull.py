@@ -15,7 +15,6 @@ from tools.Unfolding import Unfolding
 from config import RooUnfold
 from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.file_utilities import write_data_to_JSON
-import time
 # from unfolding import saveUnfolding
 from tools.hist_utilities import value_error_tuplelist_to_hist
 
@@ -62,7 +61,7 @@ def analyse_pulls(pulls, test, method, channel):
     for pull in pulls:
         allpulls.extend(pull)
     min_x, max_x = min(allpulls), max(allpulls)
-    n_x_bins = int(max_x + abs(min_x))  # bin width = 1
+    n_x_bins = int(max_x + abs(min_x))*10  # bin width = 0.1
     h_allpulls = Hist(n_x_bins, min_x, max_x)
     filling = h_allpulls.Fill
     for entry in allpulls:
@@ -106,7 +105,7 @@ def analyse_pulls(pulls, test, method, channel):
     write_data_to_JSON(fit_means, output_file.replace('png', 'txt'))
     
     h_fit_sigmas = value_error_tuplelist_to_hist(fit_sigmas, list(bins))
-    output_file = output_folder + 'Pull_%s_means_and_sigma_allbins_%s_%s.png' % (test, method, channel)
+    output_file = output_folder + 'Pull_%s_sigmas_allbins_%s_%s.png' % (test, method, channel)
     plot_hist(h_fit_sigmas, output_file)
     write_data_to_JSON(fit_sigmas, output_file.replace('png', 'txt'))
     
