@@ -9,7 +9,7 @@ import config.RooUnfold as unfoldCfg
 gSystem.Load(unfoldCfg.library)
 from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 from math import sqrt
 class Unfolding:
 
@@ -112,7 +112,7 @@ class Unfolding:
             # set unfolded_data errors to stat errors from data
             temp = self.unfolded_data.Clone()
             temp_list = list(temp)
-            data_list = list(self.data)
+#            data_list = list(self.data)
             unfolded_errors = self.get_unfolded_data_errors()
             for bin_i in range(len(temp_list)):
                 temp.SetBinError(bin_i+1, unfolded_errors[bin_i])
