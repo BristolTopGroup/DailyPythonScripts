@@ -3,6 +3,11 @@ Created on 15 Jan 2013
 
 @author: kreczko
 Set of functions for the estimation of the number of QCD multijet events after the event selection.
+
+Format of the final result:
+result = {'value': value,
+          'error':error,
+          'fit':fit}
 '''
 
 from __future__ import division
