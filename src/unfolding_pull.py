@@ -33,7 +33,7 @@ def check_one_data_multiple_unfolding(input_file, method, channel):
         unfolding_obj.unfold(h_data)
         pull = unfolding_obj.pull()
         add_pull(pull)
-    analyse_pulls(pulls, test = 'one_data_multiple_unfolding', method = method, channel = channel)
+    analyse_pulls(pulls, test='one_data_multiple_unfolding', method=method, channel=channel)
  
 def check_multiple_data_one_unfolding(input_file, method, channel):
     global nbins, use_N_toy, output_folder
@@ -53,7 +53,32 @@ def check_multiple_data_one_unfolding(input_file, method, channel):
         pull = get_pull()
         add_pull(pull)
         reset()
-    analyse_pulls(pulls, test = 'multiple_data_one_unfolding', method = method, channel = channel)
+    analyse_pulls(pulls, test='multiple_data_one_unfolding', method=method, channel=channel)
+    
+def check_multiple_data_multiple_unfolding(input_file, method, channel):
+    global nbins, use_N_toy, output_folder
+    gStyle.SetOptFit(0111)
+    # same unfolding input, different data
+    get_folder = input_file.Get
+    pulls = []
+    add_pull = pulls.append
+    
+    for nth_toy_mc in range(1, use_N_toy + 1):
+        folder_mc = get_folder(channel + '/toy_%d' % nth_toy_mc)
+        h_truth, h_measured, h_response = get_histograms(folder_mc)
+        unfolding_obj = Unfolding(h_truth, h_measured, h_response, method=method)
+        unfold, get_pull, reset = unfolding_obj.unfold, unfolding_obj.pull, unfolding_obj.Reset
+        
+        for nth_toy_data in range(1, use_N_toy + 1):
+            if nth_toy_data == nth_toy_mc:
+                continue
+            folder_data = get_folder(channel + '/toy_%d' % nth_toy_data)
+            h_data = folder_data.measured
+            unfold(h_data)
+            pull = get_pull()
+            add_pull(pull)
+            reset()
+    analyse_pulls(pulls, test='multiple_data_multiple_unfolding', method=method, channel=channel)
     
 def analyse_pulls(pulls, test, method, channel):   
     allpulls = []
@@ -61,7 +86,7 @@ def analyse_pulls(pulls, test, method, channel):
     for pull in pulls:
         allpulls.extend(pull)
     min_x, max_x = min(allpulls), max(allpulls)
-    n_x_bins = int(max_x + abs(min_x))*10  # bin width = 0.1
+    n_x_bins = int(max_x + abs(min_x)) * 10  # bin width = 0.1
     h_allpulls = Hist(n_x_bins, min_x, max_x)
     filling = h_allpulls.Fill
     for entry in allpulls:
@@ -163,8 +188,11 @@ if __name__ == "__main__":
         
     input_file = input_file = File(options.file, 'read')
     
-    check_one_data_multiple_unfolding(input_file, method, 'electron')
-    check_multiple_data_one_unfolding(input_file, method, 'electron')
-    check_one_data_multiple_unfolding(input_file, method, 'muon')
-    check_multiple_data_one_unfolding(input_file, method, 'muon')
+#    check_one_data_multiple_unfolding(input_file, method, 'electron')
+#    check_multiple_data_one_unfolding(input_file, method, 'electron')
+#    check_one_data_multiple_unfolding(input_file, method, 'muon')
+#    check_multiple_data_one_unfolding(input_file, method, 'muon')
+    
+    check_multiple_data_multiple_unfolding(input_file, method, 'electron')
+    check_multiple_data_multiple_unfolding(input_file, method, 'muon')
     

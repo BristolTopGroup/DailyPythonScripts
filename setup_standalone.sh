@@ -50,4 +50,4 @@ mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
 
 echo "Updating RooUnfold config"
 cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
-echo "libary = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
+echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
