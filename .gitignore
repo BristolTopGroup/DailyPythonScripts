@@ -6,6 +6,7 @@ src/plots/*
 examples/plots/*
 src/data/*
 src/log_*
+src/*.root
 tools/*.png
 # generated during setup
 external/vpython/
