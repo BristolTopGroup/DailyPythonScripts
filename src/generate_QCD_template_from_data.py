@@ -66,6 +66,8 @@ def get_muon_normalisation(met_bin, b_tag):
     muon_qcd_file = path_to_files + 'central/QCD_Pt-20_MuEnrichedPt-15_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
     input_file = File(muon_qcd_file)
     histogram_for_estimation = 'TTbarPlusMetAnalysis/MuPlusJets/Ref selection/BinnedMETAnalysis/Muon_patType1CorrectedPFMet_bin_%s/muon_AbsEta_%s' % (met_bin, b_tag)
+    #if not correctly scaled, rescale here
+    #    
     input_histogram = input_file.Get(histogram_for_estimation)
     scale_factor = 1.21
     value = input_histogram.Integral()*scale_factor
