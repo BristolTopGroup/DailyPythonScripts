@@ -83,3 +83,11 @@ def find_duplicate_CRAB_output_files(job_files):
         else:
             seen.append(job)
     return duplicates
+
+def merge_ROOT_files(file_list, output_file):
+    pass
+
+def get_process_from_file(file_in_path):
+    file_name = file_in_path.split('/')[-1]
+    process_name = file_name.split('_')[0]
+    return process_name
