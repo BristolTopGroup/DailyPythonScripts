@@ -3,7 +3,7 @@ Created on 9 Dec 2012
 
 @author: kreczko
 
-Episode 0 - Histogram preparation:
+Episode 1 - Histogram preparation:
 - get all interesting histograms from the analysis output files
 - make sure the bins are correct (rebin etc)
 - write output to a single file! Folder:
