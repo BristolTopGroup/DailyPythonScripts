@@ -7,7 +7,7 @@ from rootpy.io import File
 from rootpy.plotting import Hist, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 from array import array
 from tools.Unfolding import Unfolding
 import config.RooUnfold as unfoldCfg

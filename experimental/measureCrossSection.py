@@ -3,7 +3,7 @@ from __future__ import division
 from array import array
 # rootpy
 from rootpy.io import File
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 # DailyPythonScripts
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, decombine_result
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist

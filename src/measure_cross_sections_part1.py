@@ -3,12 +3,22 @@ Created on 9 Dec 2012
 
 @author: kreczko
 
-Episode 1 - Fitting
-- Read histograms from Episode 0
-- perform fits
-- unfold the fit results for central result and systematics
-- combine results for unfolded and not unfolded fit results
-- write everything to JSON and ROOT files
+Episode 0 - Histogram preparation:
+- get all interesting histograms from the analysis output files
+- make sure the bins are correct (rebin etc)
+- write output to a single file! Folder:
+    - electron, muon
+        - TTJet, QCD (from data), V+Jets, single top
+            - met 
+                - types
+            - HT
+            - ST
+                -types
+            - other differential variables
+            - lepton eta
+                - met bins
+                - HT bins
+                - etc
+result output files have the format
+TTbar_plus_X_analysis_<lumi>pbinv_<nbtag>.root
 '''
-
-
