@@ -3,13 +3,15 @@ DailyPythonScripts
 Python scripts for the daily tasks in particle physics
 
 Get submodules
-git submodule init
-git submodule update
+
+git submodule init && git submodule update
 
 To setup run
+
 ./setup_standalone.sh
 
 To setup environment (using virtualenv for python):
+
 source environment.sh
 
 Dependencies
