@@ -1,7 +1,9 @@
 # general
 from __future__ import division
 from array import array
-# rootpy
+from optparse import OptionParser
+import sys
+# rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 from rootpy import asrootpy
 # DailyPythonScripts
@@ -20,13 +22,13 @@ def unfold_results(results, h_truth, h_measured, h_response, method):
     
     return hist_to_value_error_tuplelist(h_unfolded_data)
 
-def get_unfold_histogram_tuple(inputfile, channel, met_type):
+def get_unfold_histogram_tuple(inputfile, variable, channel, met_type):
     global bin_edges
     folder = None
-    if channel == 'electron':
-        folder = inputfile.Get('unfolding_MET_analyser_electron_channel_%s' % (met_type))
-    else:  # channel == 'muon'
-        folder = inputfile.Get('unfolding_MET_analyser_muon_channel_%s' % (met_type))
+    if not 'HT' in variable:
+        folder = inputfile.Get('unfolding_%s_analyser_%s_channel_%s' % (variable, channel, met_type))
+    else:
+        folder = inputfile.Get('unfolding_%s_analyser_%s_channel' % (variable, channel))
         
     n_bins = len(bin_edges) - 1
     bin_edge_array = array('d', bin_edges)
@@ -42,11 +44,25 @@ def get_unfold_histogram_tuple(inputfile, channel, met_type):
     h_response.Scale(lumiweight)
     return h_truth, h_measured, h_response
 
-def get_histograms(input_files, met_type, met_bin, b_tag_bin, rebin=1):
+def get_histograms(input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
     electron_histograms = {}
     muon_histograms = {}
-    electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/%s_bin_%s/electron_absolute_eta' % (met_type, met_bin)
-    muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MET_Analysis/%s_bin_%s/muon_absolute_eta' % (met_type, met_bin)
+    if variable == 'MET':
+        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/%s_bin_%s/electron_absolute_eta' % (met_type, variable_bin)
+        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MET_Analysis/%s_bin_%s/muon_absolute_eta' % (met_type, variable_bin)
+    elif variable == 'HT':
+        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_%s/electron_absolute_eta' % (variable_bin)
+        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_%s/muon_absolute_eta' % (variable_bin)
+    elif variable == 'ST':
+        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/electron_absolute_eta' % (met_type, variable_bin)
+        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/muon_absolute_eta' % (met_type, variable_bin)
+    elif variable == 'MT':
+        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/electron_absolute_eta' % (met_type, variable_bin)
+        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/muon_absolute_eta' % (met_type, variable_bin)
+    else:
+        print 'Fatal Error: unknown variable ', variable
+        sys.exit()
+    
     for sample, file_name in input_files.iteritems():
         h_electron_abs_eta = get_histogram(file_name, electron_abs_eta, b_tag_bin)
         h_muon_abs_eta = get_histogram(file_name, muon_abs_eta, b_tag_bin)
@@ -59,7 +75,7 @@ def get_histograms(input_files, met_type, met_bin, b_tag_bin, rebin=1):
     
     if 'data_electron' in input_files.keys():
         # data-driven QCD
-        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Binned_MET_Analysis/%s_bin_%s/electron_absolute_eta' % (met_type, met_bin)
+        electron_abs_eta.replace('Ref selection', 'QCDConversions')
         h_electron_abs_eta = get_histogram(input_files['data_electron'], electron_abs_eta, '0btag')
         h_electron_abs_eta.Rebin(rebin)
         electron_histograms['QCD'] = h_electron_abs_eta
@@ -105,22 +121,22 @@ def get_histogram(input_file, histogram_path, b_tag_bin=''):
     
     return histogram.Clone()
 
-def get_fitted_normalisation(input_files, met_type, b_tag_bin, JSON=False):
+def get_fitted_normalisation(input_files, variable, met_type, b_tag_bin, JSON=False):
     if JSON:
-        return get_fitted_normalisation_from_JSON(input_files, met_type)  # no b_tag_bin as files are specific
+        return get_fitted_normalisation_from_JSON(input_files, variable, met_type)  # no b_tag_bin as files are specific
     else:
-        return get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin)
+        return get_fitted_normalisation_from_ROOT(input_files, variable, met_type, b_tag_bin)
 
-def get_fitted_normalisation_from_JSON(input_files, met_type):
+def get_fitted_normalisation_from_JSON(input_files, variable, met_type):
     pass
 
-def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
-    global met_bins_ROOT
+def get_fitted_normalisation_from_ROOT(input_files, variable, met_type, b_tag_bin):
+    global variable_bins_ROOT
     electron_results = {}
     electron_initial_values = {}
     muon_results = {}
     muon_initial_values = {}
-    for met_bin in met_bins_ROOT:
+    for variable_bin in variable_bins_ROOT:
         electron_histograms, muon_histograms = get_histograms(input_files={
                                   'TTJet': TTJet_file,
                                   'SingleTop': SingleTop_file,
@@ -128,8 +144,9 @@ def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
                                   'data_electron': data_file_electron,
                                   'data_muon': data_file_muon
                                   },
+                   variable=variable,
                    met_type=met_type,
-                   met_bin=met_bin,
+                   variable_bin=variable_bin,
                    b_tag_bin=b_tag_bin,
                    rebin=2
                    )
@@ -160,8 +177,13 @@ def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
         
         N_ttbar_before_fit_electron = electron_histograms['TTJet'].Integral()
         N_SingleTop_before_fit_electron = electron_histograms['SingleTop'].Integral()
-        
-        TTJet_SingleTop_ratio_electron = N_ttbar_before_fit_electron / N_SingleTop_before_fit_electron
+
+        if (N_SingleTop_before_fit_electron!=0):
+            TTJet_SingleTop_ratio_electron = N_ttbar_before_fit_electron / N_SingleTop_before_fit_electron
+        else:
+            print 'Bin ', variable_bin, ': ttbar/singleTop ratio undefined for electrons! Setting to 0.'
+            TTJet_SingleTop_ratio_electron = 0
+
         N_ttbar_electron, N_SingleTop_electron = decombine_result(fit_results_electron['signal'], TTJet_SingleTop_ratio_electron)
         
         
@@ -185,7 +207,13 @@ def get_fitted_normalisation_from_ROOT(input_files, met_type, b_tag_bin):
         
         N_ttbar_before_fit_muon = muon_histograms['TTJet'].Integral()
         N_SingleTop_before_fit_muon = muon_histograms['SingleTop'].Integral()
-        TTJet_SingleTop_ratio_muon = N_ttbar_before_fit_muon / N_SingleTop_before_fit_muon
+        
+        if (N_SingleTop_before_fit_muon!=0):
+            TTJet_SingleTop_ratio_muon = N_ttbar_before_fit_muon / N_SingleTop_before_fit_muon
+        else:
+            print 'Bin ', variable_bin, ': ttbar/singleTop ratio undefined for muons! Setting to 0.'
+            TTJet_SingleTop_ratio_muon = 0
+        
         N_ttbar_muon, N_SingleTop_muon = decombine_result(fit_results_muon['signal'], TTJet_SingleTop_ratio_muon)
         
         fit_results_muon['TTJet'] = N_ttbar_muon
@@ -218,11 +246,66 @@ def write_cross_section():
 
 if __name__ == '__main__':
     # setup
-    bin_edges = [0, 25, 45, 70, 100, 150, 1000]
-    bin_widths = [25, 20, 25, 30, 50, 150]
-    met_type = 'patType1CorrectedPFMet'
-    met_bins_ROOT = ['0-25', '25-45', '45-70', '70-100', '100-150', '150-inf']
+    parser = OptionParser()
+    parser.add_option("-v", "--variable", dest="variable", default='MET',
+                  help="set the variable to analyse (MET, HT, ST, MT)")
+    parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
+                  help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
+    parser.add_option("-m", "--metType", dest="metType", default='type1',
+                  help="set MET type for analysis of MET, ST or MT")
+    parser.add_option("-u", "--unfolding",
+                  action="store_false", dest="unfolding", default=True,
+                  help="use unfolding")
+#    parser.add_option("-t", "--test",
+#                  action="store_true", dest="test", default=False,
+#                  help="Test analysis on first bin only")
+#    parser.add_option("-c", "--constrain", dest="constrain", default=' ', #default='QCD,Z/W',
+#                  help="Sets which constrains to use. Constrains separated by commas: QCD, Z/W, ZJets, WJets, VV")
+    parser.add_option("-a", "--analysisType", dest="analysisType", default='EPlusJets',
+                  help="set analysis type: EPlusJets or MuPlusJets")
+    #more for: plot templates, plot fits
+    translateOptions = {
+                        '0':'0btag',
+                        '1':'1btag',
+                        '2':'2btags',
+                        '3':'3btags',
+                        '0m':'0orMoreBtag',
+                        '1m':'1orMoreBtag',
+                        '2m':'2orMoreBtags',
+                        '3m':'3orMoreBtags',
+                        '4m':'4orMoreBtags',
+                        #mettype:
+                        'pf':'patMETsPFlow',
+                        'type1':'patType1CorrectedPFMet'
+                        }
+    
+    (options, args) = parser.parse_args()
+    variable = options.variable
+    met_type = translateOptions[options.metType]
+    b_tag_bin = translateOptions[options.bjetbin]
+    do_unfolding = options.unfolding
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
+    
+    if variable == 'MET':
+        bin_edges = [0, 25, 45, 70, 100, 150, 250]
+        bin_widths = [25, 20, 25, 30, 50, 100]
+        variable_bins_ROOT = ['0-25', '25-45', '45-70', '70-100', '100-150', '150-inf']
+    elif variable == 'HT':
+        bin_edges = [50, 150, 250, 350, 450, 650, 1100, 2000]
+        bin_widths = [100, 100, 100, 100, 200, 450, 900]
+        variable_bins_ROOT = ['50-150', '150-250', '250-350', '350-450', '450-650', '650-1100', '1100-inf']
+    elif variable == 'ST':
+        bin_edges = [150, 250, 350, 450, 550, 750, 1250, 2000]
+        bin_widths = [100, 100, 100, 100, 200, 500, 750]
+        variable_bins_ROOT = ['150-250', '250-350', '350-450', '450-550', '550-750', '750-1250', '1250-inf']
+    elif variable == 'MT':
+        bin_edges = [0, 40, 65, 85, 150, 300]
+        bin_widths = [40, 25, 20, 65, 150]
+        variable_bins_ROOT = ['0-40', '40-65', '65-85', '85-150', '150-inf']
+    else:
+        print 'Fatal Error: unknown variable ', variable
+        sys.exit()
+    
     file_for_unfolding = File(path_to_files + 'unfolding_merged.root', 'read')
     file_for_powheg = File(path_to_files + 'unfolding_TTJets_8TeV_powheg.root', 'read')
 #    file_for_pythia = File(path_to_files + 'unfolding_TTJets_8TeV_pythia.root', 'read')
@@ -252,8 +335,9 @@ if __name__ == '__main__':
                                   'data_electron': data_file_electron,
                                   'data_muon': data_file_muon
                                   },
-                met_type='patType1CorrectedPFMet',
-                b_tag_bin='2orMoreBtags',
+                variable=variable,                                                                                                                        
+                met_type=met_type,
+                b_tag_bin=b_tag_bin,
                    )
     write_fit_results_and_initial_values(fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon)
     
@@ -265,16 +349,16 @@ if __name__ == '__main__':
     # for systematics we only need the TTJet results!
     # unfold all above
     
-    h_truth, h_measured, h_response = get_unfold_histogram_tuple(file_for_unfolding, 'electron', met_type)
+    h_truth, h_measured, h_response = get_unfold_histogram_tuple(file_for_unfolding, variable, 'electron', met_type)
     MADGRAPH_results_electron = hist_to_value_error_tuplelist(h_truth)
-    POWHEG_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_powheg, 'electron', met_type)[0])
-#    PYTHIA_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_pythia, 'electron', met_type)[0])
-    MCATNLO_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_mcatnlo, 'electron', met_type)[0])
+    POWHEG_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_powheg, variable, 'electron', met_type)[0])
+#    PYTHIA_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_pythia, variable, 'electron', met_type)[0])
+    MCATNLO_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_mcatnlo, variable, 'electron', met_type)[0])
     
-    matchingdown_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingdown, 'electron', met_type)[0])
-    matchingup_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingup, 'electron', met_type)[0])
-    scaledown_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaledown, 'electron', met_type)[0])
-    scaleup_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaleup, 'electron', met_type)[0])
+    matchingdown_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingdown, variable, 'electron', met_type)[0])
+    matchingup_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingup, variable, 'electron', met_type)[0])
+    scaledown_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaledown, variable, 'electron', met_type)[0])
+    scaleup_results_electron = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaleup, variable, 'electron', met_type)[0])
     
     TTJet_fit_results_electron_unfolded = unfold_results(TTJet_fit_results_electron,
                                                          h_truth,
@@ -303,29 +387,68 @@ if __name__ == '__main__':
     TTJet_xsection = calculate_xsection(TTJet_fit_results_electron, 5814, 0.15)  # L in pb1
     TTJet_xsection_unfolded = calculate_xsection(TTJet_fit_results_electron_unfolded, 5814, 0.15)  # L in pb1
     MADGRAPH_xsection = calculate_xsection(MADGRAPH_results_electron, 5814, 0.15)  # L in pb1
+    POWHEG_xsection = calculate_xsection(POWHEG_results_electron, 5814, 0.15)  # L in pb1
+    MCATNLO_xsection = calculate_xsection(MCATNLO_results_electron, 5814, 0.15)  # L in pb1
+    matchingdown_xsection = calculate_xsection(matchingdown_results_electron, 5814, 0.15)  # L in pb1
+    matchingup_xsection = calculate_xsection(matchingup_results_electron, 5814, 0.15)  # L in pb1
+    scaledown_xsection = calculate_xsection(scaledown_results_electron, 5814, 0.15)  # L in pb1
+    scaleup_xsection = calculate_xsection(matchingup_results_electron, 5814, 0.15)  # L in pb1
     
     xsection_electron_unfolded = {'TTJet' : TTJet_xsection_unfolded,
-                                       'MADGRAPH': MADGRAPH_xsection
-                                       }
+                                  'MADGRAPH': MADGRAPH_xsection,
+                                  'POWHEG': POWHEG_xsection,
+                                  'MCATNLO': MCATNLO_xsection,
+                                  #systematics
+                                  'matchingdown': matchingdown_xsection,
+                                  'matchingup': matchingup_xsection,
+                                  'scaledown': scaledown_xsection,
+                                  'scaleup': scaleup_xsection
+                                  }
     write_data_to_JSON(xsection_electron_unfolded, 'data/xsection_electron_unfolded.txt')
     
     TTJet_normalised_to_one_xsection = calculate_normalised_xsection(TTJet_fit_results_electron, bin_widths, normalise_to_one=True)
     TTJet_normalised_to_one_xsection_unfolded = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=True)
     MADGRAPH_normalised_to_one_xsection = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=True)
+    POWHEG_normalised_to_one_xsection = calculate_normalised_xsection(POWHEG_results_electron, bin_widths, normalise_to_one=True)
+    MCATNLO_normalised_to_one_xsection = calculate_normalised_xsection(MCATNLO_results_electron, bin_widths, normalise_to_one=True)
+    matchingdown_normalised_to_one_xsection = calculate_normalised_xsection(matchingdown_results_electron, bin_widths, normalise_to_one=True)
+    matchingup_normalised_to_one_xsection = calculate_normalised_xsection(matchingup_results_electron, bin_widths, normalise_to_one=True)
+    scaledown_normalised_to_one_xsection = calculate_normalised_xsection(scaledown_results_electron, bin_widths, normalise_to_one=True)
+    scaleup_normalised_to_one_xsection = calculate_normalised_xsection(scaleup_results_electron, bin_widths, normalise_to_one=True)
     
     normalised_to_one_xsection_electron_unfolded = {'TTJet' : TTJet_normalised_to_one_xsection_unfolded,
-                                       'MADGRAPH': MADGRAPH_normalised_to_one_xsection
-                                       }
+                                                    'MADGRAPH': MADGRAPH_normalised_to_one_xsection,
+                                                    'POWHEG': POWHEG_normalised_to_one_xsection,
+                                                    'MCATNLO': MCATNLO_normalised_to_one_xsection,
+                                                    #systematics
+                                                    'matchingdown': matchingdown_normalised_to_one_xsection,
+                                                    'matchingup': matchingup_normalised_to_one_xsection,
+                                                    'scaledown': scaledown_normalised_to_one_xsection,
+                                                    'scaleup': scaleup_normalised_to_one_xsection
+                                                    }
     write_data_to_JSON(normalised_to_one_xsection_electron_unfolded, 'data/normalised_to_one_xsection_electron_unfolded.txt')
     
     TTJet_normalised_xsection = calculate_normalised_xsection(TTJet_fit_results_electron, bin_widths, normalise_to_one=False)
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection(TTJet_fit_results_electron_unfolded, bin_widths, normalise_to_one=False)
-    MADGRAPH__normalised_xsection = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=False)
-    
+    MADGRAPH_normalised_xsection = calculate_normalised_xsection(MADGRAPH_results_electron, bin_widths, normalise_to_one=False)
+    POWHEG_normalised_xsection = calculate_normalised_xsection(POWHEG_results_electron, bin_widths, normalise_to_one=False)
+    MCATNLO_normalised_xsection = calculate_normalised_xsection(MCATNLO_results_electron, bin_widths, normalise_to_one=False)
+    matchingdown_normalised_xsection = calculate_normalised_xsection(matchingdown_results_electron, bin_widths, normalise_to_one=False)
+    matchingup_normalised_xsection = calculate_normalised_xsection(matchingup_results_electron, bin_widths, normalise_to_one=False)
+    scaledown_normalised_xsection = calculate_normalised_xsection(scaledown_results_electron, bin_widths, normalise_to_one=False)
+    scaleup_normalised_xsection = calculate_normalised_xsection(scaleup_results_electron, bin_widths, normalise_to_one=False)
+
     normalised_xsection_electron_unfolded = {'TTJet' : TTJet_normalised_xsection_unfolded,
-                                       'MADGRAPH': MADGRAPH__normalised_xsection
+                                       'MADGRAPH': MADGRAPH_normalised_xsection,
+                                       'POWHEG': POWHEG_normalised_xsection,
+                                       'MCATNLO': MCATNLO_normalised_xsection,
+                                       #systematics
+                                       'matchingdown': matchingdown_normalised_xsection,
+                                       'matchingup': matchingup_normalised_xsection,
+                                       'scaledown': scaledown_normalised_xsection,
+                                       'scaleup': scaleup_normalised_xsection
                                        }
-    write_data_to_JSON(normalised_xsection_electron_unfolded, 'data/normalised_xsection_electron_unfolded.txt')
+    write_data_to_JSON(normalised_xsection_electron_unfolded, 'data/normalised_xsection_electron_unfolded.txt')    
     
     sum_xsec, sum_xsec_error = 0, 0
     for value, error in TTJet_xsection_unfolded:
@@ -334,6 +457,6 @@ if __name__ == '__main__':
     print 'Total x-sec:', sum_xsec, '+-', sum_xsec_error
     
     
-    for gen, value, value_nounfolding in zip(MADGRAPH__normalised_xsection, TTJet_normalised_xsection_unfolded, TTJet_normalised_xsection):
+    for gen, value, value_nounfolding in zip(MADGRAPH_normalised_xsection, TTJet_normalised_xsection_unfolded, TTJet_normalised_xsection):
         print 'gen:', gen, 'unfolded:', value, '\t no unfolding:', value_nounfolding
         
