@@ -10,6 +10,7 @@ from rootpy import asrootpy
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, decombine_result
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding
+import config.RooUnfold as unfoldCfg
 from tools.Fitting import TMinuitFit
 from tools.file_utilities import write_data_to_JSON
 
@@ -248,14 +249,17 @@ if __name__ == '__main__':
     # setup
     parser = OptionParser()
     parser.add_option("-v", "--variable", dest="variable", default='MET',
-                  help="set the variable to analyse (MET, HT, ST, MT)")
+                      help="set the variable to analyse (MET, HT, ST, MT)")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
-                  help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
+                      help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
-                  help="set MET type for analysis of MET, ST or MT")
+                      help="set MET type for analysis of MET, ST or MT")
     parser.add_option("-u", "--unfolding",
-                  action="store_false", dest="unfolding", default=True,
-                  help="use unfolding")
+                      action="store_false", dest="unfolding", default=True,
+                      help="use unfolding")
+    parser.add_option("-k", "--k_value", type='int',
+                      dest="k_value", default=6,
+                      help="k-value for SVD unfolding")
 #    parser.add_option("-t", "--test",
 #                  action="store_true", dest="test", default=False,
 #                  help="Test analysis on first bin only")
@@ -284,6 +288,7 @@ if __name__ == '__main__':
     met_type = translateOptions[options.metType]
     b_tag_bin = translateOptions[options.bjetbin]
     do_unfolding = options.unfolding
+    unfoldCfg.SVD_k_value = options.k_value
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
     
     if variable == 'MET':
