@@ -98,8 +98,38 @@ def make_plots_ROOT(histograms, savePath, histname):
     
     canvas.Modified()
     canvas.Update()
-    canvas.SaveAs(savePath + '/' + variable + '_' + histname + '_kv' + str(k_value) + '.png')
-    canvas.SaveAs(savePath + '/' + variable + '_' + histname + '_kv' + str(k_value) + '.pdf')
+    canvas.SaveAs(savePath + variable + '/' + histname + '_kv' + str(k_value) + '.png')
+    canvas.SaveAs(savePath + variable + '/' + histname + '_kv' + str(k_value) + '.pdf')
+
+def read_histograms_ROOT(channel):
+    global path_to_JSON, variable, met_type, k_value
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + "/kv" + str(k_value) + '/' + 'normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')
+    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet'], bin_edges)
+    h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges)
+    h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges)
+    h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges)
+    h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingup'], bin_edges)
+    h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingdown'], bin_edges)
+    h_normalised_xsection_scaleup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaleup'], bin_edges)
+    h_normalised_xsection_scaledown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaledown'], bin_edges)
+    
+    histograms_normalised_xsection_different_generators = {
+                  'data':h_normalised_xsection_unfolded,
+                  'MADGRAPH':h_normalised_xsection_MADGRAPH,
+                  'POWHEG':h_normalised_xsection_POWHEG,
+                  'MCATNLO':h_normalised_xsection_MCATNLO
+                  }
+    
+    histograms_normalised_xsection_systematics_shifts = {
+                  'data':h_normalised_xsection_unfolded,
+                  'matchingdown': h_normalised_xsection_mathchingdown,
+                  'matchingup': h_normalised_xsection_mathchingup,
+                  'scaledown': h_normalised_xsection_scaledown,
+                  'scaleup': h_normalised_xsection_scaleup
+                  }
+    
+    return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
+
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -109,6 +139,8 @@ if __name__ == '__main__':
                   help="set path to save plots")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                   help="set variable to plot (MET, HT, ST, MT)")
+    parser.add_option("-m", "--metType", dest="metType", default='type1',
+                      help="set MET type used in the analysis of MET, ST or MT")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                   help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
     parser.add_option("-a", "--analysisType", dest="analysisType", default='EPlusJets',
@@ -154,6 +186,7 @@ if __name__ == '__main__':
     path_to_JSON = options.path
     savePath = options.savePath
     variable = options.variable
+    met_type = translateOptions[options.metType]
     analysis = options.analysisType
     k_value = options.k_value
     b_tag_bin = translateOptions[options.bjetbin]
@@ -178,55 +211,9 @@ if __name__ == '__main__':
         print 'Fatal Error: unknown variable ', variable
         sys.exit()
     
-    normalised_xsection_electron_unfolded = read_data_from_JSON(path_to_JSON+'normalised_xsection_electron_unfolded.txt')
-    h_normalised_xsection_electron_unfolded = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['TTJet'], bin_edges)
-    h_normalised_xsection_electron_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['MADGRAPH'], bin_edges)
-    h_normalised_xsection_electron_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['POWHEG'], bin_edges)
-    h_normalised_xsection_electron_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['MCATNLO'], bin_edges)
-    h_normalised_xsection_electron_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['matchingup'], bin_edges)
-    h_normalised_xsection_electron_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['matchingdown'], bin_edges)
-    h_normalised_xsection_electron_scaleup = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['scaleup'], bin_edges)
-    h_normalised_xsection_electron_scaledown = value_error_tuplelist_to_hist(normalised_xsection_electron_unfolded['scaledown'], bin_edges)
     
-    histograms_normalised_xsection_electron_different_generators = {
-                  'data':h_normalised_xsection_electron_unfolded,
-                  'MADGRAPH':h_normalised_xsection_electron_MADGRAPH,
-                  'POWHEG':h_normalised_xsection_electron_POWHEG,
-                  'MCATNLO':h_normalised_xsection_electron_MCATNLO
-                  }
-    
-    histograms_normalised_xsection_electron_systematics_shifts = {
-                  'data':h_normalised_xsection_electron_unfolded,
-                  'matchingdown': h_normalised_xsection_electron_mathchingdown,
-                  'matchingup': h_normalised_xsection_electron_mathchingup,
-                  'scaledown': h_normalised_xsection_electron_scaledown,
-                  'scaleup': h_normalised_xsection_electron_scaleup
-                  }
-    
-    normalised_xsection_muon_unfolded = read_data_from_JSON(path_to_JSON+'normalised_xsection_muon_unfolded.txt')
-    h_normalised_xsection_muon_unfolded = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['TTJet'], bin_edges)
-    h_normalised_xsection_muon_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['MADGRAPH'], bin_edges)
-    h_normalised_xsection_muon_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['POWHEG'], bin_edges)
-    h_normalised_xsection_muon_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['MCATNLO'], bin_edges)
-    h_normalised_xsection_muon_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['matchingup'], bin_edges)
-    h_normalised_xsection_muon_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['matchingdown'], bin_edges)
-    h_normalised_xsection_muon_scaleup = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['scaleup'], bin_edges)
-    h_normalised_xsection_muon_scaledown = value_error_tuplelist_to_hist(normalised_xsection_muon_unfolded['scaledown'], bin_edges)
-    
-    histograms_normalised_xsection_muon_different_generators = {
-                  'data':h_normalised_xsection_muon_unfolded,
-                  'MADGRAPH':h_normalised_xsection_muon_MADGRAPH,
-                  'POWHEG':h_normalised_xsection_muon_POWHEG,
-                  'MCATNLO':h_normalised_xsection_muon_MCATNLO
-                  }
-    
-    histograms_normalised_xsection_muon_systematics_shifts = {
-                  'data':h_normalised_xsection_muon_unfolded,
-                  'matchingdown': h_normalised_xsection_muon_mathchingdown,
-                  'matchingup': h_normalised_xsection_muon_mathchingup,
-                  'scaledown': h_normalised_xsection_muon_scaledown,
-                  'scaleup': h_normalised_xsection_muon_scaleup
-                  }
+    histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_histograms_ROOT('electron')
+    histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_histograms_ROOT('muon')
     
     make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, savePath, 'normalised_xsection_muon_different_generators')
     make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, savePath, 'normalised_xsection_muon_systematics_shifts')

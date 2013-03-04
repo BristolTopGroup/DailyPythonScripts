@@ -236,11 +236,12 @@ def get_fitted_normalisation_from_ROOT(input_files, variable, met_type, b_tag_bi
 def get_systematic_errors(central_results, channel):
     pass    
     
-def write_fit_results_and_initial_values(fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon):    
-    write_data_to_JSON(fit_results_electron, 'data/fit_results_electron.txt')
-    write_data_to_JSON(fit_results_muon, 'data/fit_results_muon.txt')
-    write_data_to_JSON(initial_values_electron, 'data/initial_values_electron.txt')
-    write_data_to_JSON(initial_values_muon, 'data/initial_values_muon.txt')
+def write_fit_results_and_initial_values(fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon):
+    global variable, met_type
+    write_data_to_JSON(fit_results_electron, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/fit_results_electron_' + met_type + '.txt')
+    write_data_to_JSON(fit_results_muon, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/fit_results_muon_' + met_type + '.txt')
+    write_data_to_JSON(initial_values_electron, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/initial_values_electron_' + met_type + '.txt')
+    write_data_to_JSON(initial_values_muon, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/initial_values_muon_' + met_type + '.txt')
     
 def unfold_and_measure_cross_section(TTJet_fit_results, channel):
     global variable, met_type
@@ -260,7 +261,7 @@ def unfold_and_measure_cross_section(TTJet_fit_results, channel):
                                                          h_response,
                                                          'RooUnfoldSvd')
     
-    write_data_to_JSON(TTJet_fit_results, 'data/TTJet_fit_results_' + channel + '.txt')
+    write_data_to_JSON(TTJet_fit_results, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/TTJet_fit_results_' + channel + '_' + met_type + '.txt')
     normalisation_unfolded = {
                               'TTJet' : TTJet_fit_results_unfolded,
                               'MADGRAPH': MADGRAPH_results,
@@ -273,7 +274,7 @@ def unfold_and_measure_cross_section(TTJet_fit_results, channel):
                               'scaledown': scaledown_results,
                               'scaleup': scaleup_results
                               }
-    write_data_to_JSON(normalisation_unfolded, 'data/normalisation_' + channel + '_unfolded.txt')
+    write_data_to_JSON(normalisation_unfolded, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/normalisation_' + channel + '_' + met_type + '_unfolded.txt')
     
     # calculate the x-sections and
 #    bin_widths = [25, 20, 25, 30, 50, 150]
@@ -297,7 +298,7 @@ def unfold_and_measure_cross_section(TTJet_fit_results, channel):
                          'scaledown': scaledown_xsection,
                          'scaleup': scaleup_xsection
                          }
-    write_data_to_JSON(xsection_unfolded, 'data/xsection_' + channel + '_unfolded.txt')
+    write_data_to_JSON(xsection_unfolded, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/xsection_' + channel + '_' + met_type + '_unfolded.txt')
     
     TTJet_normalised_to_one_xsection = calculate_normalised_xsection(TTJet_fit_results, bin_widths, normalise_to_one=True)
     TTJet_normalised_to_one_xsection_unfolded = calculate_normalised_xsection(TTJet_fit_results_unfolded, bin_widths, normalise_to_one=True)
@@ -319,7 +320,7 @@ def unfold_and_measure_cross_section(TTJet_fit_results, channel):
                                            'scaledown': scaledown_normalised_to_one_xsection,
                                            'scaleup': scaleup_normalised_to_one_xsection
                                            }
-    write_data_to_JSON(normalised_to_one_xsection_unfolded, 'data/normalised_to_one_xsection_' + channel + '_unfolded.txt')
+    write_data_to_JSON(normalised_to_one_xsection_unfolded, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/normalised_to_one_xsection_' + channel + '_' + met_type + '_unfolded.txt')
     
     TTJet_normalised_xsection = calculate_normalised_xsection(TTJet_fit_results, bin_widths, normalise_to_one=False)
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection(TTJet_fit_results_unfolded, bin_widths, normalise_to_one=False)
@@ -341,7 +342,7 @@ def unfold_and_measure_cross_section(TTJet_fit_results, channel):
                                        'scaledown': scaledown_normalised_xsection,
                                        'scaleup': scaleup_normalised_xsection
                                        }
-    write_data_to_JSON(normalised_xsection_unfolded, 'data/normalised_xsection_' + channel + '_unfolded.txt')    
+    write_data_to_JSON(normalised_xsection_unfolded, 'data/' + variable + '/kv' + str(unfoldCfg.SVD_k_value) + '/normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')    
     
     sum_xsec, sum_xsec_error = 0, 0
     for value, error in TTJet_xsection_unfolded:
@@ -393,6 +394,17 @@ if __name__ == '__main__':
                         'pf':'patMETsPFlow',
                         'type1':'patType1CorrectedPFMet'
                         }
+    
+    systematicSamples = {
+                         'BJet_down':'_minusBJet',
+                         'BJet_up':'_plusBJet',
+                         'JES_down':'_minusJES',
+                         'JES_up':'_plusJES',
+                         'LightJet_down':'_minusLightJet',
+                         'LightJet_up':'_plusLightJet',
+                         'PU_down':'_PU_65835mb',
+                         'PU_up':'_PU_72765mb'
+                         }
     
     (options, args) = parser.parse_args()
     variable = options.variable
@@ -466,5 +478,5 @@ if __name__ == '__main__':
     # unfold all above
     
     unfold_and_measure_cross_section(TTJet_fit_results_electron, 'electron')
-    unfold_and_measure_cross_section(TTJet_fit_results_electron, 'muon')
+    unfold_and_measure_cross_section(TTJet_fit_results_muon, 'muon')
     
