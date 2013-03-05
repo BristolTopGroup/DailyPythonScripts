@@ -2,6 +2,7 @@ from optparse import OptionParser
 import tools.plotting_utilities as plotting
 import sys
 import numpy
+from config.variable_binning_8TeV import bin_edges
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from math import sqrt
@@ -103,15 +104,15 @@ def make_plots_ROOT(histograms, savePath, histname):
 
 def read_histograms_ROOT(channel):
     global path_to_JSON, variable, met_type, k_value
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + "/kv" + str(k_value) + '/' + 'normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')
-    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet'], bin_edges)
-    h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges)
-    h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges)
-    h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges)
-    h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingup'], bin_edges)
-    h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingdown'], bin_edges)
-    h_normalised_xsection_scaleup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaleup'], bin_edges)
-    h_normalised_xsection_scaledown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaledown'], bin_edges)
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/central/' + 'normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')
+    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet'], bin_edges[variable])
+    h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
+    h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
+    h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges[variable])
+    h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingup'], bin_edges[variable])
+    h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingdown'], bin_edges[variable])
+    h_normalised_xsection_scaleup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaleup'], bin_edges[variable])
+    h_normalised_xsection_scaledown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaledown'], bin_edges[variable])
     
     histograms_normalised_xsection_different_generators = {
                   'data':h_normalised_xsection_unfolded,
@@ -190,27 +191,6 @@ if __name__ == '__main__':
     analysis = options.analysisType
     k_value = options.k_value
     b_tag_bin = translateOptions[options.bjetbin]
-    
-    if variable == 'MET':
-        bin_edges = [0, 25, 45, 70, 100, 150, 250]
-        bin_widths = [25, 20, 25, 30, 50, 100]
-        variable_bins_ROOT = ['0-25', '25-45', '45-70', '70-100', '100-150', '150-inf']
-    elif variable == 'HT':
-        bin_edges = [50, 150, 250, 350, 450, 650, 1100, 2000]
-        bin_widths = [100, 100, 100, 100, 200, 450, 900]
-        variable_bins_ROOT = ['50-150', '150-250', '250-350', '350-450', '450-650', '650-1100', '1100-inf']
-    elif variable == 'ST':
-        bin_edges = [150, 250, 350, 450, 550, 750, 1250, 2000]
-        bin_widths = [100, 100, 100, 100, 200, 500, 750]
-        variable_bins_ROOT = ['150-250', '250-350', '350-450', '450-550', '550-750', '750-1250', '1250-inf']
-    elif variable == 'MT':
-        bin_edges = [0, 40, 65, 85, 150, 300]
-        bin_widths = [40, 25, 20, 65, 150]
-        variable_bins_ROOT = ['0-40', '40-65', '65-85', '85-150', '150-inf']
-    else:
-        print 'Fatal Error: unknown variable ', variable
-        sys.exit()
-    
     
     histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_histograms_ROOT('electron')
     histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_histograms_ROOT('muon')
