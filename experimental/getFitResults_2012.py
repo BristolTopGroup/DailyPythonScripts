@@ -252,15 +252,6 @@ if __name__ == '__main__':
     b_tag_bin = translateOptions[options.bjetbin]
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
     
-    file_for_unfolding = File(path_to_files + 'unfolding_merged.root', 'read')
-    file_for_powheg = File(path_to_files + 'unfolding_TTJets_8TeV_powheg.root', 'read')
-#    file_for_pythia = File(path_to_files + 'unfolding_TTJets_8TeV_pythia.root', 'read')
-    file_for_mcatnlo = File(path_to_files + 'unfolding_TTJets_8TeV_mcatnlo.root', 'read')
-    
-    file_for_scaledown = File(path_to_files + 'unfolding_TTJets_8TeV_scaledown.root', 'read')
-    file_for_scaleup = File(path_to_files + 'unfolding_TTJets_8TeV_scaleup.root', 'read')
-    file_for_matchingdown = File(path_to_files + 'unfolding_TTJets_8TeV_matchingdown.root', 'read')
-    file_for_matchingup = File(path_to_files + 'unfolding_TTJets_8TeV_matchingup.root', 'read')
     # possible options:
     # --continue : continue from saved - skips ROOT files, reads from JSON?
     
