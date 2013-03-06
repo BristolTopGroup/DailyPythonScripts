@@ -195,17 +195,20 @@ if __name__ == '__main__':
                         'type1':'patType1CorrectedPFMet'
                         }
     
+    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
+    
     (options, args) = parser.parse_args()
     variable = options.variable
     unfoldCfg.SVD_k_value = options.k_value
     met_type = translateOptions[options.metType]
     b_tag_bin = translateOptions[options.bjetbin]
     path_to_JSON = options.path
-
-    #read fit results from JSON
-    TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + 'central' + '/fit_results_electron_' + met_type + '.txt')['TTJet']
-    TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + 'central' + '/fit_results_muon_' + met_type + '.txt')['TTJet']
     
-    #unfold and measure cross section
-    unfold_and_measure_cross_section(TTJet_fit_results_electron, 'central', 'electron')
-    unfold_and_measure_cross_section(TTJet_fit_results_muon, 'central', 'muon')
+    for category in categories:
+        #read fit results from JSON
+        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
+        
+        #unfold and measure cross section
+        unfold_and_measure_cross_section(TTJet_fit_results_electron, category, 'electron')
+        unfold_and_measure_cross_section(TTJet_fit_results_muon, category, 'muon')

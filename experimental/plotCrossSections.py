@@ -3,7 +3,7 @@ import tools.plotting_utilities as plotting
 import sys
 import numpy
 from config.variable_binning_8TeV import bin_edges
-from tools.file_utilities import read_data_from_JSON
+from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from math import sqrt
 import ROOT
@@ -99,12 +99,15 @@ def make_plots_ROOT(histograms, savePath, histname):
     
     canvas.Modified()
     canvas.Update()
-    canvas.SaveAs(savePath + variable + '/' + histname + '_kv' + str(k_value) + '.png')
-    canvas.SaveAs(savePath + variable + '/' + histname + '_kv' + str(k_value) + '.pdf')
+    
+    path = savePath + variable + '/' + category
+    make_folder_if_not_exists(path)
+    canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.png')
+    canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
 
-def read_histograms_ROOT(channel):
+def read_histograms_ROOT(category, channel):
     global path_to_JSON, variable, met_type, k_value
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/central/' + 'normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet'], bin_edges[variable])
     h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
     h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
@@ -192,13 +195,16 @@ if __name__ == '__main__':
     k_value = options.k_value
     b_tag_bin = translateOptions[options.bjetbin]
     
-    histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_histograms_ROOT('electron')
-    histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_histograms_ROOT('muon')
+    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
-    make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, savePath, 'normalised_xsection_muon_different_generators')
-    make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, savePath, 'normalised_xsection_muon_systematics_shifts')
-    
-    make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, savePath, 'normalised_xsection_electron_different_generators')
-    make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, savePath, 'normalised_xsection_electron_systematics_shifts')
+    for category in categories:
+        histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_histograms_ROOT(category, 'electron')
+        histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_histograms_ROOT(category, 'muon')
+        
+        make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, savePath, 'normalised_xsection_muon_different_generators')
+        make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, savePath, 'normalised_xsection_muon_systematics_shifts')
+        
+        make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, savePath, 'normalised_xsection_electron_different_generators')
+        make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, savePath, 'normalised_xsection_electron_systematics_shifts')
 
     

@@ -197,11 +197,11 @@ def get_fitted_normalisation_from_ROOT(input_files, variable, met_type, b_tag_bi
     return electron_results, muon_results, electron_initial_values, muon_initial_values
     
 def write_fit_results_and_initial_values(category, fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon):
-    global variable, met_type, k_value
-    write_data_to_JSON(fit_results_electron, 'data/' + variable + '/fit_results/' + '/kv' + str(k_value) + '/' + category + '/fit_results_electron_' + met_type + '.txt')
-    write_data_to_JSON(fit_results_muon, 'data/' + variable + '/fit_results/' + '/kv' + str(k_value) + '/' + category + '/fit_results_muon_' + met_type + '.txt')
-    write_data_to_JSON(initial_values_electron, 'data/' + variable + '/fit_results/' + '/kv' + str(k_value) + '/' + category + '/initial_values_electron_' + met_type + '.txt')
-    write_data_to_JSON(initial_values_muon, 'data/' + variable + '/fit_results/' + '/kv' + str(k_value) + '/' + category + '/initial_values_muon_' + met_type + '.txt')
+    global variable, met_type
+    write_data_to_JSON(fit_results_electron, 'data/' + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')
+    write_data_to_JSON(fit_results_muon, 'data/' + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')
+    write_data_to_JSON(initial_values_electron, 'data/' + variable + '/fit_results/' + category + '/initial_values_electron_' + met_type + '.txt')
+    write_data_to_JSON(initial_values_muon, 'data/' + variable + '/fit_results/' + category + '/initial_values_muon_' + met_type + '.txt')
     
 if __name__ == '__main__':
     # setup
@@ -212,9 +212,6 @@ if __name__ == '__main__':
                       help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
                       help="set MET type for analysis of MET, ST or MT")
-    parser.add_option("-k", "--k_value", type='int',
-                      dest="k_value", default=6,
-                      help="k-value for SVD unfolding")
 
     translateOptions = {
                         '0':'0btag',
@@ -247,7 +244,6 @@ if __name__ == '__main__':
     
     (options, args) = parser.parse_args()
     variable = options.variable
-    k_value = options.k_value
     met_type = translateOptions[options.metType]
     b_tag_bin = translateOptions[options.bjetbin]
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
