@@ -25,7 +25,7 @@ BjetBinsLatex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b
                     '4orMoreBtags':'#geq 4 b-tags'}
 
 def make_plots_ROOT(histograms, savePath, histname):
-    global variable, translateOptions, analysis, k_value, b_tag_bin, maximum
+    global variable, translateOptions, k_value, b_tag_bin, maximum
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
@@ -76,11 +76,11 @@ def make_plots_ROOT(histograms, savePath, histname):
     
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
-    if analysis == 'EPlusJets':
+    if variable == 'electron':
         channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
-    elif analysis == 'MuPlusJets':
+    elif variable == 'muon':
         channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
-    elif analysis == 'Combination':
+    else:
         channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
@@ -94,7 +94,7 @@ def make_plots_ROOT(histograms, savePath, histname):
     channelLabel.SetTextFont(42)
     channelLabel.SetTextAlign(13)
     mytext.Draw()
-    if not analysis == 'Combination':
+    if not variable == 'combination':
         channelLabel.Draw()
     
     canvas.Modified()
@@ -147,8 +147,6 @@ if __name__ == '__main__':
                       help="set MET type used in the analysis of MET, ST or MT")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                   help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
-    parser.add_option("-a", "--analysisType", dest="analysisType", default='EPlusJets',
-                  help="set analysis type: EPlusJets or MuPlusJets")
     parser.add_option("-k", "--k_value", type='int',
                       dest="k_value", default=6,
                       help="k-value for SVD unfolding, used in histogram names")
@@ -191,7 +189,6 @@ if __name__ == '__main__':
     savePath = options.savePath
     variable = options.variable
     met_type = translateOptions[options.metType]
-    analysis = options.analysisType
     k_value = options.k_value
     b_tag_bin = translateOptions[options.bjetbin]
     
