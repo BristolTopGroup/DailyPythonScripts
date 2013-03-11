@@ -1,17 +1,19 @@
 # general
 from __future__ import division
 from optparse import OptionParser
-import sys
+import sys, os
 from array import array
 # rootpy
 from rootpy import asrootpy
 from rootpy.io import File
+from ROOT import TFile
+from rootpy.plotting import Hist, Hist2D
 # DailyPythonScripts
 from config.variable_binning_8TeV import bin_widths, bin_edges
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding
-from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
+from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, make_folder_if_not_exists
 import config.RooUnfold as unfoldCfg
 
 luminosity = 5814
@@ -27,13 +29,62 @@ file_for_scaleup = File(path_to_files + 'unfolding_TTJets_8TeV_scaleup.root', 'r
 file_for_matchingdown = File(path_to_files + 'unfolding_TTJets_8TeV_matchingdown.root', 'read')
 file_for_matchingup = File(path_to_files + 'unfolding_TTJets_8TeV_matchingup.root', 'read')
 
-def unfold_results(results, h_truth, h_measured, h_response, method):
-    global variable
+def unfold_results(results, category, channel, h_truth, h_measured, h_response, method):
+    global variable, path_to_JSON
     h_data = value_error_tuplelist_to_hist(results, bin_edges[variable])
     unfolding = Unfolding(h_truth, h_measured, h_response, method=method)
+    
+    #turning of the unfolding errors for systematic samples
+    if category != 'central':
+        unfoldCfg.Hreco = 0
+    
     h_unfolded_data = unfolding.unfold(h_data)
     
+    #export the D and SV distributions
+    SVD_path = path_to_JSON + variable + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
+    make_folder_if_not_exists(SVD_path)
+    if method == 'TSVDUnfold':
+        SVDdist = TFile(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
+        directory = SVDdist.mkdir('SVDdist')
+        directory.cd()
+        unfolding.unfoldObject.GetD().Write()
+        unfolding.unfoldObject.GetSV().Write()
+        #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
+        SVDdist.Close()
+    else:
+        SVDdist = TFile(SVD_path + method + '_SVDdistributions_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root', 'recreate')
+        directory = SVDdist.mkdir('SVDdist')
+        directory.cd()
+        unfolding.unfoldObject.Impl().GetD().Write()
+        unfolding.unfoldObject.Impl().GetSV().Write()
+        #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
+        SVDdist.Close()
+
+    #export the whole unfolding object if it doesn't exist
+    if method == 'TSVDUnfold':
+        unfolding_object_file_name = SVD_path + method + '_unfoldingObject_' + category + '.root'
+    else:
+        unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root'
+    if not os.path.isfile(unfolding_object_file_name):
+        unfoldingObjectFile = TFile(unfolding_object_file_name, 'recreate')
+        directory = unfoldingObjectFile.mkdir('unfoldingObject')
+        directory.cd()
+        if method == 'TSVDUnfold':
+            unfolding.unfoldObject.Write()
+        else:
+            unfolding.unfoldObject.Impl().Write()
+        unfoldingObjectFile.Close()
+    
     return hist_to_value_error_tuplelist(h_unfolded_data)
+
+def data_covariance_matrix(data):
+    values = list(data)
+    get_bin_error = data.GetBinError
+    cov_matrix = Hist2D(len(values), -10, 10, len(values), -10, 10, type = 'D')
+    for bin_i in range(len(values)):
+        error = get_bin_error(bin_i+1)
+        cov_matrix.SetBinContent(bin_i+1, bin_i+1, error*error)
+    return cov_matrix
 
 def get_unfold_histogram_tuple(inputfile, variable, channel, met_type):
     folder = None
@@ -69,10 +120,14 @@ def unfold_and_measure_cross_section(TTJet_fit_results, category, channel):
     scaleup_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaleup, variable, channel, met_type)[0])
     
     TTJet_fit_results_unfolded = unfold_results(TTJet_fit_results,
-                                                         h_truth,
-                                                         h_measured,
-                                                         h_response,
-                                                         'RooUnfoldSvd')
+                                                category,
+                                                channel,
+                                                h_truth,
+                                                h_measured,
+                                                h_response,
+                                                'RooUnfoldSvd'
+#                                                'TSVDUnfold'
+                                                )
     
     write_data_to_JSON(TTJet_fit_results, path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/TTJet_fit_results_' + channel + '_' + met_type + '.txt')
     normalisation_unfolded = {
@@ -179,6 +234,9 @@ if __name__ == '__main__':
     parser.add_option("-k", "--k_value", type='int',
                       dest="k_value", default=6,
                       help="k-value for SVD unfolding")
+    parser.add_option("-H", "--hreco", type='int',
+                      dest="Hreco", default=2,
+                      help="Hreco parameter for error treatment in RooUnfold")
 
     translateOptions = {
                         '0':'0btag',
@@ -200,6 +258,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     variable = options.variable
     unfoldCfg.SVD_k_value = options.k_value
+    unfoldCfg.Hreco = options.Hreco
     met_type = translateOptions[options.metType]
     b_tag_bin = translateOptions[options.bjetbin]
     path_to_JSON = options.path
@@ -212,3 +271,4 @@ if __name__ == '__main__':
         #unfold and measure cross section
         unfold_and_measure_cross_section(TTJet_fit_results_electron, category, 'electron')
         unfold_and_measure_cross_section(TTJet_fit_results_muon, category, 'muon')
+    
