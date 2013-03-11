@@ -30,7 +30,8 @@ def make_plots_ROOT(histograms, savePath, histname):
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
     plotting.setStyle()
-    gStyle.SetTitleYOffset(2)
+    gStyle.SetTitleYOffset(1.4)
+    ROOT.gROOT.ForceStyle()
     canvas = Canvas(width=700, height=500)
     canvas.SetLeftMargin(0.15)
     canvas.SetBottomMargin(0.15)
@@ -76,9 +77,9 @@ def make_plots_ROOT(histograms, savePath, histname):
     
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
-    if variable == 'electron':
+    if 'electron' in histname:
         channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
-    elif variable == 'muon':
+    elif 'muon' in histname:
         channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
     else:
         channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
@@ -94,8 +95,7 @@ def make_plots_ROOT(histograms, savePath, histname):
     channelLabel.SetTextFont(42)
     channelLabel.SetTextAlign(13)
     mytext.Draw()
-    if not variable == 'combination':
-        channelLabel.Draw()
+    channelLabel.Draw()
     
     canvas.Modified()
     canvas.Update()
@@ -103,7 +103,7 @@ def make_plots_ROOT(histograms, savePath, histname):
     path = savePath + variable + '/' + category
     make_folder_if_not_exists(path)
     canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.png')
-    canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
+    #canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
 
 def read_histograms_ROOT(category, channel):
     global path_to_JSON, variable, met_type, k_value
@@ -134,6 +134,96 @@ def read_histograms_ROOT(category, channel):
     
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
+def plot_central_and_systematics(channel):
+    global variable, translateOptions, k_value, b_tag_bin, maximum, categories
+    ROOT.TH1.SetDefaultSumw2(False)
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    plotting.setStyle()
+    gStyle.SetTitleYOffset(1.4)
+    ROOT.gROOT.ForceStyle()
+    canvas = Canvas(width=700, height=500)
+    canvas.SetLeftMargin(0.15)
+    canvas.SetBottomMargin(0.15)
+    canvas.SetTopMargin(0.05)
+    canvas.SetRightMargin(0.05)
+    legend = plotting.create_legend(x0=0.6, y1=0.5)
+    
+    hist_data_central = read_histograms_ROOT('central', channel)[0]['data']
+    
+    hist_data_central.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
+    hist_data_central.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
+    hist_data_central.GetXaxis().SetTitleSize(0.05)
+    hist_data_central.GetYaxis().SetTitleSize(0.05)
+    hist_data_central.SetMinimum(0)
+    hist_data_central.SetMaximum(maximum[variable])
+    hist_data_central.SetMarkerSize(1)
+    hist_data_central.SetMarkerStyle(20)
+#    plotAsym = TGraphAsymmErrors(hist_data)
+#    plotStatErr = TGraphAsymmErrors(hist_data)
+    gStyle.SetEndErrorSize(20)
+    hist_data_central.Draw('P')
+#    plotStatErr.Draw('same P')
+#    plotAsym.Draw('same P Z')
+    legend.AddEntry(hist_data_central, 'measured (unfolded)', 'P')
+    
+    for systematic in categories:
+        if systematic != 'central':
+            hist_data_systematic = read_histograms_ROOT(systematic, channel)[0]['data']
+            hist_data_systematic.SetMarkerSize(0.5)
+            hist_data_systematic.SetMarkerStyle(20)
+            colour_number = categories.index(systematic)+1
+            if colour_number == 10:
+                colour_number = 42
+            hist_data_systematic.SetMarkerColor(colour_number)
+            hist_data_systematic.Draw('same P')
+            legend.AddEntry(hist_data_systematic, systematic, 'P')
+    
+#    for central_generator in ['MADGRAPH', 'POWHEG', 'MCATNLO']:
+#        hist_MC = read_histograms_ROOT('central', channel)[0][central_generator]
+#        hist_MC.SetLineStyle(7)
+#        hist_MC.SetLineWidth(2)
+#        #setting colours
+#        if central_generator == 'POWHEG':
+#            hist_MC.SetLineColor(kBlue)
+#        elif central_generator == 'MADGRAPH':
+#            hist_MC.SetLineColor(kRed + 1)
+#        elif central_generator == 'MCATNLO':
+#            hist_MC.SetLineColor(kMagenta + 3)
+#        hist_MC.Draw('hist same')
+        #legend.AddEntry(hist_MC, translateOptions[central_generator], 'l')
+    
+    legend.Draw()
+    
+    mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
+    channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
+    if channel == 'electron':
+        channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+    elif channel == 'muon':
+        channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+    else:
+        channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+    mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
+             
+    mytext.SetFillStyle(0)
+    mytext.SetBorderSize(0)
+    mytext.SetTextFont(42)
+    mytext.SetTextAlign(13)
+    
+    channelLabel.SetFillStyle(0)
+    channelLabel.SetBorderSize(0)
+    channelLabel.SetTextFont(42)
+    channelLabel.SetTextAlign(13)
+    mytext.Draw()
+    if not channel == 'combination':
+        channelLabel.Draw()
+    
+    canvas.Modified()
+    canvas.Update()
+    
+    path = savePath + variable
+    make_folder_if_not_exists(path)
+    canvas.SaveAs(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.png')
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -178,7 +268,7 @@ if __name__ == '__main__':
                         'MT': 'MT'
                         }
     maximum = {
-               'MET': 0.02,
+               'MET': 0.03,
                'HT': 0.005,
                'ST': 0.004,
                'MT': 0.02
@@ -203,5 +293,8 @@ if __name__ == '__main__':
         
         make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, savePath, 'normalised_xsection_electron_different_generators')
         make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, savePath, 'normalised_xsection_electron_systematics_shifts')
+        
+    plot_central_and_systematics('electron')
+    plot_central_and_systematics('muon')
 
     
