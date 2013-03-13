@@ -39,13 +39,16 @@ def make_plots_ROOT(histograms, savePath, histname):
     canvas.SetRightMargin(0.05)
     legend = plotting.create_legend(x0=0.6, y1=0.5)
     
-    hist_data = histograms['data'] 
+    hist_data = histograms['unfolded'] 
     hist_data.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
     hist_data.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
     hist_data.GetXaxis().SetTitleSize(0.05)
     hist_data.GetYaxis().SetTitleSize(0.05)
     hist_data.SetMinimum(0)
-    hist_data.SetMaximum(maximum[variable])
+    if variable == 'MET':
+        hist_data.SetMaximum(0.02)
+    else:
+        hist_data.SetMaximum(maximum[variable])
     hist_data.SetMarkerSize(1)
     hist_data.SetMarkerStyle(20)
 #    plotAsym = TGraphAsymmErrors(hist_data)
@@ -54,10 +57,17 @@ def make_plots_ROOT(histograms, savePath, histname):
     hist_data.Draw('P')
 #    plotStatErr.Draw('same P')
 #    plotAsym.Draw('same P Z')
-    legend.AddEntry(hist_data, 'measured (unfolded)', 'P')
+    legend.AddEntry(hist_data, 'unfolded', 'P')
+    
+    hist_measured = histograms['measured']
+    hist_measured.SetMarkerSize(1)
+    hist_measured.SetMarkerStyle(20)
+    hist_measured.SetMarkerColor(2)
+    hist_measured.Draw('same P')
+    legend.AddEntry(hist_measured, 'measured', 'P')
     
     for key, hist in histograms.iteritems():
-        if not 'data' in key:
+        if not 'unfolded' in key and not 'measured' in key:
             hist.SetLineStyle(7)
             hist.SetLineWidth(2)
             #setting colours
@@ -78,11 +88,11 @@ def make_plots_ROOT(histograms, savePath, histname):
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
     if 'electron' in histname:
-        channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     elif 'muon' in histname:
-        channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     else:
-        channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
     mytext.SetFillStyle(0)
@@ -106,9 +116,10 @@ def make_plots_ROOT(histograms, savePath, histname):
     #canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
 
 def read_histograms_ROOT(category, channel):
-    global path_to_JSON, variable, met_type, k_value
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '_unfolded.txt')
-    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet'], bin_edges[variable])
+    global path_to_JSON, variable, k_value, met_type
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
+    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
     h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
     h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
     h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges[variable])
@@ -118,14 +129,16 @@ def read_histograms_ROOT(category, channel):
     h_normalised_xsection_scaledown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaledown'], bin_edges[variable])
     
     histograms_normalised_xsection_different_generators = {
-                  'data':h_normalised_xsection_unfolded,
+                  'measured':h_normalised_xsection,
+                  'unfolded':h_normalised_xsection_unfolded,
                   'MADGRAPH':h_normalised_xsection_MADGRAPH,
                   'POWHEG':h_normalised_xsection_POWHEG,
                   'MCATNLO':h_normalised_xsection_MCATNLO
                   }
     
     histograms_normalised_xsection_systematics_shifts = {
-                  'data':h_normalised_xsection_unfolded,
+                  'measured':h_normalised_xsection,
+                  'unfolded':h_normalised_xsection_unfolded,
                   'matchingdown': h_normalised_xsection_mathchingdown,
                   'matchingup': h_normalised_xsection_mathchingup,
                   'scaledown': h_normalised_xsection_scaledown,
@@ -149,7 +162,7 @@ def plot_central_and_systematics(channel):
     canvas.SetRightMargin(0.05)
     legend = plotting.create_legend(x0=0.6, y1=0.5)
     
-    hist_data_central = read_histograms_ROOT('central', channel)[0]['data']
+    hist_data_central = read_histograms_ROOT('central', channel)[0]['unfolded']
     
     hist_data_central.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
     hist_data_central.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
@@ -169,7 +182,7 @@ def plot_central_and_systematics(channel):
     
     for systematic in categories:
         if systematic != 'central':
-            hist_data_systematic = read_histograms_ROOT(systematic, channel)[0]['data']
+            hist_data_systematic = read_histograms_ROOT(systematic, channel)[0]['unfolded']
             hist_data_systematic.SetMarkerSize(0.5)
             hist_data_systematic.SetMarkerStyle(20)
             colour_number = categories.index(systematic)+1
@@ -198,11 +211,11 @@ def plot_central_and_systematics(channel):
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
     if channel == 'electron':
-        channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     elif channel == 'muon':
-        channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     else:
-        channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
     mytext.SetFillStyle(0)
@@ -254,7 +267,8 @@ if __name__ == '__main__':
                         'pf':'patMETsPFlow',
                         'type1':'patType1CorrectedPFMet',
                         #histnames:
-                        'data': 'measured (unfolded)',
+                        'unfolded': 'unfolded',
+                        'measured': 'measured',
                         'MADGRAPH': 't#bar{t} (MADGRAPH)',
                         'MCATNLO': 't#bar{t} (MC@NLO)',
                         'POWHEG': 't#bar{t} (POWHEG)',
