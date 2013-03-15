@@ -6,7 +6,8 @@ Created on 30 Oct 2012
 
 from ROOT import TMinuit, TMath, Long, Double
 from array import array
-import numpy
+import math
+import logging
 #from scipy.optimize import curve_fit
 
 class TemplateFit():
@@ -76,6 +77,7 @@ class TMinuitFit(TemplateFit):
     def __init__(self, histograms={}, dataLabel='data', method='logLikelihood'):
         TemplateFit.__init__(self, histograms, dataLabel)
         self.method = method
+        self.logger = logging.getLogger('TMinuitFit')
         
     def fit(self):
         numberOfParameters = len(self.samples)
@@ -109,6 +111,24 @@ class TMinuitFit(TemplateFit):
         gMinuit.Migrad()
         self.module = gMinuit
         self.performedFit = True
+        
+        if not self.module:
+            raise Exception('No fit results available. Please run fit method first')
+        
+        results = {}
+        param_index = 0
+        for sample in self.samples:
+            temp_par = Double(0)
+            temp_err = Double(0)
+            self.module.GetParameter(param_index, temp_par, temp_err)
+            if (math.isnan(temp_err)):
+                self.logger.warning('Template fit error is NAN, setting to sqrt(N).')
+                temp_err = math.sqrt(temp_par)
+            
+            results[sample] = (temp_par, temp_err)
+            param_index += 1
+        
+        self.results = results
     
     def logLikelihood(self, nParameters, gin, f, par, iflag):
         lnL = 0.0
@@ -133,19 +153,7 @@ class TMinuitFit(TemplateFit):
         f[0] = -2.0 * lnL
         
     def readResults(self):
-        if not self.module:
-            raise Exception('No fit results available. Please run fit method first')
-        
-        results = {}
-        param_index = 0
-        for sample in self.samples:
-            temp_par = Double(0)
-            temp_err = Double(0)
-            self.module.GetParameter(param_index, temp_par, temp_err)
-            results[sample] = (temp_par, temp_err)
-            param_index += 1
-        self.results = results
-        return results
+        return self.results
 
 #class CurveFit():
 #    defined_functions = ['gaus', 'gauss'] 

@@ -9,7 +9,9 @@ import config.RooUnfold as unfoldCfg
 gSystem.Load(unfoldCfg.library)
 from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
+from ROOT import TSVDUnfold
 from rootpy import asrootpy
+from rootpy.plotting import Hist, Hist2D
 from math import sqrt
 class Unfolding:
 
@@ -43,9 +45,22 @@ class Unfolding:
                 self.unfoldObject = RooUnfoldTUnfold     (self.unfoldResponse, data)
             elif self.method == 'RooUnfoldSvd':
                 self.unfoldObject = RooUnfoldSvd(self.unfoldResponse, data, unfoldCfg.SVD_k_value, unfoldCfg.SVD_n_toy)
+            elif self.method == 'TSVDUnfold':
+                new_data = Hist(list(data.xedges()), type = 'D')
+                new_data.Add(data)
+                new_measured = Hist(list(self.measured.xedges()), type = 'D')
+                new_measured.Add(self.measured)
+                new_truth = Hist(list(self.truth.xedges()), type = 'D')
+                new_truth.Add(self.truth)
+                new_response = Hist2D(list(self.response.xedges()),list(self.response.yedges()), type = 'D')
+                new_response.Add(self.response)
+                self.unfoldObject = TSVDUnfold(new_data, new_measured, new_truth, new_response)
+        if self.method == 'TSVDUnfold':
+            self.unfolded_data = asrootpy(self.unfoldObject.Unfold(unfoldCfg.SVD_k_value))
+        else:
+            self.unfoldObject.SetVerbose(1)
+            self.unfolded_data = asrootpy(self.unfoldObject.Hreco(unfoldCfg.Hreco))
         #remove unfold reports (faster)
-        self.unfoldObject.SetVerbose(0)
-        self.unfolded_data = asrootpy(self.unfoldObject.Hreco())
         return self.unfolded_data
     
     def closureTest(self):
@@ -62,7 +77,18 @@ class Unfolding:
                 self.closure_test = RooUnfoldTUnfold     (self.unfoldResponse, self.measured)
             elif self.method == 'RooUnfoldSvd':
                 self.closure_test = RooUnfoldSvd(self.unfoldResponse, self.measured, unfoldCfg.SVD_k_value, unfoldCfg.SVD_n_toy)
-        self.unfolded_closure = asrootpy(self.closure_test.Hreco())
+            elif self.method == 'TSVDUnfold':
+                new_measured = Hist(list(self.measured.xedges()), type = 'D')
+                new_measured.Add(self.measured)
+                new_truth = Hist(list(self.truth.xedges()), type = 'D')
+                new_truth.Add(self.truth)
+                new_response = Hist2D(list(self.response.xedges()),list(self.response.yedges()), type = 'D')
+                new_response.Add(self.response)
+                self.closure_test = TSVDUnfold(new_measured, new_measured, new_truth, new_response)
+        if self.method == 'TSVDUnfold':
+            self.unfolded_closure = asrootpy(self.closure_test.Unfold(unfoldCfg.SVD_k_value))
+        else:
+            self.unfolded_closure = asrootpy(self.closure_test.Hreco(unfoldCfg.Hreco))
         return self.unfolded_closure
     
     def _makeUnfoldResponse(self):
