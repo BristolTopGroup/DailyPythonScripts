@@ -24,6 +24,38 @@ BjetBinsLatex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b
                     '3btags':'3 b-tags', '3orMoreBtags':'#geq 3 b-tags',
                     '4orMoreBtags':'#geq 4 b-tags'}
 
+def read_xsection_measurement_results(category, channel):
+    global path_to_JSON, variable, k_value, met_type
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
+    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
+    h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
+    h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
+    h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges[variable])
+    h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingup'], bin_edges[variable])
+    h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingdown'], bin_edges[variable])
+    h_normalised_xsection_scaleup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaleup'], bin_edges[variable])
+    h_normalised_xsection_scaledown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaledown'], bin_edges[variable])
+    
+    histograms_normalised_xsection_different_generators = {
+                  'measured':h_normalised_xsection,
+                  'unfolded':h_normalised_xsection_unfolded,
+                  'MADGRAPH':h_normalised_xsection_MADGRAPH,
+                  'POWHEG':h_normalised_xsection_POWHEG,
+                  'MCATNLO':h_normalised_xsection_MCATNLO
+                  }
+    
+    histograms_normalised_xsection_systematics_shifts = {
+                  'measured':h_normalised_xsection,
+                  'unfolded':h_normalised_xsection_unfolded,
+                  'matchingdown': h_normalised_xsection_mathchingdown,
+                  'matchingup': h_normalised_xsection_mathchingup,
+                  'scaledown': h_normalised_xsection_scaledown,
+                  'scaleup': h_normalised_xsection_scaleup
+                  }
+    
+    return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
+
 def make_plots_ROOT(histograms, savePath, histname):
     global variable, translateOptions, k_value, b_tag_bin, maximum
     ROOT.TH1.SetDefaultSumw2(False)
@@ -115,38 +147,6 @@ def make_plots_ROOT(histograms, savePath, histname):
     canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.png')
     #canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
 
-def read_histograms_ROOT(category, channel):
-    global path_to_JSON, variable, k_value, met_type
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
-    h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
-    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
-    h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
-    h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
-    h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges[variable])
-    h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingup'], bin_edges[variable])
-    h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['matchingdown'], bin_edges[variable])
-    h_normalised_xsection_scaleup = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaleup'], bin_edges[variable])
-    h_normalised_xsection_scaledown = value_error_tuplelist_to_hist(normalised_xsection_unfolded['scaledown'], bin_edges[variable])
-    
-    histograms_normalised_xsection_different_generators = {
-                  'measured':h_normalised_xsection,
-                  'unfolded':h_normalised_xsection_unfolded,
-                  'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                  'POWHEG':h_normalised_xsection_POWHEG,
-                  'MCATNLO':h_normalised_xsection_MCATNLO
-                  }
-    
-    histograms_normalised_xsection_systematics_shifts = {
-                  'measured':h_normalised_xsection,
-                  'unfolded':h_normalised_xsection_unfolded,
-                  'matchingdown': h_normalised_xsection_mathchingdown,
-                  'matchingup': h_normalised_xsection_mathchingup,
-                  'scaledown': h_normalised_xsection_scaledown,
-                  'scaleup': h_normalised_xsection_scaleup
-                  }
-    
-    return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
-
 def plot_central_and_systematics(channel):
     global variable, translateOptions, k_value, b_tag_bin, maximum, categories
     ROOT.TH1.SetDefaultSumw2(False)
@@ -162,7 +162,7 @@ def plot_central_and_systematics(channel):
     canvas.SetRightMargin(0.05)
     legend = plotting.create_legend(x0=0.6, y1=0.5)
     
-    hist_data_central = read_histograms_ROOT('central', channel)[0]['unfolded']
+    hist_data_central = read_xsection_measurement_results('central', channel)[0]['unfolded']
     
     hist_data_central.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
     hist_data_central.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
@@ -182,7 +182,7 @@ def plot_central_and_systematics(channel):
     
     for systematic in categories:
         if systematic != 'central':
-            hist_data_systematic = read_histograms_ROOT(systematic, channel)[0]['unfolded']
+            hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
             hist_data_systematic.SetMarkerSize(0.5)
             hist_data_systematic.SetMarkerStyle(20)
             colour_number = categories.index(systematic)+1
@@ -193,7 +193,7 @@ def plot_central_and_systematics(channel):
             legend.AddEntry(hist_data_systematic, systematic, 'P')
     
 #    for central_generator in ['MADGRAPH', 'POWHEG', 'MCATNLO']:
-#        hist_MC = read_histograms_ROOT('central', channel)[0][central_generator]
+#        hist_MC = read_xsection_measurement_results('central', channel)[0][central_generator]
 #        hist_MC.SetLineStyle(7)
 #        hist_MC.SetLineWidth(2)
 #        #setting colours
@@ -299,8 +299,8 @@ if __name__ == '__main__':
     categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
     for category in categories:
-        histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_histograms_ROOT(category, 'electron')
-        histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_histograms_ROOT(category, 'muon')
+        histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
+        histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
         
         make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, savePath, 'normalised_xsection_muon_different_generators')
         make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, savePath, 'normalised_xsection_muon_systematics_shifts')
