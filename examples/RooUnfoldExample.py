@@ -20,7 +20,7 @@ from ROOT import RooUnfoldTUnfold
 from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 
 
 # ==============================================================================
