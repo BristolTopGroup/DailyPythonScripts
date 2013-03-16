@@ -7,8 +7,12 @@ examples/plots/*
 src/data/*
 src/log_*
 src/*.root
+src/*.png
+src/*.pdf
 tools/*.png
 # generated during setup
 external/vpython/
 external/lib
 config/RooUnfold.py
+#eclipse settings
+.settings
