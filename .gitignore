@@ -5,6 +5,7 @@
 src/plots/*
 examples/plots/*
 src/data/*
+experimental/data/*
 src/log_*
 src/*.root
 src/*.png
