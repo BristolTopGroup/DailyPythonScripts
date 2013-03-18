@@ -36,6 +36,8 @@ echo "Installing pypm"
 pip install -U pypm
 echo "Installing numpy"
 pip install -U numpy
+echo "Installing matplotlib"
+pip install -U matplotlib
 
 echo "Installing rootpy"
 pip install -e $base/external/rootpy
