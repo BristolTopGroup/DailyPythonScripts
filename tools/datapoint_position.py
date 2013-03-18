@@ -4,7 +4,7 @@ Created on 12 Nov 2012
 @author: kreczko
 '''
 
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 
 def get_bin_centers(bin_edges):
     centers = []

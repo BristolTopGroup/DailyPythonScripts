@@ -7,8 +7,6 @@ from ROOT import TH1F
 from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from rootpy.utils import asrootpy
-from array import array
 
 #updated from http://rootpy.org/qa/questions/80/how-to-create-a-histogram-with-asymmetric-bins
 bins = [0, 25, 45, 70, 100, 2000]

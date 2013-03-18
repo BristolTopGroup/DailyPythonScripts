@@ -32,6 +32,20 @@ def value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges):
         set_bin_error(bin_i + 1, error)
     return rootpy_hist
 
+def sum_histograms(histogram_dict, sample_list):
+    #histogram_dict = {sample:{histogram_name:histogram}
+    summary = {}
+    preparation = {}
+    for sample in sample_list:
+        sample_hists = histogram_dict[sample]
+        for histogram_name, histogram in sample_hists.iteritems():
+            if not preparation.has_key(histogram_name):
+                preparation[histogram_name] = []
+            preparation[histogram_name].append(histogram)
+    for histogram_name, histogram_list in preparation.iteritems():
+        summary[histogram_name] = sum(histogram_list)
+    return summary
+
 if __name__ == '__main__':
     value_error_tuplelist = [(0.006480446927374301, 0.0004647547547401945), 
                              (0.012830288388947605, 0.0010071677178938234), 

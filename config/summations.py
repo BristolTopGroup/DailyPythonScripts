@@ -4,7 +4,7 @@ Created on 19 Jan 2013
 @author: kreczko
 '''
 
-##7 TeV
+# #7 TeV
 electron_qcd_samples = [ 'QCD_Pt-20to30_BCtoE',
                  'QCD_Pt-30to80_BCtoE',
                  'QCD_Pt-80to170_BCtoE',
@@ -47,3 +47,9 @@ b_tag_summations = {
              '2orMoreBtags':['2btags', '3btags', '4orMoreBtags'],
              '3orMoreBtags':['3btags', '4orMoreBtags']
              }
+
+jet_bins_inclusive = ["0orMoreJets", "1orMoreJets", "2orMoreJets", "3orMoreJets" , "4orMoreJets"]
+jet_bins_exclusive = ["0jet", "1jet", "2jets", "3jets"]
+all_jet_bins = copy(b_tag_bins_inclusive)
+all_jet_bins.extend(b_tag_bins_exclusive)
+

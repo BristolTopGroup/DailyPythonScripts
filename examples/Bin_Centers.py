@@ -10,7 +10,7 @@ from rootpy.plotting import Hist, Graph
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from array import array
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 
 if __name__ == '__main__':
     bins = array('d', [0, 25, 45, 70, 100, 1000])

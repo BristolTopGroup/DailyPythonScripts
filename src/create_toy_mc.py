@@ -8,7 +8,7 @@ Created on 11 Dec 2012
 from optparse import OptionParser
 from tools.toy_mc import generate_toy_MC_from_distribution
 from rootpy.io import File
-from rootpy.utils import asrootpy
+from rootpy import asrootpy
 from array import array
 import ROOT
 
