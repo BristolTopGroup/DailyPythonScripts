@@ -4,9 +4,9 @@ from optparse import OptionParser
 import sys, os
 from array import array
 # rootpy
+from ROOT import TFile
 from rootpy import asrootpy
 from rootpy.io import File
-from ROOT import TFile
 from rootpy.plotting import Hist, Hist2D
 # DailyPythonScripts
 from config.variable_binning_8TeV import bin_widths, bin_edges
@@ -185,16 +185,16 @@ def calculate_normalised_xsections(normalisation, category, channel, normalise_t
     scaleup_normalised_xsection = calculate_normalised_xsection(normalisation['scaleup'], bin_widths[variable], normalise_to_one)
     
     normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
-                                  'TTJet' : TTJet_normalised_xsection_unfolded,
-                                  'MADGRAPH': MADGRAPH_normalised_xsection,
-                                  'POWHEG': POWHEG_normalised_xsection,
-                                  'MCATNLO': MCATNLO_normalised_xsection,
-                                  #systematics
-                                  'matchingdown': matchingdown_normalised_xsection,
-                                  'matchingup': matchingup_normalised_xsection,
-                                  'scaledown': scaledown_normalised_xsection,
-                                  'scaleup': scaleup_normalised_xsection
-                                  }
+                           'TTJet_unfolded' : TTJet_normalised_xsection_unfolded,
+                           'MADGRAPH': MADGRAPH_normalised_xsection,
+                           'POWHEG': POWHEG_normalised_xsection,
+                           'MCATNLO': MCATNLO_normalised_xsection,
+                           #systematics
+                           'matchingdown': matchingdown_normalised_xsection,
+                           'matchingup': matchingup_normalised_xsection,
+                           'scaledown': scaledown_normalised_xsection,
+                           'scaleup': scaleup_normalised_xsection
+                           }
     
     filename = path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
     if normalise_to_one:
