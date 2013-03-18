@@ -7,7 +7,6 @@ from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from math import sqrt
 import ROOT
-from ROOT import *
 from ROOT import TPaveText, kRed, TH1F, Double, TMinuit, Long, kGreen, gROOT, TCanvas, kMagenta, kBlue, TGraphAsymmErrors, TMath
 from ROOT import kAzure, kYellow, kViolet, THStack, gStyle
 # rootpy
