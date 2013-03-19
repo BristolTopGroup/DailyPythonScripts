@@ -56,7 +56,7 @@ def get_histograms(input_files, variable, met_type, variable_bin, b_tag_bin, reb
     
     if 'data_electron' in input_files.keys():
         # data-driven QCD
-        electron_abs_eta.replace('Ref selection', 'QCDConversions')
+        electron_abs_eta = electron_abs_eta.replace('Ref selection', 'QCDConversions')
         h_electron_abs_eta = get_histogram(input_files['data_electron'], electron_abs_eta, '0btag')
         h_electron_abs_eta.Rebin(rebin)
         electron_histograms['QCD'] = h_electron_abs_eta

@@ -19,7 +19,7 @@ import config.RooUnfold as unfoldCfg
 luminosity = 5814
 ttbar_xsection = 225.19
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
-    
+
 file_for_unfolding = File(path_to_files + 'unfolding_merged.root', 'read')
 file_for_powheg = File(path_to_files + 'unfolding_TTJets_8TeV_powheg.root', 'read')
 file_for_mcatnlo = File(path_to_files + 'unfolding_TTJets_8TeV_mcatnlo.root', 'read')
@@ -172,7 +172,7 @@ def calculate_xsections(normalisation, category, channel):
                          }
     write_data_to_JSON(xsection_unfolded, path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
     
-def calculate_normalised_xsections(normalisation, category, channel, normalise_to_one):
+def calculate_normalised_xsections(normalisation, category, channel, normalise_to_one = False):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection(normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one)
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection(normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one)
@@ -198,7 +198,7 @@ def calculate_normalised_xsections(normalisation, category, channel, normalise_t
     
     filename = path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
     if normalise_to_one:
-        filename.replace('normalised_xsection', 'normalised_to_one_xsection')
+        filename = filename.replace('normalised_xsection', 'normalised_to_one_xsection')
     write_data_to_JSON(normalised_xsection, filename)
 
 if __name__ == '__main__':
@@ -268,9 +268,8 @@ if __name__ == '__main__':
         calculate_xsections(unfolded_normalisation_electron, category, 'electron')
         calculate_xsections(unfolded_normalisation_muon, category, 'muon')
         
-        normalise_to_one = False
-        calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
-        calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon', normalise_to_one)
+        calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron')
+        calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon')
         
         normalise_to_one = True
         calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
