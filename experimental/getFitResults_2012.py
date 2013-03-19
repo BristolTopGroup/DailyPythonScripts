@@ -25,61 +25,56 @@ met_systematics_suffixes = [
         "UnclusteredEnDown"
         ]
 
-def get_histograms(input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
-    electron_histograms = {}
-    muon_histograms = {}
+analysisType = {
+                'electron':'EPlusJets',
+                'muon':'MuPlusJets'
+                }
+
+def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
+    histograms = {}
     if variable == 'MET':
-        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/%s_bin_%s/electron_absolute_eta' % (met_type, variable_bin)
-        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MET_Analysis/%s_bin_%s/muon_absolute_eta' % (met_type, variable_bin)
+        abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_absolute_eta' % (analysisType[channel], met_type, variable_bin, channel)
     elif variable == 'HT':
-        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_%s/electron_absolute_eta' % (variable_bin)
-        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_%s/muon_absolute_eta' % (variable_bin)
+        abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_absolute_eta' % (analysisType[channel], variable_bin, channel)
     elif variable == 'ST':
-        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/electron_absolute_eta' % (met_type, variable_bin)
-        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/muon_absolute_eta' % (met_type, variable_bin)
+        abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s_absolute_eta' % (analysisType[channel], met_type, variable_bin, channel)
     elif variable == 'MT':
-        electron_abs_eta = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/electron_absolute_eta' % (met_type, variable_bin)
-        muon_abs_eta = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/muon_absolute_eta' % (met_type, variable_bin)
+        abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_absolute_eta' % (analysisType[channel], met_type, variable_bin, channel)
     else:
         print 'Fatal Error: unknown variable ', variable
         sys.exit()
     
     for sample, file_name in input_files.iteritems():
-        h_electron_abs_eta = get_histogram(file_name, electron_abs_eta, b_tag_bin)
-        h_muon_abs_eta = get_histogram(file_name, muon_abs_eta, b_tag_bin)
-
-        h_electron_abs_eta.Rebin(rebin)
-        h_muon_abs_eta.Rebin(rebin)
-        
-        electron_histograms[sample] = h_electron_abs_eta
-        muon_histograms[sample] = h_muon_abs_eta
+        h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
+        h_abs_eta.Rebin(rebin)
+        histograms[sample] = h_abs_eta
     
-    if 'data_electron' in input_files.keys():
+    if channel == 'electron':
         # data-driven QCD
-        electron_abs_eta = electron_abs_eta.replace('Ref selection', 'QCDConversions')
-        h_electron_abs_eta = get_histogram(input_files['data_electron'], electron_abs_eta, '0btag')
-        h_electron_abs_eta.Rebin(rebin)
-        electron_histograms['QCD'] = h_electron_abs_eta
+        abs_eta = abs_eta.replace('Ref selection', 'QCDConversions')
+        h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
+        h_abs_eta.Rebin(rebin)
+        histograms['QCD'] = h_abs_eta
         #scaling to 10% of data (proper implementation: relIso fit)
-        electron_histograms['QCD'].Scale(0.1*electron_histograms['data_electron'].Integral()/electron_histograms['QCD'].Integral())
+        histograms['QCD'].Scale(0.1*histograms['data'].Integral()/histograms['QCD'].Integral())
         
-    if 'data_muon' in input_files.keys():
+    if channel == 'muon':
         # data-driven QCD
         # for now custom file
         global muon_QCD_file, muon_QCD_MC_file
 
-        h_muon_abs_eta_mc = get_histogram(muon_QCD_MC_file, muon_abs_eta, b_tag_bin)
-        h_muon_abs_eta_mc.Rebin(rebin)
+        h_abs_eta_mc = get_histogram(muon_QCD_MC_file, abs_eta, b_tag_bin)
+        h_abs_eta_mc.Rebin(rebin)
         
-        muon_abs_eta = 'muon_AbsEta_0btag'
-        h_muon_abs_eta = get_histogram(muon_QCD_file, muon_abs_eta, '')
-        h_muon_abs_eta.Rebin(rebin)
-        muon_QCD_normalisation_factor = h_muon_abs_eta_mc.Integral()/h_muon_abs_eta.Integral()
-        h_muon_abs_eta.Scale(muon_QCD_normalisation_factor)
-        muon_histograms['QCD'] = h_muon_abs_eta
-#        muon_histograms['QCD'].Scale(0.05*muon_histograms['data_muon'].Integral()/muon_histograms['QCD'].Integral())
+        abs_eta = 'muon_AbsEta_0btag'
+        h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
+        h_abs_eta.Rebin(rebin)
+        muon_QCD_normalisation_factor = h_abs_eta_mc.Integral()/h_abs_eta.Integral()
+        h_abs_eta.Scale(muon_QCD_normalisation_factor)
+        histograms['QCD'] = h_abs_eta
+#        histograms['QCD'].Scale(0.05*histograms['data'].Integral()/histograms['QCD'].Integral())
         
-    return electron_histograms, muon_histograms
+    return histograms
 
 def get_histogram(input_file, histogram_path, b_tag_bin=''):
 #    input_file = File(input_file)
@@ -104,120 +99,86 @@ def get_histogram(input_file, histogram_path, b_tag_bin=''):
     
     return histogram.Clone()
 
-def get_fitted_normalisation(input_files, variable, met_type, b_tag_bin, JSON=False):
+def get_fitted_normalisation(channel, input_files, variable, met_type, b_tag_bin, JSON=False):
     if JSON:
-        return get_fitted_normalisation_from_JSON(input_files, variable, met_type)  # no b_tag_bin as files are specific
+        return get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type)  # no b_tag_bin as files are specific
     else:
-        return get_fitted_normalisation_from_ROOT(input_files, variable, met_type, b_tag_bin)
+        return get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin)
 
-def get_fitted_normalisation_from_JSON(input_files, variable, met_type):
+def get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type):
     pass
 
-def get_fitted_normalisation_from_ROOT(input_files, variable, met_type, b_tag_bin):
-    electron_results = {}
-    electron_initial_values = {}
-    muon_results = {}
-    muon_initial_values = {}
+def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin):
+    results = {}
+    initial_values = {}
+    templates = {}
     for variable_bin in variable_bins_ROOT[variable]:
-        electron_histograms, muon_histograms = get_histograms(input_files,
-                   variable=variable,
-                   met_type=met_type,
-                   variable_bin=variable_bin,
-                   b_tag_bin=b_tag_bin,
-                   rebin=2
-                   )
+        histograms = get_histograms(channel,
+                                    input_files,
+                                    variable=variable,
+                                    met_type=met_type,
+                                    variable_bin=variable_bin,
+                                    b_tag_bin=b_tag_bin,
+                                    rebin=2
+                                    )
         # prepare histograms
         # normalise histograms
         
         # create signal histograms
-        h_electron_eta_signal = electron_histograms['TTJet'] + electron_histograms['SingleTop']
-        h_muon_eta_signal = muon_histograms['TTJet'] + muon_histograms['SingleTop']
-        fitter_electron = TMinuitFit(histograms={
-                                      'data':electron_histograms['data_electron'],
-                                      'signal':h_electron_eta_signal,
-#                                      'background':electron_histograms['V+Jets']+electron_histograms['QCD']
-                                      'V+Jets':electron_histograms['V+Jets'],
-                                      'QCD':electron_histograms['QCD']
-                                      })
-        fitter_muon = TMinuitFit(histograms={
-                                      'data':muon_histograms['data_muon'],
-                                      'signal':h_muon_eta_signal,
-#                                      'background':electron_histograms['V+Jets']+electron_histograms['QCD']
-                                      'V+Jets':muon_histograms['V+Jets'],
-                                      'QCD':muon_histograms['QCD']
+        h_eta_signal = histograms['TTJet'] + histograms['SingleTop']
+        fitter = TMinuitFit(histograms={
+                                      'data':histograms['data'],
+                                      'signal':h_eta_signal,
+#                                      'background':histograms['V+Jets']+histograms['QCD']
+                                      'V+Jets':histograms['V+Jets'],
+                                      'QCD':histograms['QCD']
                                       })
         
-        fitter_electron.fit()
-        fit_results_electron = fitter_electron.readResults()
-        normalisation_electron = fitter_electron.normalisation
+        fitter.fit()
+        fit_results = fitter.readResults()
+        normalisation = fitter.normalisation
         
-        N_ttbar_before_fit_electron = electron_histograms['TTJet'].Integral()
-        N_SingleTop_before_fit_electron = electron_histograms['SingleTop'].Integral()
+        N_ttbar_before_fit = histograms['TTJet'].Integral()
+        N_SingleTop_before_fit = histograms['SingleTop'].Integral()
 
-        if (N_SingleTop_before_fit_electron!=0):
-            TTJet_SingleTop_ratio_electron = N_ttbar_before_fit_electron / N_SingleTop_before_fit_electron
+        if (N_SingleTop_before_fit!=0):
+            TTJet_SingleTop_ratio = N_ttbar_before_fit / N_SingleTop_before_fit
         else:
-            print 'Bin ', variable_bin, ': ttbar/singleTop ratio undefined for electrons! Setting to 0.'
-            TTJet_SingleTop_ratio_electron = 0
+            print 'Bin ', variable_bin, ': ttbar/singleTop ratio undefined for %s channel! Setting to 0.' % channel
+            TTJet_SingleTop_ratio = 0
 
-        N_ttbar_electron, N_SingleTop_electron = decombine_result(fit_results_electron['signal'], TTJet_SingleTop_ratio_electron)
+        N_ttbar, N_SingleTop = decombine_result(fit_results['signal'], TTJet_SingleTop_ratio)
         
         
-        fit_results_electron['TTJet'] = N_ttbar_electron
-        fit_results_electron['SingleTop'] = N_SingleTop_electron
-        normalisation_electron['TTJet'] = N_ttbar_before_fit_electron
-        normalisation_electron['SingleTop'] = N_SingleTop_before_fit_electron
+        fit_results['TTJet'] = N_ttbar
+        fit_results['SingleTop'] = N_SingleTop
+        normalisation['TTJet'] = N_ttbar_before_fit
+        normalisation['SingleTop'] = N_SingleTop_before_fit
         
-        if electron_results == {}:  # empty
-            electron_initial_values['data'] = [normalisation_electron['data']]
-            for sample in fit_results_electron.keys():
-                electron_results[sample] = [fit_results_electron[sample]]
-                electron_initial_values[sample] = [normalisation_electron[sample]]
+        if results == {}:  # empty
+            initial_values['data'] = [normalisation['data']]
+            templates['data'] = [fitter.vectors['data']]
+            for sample in fit_results.keys():
+                results[sample] = [fit_results[sample]]
+                initial_values[sample] = [normalisation[sample]]
+                if not sample == 'TTJet' and not sample == 'SingleTop':
+                    templates[sample] = [fitter.vectors[sample]]
         else:
-            electron_initial_values['data'].append(normalisation_electron['data'])
-            for sample in fit_results_electron.keys():
-                electron_results[sample].append(fit_results_electron[sample])
-                electron_initial_values[sample].append(normalisation_electron[sample])
+            initial_values['data'].append(normalisation['data'])
+            templates['data'].append(fitter.vectors['data'])
+            for sample in fit_results.keys():
+                results[sample].append(fit_results[sample])
+                initial_values[sample].append(normalisation[sample])
+                if not sample == 'TTJet' and not sample == 'SingleTop':
+                    templates[sample].append(fitter.vectors[sample])
         
-        fitter_muon.fit()
-        fit_results_muon = fitter_muon.readResults()
-        normalisation_muon = fitter_muon.normalisation
-        
-        N_ttbar_before_fit_muon = muon_histograms['TTJet'].Integral()
-        N_SingleTop_before_fit_muon = muon_histograms['SingleTop'].Integral()
-        
-        if (N_SingleTop_before_fit_muon!=0):
-            TTJet_SingleTop_ratio_muon = N_ttbar_before_fit_muon / N_SingleTop_before_fit_muon
-        else:
-            print 'Bin ', variable_bin, ': ttbar/singleTop ratio undefined for muons! Setting to 0.'
-            TTJet_SingleTop_ratio_muon = 0
-        
-        N_ttbar_muon, N_SingleTop_muon = decombine_result(fit_results_muon['signal'], TTJet_SingleTop_ratio_muon)
-        
-        fit_results_muon['TTJet'] = N_ttbar_muon
-        fit_results_muon['SingleTop'] = N_SingleTop_muon
-        normalisation_muon['TTJet'] = N_ttbar_before_fit_muon
-        normalisation_muon['SingleTop'] = N_SingleTop_before_fit_muon
-        
-        if muon_results == {}:  # empty
-            muon_initial_values['data'] = [normalisation_muon['data']]
-            for sample in fit_results_muon.keys():
-                muon_results[sample] = [fit_results_muon[sample]]
-                muon_initial_values[sample] = [normalisation_muon[sample]]
-        else:
-            muon_initial_values['data'].append(normalisation_muon['data'])
-            for sample in fit_results_muon.keys():
-                muon_results[sample].append(fit_results_muon[sample])
-                muon_initial_values[sample].append(normalisation_muon[sample])
-        
-    return electron_results, muon_results, electron_initial_values, muon_initial_values
+    return results, initial_values, templates
     
-def write_fit_results_and_initial_values(category, fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon):
+def write_fit_results_and_initial_values(channel, category, fit_results, initial_values, templates):
     global variable, met_type
-    write_data_to_JSON(fit_results_electron, 'data/' + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')
-    write_data_to_JSON(fit_results_muon, 'data/' + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')
-    write_data_to_JSON(initial_values_electron, 'data/' + variable + '/fit_results/' + category + '/initial_values_electron_' + met_type + '.txt')
-    write_data_to_JSON(initial_values_muon, 'data/' + variable + '/fit_results/' + category + '/initial_values_muon_' + met_type + '.txt')
+    write_data_to_JSON(fit_results, 'data/' + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(initial_values, 'data/' + variable + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(templates, 'data/' + variable + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt') 
     
 if __name__ == '__main__':
     # setup
@@ -280,19 +241,32 @@ if __name__ == '__main__':
         SingleTop_file = File(path_to_files + 'central/SingleTop_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root')
         muon_QCD_MC_file = File(path_to_files + 'central/QCD_MuEnrichedPt5_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root')
         
-        fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon = get_fitted_normalisation(
+        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
-                                   'data_electron': data_file_electron,
-                                   'data_muon': data_file_muon
+                                   'data': data_file_electron,
                                    },
                       variable=variable,                                                                                                                        
                       met_type=met_type,
                       b_tag_bin=b_tag_bin,
                       )
-        write_fit_results_and_initial_values(systematic, fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon)
+        
+        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_muon,
+                                   },
+                      variable=variable,                                                                                                                        
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        
+        write_fit_results_and_initial_values('electron', systematic, fit_results_electron, initial_values_electron, templates_electron)
+        write_fit_results_and_initial_values('muon', systematic, fit_results_muon, initial_values_muon, templates_muon)
     
     #central measurement and the rest of the systematics
     for category, prefix in categories_and_prefixes.iteritems():
@@ -312,16 +286,28 @@ if __name__ == '__main__':
             data_file_muon = File(path_to_files + category + '/SingleMu_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
             met_type += 'JetEnDown'
         
-        fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon = get_fitted_normalisation(
+        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
-                                   'data_electron': data_file_electron,
-                                   'data_muon': data_file_muon
+                                   'data': data_file_electron,
                                    },
                       variable=variable,                                                                                                                        
                       met_type=met_type,
                       b_tag_bin=b_tag_bin,
                       )
-        write_fit_results_and_initial_values(category, fit_results_electron, fit_results_muon, initial_values_electron, initial_values_muon)
+        
+        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_muon,
+                                   },
+                      variable=variable,                                                                                                                        
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
+        write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
