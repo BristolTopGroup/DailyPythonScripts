@@ -12,7 +12,7 @@ def read_unfolded_xsections(channel):
     global path_to_JSON, variable, k_value, met_type, b_tag_bin
     TTJet_xsection_unfolded = {}
     for category in categories:
-        normalised_xsections = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+        normalised_xsections = read_data_from_JSON(path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
         TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
     return TTJet_xsection_unfolded
 
@@ -165,9 +165,9 @@ def print_xsections(xsections, channel, toFile = True):
         printout += '\\\\ \n'
     printout += '\hline \n\n'
     
-    make_folder_if_not_exists(savePath + variable)
+    make_folder_if_not_exists(savePath + '/' + variable)
     if toFile:
-        output_file = open(savePath + variable + '/normalised_xsection_result_' + channel + '_kv' + str(k_value) + '.tex', 'w')
+        output_file = open(savePath + '/' + variable + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_value) + '.tex', 'w')
         output_file.write(printout)
         output_file.close()
     else:
@@ -231,9 +231,9 @@ def print_xsections_with_uncertainties(xsections, channel, toFile = True):
         value += '\\\\ \n'
         printout += value
     
-    make_folder_if_not_exists(savePath + variable)
+    make_folder_if_not_exists(savePath + '/' + variable)
     if toFile:
-        output_file = open(savePath + variable + '/normalised_xsection_main_result_' + channel + '_kv' + str(k_value) + '.tex', 'w')
+        output_file = open(savePath + '/' + variable + '/normalised_xsection_main_result_' + channel + '_' + met_type + '_kv' + str(k_value) + '.tex', 'w')
         output_file.write(printout)
         output_file.close()
     else:

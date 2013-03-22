@@ -23,7 +23,7 @@ BjetBinsLatex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b
 
 def read_xsection_measurement_results(category, channel):
     global path_to_JSON, variable, k_value, met_type
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
     h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
     h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
@@ -55,7 +55,7 @@ def read_xsection_measurement_results(category, channel):
 
 def read_fit_templates_as_histograms(category, channel):
     global path_to_JSON, variable, met_type
-    templates = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt')
+    templates = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt')
     histograms = {}
     for bin_i, variable_bin in enumerate(variable_bins_ROOT[variable]):
         h_signal = value_tuplelist_to_hist(templates['signal'][bin_i], eta_bin_edges)
@@ -78,7 +78,7 @@ def make_template_plots(histograms, category, channel):
     ROOT.gROOT.ForceStyle()
     
     for variable_bin in variable_bins_ROOT[variable]:
-        path = savePath + variable + '/' + category + '/fit_templates/'
+        path = savePath + '/' + variable + '/' + category + '/fit_templates/'
         make_folder_if_not_exists(path)
         plotname = path + channel + '_templates_bin_' + variable_bin + '.png'
         #check if template plots exist already
@@ -227,7 +227,7 @@ def make_plots_ROOT(histograms, category, savePath, histname):
     canvas.Modified()
     canvas.Update()
     
-    path = savePath + variable + '/' + category
+    path = savePath + '/' + variable + '/' + category
     make_folder_if_not_exists(path)
     canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.png')
     #canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
@@ -319,7 +319,7 @@ def plot_central_and_systematics(channel):
     canvas.Modified()
     canvas.Update()
     
-    path = savePath + variable
+    path = savePath + '/' + variable
     make_folder_if_not_exists(path)
     canvas.SaveAs(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.png')
     #canvas.SaveAs(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.pdf')
@@ -350,7 +350,7 @@ if __name__ == '__main__':
                         '3m':'3orMoreBtags',
                         '4m':'4orMoreBtags',
                         #mettype:
-                        'pf':'patMETsPFlow',
+                        'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet',
                         #histnames:
                         'unfolded': 'unfolded',
@@ -389,14 +389,20 @@ if __name__ == '__main__':
         met_type = translateOptions[options.metType]
         if category == 'JES_up':
             met_type += 'JetEnUp'
+            if met_type == 'PFMETJetEnUp':
+                met_type = 'patPFMetJetEnUp'
         elif category == 'JES_down':
             met_type += 'JetEnDown'
+            if met_type == 'PFMETJetEnDown':
+                met_type = 'patPFMetJetEnDown'
         
         electron_fit_templates = read_fit_templates_as_histograms(category, 'electron')
         muon_fit_templates = read_fit_templates_as_histograms(category, 'muon')
         
         #change back to original MET type
         met_type = translateOptions[options.metType]
+        if met_type == 'PFMET':
+            met_type = 'patMETsPFlow'
         
         make_template_plots(electron_fit_templates, category, 'electron')
         make_template_plots(muon_fit_templates, category, 'muon')
