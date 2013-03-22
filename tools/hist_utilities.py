@@ -32,6 +32,14 @@ def value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges):
         set_bin_error(bin_i + 1, error)
     return rootpy_hist
 
+def value_tuplelist_to_hist(value_tuplelist, bin_edges):
+    assert(len(bin_edges) == len(value_tuplelist) + 1)
+    rootpy_hist = Hist(bin_edges)
+    set_bin_value = rootpy_hist.SetBinContent
+    for bin_i, value in enumerate(value_tuplelist):
+        set_bin_value(bin_i + 1, value)
+    return rootpy_hist
+
 def sum_histograms(histogram_dict, sample_list):
     #histogram_dict = {sample:{histogram_name:histogram}
     summary = {}

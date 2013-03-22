@@ -1,9 +1,12 @@
+.pydevproject
 *.pyc
 *.pyo
 *.log
-#these two potentially include non-approved data == don't make them public
+#these four potentially include non-approved data == don't make them public
 src/plots/*
 examples/plots/*
+experimental/plots/
+experimental/data/
 src/data/*
 experimental/data/*
 src/log_*
