@@ -68,6 +68,8 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         
         abs_eta = 'muon_AbsEta_0btag'
         h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
+        #abs_eta = abs_eta.replace('Ref selection', 'QCD non iso mu+jets')
+        #h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
         h_abs_eta.Rebin(rebin)
         muon_QCD_normalisation_factor = h_abs_eta_mc.Integral()/h_abs_eta.Integral()
         h_abs_eta.Scale(muon_QCD_normalisation_factor)
@@ -201,7 +203,7 @@ if __name__ == '__main__':
                         '3m':'3orMoreBtags',
                         '4m':'4orMoreBtags',
                         #mettype:
-                        'pf':'patMETsPFlow',
+                        'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet'
                         }
     
@@ -281,10 +283,14 @@ if __name__ == '__main__':
             data_file_electron = File(path_to_files + category + '/SingleElectron_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
             data_file_muon = File(path_to_files + category + '/SingleMu_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
             met_type += 'JetEnUp'
+            if met_type == 'PFMETJetEnUp':
+                met_type = 'patPFMetJetEnUp'
         elif category == 'JES_down':
             data_file_electron = File(path_to_files + category + '/SingleElectron_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
             data_file_muon = File(path_to_files + category + '/SingleMu_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
             met_type += 'JetEnDown'
+            if met_type == 'PFMETJetEnDown':
+                met_type = 'patPFMetJetEnDown'
         
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
