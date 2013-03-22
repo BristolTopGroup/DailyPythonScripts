@@ -1,13 +1,10 @@
 from optparse import OptionParser
 import tools.plotting_utilities as plotting
-import sys
-import numpy
-from config.variable_binning_8TeV import bin_edges
+import os
+from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT, eta_bin_edges
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist
-from math import sqrt
+from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist
 import ROOT
-from ROOT import *
 from ROOT import TPaveText, kRed, TH1F, Double, TMinuit, Long, kGreen, gROOT, TCanvas, kMagenta, kBlue, TGraphAsymmErrors, TMath
 from ROOT import kAzure, kYellow, kViolet, THStack, gStyle
 # rootpy
@@ -26,7 +23,7 @@ BjetBinsLatex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b
 
 def read_xsection_measurement_results(category, channel):
     global path_to_JSON, variable, k_value, met_type
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
     h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
     h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
@@ -56,7 +53,95 @@ def read_xsection_measurement_results(category, channel):
     
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
-def make_plots_ROOT(histograms, savePath, histname):
+def read_fit_templates_as_histograms(category, channel):
+    global path_to_JSON, variable, met_type
+    templates = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt')
+    histograms = {}
+    for bin_i, variable_bin in enumerate(variable_bins_ROOT[variable]):
+        h_signal = value_tuplelist_to_hist(templates['signal'][bin_i], eta_bin_edges)
+        h_VJets = value_tuplelist_to_hist(templates['V+Jets'][bin_i], eta_bin_edges)
+        h_QCD = value_tuplelist_to_hist(templates['QCD'][bin_i], eta_bin_edges)
+        histograms[variable_bin] = {
+                                    'signal':h_signal,
+                                    'V+Jets':h_VJets,
+                                    'QCD':h_QCD
+                                    }
+    return histograms
+
+def make_template_plots(histograms, category, channel):
+    global variable, translateOptions, b_tag_bin, save_path
+    ROOT.TH1.SetDefaultSumw2(False)
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    plotting.setStyle()
+    gStyle.SetTitleYOffset(1.4)
+    ROOT.gROOT.ForceStyle()
+    
+    for variable_bin in variable_bins_ROOT[variable]:
+        path = savePath + '/' + variable + '/' + category + '/fit_templates/'
+        make_folder_if_not_exists(path)
+        plotname = path + channel + '_templates_bin_' + variable_bin + '.png'
+        #check if template plots exist already
+        if os.path.isfile(plotname):
+            continue
+        canvas = Canvas(width=700, height=500)
+        canvas.SetLeftMargin(0.15)
+        canvas.SetBottomMargin(0.15)
+        canvas.SetTopMargin(0.05)
+        canvas.SetRightMargin(0.05)
+        legend = plotting.create_legend(x0=0.7, y1=0.8)
+        h_signal = histograms[variable_bin]['signal']
+        h_VJets = histograms[variable_bin]['V+Jets']
+        h_QCD = histograms[variable_bin]['QCD']
+        
+        h_signal.GetXaxis().SetTitle('Lepton #eta')
+        h_signal.GetYaxis().SetTitle('Normalised Events')
+        h_signal.GetXaxis().SetTitleSize(0.05)
+        h_signal.GetYaxis().SetTitleSize(0.05)
+        h_signal.SetMinimum(0)
+        h_signal.SetMaximum(0.2)
+        h_signal.SetLineWidth(2)
+        h_VJets.SetLineWidth(2)
+        h_QCD.SetLineWidth(2)
+        h_signal.SetLineColor(kRed + 1)
+        h_VJets.SetLineColor(kBlue)
+        h_QCD.SetLineColor(kYellow)
+        h_signal.Draw('hist')
+        h_VJets.Draw('hist same')
+        h_QCD.Draw('hist same')
+        legend.AddEntry(h_signal, 'signal', 'l')
+        legend.AddEntry(h_VJets, 'V+Jets', 'l')
+        legend.AddEntry(h_QCD, 'QCD', 'l')
+        legend.Draw()
+        
+        mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
+        channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
+        if channel == 'electron':
+            channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        elif channel == 'muon':
+            channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        else:
+            channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+        mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
+             
+        mytext.SetFillStyle(0)
+        mytext.SetBorderSize(0)
+        mytext.SetTextFont(42)
+        mytext.SetTextAlign(13)
+        
+        channelLabel.SetFillStyle(0)
+        channelLabel.SetBorderSize(0)
+        channelLabel.SetTextFont(42)
+        channelLabel.SetTextAlign(13)
+        mytext.Draw()
+        channelLabel.Draw()
+        
+        canvas.Modified()
+        canvas.Update()
+        canvas.SaveAs(plotname)
+        
+
+def make_plots_ROOT(histograms, category, savePath, histname):
     global variable, translateOptions, k_value, b_tag_bin, maximum
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)
@@ -71,7 +156,7 @@ def make_plots_ROOT(histograms, savePath, histname):
     canvas.SetRightMargin(0.05)
     legend = plotting.create_legend(x0=0.6, y1=0.5)
     
-    hist_data = histograms['unfolded'] 
+    hist_data = histograms['unfolded']
     hist_data.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
     hist_data.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
     hist_data.GetXaxis().SetTitleSize(0.05)
@@ -122,7 +207,7 @@ def make_plots_ROOT(histograms, savePath, histname):
     if 'electron' in histname:
         channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     elif 'muon' in histname:
-        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     else:
         channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
@@ -142,7 +227,7 @@ def make_plots_ROOT(histograms, savePath, histname):
     canvas.Modified()
     canvas.Update()
     
-    path = savePath + variable + '/' + category
+    path = savePath + '/' + variable + '/' + category
     make_folder_if_not_exists(path)
     canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.png')
     #canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
@@ -234,9 +319,10 @@ def plot_central_and_systematics(channel):
     canvas.Modified()
     canvas.Update()
     
-    path = savePath + variable
+    path = savePath + '/' + variable
     make_folder_if_not_exists(path)
     canvas.SaveAs(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.png')
+    #canvas.SaveAs(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.pdf')
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -264,7 +350,7 @@ if __name__ == '__main__':
                         '3m':'3orMoreBtags',
                         '4m':'4orMoreBtags',
                         #mettype:
-                        'pf':'patMETsPFlow',
+                        'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet',
                         #histnames:
                         'unfolded': 'unfolded',
@@ -299,16 +385,39 @@ if __name__ == '__main__':
     categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
     for category in categories:
+        #setting up systematic MET for JES up/down samples for reading fit templates
+        met_type = translateOptions[options.metType]
+        if category == 'JES_up':
+            met_type += 'JetEnUp'
+            if met_type == 'PFMETJetEnUp':
+                met_type = 'patPFMetJetEnUp'
+        elif category == 'JES_down':
+            met_type += 'JetEnDown'
+            if met_type == 'PFMETJetEnDown':
+                met_type = 'patPFMetJetEnDown'
+        
+        electron_fit_templates = read_fit_templates_as_histograms(category, 'electron')
+        muon_fit_templates = read_fit_templates_as_histograms(category, 'muon')
+        
+        #change back to original MET type
+        met_type = translateOptions[options.metType]
+        if met_type == 'PFMET':
+            met_type = 'patMETsPFlow'
+        
+        make_template_plots(electron_fit_templates, category, 'electron')
+        make_template_plots(muon_fit_templates, category, 'muon')
+        
         histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
         histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
         
-        make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, savePath, 'normalised_xsection_muon_different_generators')
-        make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, savePath, 'normalised_xsection_muon_systematics_shifts')
+        make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, category, savePath, 'normalised_xsection_muon_different_generators')
+        make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, category, savePath, 'normalised_xsection_muon_systematics_shifts')
         
-        make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, savePath, 'normalised_xsection_electron_different_generators')
-        make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, savePath, 'normalised_xsection_electron_systematics_shifts')
+        make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, category, savePath, 'normalised_xsection_electron_different_generators')
+        make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, category, savePath, 'normalised_xsection_electron_systematics_shifts')
         
     plot_central_and_systematics('electron')
     plot_central_and_systematics('muon')
+    
 
     

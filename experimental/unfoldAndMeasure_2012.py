@@ -4,9 +4,9 @@ from optparse import OptionParser
 import sys, os
 from array import array
 # rootpy
+from ROOT import TFile
 from rootpy import asrootpy
 from rootpy.io import File
-from ROOT import TFile
 from rootpy.plotting import Hist, Hist2D
 # DailyPythonScripts
 from config.variable_binning_8TeV import bin_widths, bin_edges
@@ -19,7 +19,7 @@ import config.RooUnfold as unfoldCfg
 luminosity = 5814
 ttbar_xsection = 225.19
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
-    
+
 file_for_unfolding = File(path_to_files + 'unfolding_merged.root', 'read')
 file_for_powheg = File(path_to_files + 'unfolding_TTJets_8TeV_powheg.root', 'read')
 file_for_mcatnlo = File(path_to_files + 'unfolding_TTJets_8TeV_mcatnlo.root', 'read')
@@ -41,7 +41,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     h_unfolded_data = unfolding.unfold(h_data)
     
     #export the D and SV distributions
-    SVD_path = path_to_JSON + variable + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
+    SVD_path = path_to_JSON + '/' + variable + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
     make_folder_if_not_exists(SVD_path)
     if method == 'TSVDUnfold':
         SVDdist = TFile(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
@@ -142,7 +142,7 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                               'scaledown': scaledown_results,
                               'scaleup': scaleup_results
                               }
-    write_data_to_JSON(normalisation_unfolded, path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(normalisation_unfolded, path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
     
     return normalisation_unfolded
     
@@ -170,9 +170,9 @@ def calculate_xsections(normalisation, category, channel):
                          'scaledown': scaledown_xsection,
                          'scaleup': scaleup_xsection
                          }
-    write_data_to_JSON(xsection_unfolded, path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(xsection_unfolded, path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
     
-def calculate_normalised_xsections(normalisation, category, channel, normalise_to_one):
+def calculate_normalised_xsections(normalisation, category, channel, normalise_to_one = False):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection(normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one)
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection(normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one)
@@ -185,20 +185,20 @@ def calculate_normalised_xsections(normalisation, category, channel, normalise_t
     scaleup_normalised_xsection = calculate_normalised_xsection(normalisation['scaleup'], bin_widths[variable], normalise_to_one)
     
     normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
-                                  'TTJet' : TTJet_normalised_xsection_unfolded,
-                                  'MADGRAPH': MADGRAPH_normalised_xsection,
-                                  'POWHEG': POWHEG_normalised_xsection,
-                                  'MCATNLO': MCATNLO_normalised_xsection,
-                                  #systematics
-                                  'matchingdown': matchingdown_normalised_xsection,
-                                  'matchingup': matchingup_normalised_xsection,
-                                  'scaledown': scaledown_normalised_xsection,
-                                  'scaleup': scaleup_normalised_xsection
-                                  }
+                           'TTJet_unfolded' : TTJet_normalised_xsection_unfolded,
+                           'MADGRAPH': MADGRAPH_normalised_xsection,
+                           'POWHEG': POWHEG_normalised_xsection,
+                           'MCATNLO': MCATNLO_normalised_xsection,
+                           #systematics
+                           'matchingdown': matchingdown_normalised_xsection,
+                           'matchingup': matchingup_normalised_xsection,
+                           'scaledown': scaledown_normalised_xsection,
+                           'scaleup': scaleup_normalised_xsection
+                           }
     
-    filename = path_to_JSON + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
+    filename = path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
     if normalise_to_one:
-        filename.replace('normalised_xsection', 'normalised_to_one_xsection')
+        filename = filename.replace('normalised_xsection', 'normalised_to_one_xsection')
     write_data_to_JSON(normalised_xsection, filename)
 
 if __name__ == '__main__':
@@ -230,7 +230,7 @@ if __name__ == '__main__':
                         '3m':'3orMoreBtags',
                         '4m':'4orMoreBtags',
                         #mettype:
-                        'pf':'patMETsPFlow',
+                        'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet'
                         }
     
@@ -249,15 +249,22 @@ if __name__ == '__main__':
         met_type = translateOptions[options.metType]
         if category == 'JES_up':
             met_type += 'JetEnUp'
+            if met_type == 'PFMETJetEnUp':
+                met_type = 'patPFMetJetEnUp'
         elif category == 'JES_down':
             met_type += 'JetEnDown'
-            
+            if met_type == 'PFMETJetEnDown':
+                met_type = 'patPFMetJetEnDown'
+        
         #read fit results from JSON
-        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
-        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
         
         #change back to original MET type for the unfolding
         met_type = translateOptions[options.metType]
+        #ad-hoc switch for PFMET -> patMETsPFlow
+        if met_type == 'PFMET':
+            met_type = 'patMETsPFlow'
         
         #get unfolded normalisation
         unfolded_normalisation_electron = get_unfolded_normalisation(TTJet_fit_results_electron, category, 'electron')
@@ -268,9 +275,8 @@ if __name__ == '__main__':
         calculate_xsections(unfolded_normalisation_electron, category, 'electron')
         calculate_xsections(unfolded_normalisation_muon, category, 'muon')
         
-        normalise_to_one = False
-        calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
-        calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon', normalise_to_one)
+        calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron')
+        calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon')
         
         normalise_to_one = True
         calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
