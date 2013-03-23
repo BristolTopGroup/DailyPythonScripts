@@ -34,7 +34,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     h_data = value_error_tuplelist_to_hist(results, bin_edges[variable])
     unfolding = Unfolding(h_truth, h_measured, h_response, method=method)
     
-    #turning of the unfolding errors for systematic samples
+    #turning off the unfolding errors for systematic samples
     if category != 'central':
         unfoldCfg.Hreco = 0
     
@@ -57,6 +57,9 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
         directory.cd()
         unfolding.unfoldObject.Impl().GetD().Write()
         unfolding.unfoldObject.Impl().GetSV().Write()
+        h_truth.Write()
+        h_measured.Write()
+        h_response.Write()
         #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
         SVDdist.Close()
 
@@ -75,6 +78,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
             unfolding.unfoldObject.Impl().Write()
         unfoldingObjectFile.Close()
     
+    del unfolding
     return hist_to_value_error_tuplelist(h_unfolded_data)
 
 def data_covariance_matrix(data):
@@ -96,9 +100,12 @@ def get_unfold_histogram_tuple(inputfile, variable, channel, met_type):
     n_bins = len(bin_edges[variable]) - 1
     bin_edge_array = array('d', bin_edges[variable])
     
-    h_truth = asrootpy(folder.truth.Rebin(n_bins, 'truth', bin_edge_array))
-    h_measured = asrootpy(folder.measured.Rebin(n_bins, 'measured', bin_edge_array))
-    h_response = folder.response_without_fakes_AsymBins  # response_AsymBins
+    #h_fakes = asrootpy(folder.fake_AsymBins)
+    #h_truth = asrootpy(folder.truth.Rebin(n_bins, 'truth', bin_edge_array))
+    h_truth = asrootpy(folder.truth_AsymBins).Clone()
+    #h_measured = asrootpy(folder.measured.Rebin(n_bins, 'measured', bin_edge_array))
+    h_measured = asrootpy(folder.measured_AsymBins).Clone()
+    h_response = folder.response_without_fakes_AsymBins.Clone()  # response_AsymBins
     
     nEvents = inputfile.EventFilter.EventCounter.GetBinContent(1)#number of processed events 
     lumiweight = ttbar_xsection * luminosity / nEvents #ttbar x-section = 225.2pb, lumi = 5814pb-1
