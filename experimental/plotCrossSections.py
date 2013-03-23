@@ -162,10 +162,7 @@ def make_plots_ROOT(histograms, category, savePath, histname):
     hist_data.GetXaxis().SetTitleSize(0.05)
     hist_data.GetYaxis().SetTitleSize(0.05)
     hist_data.SetMinimum(0)
-    if variable == 'MET':
-        hist_data.SetMaximum(0.02)
-    else:
-        hist_data.SetMaximum(maximum[variable])
+    hist_data.SetMaximum(maximum[variable])
     hist_data.SetMarkerSize(1)
     hist_data.SetMarkerStyle(20)
 #    plotAsym = TGraphAsymmErrors(hist_data)
@@ -368,7 +365,7 @@ if __name__ == '__main__':
                         'MT': 'MT'
                         }
     maximum = {
-               'MET': 0.03,
+               'MET': 0.02,
                'HT': 0.005,
                'ST': 0.004,
                'MT': 0.02
