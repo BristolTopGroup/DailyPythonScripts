@@ -1,95 +1,24 @@
 from rootpy.io import File
-from rootpy.plotting import Canvas
 from rootpy import asrootpy
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
-#import config.summations as summations
-from ROOT import gROOT, TEfficiency, TGraphAsymmErrors, TF1
+# from matplotlib.ticker import AutoMinorLocator
+# import config.summations as summations
+from ROOT import gROOT, TEfficiency, TGraphAsymmErrors, TF1, TLegend, TLatex
 from array import array
 from config import CMS
 import matplotlib.gridspec as gridspec
-from matplotlib.ticker import MultipleLocator
-# def makeHLTPlots(hists, triggerPlots, rebin=1):
-#    print 'Making HLT plots'
-#    data = hists['data']
-#    ttbar = hists['ttbar']
-#    
-#    plots = triggerPlots
-#    efficiency = {}
-#    mc_efficiency = {}
-#    
-#    for jetbin in all_jet_bins:
-#        for plot in plots: #make all plots
-#            if 'Quad' in plot and not '4' in jetbin:#only >=4 jet bin for QuadJet trigger
-#                continue
-#            
-#            elif 'Tri' in plot and ((not '3' in jetbin and not '4' in jetbin) or '3orMoreJets' in jetbin):
-#                #only ==3, >=4 jet bins for TriJet trigger
-#                continue
-#            elif 'Di' in plot and not '2' in jetbin:
-#                    continue
-#                
-#            print plot + '_' + jetbin
-#            
-#            fired = data[plot + '_' + 'fired_' + jetbin]
-#            visited = data[plot + '_' + 'visited_' + jetbin]
-#            mc_fired = ttbar[plot + '_' + 'fired_' + jetbin]
-#            mc_visited = ttbar[plot + '_' + 'visited_' + jetbin]
-#            # calculate the sum of weights for correct error calculation
-#            #http://root.cern.ch/root/html/TH1.html#TH1:Sumw2
-# #            fired.Sumw2()
-# #            visited.Sumw2()
-# #            mc_fired.Sumw2()
-# #            mc_visited.Sumw2()
-#            
-#            xlimits, xTitle, yTitle, fitfunction, fitRange = getParams(plot, rebin)
-#            
-#            fired.GetXaxis().SetRangeUser(xlimits[0], xlimits[1])
-#            visited.GetXaxis().SetRangeUser(xlimits[0], xlimits[1])
-#            mc_fired.GetXaxis().SetRangeUser(xlimits[0], xlimits[1])
-#            mc_visited.GetXaxis().SetRangeUser(xlimits[0], xlimits[1])
-#            
-#            fired.Rebin(rebin)
-#            visited.Rebin(rebin)
-#            mc_fired.Rebin(rebin)
-#            mc_visited.Rebin(rebin)
-#            
-#            efficiency[plot + jetbin] = TEfficiency(fired, visited)
-#            mc_efficiency[plot + jetbin] = TEfficiency(mc_fired, mc_visited)
-#            eff = efficiency[plot + jetbin].Clone("Copy")
-#            mceff = mc_efficiency[plot + jetbin].Clone("CopyMC")
-#            setStyles(eff, mceff)
-#            
-#            saveName = plot + '_' + 'efficiency'
-#            saveName = saveName.replace('Jet30/', 'Jet30_')
-#            
-#            legend = getLegend(eff, mceff)
-#            caption = getCaption()
-#            
-#            c = TCanvas("cname" + plot + jetbin, 'cname', 900, 900)
-#            eff.Draw('P0')
-#            mceff.Draw('SAMEP0')
-#            legend.Draw('same')
-#            caption.Draw('same')
-#            saveAs(c, saveName + '_' + jetbin, outputFolder = outputFolder)
+from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+
+import numpy
+from numpy import frompyfunc
+from pylab import plot
             
-def make_efficiency_plot(pass_data, pass_mc, total_data, total_mc, name):
-    pass_data.Sumw2()
-    total_data.Sumw2()
-    pass_mc.Sumw2()
-    total_mc.Sumw2()
-    bin_edges = [0, 20, 25, 35, 45, 70, 100, 200]
-    n_bins = len(bin_edges) - 1
-    bin_edge_array = array('d', bin_edges)
+def make_efficiency_plot(pass_data, total_data, pass_mc, total_mc, trigger_under_study):
+    global output_folder, output_formats
     
-    pass_data = asrootpy(pass_data.Rebin(n_bins, 'truth', bin_edge_array))
-    total_data = asrootpy(total_data.Rebin(n_bins, 'truth', bin_edge_array))
-    pass_mc = asrootpy(pass_mc.Rebin(n_bins, 'truth', bin_edge_array))
-    total_mc = asrootpy(total_mc.Rebin(n_bins, 'truth', bin_edge_array))
-    
-    efficiency_data = asrootpy(TGraphAsymmErrors())  # Efficiency(fired_data, visited_data)
-    efficiency_mc = asrootpy(TGraphAsymmErrors())  # TEfficiency(fired_mc, visited_mc)
+    efficiency_data = asrootpy(TGraphAsymmErrors()) 
+    efficiency_mc = asrootpy(TGraphAsymmErrors())
     
     efficiency_data.Divide(pass_data, total_data, "cl=0.683 b(1,1) mode")
     efficiency_mc.Divide(pass_mc, total_mc, "cl=0.683 b(1,1) mode")
@@ -98,193 +27,269 @@ def make_efficiency_plot(pass_data, pass_mc, total_data, total_mc, name):
     scale_factor.Multiply(total_mc)
     scale_factor.Divide(total_data)
     scale_factor.Divide(pass_mc)
-    scale_factor.linecolor = 'green'
     scale_factor.linewidth = 6
     scale_factor.SetMarkerSize(3)
+    scale_factor.linecolor = 'green'
     scale_factor.SetMarkerColor('green')
     
-    fit_function = "[0]*exp([1]*exp([2]*x))"
-    fit_range = [20,200]
-    f1= asrootpy(TF1("f1",fit_function,fit_range[0],fit_range[1]))
-    f1.SetParLimits(0,0.8,1.0);
-    f1.SetParLimits(1,-100,-1);
-    f1.SetParLimits(2,-1,-0.01);
-    efficiency_data.Fit(f1)
-    setStyles(efficiency_data, efficiency_mc)
+    x_limits, x_title, y_title, fit_function, fit_range = get_parameters(trigger_under_study)
     
-    saveName = name 
-    saveName = saveName.replace('Jet30/', 'Jet30_')
+    fit_data = TF1("fit_data", fit_function, fit_range[0], fit_range[1])
+    fit_mc = TF1("fit_mc", fit_function, fit_range[0], fit_range[1])
+    fit_SF = TF1("fit_SF", fit_function, fit_range[0], fit_range[1])
+    set_parameter_limits(trigger_under_study, fit_data)
+    set_parameter_limits(trigger_under_study, fit_mc)
+    set_parameter_limits(trigger_under_study, fit_SF)
     
-#    legend = getLegend(eff, mceff)
-#    caption = getCaption()
-    c = Canvas(900, 900)
-    setStyles(total_data, pass_data)
-    total_data.Draw()
-    pass_data.Draw('same')
+    efficiency_data.Fit(fit_data, 'FECQ')
+    efficiency_mc.Fit(fit_mc, 'FECQ')
+    scale_factor.Fit(fit_SF, 'FECQ')
     
-    c.SaveAs(outputFolder + saveName + '_data.png')
+    set_plot_styles(efficiency_data, efficiency_mc)
     
-    c = Canvas(900, 900)
-    total_mc.Draw()
-    pass_mc.Draw('same')
-    setStyles(pass_mc, total_mc)
-    c.SaveAs(outputFolder + saveName + '_ttbar.png')
-    
-    c = Canvas(900, 900)
-    efficiency_data.Draw('AP0')
-    efficiency_mc.Draw('SAMEP0')
-#    legend.Draw('same')
-#    caption.Draw('same')
-    c.SaveAs(outputFolder + saveName + '_efficiency.png')
-    
+    save_as_name = trigger_under_study 
+    save_as_name = save_as_name.replace('Jet30/', 'Jet30_')
+    plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
+                      fit_data, fit_mc, fit_SF, fit_function,
+                      x_limits, x_title, y_title, save_as_name)
+
+def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
+                      fit_data, fit_mc, fit_SF, fit_function,
+                      x_limits, x_title, y_title, save_as_name):    
     # plot with matplotlib
-    plt.figure(figsize=(16, 12), dpi=200, facecolor='white')
-    gs = gridspec.GridSpec(2, 1, height_ratios=[5,1]) 
-    axes = plt.axes()
-#    axes = plt.axes([0.15, 0.15, 0.8, 0.8])
+    from matplotlib import rc
+    rc('text', usetex=True)
+    
+    plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
+    gs = gridspec.GridSpec(2, 1, height_ratios=[5, 1]) 
 
     ax0 = plt.subplot(gs[0])
     ax0.minorticks_on()
     ax0.grid(True, 'major', linewidth=2)
     ax0.grid(True, 'minor')
-    rplt.errorbar(efficiency_data,  xerr=True, emptybins=True, axes=ax0)
+    ax0.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+    
+    rplt.errorbar(efficiency_data, xerr=True, emptybins=True, axes=ax0)
     rplt.errorbar(efficiency_mc, xerr=False, emptybins=True, axes=ax0)
-    import numpy
-    x = numpy.linspace( f1.GetXmin(), f1.GetXmax(), f1.GetNpx() )
-    f1.Eval, x
-    from numpy import frompyfunc
-    fun = frompyfunc( f1.Eval, 1, 1 )
-    from pylab import plot
     
-    plot( x, fun(x), axes = ax0)
-
-    ax0.set_xlim([0,200])
+    ax0.set_xlim(x_limits)
     
-    plt.xlabel('$p_{\mathrm{T}}$(jet)', CMS.x_axis_title)
-    plt.ylabel('Efficiency', CMS.y_axis_title)
+    plt.ylabel(y_title, CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
     plt.title(r'e+jets, CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
-#    plt.xlabel('Mass', position=(1., 0.), ha='right')
-#    plt.ylabel('Events', position=(0., 1.), va='top')
-    plt.legend(['data', r'$\mathrm{t}\bar{\mathrm{t}}$ MC'], numpoints=1, loc='center right', prop={'size':32})
+    plt.legend(['data', r'$\mathrm{t}\bar{\mathrm{t}}$ MC'], numpoints=1, loc='lower right', prop={'size':40})
+    
+    #add fits
+    x = numpy.linspace(fit_data.GetXmin(), fit_data.GetXmax(), fit_data.GetNpx())
+    function_data = frompyfunc(fit_data.Eval, 1, 1)
+    plot(x, function_data(x), axes=ax0, color = 'black', linewidth = 2)
+    
+    x = numpy.linspace(fit_mc.GetXmin(), fit_mc.GetXmax(), fit_mc.GetNpx())
+    function_mc = frompyfunc(fit_mc.Eval, 1, 1)
+    plot(x, function_mc(x), axes=ax0, color = 'red', linewidth = 2)
+    
     ax1 = plt.subplot(gs[1])
+    #disable labels for plot 1
+    plt.setp(ax0.get_xticklabels(minor = True), visible=False)
+    plt.setp(ax0.get_xticklabels(), visible=False)
+    
     ax1.minorticks_on()
     ax1.grid(True, 'major', linewidth=2)
     ax1.grid(True, 'minor')
-#    yloc = plt.MaxNLocator(4)
+
     ax1.yaxis.set_major_locator(MultipleLocator(1.))
     ax1.yaxis.set_minor_locator(MultipleLocator(0.5))
+    ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+
+    ax1.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+    if 'jet_pt' in trigger_under_study:
+        ax1.xaxis.set_minor_formatter(FormatStrFormatter('%d'))
+        
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    plt.xlabel('$p_{\mathrm{T}}$(jet)', CMS.x_axis_title)
+    plt.xlabel(x_title, CMS.x_axis_title)
     plt.ylabel('data/MC', CMS.y_axis_title)
-    rplt.errorbar(scale_factor,  xerr=True, emptybins=False, axes=ax1)
+    
+    rplt.errorbar(scale_factor, xerr=True, emptybins=False, axes=ax1)
+    
+    ax1.set_xlim(x_limits)
+    #add fit formulas
+    ax0.text(0.3, 0.15, '$\epsilon$ =' + get_fitted_function_str(fit_data, fit_function),
+        verticalalignment='bottom', horizontalalignment='left',
+        transform=ax0.transAxes,
+        color='black', fontsize=40, bbox = {'facecolor':'white', 'edgecolor':'none'})
+    ax0.text(0.3, 0.05, '$\epsilon$ =' + get_fitted_function_str(fit_mc, fit_function),
+        verticalalignment='bottom', horizontalalignment='left',
+        transform=ax0.transAxes,
+        color='red', fontsize=40, bbox = {'facecolor':'white', 'edgecolor':'none'})
+    
+    ax1.text(0.3, 0.10, '$\epsilon$ =' + get_fitted_function_str(fit_SF, fit_function),
+        verticalalignment='bottom', horizontalalignment='left',
+        transform=ax1.transAxes,
+        color='green', fontsize=40, bbox = {'facecolor':'white', 'edgecolor':'none'})
+    
+    #add scale factor fit
+    x = numpy.linspace(fit_SF.GetXmin(), fit_SF.GetXmax(), fit_SF.GetNpx())
+    function_SF = frompyfunc(fit_SF.Eval, 1, 1)
+    plot(x, function_SF(x), axes=ax1, color = 'green', linewidth = 2)
+    
     plt.tight_layout()
-    plt.savefig(outputFolder + saveName + '_efficiency_matplot.png')  
-          
-def getParams(plot, rebin):
-    xlimits = [10, 200]
-    xTitle = 'jet p_{T} (GeV)'
-    yTitle = 'efficiency/(GeV)'
-    fitfunction = ''
-    fitRange = [-9999, 9999]
-    if 'jet_pt' in plot:
-        xlimits = [10, 200]
-        xTitle = 'jet p_{T} (GeV)'
-        yTitle = 'efficiency/(%d GeV)' % (1 * rebin)
-        fitfunction = "[0]*exp([1]*exp([2]*x))"
-        fitRange = [20, 200]
-    elif 'jet_eta' in plot:
-        xlimits = [-3, 3]
-        xTitle = 'jet #eta (GeV)'
-        yTitle = 'efficiency/(%0.1f)' % (0.1 * rebin)
-        fitfunction = 'pol2'
-        fitRange = [-3, 3]
-    elif 'jet_phi' in plot:
-        xlimits = [-4., 4.]
-        xTitle = 'jet #phi (GeV)'
-        yTitle = 'efficiency/(%0.1f)' % (0.1 * rebin)
-        fitfunction = 'pol0'
-        fitRange = [-3.1, 3.1]
-    return xlimits, xTitle, yTitle, fitfunction, fitRange
     
-def setStyles(dataPlot, mcPlot):
-    mcPlot.SetLineColor(2)
-    mcPlot.SetMarkerColor(2)
-    mcPlot.SetMarkerStyle(22)
-    mcPlot.SetLineWidth(6)
-    mcPlot.SetMarkerSize(3)
-    dataPlot.SetMarkerSize(3)
+    for output_format in output_formats:
+        plt.savefig(output_folder + save_as_name + '_efficiency_matplot.' + output_format)  
+       
+def get_parameters(trigger_under_study):
+    x_limits = [10, 200]
+    x_title = '$p_{\mathrm{T}}$(jet) [GeV]'
+    y_title = 'Efficiency'
+    fit_function = ''    
+    fit_range = [-9999, 9999]
     
-def getLegend(dataPlot, mcPlot):
-    leg = TLegend(0.7, 0.2, 0.8, 0.3)
-    leg.SetBorderSize(0);
-    leg.SetLineStyle(0);
-    leg.SetTextFont(42);
-    leg.SetFillStyle(0);
-    leg.AddEntry(dataPlot, 'data', 'P')
-    leg.AddEntry(mcPlot, 'MC', 'P')
-    return leg
+    if 'jet_pt' in trigger_under_study:
+        x_limits = [10, 200]
+        x_title = '$p_{\mathrm{T}}$(jet) [GeV]'
+        fit_function = "[0]*exp([1]*exp([2]*x))"
+        fit_range = [20, 200]
+    elif 'jet_eta' in trigger_under_study:
+        x_limits = [-3, 3]
+        x_title = '$\eta$(jet)'
+        fit_function = '[0]*x*x + [1]*x + [2]'
+        fit_range = [-3, 3]
+    elif 'jet_phi' in trigger_under_study:
+        x_limits = [-4., 4.]
+        x_title = '$\phi$(jet)'
+        fit_function = '[0]'
+        fit_range = [-3.1, 3.1]
+        
+    return x_limits, x_title, y_title, fit_function, fit_range
+    
+def set_plot_styles(data_plot, mc_plot):
+    mc_plot.SetMarkerColor(2)
+    mc_plot.SetMarkerStyle(22)
+    mc_plot.SetMarkerSize(3)
 
-def getCaption():
-    tex = TLatex(0.18, 1, "CMS Preliminary 2011,  #sqrt{s} = 7 TeV, L = 4.69 fb^{-1}");
-    tex.SetNDC();
-    tex.SetTextAlign(13);
-    tex.SetTextFont(42);
-    tex.SetTextSize(0.04);
-    tex.SetLineWidth(2);
-    return tex
+    mc_plot.SetLineWidth(6)
+    mc_plot.SetLineColor(2)
+    
+    data_plot.SetMarkerSize(3)
+
+def set_parameter_limits(trigger_under_study, fit):
+    if 'jet_pt' in trigger_under_study:
+        fit.SetParLimits(0,0.0,1.0);
+        fit.SetParLimits(1,-100,-1);
+        fit.SetParLimits(2,-1,-0.01);
+                
+    if 'jet_eta' in trigger_under_study:
+        fit.SetParLimits(0,-0.2,0.0);
+        fit.SetParLimits(1,-1,-1);
+        fit.SetParLimits(2, 0.2,1.1);
+        
+def get_binning(trigger_under_study):
+    bin_edges = [0, 20, 25, 35, 45, 70, 100, 200]
+    
+    if 'jet_pt' in trigger_under_study:
+        bin_edges = [0, 20, 25, 35, 45, 70, 200]
+    elif 'jet_eta' in trigger_under_study:
+        bin_edges = [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3]
+        bin_edges = [-3, -2, -1, 0, 1, 2, 3]
+        bin_edges = [-3, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 3]
+    elif 'jet_phi' in trigger_under_study:
+        bin_edges = [-3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]
+        
+    bin_edge_array = array('d', bin_edges)
+    
+    return bin_edge_array
+
+def get_fitted_function_str(fit, fit_function):
+    decimals = 2
+    function_str = '$' + fit_function + '$'
+    function_str = function_str.replace('x*x', 'x^{2}')
+    function_str = function_str.replace('[0]', str(round(fit.GetParameter(0), decimals)))
+    function_str = function_str.replace('[1]', str(round(fit.GetParameter(1), decimals)))
+    function_str = function_str.replace('[2]', str(round(fit.GetParameter(2), decimals)))
+    function_str = function_str.replace('[3]', str(round(fit.GetParameter(3), decimals)))
+    function_str = function_str.replace('[4]', str(round(fit.GetParameter(4), decimals)))
+    function_str = function_str.replace('+ -', '-')
+    function_str = function_str.replace('- -', '+')
+    function_str = function_str.replace('*', ' \\times ')
+    if 'exp' in function_str:
+        function_str = function_str.replace('exp(', 'e^{\left(')
+        function_str = function_str.replace(')', '\\right)}')
+    
+    return function_str
+
+
+def get_input_plots(data_file, mc_file, trigger_under_study):
+    plot_data_total = data_file.Get(trigger_under_study % 'visited')
+    plot_data_passed = data_file.Get(trigger_under_study % 'fired')
+    
+    mc_trigger = trigger_under_study
+    if 'CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT' in trigger_under_study:
+        #no isolated trigger available (bug!) in analysed MC, use non-iso instead.
+        mc_trigger = trigger_under_study.replace('CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT', 'CaloIdVT_TrkIdT')
+        
+    plot_ttbar_total = ttbar_file.Get(mc_trigger % 'visited')
+    plot_ttbar_passed = ttbar_file.Get(mc_trigger % 'fired')
+    
+    plot_data_passed.Sumw2()
+    plot_data_total.Sumw2()
+    plot_ttbar_passed.Sumw2()
+    plot_ttbar_total.Sumw2()
+    
+    bin_edge_array = get_binning(trigger_under_study)
+    n_bins = len(bin_edge_array) - 1
+    
+    plot_data_passed = asrootpy(plot_data_passed.Rebin(n_bins, 'truth', bin_edge_array))
+    plot_data_total = asrootpy(plot_data_total.Rebin(n_bins, 'truth', bin_edge_array))
+    plot_ttbar_passed = asrootpy(plot_ttbar_passed.Rebin(n_bins, 'truth', bin_edge_array))
+    plot_ttbar_total = asrootpy(plot_ttbar_total.Rebin(n_bins, 'truth', bin_edge_array))
+    
+    return plot_data_passed, plot_data_total, plot_ttbar_passed, plot_ttbar_total
 
 if __name__ == '__main__':
     gROOT.SetBatch(True)
     gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
     
-    outputFormats = ['png', 'pdf']
-    outputFolder = '/storage/TopQuarkGroup/results/plots/Trigger/'
+    output_formats = ['png', 'pdf']
+    output_folder = '/storage/TopQuarkGroup/results/plots/Trigger/'
     
-    triggers = ['HLT_Ele25_CaloIdVT_TrkIdT_TriCentralJet30',
-#                'HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralJet30',
-#                'HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30',
+    triggers = [
+                'HLT_Ele25_CaloIdVT_TrkIdT_TriCentralJet30',
+                'HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralJet30',
+                'HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30',
                     ]
         
-    triggerVariables = ['jet_pt',
-#                        'jet_eta',
-#                        'jet_phi',
-#                        'jet_eta_PtGT45',
-#                        'jet_phi_PtGT45'
+    trigger_variables = ['jet_pt',
+                        'jet_eta_PtGT30',
+                        'jet_phi_PtGT30',
+                        'jet_eta_PtGT45',
+                        'jet_phi_PtGT45'
                         ]
-    triggerModifiers = ['visited', 'fired']
+    
+    trigger_modifiers = [
+                         '_%s_3jets',
+                         '_%s_4orMoreJets']
+    
     
     hltFiles = {}
     
     hltFiles['data'] = '/storage/TopQuarkGroup/results/histogramfiles/HLT_V1/ElectronHad_4692.36pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
     hltFiles['ttbar'] = '/storage/TopQuarkGroup/results/histogramfiles/HLT_V1/TTJetsFall11_4692.36pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
     
-    triggerPlots = ['HLTStudy/' + trigger + '/' + variable + '_' + modifier for trigger in triggers for variable in triggerVariables for modifier in triggerModifiers]
+    triggerPlots = ['HLTStudy/' + trigger + '/' + variable + modifier 
+                    for trigger in triggers 
+                    for variable in trigger_variables 
+                    for modifier in trigger_modifiers]
     data_file = File(hltFiles['data'])
     ttbar_file = File(hltFiles['ttbar'])
-    plot = triggerPlots[0]
-    plot_data_visited = data_file.Get('HLTStudy/HLT_Ele25_CaloIdVT_TrkIdT_TriCentralJet30/jet_pt_visited_3jets')
-    plot_data_fired = data_file.Get('HLTStudy/HLT_Ele25_CaloIdVT_TrkIdT_TriCentralJet30/jet_pt_fired_3jets')
-    plot_ttbar_visited = ttbar_file.Get('HLTStudy/HLT_Ele25_CaloIdVT_TrkIdT_TriCentralJet30/jet_pt_visited_3jets')
-    plot_ttbar_fired = ttbar_file.Get('HLTStudy/HLT_Ele25_CaloIdVT_TrkIdT_TriCentralJet30/jet_pt_fired_3jets')
-    
-    plot_data_visited.Sumw2()
-    plot_data_fired.Sumw2()
-    plot_ttbar_visited.Sumw2()
-    plot_ttbar_fired.Sumw2()
-    
-#    plot_data_visited.Rebin(5)
-#    plot_data_fired.Rebin(5)
-#    plot_ttbar_visited.Rebin(5)
-#    plot_ttbar_fired.Rebin(5)
-    plot_data_visited.GetXaxis().SetRangeUser(10, 200)
-    plot_data_fired.GetXaxis().SetRangeUser(10, 200)
-    plot_ttbar_visited.GetXaxis().SetRangeUser(10, 200)
-    plot_ttbar_fired.GetXaxis().SetRangeUser(10, 200)
-    make_efficiency_plot(plot_data_fired, plot_ttbar_fired, plot_data_visited, plot_ttbar_visited, 'test')
-#    HistPlotter.setStyle()
-#    hists = HistGetter.getHistsFromFiles(triggerPlots, hltFiles, jetBins=HistPlotter.allJetBins)
-#    makeHLTPlots(hists, triggerPlots)
+
+    for trigger_under_study in triggerPlots:
+
+        plot_data_passed, plot_data_total, plot_ttbar_passed, plot_ttbar_total = get_input_plots(data_file, 
+                                                                                                 ttbar_file, 
+                                                                                                 trigger_under_study)
+        
+        make_efficiency_plot(plot_data_passed, plot_data_total, plot_ttbar_passed, plot_ttbar_total,
+                             trigger_under_study % '')
     
