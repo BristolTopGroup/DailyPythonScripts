@@ -30,7 +30,7 @@ axis_label_major = {
               }
 axis_label_minor = {
                     'which':'minor',
-              'labelsize':24,
+              'labelsize':20,
               'length':10,
               'width': 1
               }
