@@ -1,5 +1,7 @@
 from rootpy.io import File
 from rootpy import asrootpy
+# Most verbose log level
+
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 # from matplotlib.ticker import AutoMinorLocator
@@ -115,19 +117,19 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
     
     ax1.set_xlim(x_limits)
     #add fit formulas
-    ax0.text(0.3, 0.15, '$\epsilon$ =' + get_fitted_function_str(fit_data, fit_function),
+    ax0.text(0.1, 0.15, '$\epsilon$ = ' + get_fitted_function_str(fit_data, fit_function),
         verticalalignment='bottom', horizontalalignment='left',
         transform=ax0.transAxes,
-        color='black', fontsize=40, bbox = {'facecolor':'white', 'edgecolor':'none'})
-    ax0.text(0.3, 0.05, '$\epsilon$ =' + get_fitted_function_str(fit_mc, fit_function),
+        color='black', fontsize=60, bbox = dict(facecolor = 'white', edgecolor = 'none', alpha = 0.5))
+    ax0.text(0.1, 0.05, '$\epsilon$ = ' + get_fitted_function_str(fit_mc, fit_function),
         verticalalignment='bottom', horizontalalignment='left',
         transform=ax0.transAxes,
-        color='red', fontsize=40, bbox = {'facecolor':'white', 'edgecolor':'none'})
+        color='red', fontsize=60, bbox = dict(facecolor = 'white', edgecolor = 'none', alpha = 0.5))
     
-    ax1.text(0.3, 0.10, '$\epsilon$ =' + get_fitted_function_str(fit_SF, fit_function),
+    ax1.text(0.1, 0.10, '$\epsilon$ = ' + get_fitted_function_str(fit_SF, fit_function),
         verticalalignment='bottom', horizontalalignment='left',
         transform=ax1.transAxes,
-        color='green', fontsize=40, bbox = {'facecolor':'white', 'edgecolor':'none'})
+        color='green', fontsize=60, bbox = dict(facecolor = 'white', edgecolor = 'none', alpha = 0.5))
     
     #add scale factor fit
     x = numpy.linspace(fit_SF.GetXmin(), fit_SF.GetXmax(), fit_SF.GetNpx())
@@ -203,7 +205,7 @@ def get_binning(trigger_under_study):
 
 def get_fitted_function_str(fit, fit_function):
     decimals = 2
-    function_str = '$' + fit_function + '$'
+    function_str = fit_function
     function_str = function_str.replace('x*x', 'x^{2}')
     function_str = function_str.replace('[0]', str(round(fit.GetParameter(0), decimals)))
     function_str = function_str.replace('[1]', str(round(fit.GetParameter(1), decimals)))
@@ -213,10 +215,22 @@ def get_fitted_function_str(fit, fit_function):
     function_str = function_str.replace('+ -', '-')
     function_str = function_str.replace('- -', '+')
     function_str = function_str.replace('*', ' \\times ')
+    function_str = function_str.replace('-0.0', '0.0')
+    function_str = function_str.replace('0.0 \\times x^{2}', '')
+    function_str = function_str.replace('+ 0.0 \\times x', '')
+    function_str = function_str.strip()#remove whitespace
+    if function_str.startswith('+'):
+        function_str = function_str[1:]
+            
+    if '+ 0.98' in function_str:
+        print function_str
+        print len(function_str)
+        
     if 'exp' in function_str:
         function_str = function_str.replace('exp(', 'e^{\left(')
         function_str = function_str.replace(')', '\\right)}')
-    
+        
+    function_str = '$' + function_str + '$'
     return function_str
 
 

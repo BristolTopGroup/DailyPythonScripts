@@ -10,13 +10,13 @@ title = {
           }
 
 x_axis_title = {
-              'fontsize':30,
+              'fontsize':40,
               'position' : (1., 0.),
               'horizontalalignment': 'right'
               }
 
 y_axis_title = {
-              'fontsize':30,
+              'fontsize':40,
               'position' : (0., 1.),
 #              'horizontalalignment': 'right'
                 'verticalalignment': 'top'
@@ -24,16 +24,18 @@ y_axis_title = {
 
 axis_label_major = {
                     'which':'major',
-              'labelsize':24,
+              'labelsize':30,
               'length':20,
               'width': 1
               }
 axis_label_minor = {
                     'which':'minor',
-              'labelsize':20,
+              'labelsize':30,
               'length':10,
               'width': 1
               }
+
+legend_properties = {'size':30}
 
 #load into matplotlib
 

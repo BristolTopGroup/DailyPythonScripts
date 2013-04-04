@@ -4,8 +4,9 @@ Created on 20 Nov 2012
 @author: kreczko
 '''
 from uncertainties import ufloat
+import numpy
 
-def calculate_xsection(inputs, luminosity, efficiency = 1.):
+def calculate_xsection(inputs, luminosity, efficiency=1.):
     '''
     BUG: this doesn't work unless the inputs are unfolded!
     inputs = list of value-error pairs
@@ -57,11 +58,14 @@ def decombine_result(combined_result, original_ratio):
     with the proper errors
     '''
     combined_result = ufloat(combined_result)
-    sample_1 = combined_result * original_ratio/(1+original_ratio)
+    sample_1 = combined_result * original_ratio / (1 + original_ratio)
     sample_2 = combined_result - sample_1
     return (sample_1.nominal_value, sample_1.std_dev()), (sample_2.nominal_value, sample_2.std_dev())
 
 def combine_results(result1, result2):
+    '''
+    Combines results of the form {measurement: (value, error)
+    '''
     samples = result1.keys()
     if not samples == result2.keys():
         print 'Error - combine_results: results have a different set of keys!'
@@ -72,3 +76,53 @@ def combine_results(result1, result2):
         value2, error2 = result2[sample]
         combined_result[sample] = (value1 + value2, error1 + error2)
     return combined_result
+
+def combine_complex_results(result1, result2):
+    '''
+    Combines results of the form {measurement: [(value, error), ....]
+    '''
+    
+    samples = result1.keys()
+    if not samples == result2.keys():
+        print 'Error - combine_results: results have a different set of keys!'
+        return None
+    
+    combined_result = {}
+    
+    for sample in samples:
+        results = []
+        for entry1, entry2 in zip(result1[sample], result2[sample]):
+            value1, error1 = entry1
+            value2, error2 = entry2
+            results.append((value1 + value2, error1 + error2))
+        combined_result[sample] = results
+    return combined_result
+
+def calculate_lower_and_upper_PDFuncertainty(central_measurement, pdf_uncertainty_values={}):
+    '''
+    Calculates the appropriate lower and upper PDF uncertainty
+    @param central_measurement: measurement from central PDF weight
+    @param pdf_uncertainty_values: dictionary of measurements with different PDF weights; 
+                                    format {PDFWeights_%d: measurement}
+    '''
+    negative = []
+    positive = []
+    
+    # split PDF uncertainties into downwards (negative) and upwards (positive) components
+    for index in range(1, 45):
+        pdf_weight = 'PDFWeights_%d' % index
+        pdf_uncertainty = pdf_uncertainty_values[pdf_weight]
+        if index % 2 == 0:  # even == negative
+            negative.append(pdf_uncertainty)
+        else:
+            positive.append(pdf_uncertainty)
+            
+    pdf_max = numpy.sqrt(sum(max(x - central_measurement, y - central_measurement, 0) ** 2 for x, y in zip(negative, positive)))
+    pdf_min = numpy.sqrt(sum(max(central_measurement - x, central_measurement - y, 0) ** 2 for x, y in zip(negative, positive)))
+    
+    return pdf_min, pdf_max   
+
+def calculate_lower_and_upper_systematics(central_measurement, lower_systematics, upper_systematics, 
+                                          group = {}):
+    pass
+    
