@@ -32,7 +32,7 @@ def write_data_to_JSON(data, JSON_output_file):
     path = get_path(JSON_output_file)
     make_folder_if_not_exists(path)
     output_file = open(JSON_output_file, 'w')
-    output_file.write(json.dumps(data, indent=4))
+    output_file.write(json.dumps(data, indent=4, sort_keys = True))
     output_file.close()
 
 def read_data_from_JSON(JSON_input_file):
