@@ -2,18 +2,19 @@
 from __future__ import division
 from optparse import OptionParser
 import os
-from array import array
+#from array import array
 # rootpy
 from ROOT import TFile
 from rootpy import asrootpy
 from rootpy.io import File
-from rootpy.plotting import Hist, Hist2D
+from rootpy.plotting import Hist2D
 # DailyPythonScripts
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, combine_complex_results
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, make_folder_if_not_exists
 import config.RooUnfold as unfoldCfg
+from copy import deepcopy
 
 def unfold_results(results, category, channel, h_truth, h_measured, h_response, method):
     global variable, path_to_JSON
@@ -241,10 +242,10 @@ if __name__ == '__main__':
                         'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet'
                         }
-    
-    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
+#    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
     (options, args) = parser.parse_args()
+    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options
     
     if options.CoM == 8:
         from config.variable_binning_8TeV import bin_widths, bin_edges
@@ -255,6 +256,9 @@ if __name__ == '__main__':
     else:
         import sys
         sys.exit('Unknown centre of mass energy')
+    
+    categories = deepcopy(measurement_config.categories_and_prefixes.keys())
+    categories.extend(measurement_config.generator_systematics)
     
     luminosity = measurement_config.luminosity
     ttbar_xsection = measurement_config.ttbar_xsection
@@ -275,7 +279,14 @@ if __name__ == '__main__':
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path
     
-    for category in categories:
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1,45)]
+    #all MET uncertainties except JES as this is already included
+    met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix]
+    all_measurements = deepcopy(categories)
+    all_measurements.extend(pdf_uncertainties)
+    all_measurements.extend(met_uncertainties)
+    
+    for category in all_measurements:
         #Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
         if category == 'JES_up':

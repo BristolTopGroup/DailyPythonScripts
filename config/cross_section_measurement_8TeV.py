@@ -61,27 +61,6 @@ unfolding_scale_up = path_to_files + 'unfolding_TTJets_8TeV_scaleup.root'
 unfolding_matching_down = path_to_files + 'unfolding_TTJets_8TeV_matchingdown.root'
 unfolding_matching_up = path_to_files + 'unfolding_TTJets_8TeV_matchingup.root'
 
-
-met_systematics_suffixes = [
-        "ElectronEnUp",
-        "ElectronEnDown",
-        "MuonEnUp",
-        "MuonEnDown",
-        "TauEnUp",
-        "TauEnDown",
-        "JetResUp",
-        "JetResDown",
-        "JetEnUp",
-        "JetEnDown",
-        "UnclusteredEnUp",
-        "UnclusteredEnDown"
-        ]
-
-analysis_types = {
-                'electron':'EPlusJets',
-                'muon':'MuPlusJets'
-                }
-
 histogram_path_templates = {
                    'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_absolute_eta',
                    'HT' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_absolute_eta',

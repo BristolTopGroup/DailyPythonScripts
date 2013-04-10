@@ -272,7 +272,6 @@ def make_plots_ROOT(histograms, category, save_path, histname):
 
 def make_plots_matplotlib(histograms, category, save_path, histname):
     global variable, variables_latex_matplotlib, measurements_latex_matplotlib, k_value
-   
     
     channel = 'electron'
     if 'electron' in histname:
@@ -286,11 +285,11 @@ def make_plots_matplotlib(histograms, category, save_path, histname):
     hist_data = histograms['unfolded']
     hist_measured = histograms['measured']
     
-    hist_data.SetMarkerSize(1)
-    hist_data.SetMarkerStyle(20)
-    hist_measured.SetMarkerSize(1)
-    hist_measured.SetMarkerStyle(20)
-    hist_measured.SetMarkerColor(2)
+    hist_data.markersize = 2
+    hist_measured.markersize = 2
+    hist_data.marker = 'o'
+    hist_measured.marker = 'o'
+    hist_measured.color = 'red'
 
     plt.figure(figsize=(14, 10), dpi=200, facecolor='white')
     axes = plt.axes()
@@ -301,13 +300,15 @@ def make_plots_matplotlib(histograms, category, save_path, histname):
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
-    rplt.errorbar(hist_data, axes=axes, label='unfolded')
-    rplt.errorbar(hist_measured, axes=axes, label='measured')
+    rplt.errorbar(hist_data, axes=axes, label='unfolded', xerr=False)
+    rplt.errorbar(hist_measured, axes=axes, label='measured', xerr=False)
     
     for key, hist in histograms.iteritems():
         if not 'unfolded' in key and not 'measured' in key:
-            hist.SetLineStyle(7)
-            hist.SetLineWidth(2)
+            hist.linestyle = 'dashed'
+            hist.linewidth = 2
+#            hist.SetLineStyle(7)
+#            hist.SetLineWidth(2)
             #setting colours
             if 'POWHEG' in key or 'matchingdown' in key:
                 hist.SetLineColor(kBlue)
@@ -317,7 +318,6 @@ def make_plots_matplotlib(histograms, category, save_path, histname):
                 hist.SetLineColor(kMagenta + 3)
             elif 'scaledown' in key:
                 hist.SetLineColor(kGreen)
-            hist.Draw('hist same')
             rplt.hist(hist, axes=axes, label=measurements_latex_matplotlib[key])
     
     plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
@@ -413,6 +413,7 @@ def plot_central_and_systematics_matplotlib(channel):
             hist_data_systematic.SetMarkerColor(colour_number)
             rplt.errorbar(hist_data_systematic, axes=axes, label=systematic.replace('_',' '),
                           xerr=False)
+        #TODO: plot MET systematics as well! Maybe only the combined one. + PDF
             
     plt.legend(numpoints=1, loc='upper right', prop={'size': 24}, ncol = 2)
     plt.title(get_cms_labels_matplotlib(channel), CMS.title)
@@ -424,7 +425,8 @@ def plot_central_and_systematics_matplotlib(channel):
     for output_format in output_formats:
         plt.savefig(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.' + output_format) 
 
-
+def plot_templates():
+    pass
 if __name__ == '__main__':
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)

@@ -17,29 +17,44 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         sys.exit()
     
     abs_eta = ''
+    abs_eta_data = ''
     abs_eta_template = measurement_config.histogram_path_templates[variable] 
     if variable == 'HT':
         abs_eta = abs_eta_template % (analysis_type[channel], variable_bin, channel)
+        abs_eta_data = abs_eta
     else:
         if measurement_config.centre_of_mass == 8:
             abs_eta = abs_eta_template % (analysis_type[channel], met_type, variable_bin, channel)
         else:  # hot fix for 2011 data. Needs reprocessing for nicer paths
             lepton = channel.title()
             abs_eta = abs_eta_template % (analysis_type[channel], lepton, met_type, variable_bin, channel)
+        if 'JetRes' in met_type:
+            abs_eta_data = abs_eta.replace('JetResDown', '')
+            abs_eta_data = abs_eta_data.replace('JetResUp', '')
+            if 'patPFMet' in met_type:
+                abs_eta = abs_eta.replace('patPFMet', 'PFMET')
+        else:
+            abs_eta_data = abs_eta
     
     for sample, file_name in input_files.iteritems():
-        h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
+        h_abs_eta = None
+        if sample == 'data':
+            h_abs_eta = get_histogram(file_name, abs_eta_data, b_tag_bin)
+        else:
+            h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
         h_abs_eta.Rebin(rebin)
         histograms[sample] = h_abs_eta
     
     if channel == 'electron':
         # data-driven QCD
-        abs_eta = abs_eta.replace('Ref selection', 'QCDConversions')
+        abs_eta = abs_eta_data.replace('Ref selection', 'QCDConversions')
         h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
         h_abs_eta.Rebin(rebin)
         histograms['QCD'] = h_abs_eta
         # scaling to 10% of data (proper implementation: relIso fit)
-        histograms['QCD'].Scale(0.1 * histograms['data'].Integral() / histograms['QCD'].Integral())
+        qcd_mc_normalisation =  histograms['QCD'].Integral()
+        if not qcd_mc_normalisation == 0:
+            histograms['QCD'].Scale(0.1 * histograms['data'].Integral() / histograms['QCD'].Integral())
         
     if channel == 'muon':
         # data-driven QCD
@@ -49,13 +64,13 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta_mc = get_histogram(muon_QCD_MC_file, abs_eta, b_tag_bin)
         h_abs_eta_mc.Rebin(rebin)
         
-        abs_eta = measurement_config.special_muon_histogram
-        h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
-        # abs_eta = abs_eta.replace('Ref selection', 'QCD non iso mu+jets')
-        # h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
+#        abs_eta = measurement_config.special_muon_histogram
+#        h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
+        abs_eta = abs_eta_data.replace('Ref selection', 'QCD non iso mu+jets')
+        h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
         muon_QCD_normalisation_factor = 1
+        h_abs_eta.Rebin(rebin)
         if measurement_config.centre_of_mass == 8:
-            h_abs_eta.Rebin(rebin)
             muon_QCD_normalisation_factor = h_abs_eta_mc.Integral() / h_abs_eta.Integral()
         if measurement_config.centre_of_mass == 7:
             muon_QCD_normalisation_factor = 0.05 * histograms['data'].Integral() / h_abs_eta.Integral()
@@ -196,6 +211,8 @@ if __name__ == '__main__':
     
     
     (options, args) = parser.parse_args()
+    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options
+    
     if options.CoM == 8:
         from config.variable_binning_8TeV import variable_bins_ROOT
         import config.cross_section_measurement_8TeV as measurement_config
@@ -207,8 +224,8 @@ if __name__ == '__main__':
         
     generator_systematics = measurement_config.generator_systematics
     categories_and_prefixes = measurement_config.categories_and_prefixes
-    met_systematics_suffixes = measurement_config.met_systematics_suffixes
-    analysis_type = measurement_config.analysis_types
+    met_systematics_suffixes = met_systematics_suffixes
+    analysis_type = analysis_types
     
     variable = options.variable
     met_type = translate_options[options.metType]
@@ -346,6 +363,48 @@ if __name__ == '__main__':
                                    },
                       variable=variable,
                       met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
+        write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
+    
+    SingleTop_file = File(measurement_config.SingleTop_category_templates['central'])
+    VJets_file = File(measurement_config.VJets_category_templates['central'])
+    muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates['central'])
+    data_file_electron = File(measurement_config.data_electron_category_templates['central'])
+    data_file_muon = File(measurement_config.data_muon_category_templates['central']) 
+    TTJet_file = File(measurement_config.ttbar_category_templates['central'])
+       
+    for met_systematic in met_systematics_suffixes:
+        #all MET uncertainties except JES as this is already included
+        if 'JetEn' in met_systematic or variable == 'HT':#HT is not dependent on MET!
+            continue
+        category = met_type + met_systematic
+        if 'PFMET' in met_type:
+            category = category.replace('PFMET', 'patPFMet')
+        
+        
+        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_electron,
+                                   },
+                      variable=variable,
+                      met_type=category,
+                      b_tag_bin=b_tag_bin,
+                      )
+        
+        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_muon,
+                                   },
+                      variable=variable,
+                      met_type=category,
                       b_tag_bin=b_tag_bin,
                       )
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
