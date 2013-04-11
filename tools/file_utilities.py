@@ -8,6 +8,7 @@ import os
 import json
 import glob
 from rootpy.io import File
+import subprocess
 
 def make_folder_if_not_exists(folder):
     if not os.path.exists(folder):
@@ -31,7 +32,7 @@ def write_data_to_JSON(data, JSON_output_file):
     path = get_path(JSON_output_file)
     make_folder_if_not_exists(path)
     output_file = open(JSON_output_file, 'w')
-    output_file.write(json.dumps(data, indent=4))
+    output_file.write(json.dumps(data, indent=4, sort_keys = True))
     output_file.close()
 
 def read_data_from_JSON(JSON_input_file):
@@ -84,8 +85,10 @@ def find_duplicate_CRAB_output_files(job_files):
             seen.append(job)
     return duplicates
 
-def merge_ROOT_files(file_list, output_file):
-    pass
+def merge_ROOT_files(file_list, output_file, compression = 7):
+    input_files = ' '.join(file_list)
+    command = 'hadd -f%d %s %s' %(compression, output_file, input_files)
+    subprocess.Popen(command, shell=True)
 
 def get_process_from_file(file_in_path):
     file_name = file_in_path.split('/')[-1]
