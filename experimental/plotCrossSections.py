@@ -4,6 +4,7 @@ import os
 from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT, eta_bin_edges
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist
+from tools.Calculation import calculateTotalUncertainty, symmetriseErrors
 import ROOT
 from ROOT import TPaveText, kRed, TH1F, Double, TMinuit, Long, kGreen, gROOT, TCanvas, kMagenta, kBlue, TGraphAsymmErrors, TMath
 from ROOT import kAzure, kYellow, kViolet, THStack, gStyle
@@ -54,6 +55,14 @@ def read_xsection_measurement_results(category, channel):
     
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
+def read_unfolded_xsections(channel):
+    global path_to_JSON, variable, k_value, met_type, b_tag_bin
+    TTJet_xsection_unfolded = {}
+    for category in categories:
+        normalised_xsections = read_data_from_JSON(path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+        TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
+    return TTJet_xsection_unfolded
+
 def read_fit_templates_and_results_as_histograms(category, channel):
     global path_to_JSON, variable, met_type
     templates = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt')
@@ -62,19 +71,25 @@ def read_fit_templates_and_results_as_histograms(category, channel):
     template_histograms = {}
     fit_results_histograms = {}
     for bin_i, variable_bin in enumerate(variable_bins_ROOT[variable]):
-        h_data = value_tuplelist_to_hist(templates['data'][bin_i], eta_bin_edges)
-        h_signal = value_tuplelist_to_hist(templates['signal'][bin_i], eta_bin_edges)
-        h_VJets = value_tuplelist_to_hist(templates['V+Jets'][bin_i], eta_bin_edges)
-        h_QCD = value_tuplelist_to_hist(templates['QCD'][bin_i], eta_bin_edges)
+        h_template_data = value_tuplelist_to_hist(templates['data'][bin_i], eta_bin_edges)
+        h_template_signal = value_tuplelist_to_hist(templates['signal'][bin_i], eta_bin_edges)
+        h_template_VJets = value_tuplelist_to_hist(templates['V+Jets'][bin_i], eta_bin_edges)
+        h_template_QCD = value_tuplelist_to_hist(templates['QCD'][bin_i], eta_bin_edges)
         template_histograms[variable_bin] = {
-                                    'signal':h_signal,
-                                    'V+Jets':h_VJets,
-                                    'QCD':h_QCD
+                                    'signal':h_template_signal,
+                                    'V+Jets':h_template_VJets,
+                                    'QCD':h_template_QCD
                                     }
+        h_data = h_template_data.Clone()
+        h_signal = h_template_signal.Clone()
+        h_VJets = h_template_VJets.Clone()
+        h_QCD = h_template_QCD.Clone()
+        
         data_normalisation = data_values[bin_i]
         signal_normalisation = fit_results['signal'][bin_i][0]
         VJets_normalisation = fit_results['V+Jets'][bin_i][0]
         QCD_normalisation = fit_results['QCD'][bin_i][0]
+        
         h_data.Scale(data_normalisation)
         h_signal.Scale(signal_normalisation)
         h_VJets.Scale(VJets_normalisation)
@@ -247,16 +262,16 @@ def plot_fit_results(histograms, category, channel):
         canvas.SaveAs(plotname.replace('png', 'pdf'))
          
 
-def make_plots_ROOT(histograms, category, save_path, histname):
-    global variable, translate_options, k_value, b_tag_bin, maximum
+def make_plots_ROOT(histograms, category, save_path, histname, channel):
+    global variable, translateOptions, k_value, b_tag_bin, maximum
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
     plotting.setStyle()
-    gStyle.SetTitleYOffset(1.4)
+    gStyle.SetTitleYOffset(2.)
     ROOT.gROOT.ForceStyle()
     canvas = Canvas(width=700, height=500)
-    canvas.SetLeftMargin(0.15)
+    canvas.SetLeftMargin(0.18)
     canvas.SetBottomMargin(0.15)
     canvas.SetTopMargin(0.05)
     canvas.SetRightMargin(0.05)
@@ -270,23 +285,45 @@ def make_plots_ROOT(histograms, category, save_path, histname):
     hist_data.SetMinimum(0)
     hist_data.SetMaximum(maximum[variable])
     hist_data.SetMarkerSize(1)
-    hist_data.SetMarkerStyle(20)
-#    plotAsym = TGraphAsymmErrors(hist_data)
-#    plotStatErr = TGraphAsymmErrors(hist_data)
+    hist_data.SetMarkerStyle(8)
+    plotAsym = TGraphAsymmErrors(hist_data)
+    plotStatErr = TGraphAsymmErrors(hist_data)
+    
+    xsections = read_unfolded_xsections(channel)
+    bins = variable_bins_ROOT[variable]
+    assert(len(bins) == len(xsections['central']))
+    
+    for bin_i in range(len(bins)):
+        scale = 1# / width
+        centralresult = xsections['central'][bin_i]
+        fit_error = centralresult[1]
+        uncertainty = calculateTotalUncertainty(xsections, bin_i)
+        uncertainty_total_plus = uncertainty['Total+'][0]
+        uncertainty_total_minus = uncertainty['Total-'][0]
+        uncertainty_total_plus, uncertainty_total_minus = symmetriseErrors(uncertainty_total_plus, uncertainty_total_minus)
+        error_up = sqrt(fit_error ** 2 + uncertainty_total_plus ** 2) * scale
+        error_down = sqrt(fit_error ** 2 + uncertainty_total_minus ** 2) * scale
+        plotStatErr.SetPointEYhigh(bin_i, fit_error * scale)
+        plotStatErr.SetPointEYlow(bin_i, fit_error * scale)
+        plotAsym.SetPointEYhigh(bin_i, error_up)
+        plotAsym.SetPointEYlow(bin_i, error_down)
+        
     gStyle.SetEndErrorSize(20)
+    plotAsym.SetLineWidth(2)
+    plotStatErr.SetLineWidth(2)
     hist_data.Draw('P')
-#    plotStatErr.Draw('same P')
-#    plotAsym.Draw('same P Z')
+    plotStatErr.Draw('same P')
+    plotAsym.Draw('same P Z')
     legend.AddEntry(hist_data, 'unfolded', 'P')
     
     hist_measured = histograms['measured']
     hist_measured.SetMarkerSize(1)
     hist_measured.SetMarkerStyle(20)
     hist_measured.SetMarkerColor(2)
-    hist_measured.Draw('same P')
-    legend.AddEntry(hist_measured, 'measured', 'P')
+    #hist_measured.Draw('same P')
+    #legend.AddEntry(hist_measured, 'measured', 'P')
     
-    for key, hist in histograms.iteritems():
+    for key, hist in sorted(histograms.iteritems()):
         if not 'unfolded' in key and not 'measured' in key:
             hist.SetLineStyle(7)
             hist.SetLineWidth(2)
@@ -296,9 +333,9 @@ def make_plots_ROOT(histograms, category, save_path, histname):
             elif 'MADGRAPH' in key or 'matchingup' in key:
                 hist.SetLineColor(kRed + 1)
             elif 'MCATNLO'  in key or 'scaleup' in key:
-                hist.SetLineColor(kMagenta + 3)
+                hist.SetLineColor(kGreen - 3)
             elif 'scaledown' in key:
-                hist.SetLineColor(kGreen)
+                hist.SetLineColor(kMagenta + 3)
             hist.Draw('hist same')
             legend.AddEntry(hist, translate_options[key], 'l')
             
@@ -308,11 +345,11 @@ def make_plots_ROOT(histograms, category, save_path, histname):
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
     if 'electron' in histname:
-        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
+        channelLabel.AddText("e, %s, %s, k = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     elif 'muon' in histname:
-        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
+        channelLabel.AddText("#mu, %s, %s, k = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     else:
-        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
+        channelLabel.AddText("combined, %s, %s, k = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
     mytext.SetFillStyle(0)
@@ -516,11 +553,11 @@ if __name__ == '__main__':
         histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
         histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
         
-        make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, category, save_path, 'normalised_xsection_muon_different_generators')
-        make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, category, save_path, 'normalised_xsection_muon_systematics_shifts')
+        make_plots_ROOT(histograms_normalised_xsection_muon_different_generators, category, save_path, 'normalised_xsection_muon_different_generators', 'muon')
+        make_plots_ROOT(histograms_normalised_xsection_muon_systematics_shifts, category, save_path, 'normalised_xsection_muon_systematics_shifts', 'muon')
         
-        make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, category, save_path, 'normalised_xsection_electron_different_generators')
-        make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, category, save_path, 'normalised_xsection_electron_systematics_shifts')
+        make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, category, save_path, 'normalised_xsection_electron_different_generators', 'electron')
+        make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, category, save_path, 'normalised_xsection_electron_systematics_shifts', 'electron')
         
     plot_central_and_systematics('electron')
     plot_central_and_systematics('muon')

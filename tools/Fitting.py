@@ -33,7 +33,7 @@ class TemplateFit():
         for sample in self.vectors.keys():
             current_length = len(self.vectors[sample])
             if not data_length == current_length:
-                if current_length < data_length: 
+                if current_length < data_length:
                     for entry in range(current_length, data_length):
                         self.vectors[sample].append(0.)
                 else:
@@ -91,6 +91,8 @@ class TMinuitFit(TemplateFit):
         errorFlag = Long(2)
         
         N_total = self.normalisation[self.data_label] * 2
+        #N_total = 0
+        #N_min = -self.normalisation[self.data_label]
         N_min = 0
         
         param_index = 0
