@@ -226,7 +226,7 @@ if __name__ == '__main__':
     variable = options.variable
     met_type = translateOptions[options.metType]
     b_tag_bin = translateOptions[options.bjetbin]
-    path_to_files = '/Volumes/stuff/AN-13-015_V3/'
+    path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
     
     # possible options:
     # --continue : continue from saved - skips ROOT files, reads from JSON?

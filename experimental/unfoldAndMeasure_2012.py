@@ -18,8 +18,7 @@ import config.RooUnfold as unfoldCfg
 
 luminosity = 5814
 ttbar_xsection = 225.19
-#path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
-path_to_files = '/Users/phzss/work/test_ntuples/unfolding_files/'
+path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V3/'
 
 file_for_unfolding = File(path_to_files + 'unfolding_merged.root', 'read')
 file_for_powheg = File(path_to_files + 'unfolding_TTJets_8TeV_powheg.root', 'read')

@@ -91,8 +91,6 @@ class TMinuitFit(TemplateFit):
         errorFlag = Long(2)
         
         N_total = self.normalisation[self.data_label] * 2
-        #N_total = 0
-        #N_min = -self.normalisation[self.data_label]
         N_min = 0
         
         param_index = 0

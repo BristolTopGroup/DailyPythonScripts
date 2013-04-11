@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#python getFitResults_2012.py -v MET
-#python getFitResults_2012.py -v HT
-#python getFitResults_2012.py -v ST
-#python getFitResults_2012.py -v MT
+python getFitResults_2012.py -v MET
+python getFitResults_2012.py -v HT
+python getFitResults_2012.py -v ST
+python getFitResults_2012.py -v MT
 
 
 python unfoldAndMeasure_2012.py -v MET -k 3
