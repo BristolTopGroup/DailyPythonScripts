@@ -2,6 +2,7 @@ import ROOT
 from optparse import OptionParser
 from config.variable_binning_8TeV import variable_bins_ROOT, variable_bins_latex
 from config.met_systematics import metsystematics_sources, metsystematics_sources_latex
+from tools.Calculation import getRelativeError, symmetriseErrors, calculateTotalUncertainty
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from math import sqrt
 
@@ -15,22 +16,6 @@ def read_unfolded_xsections(channel):
         normalised_xsections = read_data_from_JSON(path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
         TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
     return TTJet_xsection_unfolded
-
-def getRelativeError(value, error):
-    relativeError = 0
-    if not value == 0:
-        relativeError = error / value
-    return relativeError
-
-def symmetriseErrors(error1, error2):
-    if not doSymmetricErrors:
-        return error1, error2
-    
-    error1, error2 = abs(error1), abs(error2)
-    if error1 > error2:
-        return error1, error1
-    
-    return error2, error2
 
 def setMETSystematics(metType):
     prefix = ''
@@ -69,58 +54,6 @@ def setMETSystematics(metType):
                 prefix + "UnclusteredEnUp":'Unclustered energy $+1\sigma$',
                 prefix + "UnclusteredEnDown":'Unclustered energy $-1\sigma$'
                       }
-
-def calculateTotalUncertainty(results, bin_i, omitTTJetsSystematics=False):
-    #pdf_min, pdf_max = calculatePDFErrors(results)
-    pdf_min, pdf_max = 0, 0
-    centralResult = results['central'][bin_i]
-    centralvalue, centralerror = centralResult[0], centralResult[1]
-    totalMinus, totalPlus = pdf_min ** 2 , pdf_max ** 2
-    totalMinus_err, totalPlus_err = 0, 0
-    totalMETMinus, totalMETPlus = 0, 0
-    totalMETMinus_err, totalMETPlus_err = 0, 0
-    uncertainty = {}
-    for source in results.keys():
-        if source == 'central' or 'PDFWeights_' in source:
-            continue
-        if omitTTJetsSystematics and source in ['TTJet scale-', 'TTJet scale+', 'TTJet matching-', 'TTJet matching+']:
-            continue
-        result = results[source][bin_i]
-        value, error = result[0], result[1]
-        diff = abs(value) - abs(centralvalue)
-        diff_error = sqrt((centralerror / centralvalue) ** 2 + (error / value) ** 2) * abs(diff)
-        uncertainty[source] = [diff, diff_error]
-        if diff > 0:
-            totalPlus += diff ** 2
-            totalPlus_err += diff_error ** 2
-        else:
-            totalMinus += diff ** 2
-            totalMinus_err += diff_error ** 2
-            
-        if source in metsystematics_sources:
-            if diff > 0:
-                totalMETPlus += diff ** 2
-                totalMETPlus_err += diff_error ** 2
-            else:
-                totalMETMinus += diff ** 2
-                totalMETMinus_err += diff_error ** 2
-        
-    total = sqrt(totalPlus + totalMinus)
-    total_error = sqrt(totalPlus_err + totalMinus_err)
-    totalPlus, totalMinus, totalPlus_err, totalMinus_err = (sqrt(totalPlus), sqrt(totalMinus),
-                                                             sqrt(totalPlus_err), sqrt(totalMinus_err))
-    
-    totalMETPlus, totalMETMinus, totalMETPlus_err, totalMETMinus_err = (sqrt(totalMETPlus), sqrt(totalMETMinus),
-                                                             sqrt(totalMETPlus_err), sqrt(totalMETMinus_err))
-    uncertainty['Total+'] = [totalPlus, totalPlus_err]
-    uncertainty['Total-'] = [totalMinus, totalMinus_err]
-    uncertainty['Total'] = [total, total_error]
-    uncertainty['TotalMETUnc+'] = [totalMETPlus, totalMETPlus_err]
-    uncertainty['TotalMETUnc-'] = [totalMETMinus, totalMETMinus_err]
-    uncertainty['PDFWeights+'] = [pdf_max, 0]
-    uncertainty['PDFWeights-'] = [pdf_min, 0]
-    
-    return uncertainty
 
 def print_xsections(xsections, channel, toFile = True):
     global savePath, variable, k_value, met_type, b_tag_bin
@@ -194,12 +127,12 @@ def print_xsections_with_uncertainties(xsections, channel, toFile = True):
         header += '& %s bin %s' % (variable, variable_bin)
         centralresult = xsections['central'][bin_i]
         uncertainty = calculateTotalUncertainty(xsections, bin_i)
-        uncertainty['Total+'][0], uncertainty['Total-'][0] = symmetriseErrors(uncertainty['Total+'][0], uncertainty['Total-'][0])
+        uncertainty_total_plus = uncertainty['Total+'][0]
+        uncertainty_total_minus = uncertainty['Total-'][0]
+        uncertainty_total_plus, uncertainty_total_minus = symmetriseErrors(uncertainty_total_plus, uncertainty_total_minus)
         scale = 100
         central_measurement = centralresult[0]
         fit_error = centralresult[1]
-        uncertainty_total_plus = uncertainty['Total+'][0]
-        uncertainty_total_minus = uncertainty['Total-'][0]
         
         formatting = (variable_bins_latex[variable_bin], central_measurement * scale,
                       fit_error * scale, uncertainty_total_plus * scale,

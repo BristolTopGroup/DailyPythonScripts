@@ -2,6 +2,7 @@
 from __future__ import division
 from optparse import OptionParser
 import sys
+import ROOT
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 # DailyPythonScripts
@@ -271,11 +272,16 @@ if __name__ == '__main__':
         write_fit_results_and_initial_values('muon', systematic, fit_results_muon, initial_values_muon, templates_muon)
     
     #central measurement and the rest of the systematics
+    last_systematic = ''
     for category, prefix in categories_and_prefixes.iteritems():
         TTJet_file = File(path_to_files + category + '/TTJet_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
         SingleTop_file = File(path_to_files + category + '/SingleTop_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
         VJets_file = File(path_to_files + category + '/VJets_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
         muon_QCD_MC_file = File(path_to_files + category + '/QCD_MuEnrichedPt5_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET' + prefix + '.root')
+        if last_systematic in ['JES_up', 'JES_down'] and not category in ['JES_up', 'JES_down']:
+            data_file_electron = File(path_to_files + 'central/SingleElectron_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root')
+            data_file_muon = File(path_to_files + 'central/SingleMu_5814pb_PFElectron_PFMuon_PF2PATJets_PFMET.root')
+        last_systematic = category
         
         #Setting up systematic MET for JES up/down samples
         met_type = translateOptions[options.metType]
