@@ -28,7 +28,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     h_unfolded_data = unfolding.unfold(h_data)
     
     #export the D and SV distributions
-    SVD_path = path_to_JSON + '/' + variable + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
+    SVD_path = path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
     make_folder_if_not_exists(SVD_path)
     if method == 'TSVDUnfold':
         SVDdist = TFile(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
@@ -146,7 +146,7 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                               'scaledown': scaledown_results,
                               'scaleup': scaleup_results
                               }
-    write_data_to_JSON(normalisation_unfolded, path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(normalisation_unfolded, path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
     
     return normalisation_unfolded
     
@@ -177,7 +177,7 @@ def calculate_xsections(normalisation, category, channel):
                          'scaledown': scaledown_xsection,
                          'scaleup': scaleup_xsection
                          }
-    write_data_to_JSON(xsection_unfolded, path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(xsection_unfolded, path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
     
 def calculate_normalised_xsections(normalisation, category, channel, normalise_to_one = False):
     global variable, met_type, path_to_JSON
@@ -203,7 +203,7 @@ def calculate_normalised_xsections(normalisation, category, channel, normalise_t
                            'scaleup': scaleup_normalised_xsection
                            }
     
-    filename = path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
+    filename = path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
     if normalise_to_one:
         filename = filename.replace('normalised_xsection', 'normalised_to_one_xsection')
     write_data_to_JSON(normalised_xsection, filename)
@@ -220,12 +220,12 @@ if __name__ == '__main__':
     parser.add_option("-m", "--metType", dest="metType", default='type1',
                       help="set MET type for analysis of MET, ST or MT")
     parser.add_option("-k", "--k_value", type='int',
-                      dest="k_value", default=6,
+                      dest="k_value", default=4,
                       help="k-value for SVD unfolding")
     parser.add_option("-H", "--hreco", type='int',
                       dest="Hreco", default=2,
                       help="Hreco parameter for error treatment in RooUnfold")
-    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=7,
+    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
     
     translate_options = {
@@ -299,8 +299,8 @@ if __name__ == '__main__':
                 met_type = 'patPFMetJetEnDown'
         
         #read fit results from JSON
-        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
-        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + '/' + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
         
         #change back to original MET type for the unfolding
         met_type = translate_options[options.metType]
@@ -314,7 +314,7 @@ if __name__ == '__main__':
         
         unfolded_normalisation_combined = combine_complex_results(unfolded_normalisation_electron, unfolded_normalisation_muon)
         write_data_to_JSON(unfolded_normalisation_combined, 
-                           path_to_JSON + '/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_combined_' + met_type + '.txt')
+                           path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_combined_' + met_type + '.txt')
         #measure xsection
         calculate_xsections(unfolded_normalisation_electron, category, 'electron')
         calculate_xsections(unfolded_normalisation_muon, category, 'muon')

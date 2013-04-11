@@ -2,6 +2,7 @@
 from __future__ import division
 from optparse import OptionParser
 import sys
+import ROOT
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 # DailyPythonScripts
