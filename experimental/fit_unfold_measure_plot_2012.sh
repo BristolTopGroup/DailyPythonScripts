@@ -46,3 +46,24 @@ python plotCrossSections.py -v MT -k 2
 python plotCrossSections.py -v MT -k 3
 python plotCrossSections.py -v MT -k 4
 python plotCrossSections.py -v MT -k 5
+
+
+python printCrossSections.py -v MET -k 3
+python printCrossSections.py -v MET -k 4
+python printCrossSections.py -v MET -k 5
+python printCrossSections.py -v MET -k 6
+
+python printCrossSections.py -v HT -k 4
+python printCrossSections.py -v HT -k 5
+python printCrossSections.py -v HT -k 6
+python printCrossSections.py -v HT -k 7
+
+python printCrossSections.py -v ST -k 4
+python printCrossSections.py -v ST -k 5
+python printCrossSections.py -v ST -k 6
+python printCrossSections.py -v ST -k 7
+
+python printCrossSections.py -v MT -k 2
+python printCrossSections.py -v MT -k 3
+python printCrossSections.py -v MT -k 4
+python printCrossSections.py -v MT -k 5

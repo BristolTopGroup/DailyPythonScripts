@@ -5,6 +5,8 @@ Created on 20 Nov 2012
 '''
 from uncertainties import ufloat
 import numpy
+from math import sqrt
+from config.met_systematics import metsystematics_sources
 
 def calculate_xsection(inputs, luminosity, efficiency=1.):
     '''
@@ -126,3 +128,66 @@ def calculate_lower_and_upper_systematics(central_measurement, lower_systematics
                                           group = {}):
     pass
     
+def getRelativeError(value, error):
+    relativeError = 0
+    if not value == 0:
+        relativeError = error / value
+    return relativeError
+
+def symmetriseErrors(error1, error2):
+    error1, error2 = abs(error1), abs(error2)
+    if error1 > error2:
+        return error1, error1
+    return error2, error2
+
+def calculateTotalUncertainty(results, bin_i, omitTTJetsSystematics=False):
+    #pdf_min, pdf_max = calculate_lower_and_upper_PDFuncertainty(results['central'][bin_i])
+    pdf_min, pdf_max = 0, 0
+    centralResult = results['central'][bin_i]
+    centralvalue, centralerror = centralResult[0], centralResult[1]
+    totalMinus, totalPlus = pdf_min ** 2 , pdf_max ** 2
+    totalMinus_err, totalPlus_err = 0, 0
+    totalMETMinus, totalMETPlus = 0, 0
+    totalMETMinus_err, totalMETPlus_err = 0, 0
+    uncertainty = {}
+    for source in results.keys():
+        if source == 'central' or 'PDFWeights_' in source:
+            continue
+        if omitTTJetsSystematics and source in ['TTJet scale-', 'TTJet scale+', 'TTJet matching-', 'TTJet matching+']:
+            continue
+        result = results[source][bin_i]
+        value, error = result[0], result[1]
+        diff = abs(value) - abs(centralvalue)
+        diff_error = sqrt((centralerror / centralvalue) ** 2 + (error / value) ** 2) * abs(diff)
+        uncertainty[source] = [diff, diff_error]
+        if diff > 0:
+            totalPlus += diff ** 2
+            totalPlus_err += diff_error ** 2
+        else:
+            totalMinus += diff ** 2
+            totalMinus_err += diff_error ** 2
+            
+        if source in metsystematics_sources:
+            if diff > 0:
+                totalMETPlus += diff ** 2
+                totalMETPlus_err += diff_error ** 2
+            else:
+                totalMETMinus += diff ** 2
+                totalMETMinus_err += diff_error ** 2
+        
+    total = sqrt(totalPlus + totalMinus)
+    total_error = sqrt(totalPlus_err + totalMinus_err)
+    totalPlus, totalMinus, totalPlus_err, totalMinus_err = (sqrt(totalPlus), sqrt(totalMinus),
+                                                             sqrt(totalPlus_err), sqrt(totalMinus_err))
+    
+    totalMETPlus, totalMETMinus, totalMETPlus_err, totalMETMinus_err = (sqrt(totalMETPlus), sqrt(totalMETMinus),
+                                                             sqrt(totalMETPlus_err), sqrt(totalMETMinus_err))
+    uncertainty['Total+'] = [totalPlus, totalPlus_err]
+    uncertainty['Total-'] = [totalMinus, totalMinus_err]
+    uncertainty['Total'] = [total, total_error]
+    uncertainty['TotalMETUnc+'] = [totalMETPlus, totalMETPlus_err]
+    uncertainty['TotalMETUnc-'] = [totalMETMinus, totalMETMinus_err]
+    uncertainty['PDFWeights+'] = [pdf_max, 0]
+    uncertainty['PDFWeights-'] = [pdf_min, 0]
+    
+    return uncertainty
