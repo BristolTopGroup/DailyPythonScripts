@@ -80,7 +80,6 @@ def checkOnMC(unfolding, method):
         doUnfoldingSequence(unfolding, h_data, method, '_sub%d' %sub)
         pull = unfolding.pull_inputErrorOnly()
 #        unfolding.printTable()
-        print pull
         pulls.append(pull)
         unfolding.Reset()
     allpulls = []
@@ -162,17 +161,20 @@ if __name__ == "__main__":
     inputFile = File('../data/unfolding_merged_sub1.root', 'read')
     h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth', bins))
     h_measured = asrootpy(inputFile.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
-    h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'truth', bins))
+    h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'fake', bins))
     h_response = inputFile.unfoldingAnalyserElectronChannel.response_withoutFakes_AsymBins #response_AsymBins
+    h_measured_new = h_measured - h_fakes
+    
+#    h_response = inputFile.unfoldingAnalyserElectronChannel.response_AsymBins #response_AsymBins
     nEvents = inputFile.EventFilter.EventCounter.GetBinContent(1)
     lumiweight = 164.5 * 5050 / nEvents
     h_truth.Scale(lumiweight)
     h_measured.Scale(lumiweight)
     h_fakes.Scale(lumiweight)
     h_response.Scale(lumiweight)
-    unfolding = Unfolding(h_truth, h_measured, h_response, method = method)
+    unfolding = Unfolding(h_truth, h_measured_new, h_response, method = method)
     #should be identical to
-    #unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method)
+#    unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method = method)
     
     #test values for real data input
     h_data = Hist(bins.tolist())

@@ -2,13 +2,10 @@
 *.pyc
 *.pyo
 *.log
-#these four potentially include non-approved data == don't make them public
-src/plots/*
-examples/plots/*
-experimental/plots/
-experimental/data/
-src/data/*
-experimental/data/*
+#data and plots potentially include non-approved data == don't make them public
+*/data/*
+*/plots/*
+src/cross_section_measurement/data/
 src/log_*
 src/*.root
 src/*.png

@@ -15,7 +15,7 @@ from rootpy.plotting import Hist, HistStack, Legend, Canvas
 #import matplotlib.pyplot as plt
 #from matplotlib.ticker import AutoMinorLocator
 
-BjetBinsLatex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b-tags',
+b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b-tags',
                     '1orMoreBtag':'#geq 1 b-tags',
                     '2btags':'2 b-tags', '2orMoreBtags':'#geq 2 b-tags',
                     '3btags':'3 b-tags', '3orMoreBtags':'#geq 3 b-tags',
@@ -69,7 +69,7 @@ def read_fit_templates_as_histograms(category, channel):
     return histograms
 
 def make_template_plots(histograms, category, channel):
-    global variable, translateOptions, b_tag_bin, save_path
+    global variable, translate_options, b_tag_bin, save_path
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
@@ -117,11 +117,11 @@ def make_template_plots(histograms, category, channel):
         mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
         channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
         if channel == 'electron':
-            channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+            channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
         elif channel == 'muon':
-            channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+            channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
         else:
-            channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin]))
+            channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
         mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
         mytext.SetFillStyle(0)
@@ -141,8 +141,8 @@ def make_template_plots(histograms, category, channel):
         canvas.SaveAs(plotname)
         
 
-def make_plots_ROOT(histograms, category, savePath, histname):
-    global variable, translateOptions, k_value, b_tag_bin, maximum
+def make_plots_ROOT(histograms, category, save_path, histname):
+    global variable, translate_options, k_value, b_tag_bin, maximum
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
@@ -157,8 +157,8 @@ def make_plots_ROOT(histograms, category, savePath, histname):
     legend = plotting.create_legend(x0=0.6, y1=0.5)
     
     hist_data = histograms['unfolded']
-    hist_data.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
-    hist_data.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
+    hist_data.GetXaxis().SetTitle(translate_options[variable] + ' [GeV]')
+    hist_data.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translate_options[variable] + '} [GeV^{-1}]')
     hist_data.GetXaxis().SetTitleSize(0.05)
     hist_data.GetYaxis().SetTitleSize(0.05)
     hist_data.SetMinimum(0)
@@ -194,7 +194,7 @@ def make_plots_ROOT(histograms, category, savePath, histname):
             elif 'scaledown' in key:
                 hist.SetLineColor(kGreen)
             hist.Draw('hist same')
-            legend.AddEntry(hist, translateOptions[key], 'l')
+            legend.AddEntry(hist, translate_options[key], 'l')
             
     
     legend.Draw()
@@ -202,11 +202,11 @@ def make_plots_ROOT(histograms, category, savePath, histname):
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
     if 'electron' in histname:
-        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     elif 'muon' in histname:
-        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     else:
-        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
     mytext.SetFillStyle(0)
@@ -224,13 +224,13 @@ def make_plots_ROOT(histograms, category, savePath, histname):
     canvas.Modified()
     canvas.Update()
     
-    path = savePath + '/' + variable + '/' + category
+    path = save_path + '/' + variable + '/' + category
     make_folder_if_not_exists(path)
     canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.png')
     #canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.pdf')
 
 def plot_central_and_systematics(channel):
-    global variable, translateOptions, k_value, b_tag_bin, maximum, categories
+    global variable, translate_options, k_value, b_tag_bin, maximum, categories
     ROOT.TH1.SetDefaultSumw2(False)
     ROOT.gROOT.SetBatch(True)
     ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
@@ -246,8 +246,8 @@ def plot_central_and_systematics(channel):
     
     hist_data_central = read_xsection_measurement_results('central', channel)[0]['unfolded']
     
-    hist_data_central.GetXaxis().SetTitle(translateOptions[variable] + ' [GeV]')
-    hist_data_central.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translateOptions[variable] + '} [GeV^{-1}]')
+    hist_data_central.GetXaxis().SetTitle(translate_options[variable] + ' [GeV]')
+    hist_data_central.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + translate_options[variable] + '} [GeV^{-1}]')
     hist_data_central.GetXaxis().SetTitleSize(0.05)
     hist_data_central.GetYaxis().SetTitleSize(0.05)
     hist_data_central.SetMinimum(0)
@@ -286,18 +286,18 @@ def plot_central_and_systematics(channel):
 #        elif central_generator == 'MCATNLO':
 #            hist_MC.SetLineColor(kMagenta + 3)
 #        hist_MC.Draw('hist same')
-        #legend.AddEntry(hist_MC, translateOptions[central_generator], 'l')
+        #legend.AddEntry(hist_MC, translate_options[central_generator], 'l')
     
     legend.Draw()
     
     mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
     channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
     if channel == 'electron':
-        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("e, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     elif channel == 'muon':
-        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("#mu, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     else:
-        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", BjetBinsLatex[b_tag_bin], k_value))
+        channelLabel.AddText("combined, %s, %s, k_v = %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin], k_value))
     mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
              
     mytext.SetFillStyle(0)
@@ -336,7 +336,7 @@ if __name__ == '__main__':
     parser.add_option("-k", "--k_value", type='int',
                       dest="k_value", default=6,
                       help="k-value for SVD unfolding, used in histogram names")
-    translateOptions = {
+    translate_options = {
                         '0':'0btag',
                         '1':'1btag',
                         '2':'2btags',
@@ -375,15 +375,15 @@ if __name__ == '__main__':
     path_to_JSON = options.path
     savePath = options.savePath
     variable = options.variable
-    met_type = translateOptions[options.metType]
+    met_type = translate_options[options.metType]
     k_value = options.k_value
-    b_tag_bin = translateOptions[options.bjetbin]
+    b_tag_bin = translate_options[options.bjetbin]
     
     categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
     for category in categories:
         #setting up systematic MET for JES up/down samples for reading fit templates
-        met_type = translateOptions[options.metType]
+        met_type = translate_options[options.metType]
         if category == 'JES_up':
             met_type += 'JetEnUp'
             if met_type == 'PFMETJetEnUp':
@@ -397,7 +397,7 @@ if __name__ == '__main__':
         muon_fit_templates = read_fit_templates_as_histograms(category, 'muon')
         
         #change back to original MET type
-        met_type = translateOptions[options.metType]
+        met_type = translate_options[options.metType]
         if met_type == 'PFMET':
             met_type = 'patMETsPFlow'
         

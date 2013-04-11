@@ -29,8 +29,8 @@ signal_samples = [ 'TTJet', 'SingleTop']
 sample_summations = {
                   'QCD_Electron':electron_qcd_samples,
                   'SingleTop' : singleTop_samples,
-                  'WPlusJets' : wplusjets_samples,
-                  'VPlusJets' : vplusjets_samples,
+                  'WJets' : wplusjets_samples,
+                  'VJets' : vplusjets_samples,
                   'DiBoson': diboson_samples,
                   'Signal': signal_samples
                   }

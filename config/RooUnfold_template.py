@@ -8,6 +8,7 @@ availablemethods = ['RooUnfoldTUnfold', 'RooUnfoldBayes',
                         'RooUnfoldInvert', 'RooUnfoldTUnfold']
 SVD_k_value = 5
 SVD_n_toy = 1000
+Hreco = 2
 Bayes_n_repeat = 4
 
 unfolded_markerStyle = 20
