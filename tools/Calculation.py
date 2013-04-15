@@ -124,10 +124,39 @@ def calculate_lower_and_upper_PDFuncertainty(central_measurement, pdf_uncertaint
     
     return pdf_min, pdf_max   
 
-def calculate_lower_and_upper_systematics(central_measurement, lower_systematics, upper_systematics, 
-                                          group = {}):
-    pass
+def calculate_lower_and_upper_systematics(central_measurement, list_of_systematics, symmetrise_errors = False):
+    '''
+    More generic replacement for calculateTotalUncertainty. Calculates the total negative and positve systematics.
+    @param central_measurement: measurement from the central sample
+    @param list_of_systematics: list of systematic measurements 
+    @param symmetrise_errors: make the errors symmetric. Picks the largest of the two and returns it as both upper and lower error. Default is false.
+    '''
+    negative_error = 0
+    positive_error = 0
+    for systematic in list_of_systematics:
+        deviation = abs(systematic) - abs(central_measurement)
+        
+        if deviation > 0:
+            positive_error += deviation**2
+        else:
+            negative_error += deviation**2
+            
+    negative_error = sqrt(negative_error)
+    positive_error = sqrt(positive_error)
     
+    if symmetrise_errors:
+        negative_error = max(negative_error, positive_error)
+        positive_error = max(negative_error, positive_error)
+    
+    return negative_error, positive_error
+    
+def combine_errors_in_quadrature(list_of_errors):
+    list_of_errors_squared = [error**2 for error in list_of_errors]
+    sum_of_errors_squared = sum(list_of_errors_squared)
+    combined_error = sqrt(sum_of_errors_squared)
+    
+    return combined_error
+
 def getRelativeError(value, error):
     relativeError = 0
     if not value == 0:
