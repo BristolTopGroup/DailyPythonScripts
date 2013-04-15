@@ -75,7 +75,6 @@ def summarise_systematics(list_of_central_measurements, dictionary_of_systematic
                 error_up = max(error_down, error_up)
         else:
             list_of_systematics = [systematic[index][0] for systematic in dictionary_of_systematics.values()]
-            print list_of_systematics
             error_down, error_up = calculate_lower_and_upper_systematics(central_value, list_of_systematics, symmetrise_errors)
 
         down_errors[index] = error_down
@@ -136,7 +135,7 @@ if __name__ == "__main__":
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     k_value = options.k_value
-    path_to_JSON = options.path + '/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/'
+    path_to_JSON = options.path + '/' + str(options.CoM) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/'
     symmetrise_errors = options.symmetrise_errors
     
     if options.CoM == 8:
