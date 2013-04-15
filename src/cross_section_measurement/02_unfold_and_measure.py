@@ -28,7 +28,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     h_unfolded_data = unfolding.unfold(h_data)
     
     #export the D and SV distributions
-    SVD_path = path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
+    SVD_path = path_to_JSON  + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
     make_folder_if_not_exists(SVD_path)
     if method == 'TSVDUnfold':
         SVDdist = TFile(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
@@ -146,7 +146,7 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                               'scaledown': scaledown_results,
                               'scaleup': scaleup_results
                               }
-    write_data_to_JSON(normalisation_unfolded, path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(normalisation_unfolded, path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
     
     return normalisation_unfolded
     
@@ -177,7 +177,7 @@ def calculate_xsections(normalisation, category, channel):
                          'scaledown': scaledown_xsection,
                          'scaleup': scaleup_xsection
                          }
-    write_data_to_JSON(xsection_unfolded, path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
+    write_data_to_JSON(xsection_unfolded, path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/xsection_' + channel + '_' + met_type + '.txt')
     
 def calculate_normalised_xsections(normalisation, category, channel, normalise_to_one = False):
     global variable, met_type, path_to_JSON
@@ -203,7 +203,7 @@ def calculate_normalised_xsections(normalisation, category, channel, normalise_t
                            'scaleup': scaleup_normalised_xsection
                            }
     
-    filename = path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
+    filename = path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt'
     if normalise_to_one:
         filename = filename.replace('normalised_xsection', 'normalised_to_one_xsection')
     write_data_to_JSON(normalised_xsection, filename)
@@ -245,7 +245,7 @@ if __name__ == '__main__':
 #    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
     (options, args) = parser.parse_args()
-    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options
+    from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
     
     if options.CoM == 8:
         from config.variable_binning_8TeV import bin_widths, bin_edges
@@ -256,9 +256,6 @@ if __name__ == '__main__':
     else:
         import sys
         sys.exit('Unknown centre of mass energy')
-    
-    categories = deepcopy(measurement_config.categories_and_prefixes.keys())
-    categories.extend(measurement_config.generator_systematics)
     
     luminosity = measurement_config.luminosity
     ttbar_xsection = measurement_config.ttbar_xsection
@@ -277,11 +274,17 @@ if __name__ == '__main__':
     unfoldCfg.Hreco = options.Hreco
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path
+    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/'
+    
+    categories = deepcopy(measurement_config.categories_and_prefixes.keys())
+    ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    categories.extend(ttbar_generator_systematics)
+    categories.extend(vjets_generator_systematics)
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1,45)]
     #all MET uncertainties except JES as this is already included
-    met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix]
+    met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
@@ -299,8 +302,8 @@ if __name__ == '__main__':
                 met_type = 'patPFMetJetEnDown'
         
         #read fit results from JSON
-        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
-        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
+        TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
         
         #change back to original MET type for the unfolding
         met_type = translate_options[options.metType]
@@ -314,7 +317,7 @@ if __name__ == '__main__':
         
         unfolded_normalisation_combined = combine_complex_results(unfolded_normalisation_electron, unfolded_normalisation_muon)
         write_data_to_JSON(unfolded_normalisation_combined, 
-                           path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_combined_' + met_type + '.txt')
+                           path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_combined_' + met_type + '.txt')
         #measure xsection
         calculate_xsections(unfolded_normalisation_electron, category, 'electron')
         calculate_xsections(unfolded_normalisation_muon, category, 'muon')

@@ -39,3 +39,6 @@ translate_options = {
                         'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet',
                         }
+
+ttbar_theory_systematic_prefix = 'TTJets_'
+vjets_theory_systematic_prefix = 'VJets_'

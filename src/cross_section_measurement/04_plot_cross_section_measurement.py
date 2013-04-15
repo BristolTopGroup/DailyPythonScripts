@@ -1,9 +1,13 @@
+from __future__ import division#the result of the division will be always a float
 from optparse import OptionParser
 import tools.plotting_utilities as plotting
 import os
+from copy import deepcopy
 
+from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist
+from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist,\
+    value_errors_tuplelist_to_graph
 from tools.Calculation import calculateTotalUncertainty, symmetriseErrors
 from math import sqrt
 import ROOT
@@ -22,10 +26,20 @@ rc('text', usetex=True)
 def read_xsection_measurement_results(category, channel):
     global path_to_JSON, variable, k_value, met_type
     
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
-    
+    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
+                                                       + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
     h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
+    
+    if category == 'central':    
+        normalised_xsection_unfolded_with_errors = read_data_from_JSON(path_to_JSON  + '/xsection_measurement_results' + '/kv' + 
+                                                                   str(k_value) + '/' + category + '/normalised_xsection_' + 
+                                                                   channel + '_' + met_type + '_with_errors.txt')
+        h_normalised_xsection = value_errors_tuplelist_to_graph(normalised_xsection_unfolded_with_errors['TTJet_measured'], bin_edges[variable])
+        h_normalised_xsection_unfolded = value_errors_tuplelist_to_graph(normalised_xsection_unfolded_with_errors['TTJet_unfolded'], bin_edges[variable])
+    
+    
+    #true distributions
     h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
     h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
     h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges[variable])
@@ -57,15 +71,15 @@ def read_unfolded_xsections(channel):
     global path_to_JSON, variable, k_value, met_type, b_tag_bin
     TTJet_xsection_unfolded = {}
     for category in categories:
-        normalised_xsections = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+        normalised_xsections = read_data_from_JSON(path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
         TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
     return TTJet_xsection_unfolded
 
 def read_fit_templates_and_results_as_histograms(category, channel):
     global path_to_JSON, variable, met_type
-    templates = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt')
-    data_values = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')['data']
-    fit_results = read_data_from_JSON(path_to_JSON + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
+    templates = read_data_from_JSON(path_to_JSON  + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt')
+    data_values = read_data_from_JSON(path_to_JSON  + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')['data']
+    fit_results = read_data_from_JSON(path_to_JSON  + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
     template_histograms = {}
     fit_results_histograms = {}
     for bin_i, variable_bin in enumerate(variable_bins_ROOT[variable]):
@@ -207,11 +221,6 @@ def make_template_plots_matplotlib(histograms, category, channel):
 def plot_fit_results(histograms, category, channel):
     global variable, translate_options, b_tag_bin, output_folder
     #ROOT.TH1.SetDefaultSumw2(False)
-    ROOT.gROOT.SetBatch(True)
-    ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
-    plotting.setStyle()
-    gStyle.SetTitleYOffset(1.4)
-    ROOT.gROOT.ForceStyle()
     
     for variable_bin in variable_bins_ROOT[variable]:
         path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category + '/fit_results/'
@@ -347,7 +356,7 @@ def get_cms_labels(channel):
     else:
         channel_label.AddText("combined, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
         
-    cms_label.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = %d TeV" % (measurement_config.luminosity//1000, measurement_config.centre_of_mass));
+    cms_label.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = %d TeV" % (measurement_config.luminosity/1000, measurement_config.centre_of_mass));
              
     cms_label.SetFillStyle(0)
     cms_label.SetBorderSize(0)
@@ -372,7 +381,7 @@ def get_cms_labels_matplotlib(channel):
         lepton = 'combined'
     channel_label = '%s, $\geq$ 4 jets, %s' % (lepton, b_tag_bins_latex_matplotlib[b_tag_bin])
     template = '%s, CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV'
-    label = template %(channel_label, measurement_config.luminosity//1000, measurement_config.centre_of_mass) 
+    label = template %(channel_label, measurement_config.luminosity/1000, measurement_config.centre_of_mass) 
     return label
     
     
@@ -642,7 +651,7 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data/',
                   help="set path to JSON files")
-    parser.add_option("-s", "--output_folder", dest="output_folder", default='plots/',
+    parser.add_option("-o", "--output_folder", dest="output_folder", default='plots/',
                   help="set path to save plots")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                   help="set variable to plot (MET, HT, ST, MT)")
@@ -659,21 +668,6 @@ if __name__ == '__main__':
                       help="creates a set of plots for each systematic (in addition to central result).")
     parser.add_option("--nice-plots", action="store_true", dest="nice_plots",
                       help="plot using matplotlib instead of ROOT")
-    
-    translate_options = {
-                        '0':'0btag',
-                        '1':'1btag',
-                        '2':'2btags',
-                        '3':'3btags',
-                        '0m':'0orMoreBtag',
-                        '1m':'1orMoreBtag',
-                        '2m':'2orMoreBtags',
-                        '3m':'3orMoreBtags',
-                        '4m':'4orMoreBtags',
-                        #mettype:
-                        'pf':'PFMET',
-                        'type1':'patType1CorrectedPFMet',
-                        }
     
     maximum = {
                'MET': 0.02,
@@ -713,6 +707,14 @@ if __name__ == '__main__':
                         'matchingup': 't#bar{t} (matching up)',
                         'scaledown': 't#bar{t} (Q^{2} down)',
                         'scaleup': 't#bar{t} (Q^{2} up)',
+                        'TTJets_matchingdown': 't#bar{t} (matching down)',
+                        'TTJets_matchingup': 't#bar{t} (matching up)',
+                        'TTJets_scaledown': 't#bar{t} (Q^{2} down)',
+                        'TTJets_scaleup': 't#bar{t} (Q^{2} up)',
+                        'VJets_matchingdown': 'V+jets (matching down)',
+                        'VJets_matchingup': 'V+jets (matching up)',
+                        'VJets_scaledown': 'V+jets (Q^{2} down)',
+                        'VJets_scaleup': 'V+jets(Q^{2} up)',
                           }
     measurements_latex_matplotlib = {'unfolded': 'unfolded',
                         'measured': 'measured',
@@ -723,6 +725,14 @@ if __name__ == '__main__':
                         'matchingup': '$t\\bar{t}$ (matching up)',
                         'scaledown': '$t\\bar{t}$ ($Q^{2}$ down)',
                         'scaleup': '$t\\bar{t}$ ($Q^{2}$ up)',
+                        'TTJets_matchingdown': '$t\\bar{t}$ (matching down)',
+                        'TTJets_matchingup': '$t\\bar{t}$ (matching up)',
+                        'TTJets_scaledown': '$t\\bar{t}$ ($Q^{2}$ down)',
+                        'TTJets_scaleup': '$t\\bar{t}$ ($Q^{2}$ up)',
+                        'VJets_matchingdown': 'V+jets (matching down)',
+                        'VJets_matchingup': 'V+jets (matching up)',
+                        'VJets_scaledown': 'V+jets ($Q^{2}$ down)',
+                        'VJets_scaleup': 'V+jets ($Q^{2}$ up)',
                           }
     output_formats = ['png', 'pdf']
     (options, args) = parser.parse_args()
@@ -736,18 +746,29 @@ if __name__ == '__main__':
         import sys
         sys.exit('Unknown centre of mass energy')
     
-    path_to_JSON = options.path
-    output_folder = options.output_folder
     variable = options.variable
-    met_type = translate_options[options.metType]
+    output_folder = options.output_folder
+    if not output_folder.endswith('/'):
+        output_folder += '/'
     k_value = options.k_value
+    met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
+    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/'
     
-    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 
-                  'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 
-                  'PU_down', 'PU_up' ]
+    categories = deepcopy(measurement_config.categories_and_prefixes.keys())
+    ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    categories.extend(ttbar_generator_systematics)
+    categories.extend(vjets_generator_systematics)
     
-    for category in categories:
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1,45)]
+    #all MET uncertainties except JES as this is already included
+    met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    all_measurements = deepcopy(categories)
+    all_measurements.extend(pdf_uncertainties)
+    all_measurements.extend(met_uncertainties)
+    
+    for category in all_measurements:
         if not category == 'central' and not options.additional_plots:
             continue
         #setting up systematic MET for JES up/down samples for reading fit templates
