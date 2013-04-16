@@ -110,7 +110,17 @@ def get_measurement_with_lower_and_upper_errors(list_of_central_measurements, li
     
     return complete_measurement
         
-         
+def replace_measurement_with_deviation_from_central(central_measurement, dictionary_of_systematic_measurements):
+    new_dictionary_of_systematic_measurements = {}
+    
+    for systematic, systematic_measurement in dictionary_of_systematic_measurements.iteritems():
+        new_set_of_values = []
+        for (value, error), (central, central_error) in zip(systematic_measurement, central_measurement):
+            deviation =  abs(value) - abs(central)    
+            new_set_of_values.append(deviation)
+        new_dictionary_of_systematic_measurements[systematic] = new_set_of_values
+    return new_dictionary_of_systematic_measurements
+
 if __name__ == "__main__":
     '''
     1) read all fit results (group by MET, PDF, other)
@@ -246,6 +256,37 @@ if __name__ == "__main__":
     write_normalised_xsection_measurement(combined_central_measurement_with_systematics, combined_central_measurement_unfolded_with_systematics, 'combined')
     
     # create entries in the previous dictionary
+    # replace measurement with deviation from central
+    electron_ttbar_theory_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_ttbar_theory_systematics)
+    electron_pdf_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_pdf_systematics)
+    electron_met_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_met_systematics)
+    electron_other_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_other_systematics)
+    
+    electron_ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_ttbar_theory_systematics_unfolded)
+    electron_pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_pdf_systematics_unfolded)
+    electron_met_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_met_systematics_unfolded)
+    electron_other_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_other_systematics_unfolded)
+    
+    muon_ttbar_theory_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_ttbar_theory_systematics)
+    muon_pdf_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_pdf_systematics)
+    muon_met_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_met_systematics)
+    muon_other_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_other_systematics)
+    
+    muon_ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_ttbar_theory_systematics_unfolded)
+    muon_pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_pdf_systematics_unfolded)
+    muon_met_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_met_systematics_unfolded)
+    muon_other_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_other_systematics_unfolded)
+    
+    combined_ttbar_theory_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_ttbar_theory_systematics)
+    combined_pdf_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_pdf_systematics)
+    combined_met_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_met_systematics)
+    combined_other_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_other_systematics)
+    
+    combined_ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_ttbar_theory_systematics_unfolded)
+    combined_pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_pdf_systematics_unfolded)
+    combined_met_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_met_systematics_unfolded)
+    combined_other_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_other_systematics_unfolded)
+    #add total errors
     #TODO: these are currently still storing the measurement, but should store the difference to the measurement like total_*
     electron_ttbar_theory_systematics['total_lower'], electron_ttbar_theory_systematics['total_upper'] = electron_ttbar_theory_min, electron_ttbar_theory_max
     muon_ttbar_theory_systematics['total_lower'], muon_ttbar_theory_systematics['total_upper'] = muon_ttbar_theory_min, muon_ttbar_theory_max
