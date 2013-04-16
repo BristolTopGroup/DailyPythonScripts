@@ -8,7 +8,6 @@ from config.cross_section_measurement_common import met_systematics_suffixes, tr
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist,\
     value_errors_tuplelist_to_graph
-from tools.Calculation import calculateTotalUncertainty, symmetriseErrors
 from math import sqrt
 import ROOT
 from ROOT import TPaveText, kRed, TH1F, Double, TMinuit, Long, kGreen, gROOT, TCanvas, kMagenta, kBlue, TGraphAsymmErrors, TMath
@@ -419,20 +418,20 @@ def make_plots_ROOT(histograms, category, output_folder, histname):
     bins = variable_bins_ROOT[variable]
     assert(len(bins) == len(xsections['central']))
     
-    for bin_i in range(len(bins)):
-        scale = 1# / width
-        centralresult = xsections['central'][bin_i]
-        fit_error = centralresult[1]
-        uncertainty = calculateTotalUncertainty(xsections, bin_i)
-        uncertainty_total_plus = uncertainty['Total+'][0]
-        uncertainty_total_minus = uncertainty['Total-'][0]
-        uncertainty_total_plus, uncertainty_total_minus = symmetriseErrors(uncertainty_total_plus, uncertainty_total_minus)
-        error_up = sqrt(fit_error ** 2 + uncertainty_total_plus ** 2) * scale
-        error_down = sqrt(fit_error ** 2 + uncertainty_total_minus ** 2) * scale
-        plotStatErr.SetPointEYhigh(bin_i, fit_error * scale)
-        plotStatErr.SetPointEYlow(bin_i, fit_error * scale)
-        plotAsym.SetPointEYhigh(bin_i, error_up)
-        plotAsym.SetPointEYlow(bin_i, error_down)
+#    for bin_i in range(len(bins)):
+#        scale = 1# / width
+#        centralresult = xsections['central'][bin_i]
+#        fit_error = centralresult[1]
+#        uncertainty = calculateTotalUncertainty(xsections, bin_i)
+#        uncertainty_total_plus = uncertainty['Total+'][0]
+#        uncertainty_total_minus = uncertainty['Total-'][0]
+#        uncertainty_total_plus, uncertainty_total_minus = symmetriseErrors(uncertainty_total_plus, uncertainty_total_minus)
+#        error_up = sqrt(fit_error ** 2 + uncertainty_total_plus ** 2) * scale
+#        error_down = sqrt(fit_error ** 2 + uncertainty_total_minus ** 2) * scale
+#        plotStatErr.SetPointEYhigh(bin_i, fit_error * scale)
+#        plotStatErr.SetPointEYlow(bin_i, fit_error * scale)
+#        plotAsym.SetPointEYhigh(bin_i, error_up)
+#        plotAsym.SetPointEYlow(bin_i, error_down)
 
     gStyle.SetEndErrorSize(20)
     plotAsym.SetLineWidth(2)

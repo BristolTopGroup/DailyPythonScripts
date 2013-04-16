@@ -22,8 +22,11 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     unfolding = Unfolding(h_truth, h_measured, h_response, method=method)
     
     #turning off the unfolding errors for systematic samples
-    if category != 'central':
+    if not category == 'central':
         unfoldCfg.Hreco = 0
+    else:
+        unfoldCfg.Hreco = options.Hreco
+        
     
     h_unfolded_data = unfolding.unfold(h_data)
     
