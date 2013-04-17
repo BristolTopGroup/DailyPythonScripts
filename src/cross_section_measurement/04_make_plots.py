@@ -540,8 +540,8 @@ def make_plots_matplotlib(histograms, category, output_folder, histname):
         plt.savefig(path + '/' + histname + '_kv' + str(k_value) + '.' + output_format)
 
 
-def plot_central_and_systematics(channel):
-    global variable, variables_latex, k_value, b_tag_bin, maximum, categories
+def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altogether'):
+    global variable, variables_latex, k_value, b_tag_bin, maximum, ttbar_generator_systematics
 
     canvas = Canvas(width=700, height=500)
     canvas.SetLeftMargin(0.15)
@@ -565,25 +565,26 @@ def plot_central_and_systematics(channel):
     hist_data_central.Draw('P')
     legend.AddEntry(hist_data_central, 'measured (unfolded)', 'P')
     
-    for systematic in categories:
-        if systematic != 'central':
-            hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
-            hist_data_systematic.SetMarkerSize(0.5)
-            hist_data_systematic.SetMarkerStyle(20)
-            colour_number = categories.index(systematic)+1
-            if colour_number == 10:
-                colour_number = 42
-            hist_data_systematic.SetMarkerColor(colour_number)
-            hist_data_systematic.Draw('same P')
-            legend.AddEntry(hist_data_systematic, systematic, 'P')
+    for systematic in systematics:
+        if systematic in exclude or systematic == 'central':
+            continue
+
+        hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
+        hist_data_systematic.SetMarkerSize(0.5)
+        hist_data_systematic.SetMarkerStyle(20)
+        colour_number = systematics.index(systematic)+1
+        if colour_number == 10:
+            colour_number = 42
+        hist_data_systematic.SetMarkerColor(colour_number)
+        hist_data_systematic.Draw('same P')
+        legend.AddEntry(hist_data_systematic, systematic, 'P')
     
     legend.Draw()
     
     cms_label, channel_label = get_cms_labels(channel)
     cms_label.Draw()
     
-    if not channel == 'combination':
-        channel_label.Draw()
+    channel_label.Draw()
     
     canvas.Modified()
     canvas.Update()
@@ -592,10 +593,10 @@ def plot_central_and_systematics(channel):
     make_folder_if_not_exists(path)
     
     for output_format in output_formats:
-        canvas.SaveAs(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.' + output_format)
+        canvas.SaveAs(path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_value) + '.' + output_format)
 
-def plot_central_and_systematics_matplotlib(channel):
-    global variable, variables_latex_matplotlib, k_value, b_tag_bin, categories
+def plot_central_and_systematics_matplotlib(channel, systematics, exclude=[], suffix='altogether'):
+    global variable, variables_latex_matplotlib, k_value, b_tag_bin
 
     plt.figure(figsize=(14, 10), dpi=200, facecolor='white')
     axes = plt.axes()
@@ -611,21 +612,21 @@ def plot_central_and_systematics_matplotlib(channel):
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
-    rplt.errorbar(hist_data_central, axes=axes, label='data')
+    rplt.errorbar(hist_data_central, axes=axes, label='data',xerr=True)
 
-    for systematic in categories:
-        if systematic != 'central':
-            hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
-#            hist_data_systematic.SetMarkerSize(0.5)
-            hist_data_systematic.markersize = 2
-            hist_data_systematic.marker = 'o'
-            colour_number = categories.index(systematic)+1
-            if colour_number == 10:
-                colour_number = 42
-            hist_data_systematic.SetMarkerColor(colour_number)
-            rplt.errorbar(hist_data_systematic, axes=axes, label=systematic.replace('_',' '),
-                          xerr=False)
-        #TODO: plot MET systematics as well! Maybe only the combined one. + PDF
+    for systematic in systematics:
+        if systematic in exclude or systematic == 'central':
+            continue
+
+        hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
+        hist_data_systematic.markersize = 2
+        hist_data_systematic.marker = 'o'
+        colour_number = systematics.index(systematic)+1
+        if colour_number == 10:
+            colour_number = 42
+        hist_data_systematic.SetMarkerColor(colour_number)
+        rplt.errorbar(hist_data_systematic, axes=axes, label=systematic.replace('_',' '),
+                      xerr=False)
             
     plt.legend(numpoints=1, loc='upper right', prop={'size': 24}, ncol = 2)
     plt.title(get_cms_labels_matplotlib(channel), CMS.title)
@@ -635,7 +636,7 @@ def plot_central_and_systematics_matplotlib(channel):
     path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable
     make_folder_if_not_exists(path)
     for output_format in output_formats:
-        plt.savefig(path + '/normalised_xsection_' + channel + '_altogether_kv' + str(k_value) + '.' + output_format) 
+        plt.savefig(path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_value) + '.' + output_format) 
 
 def plot_templates():
     pass
@@ -761,6 +762,10 @@ if __name__ == '__main__':
     categories.extend(vjets_generator_systematics)
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1,45)]
+    pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range(1,12)]
+    pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range(12,23)]
+    pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range(23,34)]
+    pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34,45)]
     #all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy(categories)
@@ -816,11 +821,55 @@ if __name__ == '__main__':
             make_plots_ROOT(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
             make_plots_ROOT(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
     if options.nice_plots:
-        plot_central_and_systematics_matplotlib('electron')
-        plot_central_and_systematics_matplotlib('muon')
+        plot_central_and_systematics_matplotlib('electron', categories, exclude=ttbar_generator_systematics)
+        plot_central_and_systematics_matplotlib('muon', categories, exclude=ttbar_generator_systematics)
+        
+        plot_central_and_systematics_matplotlib('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
+        plot_central_and_systematics_matplotlib('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
+        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
+        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
+        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
+        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+        
+        plot_central_and_systematics_matplotlib('electron', met_uncertainties, suffix='MET_only')
+        plot_central_and_systematics_matplotlib('muon', met_uncertainties, suffix='MET_only')
     else:
-        plot_central_and_systematics('electron')
-        plot_central_and_systematics('muon')
+        plot_central_and_systematics('electron', categories, exclude=ttbar_generator_systematics)
+        plot_central_and_systematics('muon', categories, exclude=ttbar_generator_systematics)
+        
+        plot_central_and_systematics('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
+        plot_central_and_systematics('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
+        plot_central_and_systematics('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+        plot_central_and_systematics('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
+        plot_central_and_systematics('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+        plot_central_and_systematics('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
+        plot_central_and_systematics('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+        plot_central_and_systematics('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
+        plot_central_and_systematics('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+        plot_central_and_systematics('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+        
+        plot_central_and_systematics('electron', met_uncertainties, suffix='MET_only')
+        plot_central_and_systematics('muon', met_uncertainties, suffix='MET_only')
     
 
     
