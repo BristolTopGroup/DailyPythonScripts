@@ -90,20 +90,14 @@ def get_unfold_histogram_tuple(inputfile, variable, channel, met_type):
     else:
         folder = inputfile.Get('unfolding_%s_analyser_%s_channel' % (variable, channel))
         
-#    n_bins = len(bin_edges[variable]) - 1
-#    bin_edge_array = array('d', bin_edges[variable])
-    
-    #h_fakes = asrootpy(folder.fake_AsymBins)
-    #h_truth = asrootpy(folder.truth.Rebin(n_bins, 'truth', bin_edge_array))
     h_truth = asrootpy(folder.truth_AsymBins).Clone()
-    #h_measured = asrootpy(folder.measured.Rebin(n_bins, 'measured', bin_edge_array))
     h_measured = asrootpy(folder.measured_AsymBins).Clone()
     
     h_response = None
     if measurement_config.centre_of_mass == 7:
         h_response = folder.response_withoutFakes_AsymBins.Clone()
     else:
-        h_response = folder.response_without_fakes_AsymBins.Clone()  # response_AsymBins
+        h_response = folder.response_without_fakes_AsymBins.Clone()
     
     nEvents = inputfile.EventFilter.EventCounter.GetBinContent(1)#number of processed events 
     lumiweight = ttbar_xsection * luminosity / nEvents #ttbar x-section = 225.2pb, lumi = 5814pb-1
@@ -245,7 +239,6 @@ if __name__ == '__main__':
                         'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet'
                         }
-#    categories = [ 'central', 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'BJet_down', 'BJet_up', 'JES_down', 'JES_up', 'LightJet_down', 'LightJet_up', 'PU_down', 'PU_up' ]
     
     (options, args) = parser.parse_args()
     from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
