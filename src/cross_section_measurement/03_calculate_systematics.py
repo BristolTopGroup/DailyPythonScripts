@@ -49,7 +49,7 @@ def read_normalised_xsection_systematics(list_of_systematics, channel):
     systematics_unfolded = {}
     
     for systematic_name in list_of_systematics:
-        systematic, systematic_unfolded = read_normalised_xsection_measurement(systematic_name, 'electron')
+        systematic, systematic_unfolded = read_normalised_xsection_measurement(systematic_name, channel)
         
         systematics[systematic_name] = systematic
         systematics_unfolded[systematic_name] = systematic_unfolded
@@ -58,27 +58,27 @@ def read_normalised_xsection_systematics(list_of_systematics, channel):
 
 def summarise_systematics(list_of_central_measurements, dictionary_of_systematics, pdf_calculation=False):
     global symmetrise_errors
+    #number of bins
+    number_of_bins = len(list_of_central_measurements)
+    down_errors = [0] * number_of_bins
+    up_errors = [0] * number_of_bins
     
-    n_entries = len(list_of_central_measurements)
-    down_errors = [0] * n_entries
-    up_errors = [0] * n_entries
-    
-    for index in range(n_entries):
-        central_value = list_of_central_measurements[index][0]  # 0 = value, 1 = error
+    for bin_i in range(number_of_bins):
+        central_value = list_of_central_measurements[bin_i][0]  # 0 = value, 1 = error
         error_down, error_up = 0, 0
         
         if pdf_calculation:
-            pdf_uncertainty_values = {systematic:measurement[index][0] for systematic, measurement in dictionary_of_systematics.iteritems()}
+            pdf_uncertainty_values = {systematic:measurement[bin_i][0] for systematic, measurement in dictionary_of_systematics.iteritems()}
             error_down, error_up = calculate_lower_and_upper_PDFuncertainty(central_value, pdf_uncertainty_values)
             if symmetrise_errors:
                 error_down = max(error_down, error_up)
                 error_up = max(error_down, error_up)
         else:
-            list_of_systematics = [systematic[index][0] for systematic in dictionary_of_systematics.values()]
+            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics(central_value, list_of_systematics, symmetrise_errors)
 
-        down_errors[index] = error_down
-        up_errors[index] = error_up
+        down_errors[bin_i] = error_down
+        up_errors[bin_i] = error_up
     
     return down_errors, up_errors
 
@@ -116,7 +116,7 @@ def replace_measurement_with_deviation_from_central(central_measurement, diction
     for systematic, systematic_measurement in dictionary_of_systematic_measurements.iteritems():
         new_set_of_values = []
         for (value, error), (central, central_error) in zip(systematic_measurement, central_measurement):
-            deviation =  abs(value) - abs(central)    
+            deviation = abs(value) - abs(central)    
             new_set_of_values.append(deviation)
         new_dictionary_of_systematic_measurements[systematic] = new_set_of_values
     return new_dictionary_of_systematic_measurements
@@ -177,157 +177,62 @@ if __name__ == "__main__":
     other_uncertainties = deepcopy(measurement_config.categories_and_prefixes.keys())
     other_uncertainties.extend(vjets_generator_systematics)
     
-    # read everything
-    electron_central_measurement, electron_central_measurement_unfolded = read_normalised_xsection_measurement('central', 'electron')
-    muon_central_measurement, muon_central_measurement_unfolded = read_normalised_xsection_measurement('central', 'muon')
-    combined_central_measurement, combined_central_measurement_unfolded = read_normalised_xsection_measurement('central', 'combined')
-    
-    electron_ttbar_theory_systematics, electron_ttbar_theory_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=ttbar_theory_uncertainties , channel='electron')
-    muon_ttbar_theory_systematics, muon_ttbar_theory_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=ttbar_theory_uncertainties , channel='muon')
-    combined_ttbar_theory_systematics, combined_ttbar_theory_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=ttbar_theory_uncertainties , channel='combined')
-
-    electron_pdf_systematics, electron_pdf_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=pdf_uncertainties , channel='electron')
-    muon_pdf_systematics, muon_pdf_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=pdf_uncertainties , channel='muon')
-    combined_pdf_systematics, combined_pdf_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=pdf_uncertainties , channel='combined')
-    
-    electron_met_systematics, electron_met_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=met_uncertainties , channel='electron')
-    muon_met_systematics, muon_met_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=met_uncertainties , channel='muon')
-    combined_met_systematics, combined_met_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=met_uncertainties , channel='combined')
-
-    electron_other_systematics, electron_other_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=other_uncertainties , channel='electron')
-    muon_other_systematics, muon_other_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=other_uncertainties , channel='muon')
-    combined_other_systematics, combined_other_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=other_uncertainties , channel='combined')
-    
-    # summarise
-    #ttbar theory
-    electron_ttbar_theory_min, electron_ttbar_theory_max = summarise_systematics(electron_central_measurement, electron_ttbar_theory_systematics)
-    electron_ttbar_theory_min_unfolded, electron_ttbar_theory_max_unfolded = summarise_systematics(electron_central_measurement_unfolded, electron_ttbar_theory_systematics_unfolded)
-    muon_ttbar_theory_min, muon_ttbar_theory_max = summarise_systematics(muon_central_measurement, muon_ttbar_theory_systematics)
-    muon_ttbar_theory_min_unfolded, muon_ttbar_theory_max_unfolded = summarise_systematics(muon_central_measurement_unfolded, muon_ttbar_theory_systematics_unfolded)
-    combined_ttbar_theory_min, combined_ttbar_theory_max = summarise_systematics(combined_central_measurement, combined_ttbar_theory_systematics)
-    combined_ttbar_theory_min_unfolded, combined_ttbar_theory_max_unfolded = summarise_systematics(combined_central_measurement_unfolded, combined_ttbar_theory_systematics_unfolded)
-    # PDFs
-    electron_pdf_min, electron_pdf_max = summarise_systematics(electron_central_measurement, electron_pdf_systematics, pdf_calculation=True)
-    electron_pdf_min_unfolded, electron_pdf_max_unfolded = summarise_systematics(electron_central_measurement_unfolded, electron_pdf_systematics_unfolded, pdf_calculation=True)
-    muon_pdf_min, muon_pdf_max = summarise_systematics(muon_central_measurement, muon_pdf_systematics, pdf_calculation=True)
-    muon_pdf_min_unfolded, muon_pdf_max_unfolded = summarise_systematics(muon_central_measurement_unfolded, muon_pdf_systematics_unfolded, pdf_calculation=True)
-    combined_pdf_min, combined_pdf_max = summarise_systematics(combined_central_measurement, combined_pdf_systematics, pdf_calculation=True)
-    combined_pdf_min_unfolded, combined_pdf_max_unfolded = summarise_systematics(combined_central_measurement_unfolded, combined_pdf_systematics_unfolded, pdf_calculation=True)
-    # MET
-    electron_met_min, electron_met_max = summarise_systematics(electron_central_measurement, electron_met_systematics)
-    electron_met_min_unfolded, electron_met_max_unfolded = summarise_systematics(electron_central_measurement_unfolded, electron_met_systematics_unfolded)
-    muon_met_min, muon_met_max = summarise_systematics(muon_central_measurement, muon_met_systematics)
-    muon_met_min_unfolded, muon_met_max_unfolded = summarise_systematics(muon_central_measurement_unfolded, muon_met_systematics_unfolded)
-    combined_met_min, combined_met_max = summarise_systematics(combined_central_measurement, combined_met_systematics)
-    combined_met_min_unfolded, combined_met_max_unfolded = summarise_systematics(combined_central_measurement_unfolded, combined_met_systematics_unfolded)
-    # other
-    electron_other_min, electron_other_max = summarise_systematics(electron_central_measurement, electron_other_systematics)
-    electron_other_min_unfolded, electron_other_max_unfolded = summarise_systematics(electron_central_measurement_unfolded, electron_other_systematics_unfolded)
-    muon_other_min, muon_other_max = summarise_systematics(muon_central_measurement, muon_other_systematics)
-    muon_other_min_unfolded, muon_other_max_unfolded = summarise_systematics(muon_central_measurement_unfolded, muon_other_systematics_unfolded)
-    combined_other_min, combined_other_max = summarise_systematics(combined_central_measurement, combined_other_systematics)
-    combined_other_min_unfolded, combined_other_max_unfolded = summarise_systematics(combined_central_measurement_unfolded, combined_other_systematics_unfolded)
-    
-    
-    
-    electron_central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors(electron_central_measurement,
-                                                                                                [electron_ttbar_theory_min, electron_pdf_min, electron_met_min, electron_other_min],
-                                                                                                [electron_ttbar_theory_max, electron_pdf_max, electron_met_max, electron_other_max])
-    electron_central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors(electron_central_measurement_unfolded,
-                                                                                                [electron_ttbar_theory_min_unfolded, electron_pdf_min_unfolded, electron_met_min_unfolded, electron_other_min_unfolded],
-                                                                                                [electron_ttbar_theory_max_unfolded, electron_pdf_max_unfolded, electron_met_max_unfolded, electron_other_max_unfolded])
-    
-    muon_central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors(muon_central_measurement,
-                                                                                                [muon_ttbar_theory_min, muon_pdf_min, muon_met_min, muon_other_min],
-                                                                                                [muon_ttbar_theory_max, muon_pdf_max, muon_met_max, muon_other_max])
-    muon_central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors(muon_central_measurement_unfolded,
-                                                                                                [muon_ttbar_theory_min_unfolded, muon_pdf_min_unfolded, muon_met_min_unfolded, muon_other_min_unfolded],
-                                                                                                [muon_ttbar_theory_max_unfolded, muon_pdf_max_unfolded, muon_met_max_unfolded, muon_other_max_unfolded])
-    
-    combined_central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors(combined_central_measurement,
-                                                                                                [combined_ttbar_theory_min, combined_pdf_min, combined_met_min, combined_other_min],
-                                                                                                [combined_ttbar_theory_max, combined_pdf_max, combined_met_max, combined_other_max])
-    combined_central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors(combined_central_measurement_unfolded,
-                                                                                                [combined_ttbar_theory_min_unfolded, combined_pdf_min_unfolded, combined_met_min_unfolded, combined_other_min_unfolded],
-                                                                                                [combined_ttbar_theory_max_unfolded, combined_pdf_max_unfolded, combined_met_max_unfolded, combined_other_max_unfolded])
-    
-    write_normalised_xsection_measurement(electron_central_measurement_with_systematics, electron_central_measurement_unfolded_with_systematics, 'electron')
-    write_normalised_xsection_measurement(muon_central_measurement_with_systematics, muon_central_measurement_unfolded_with_systematics, 'muon')
-    write_normalised_xsection_measurement(combined_central_measurement_with_systematics, combined_central_measurement_unfolded_with_systematics, 'combined')
-    
-    # create entries in the previous dictionary
-    # replace measurement with deviation from central
-    electron_ttbar_theory_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_ttbar_theory_systematics)
-    electron_pdf_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_pdf_systematics)
-    electron_met_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_met_systematics)
-    electron_other_systematics = replace_measurement_with_deviation_from_central(electron_central_measurement, electron_other_systematics)
-    
-    electron_ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_ttbar_theory_systematics_unfolded)
-    electron_pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_pdf_systematics_unfolded)
-    electron_met_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_met_systematics_unfolded)
-    electron_other_systematics_unfolded = replace_measurement_with_deviation_from_central(electron_central_measurement_unfolded, electron_other_systematics_unfolded)
-    
-    muon_ttbar_theory_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_ttbar_theory_systematics)
-    muon_pdf_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_pdf_systematics)
-    muon_met_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_met_systematics)
-    muon_other_systematics = replace_measurement_with_deviation_from_central(muon_central_measurement, muon_other_systematics)
-    
-    muon_ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_ttbar_theory_systematics_unfolded)
-    muon_pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_pdf_systematics_unfolded)
-    muon_met_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_met_systematics_unfolded)
-    muon_other_systematics_unfolded = replace_measurement_with_deviation_from_central(muon_central_measurement_unfolded, muon_other_systematics_unfolded)
-    
-    combined_ttbar_theory_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_ttbar_theory_systematics)
-    combined_pdf_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_pdf_systematics)
-    combined_met_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_met_systematics)
-    combined_other_systematics = replace_measurement_with_deviation_from_central(combined_central_measurement, combined_other_systematics)
-    
-    combined_ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_ttbar_theory_systematics_unfolded)
-    combined_pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_pdf_systematics_unfolded)
-    combined_met_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_met_systematics_unfolded)
-    combined_other_systematics_unfolded = replace_measurement_with_deviation_from_central(combined_central_measurement_unfolded, combined_other_systematics_unfolded)
-    #add total errors
-    #TODO: these are currently still storing the measurement, but should store the difference to the measurement like total_*
-    electron_ttbar_theory_systematics['total_lower'], electron_ttbar_theory_systematics['total_upper'] = electron_ttbar_theory_min, electron_ttbar_theory_max
-    muon_ttbar_theory_systematics['total_lower'], muon_ttbar_theory_systematics['total_upper'] = muon_ttbar_theory_min, muon_ttbar_theory_max
-    combined_ttbar_theory_systematics['total_lower'], combined_ttbar_theory_systematics['total_upper'] = combined_ttbar_theory_min, combined_ttbar_theory_max
-    electron_ttbar_theory_systematics_unfolded['total_lower'], electron_ttbar_theory_systematics_unfolded['total_upper'] = electron_ttbar_theory_min_unfolded, electron_ttbar_theory_max_unfolded
-    muon_ttbar_theory_systematics_unfolded['total_lower'], muon_ttbar_theory_systematics_unfolded['total_upper'] = muon_ttbar_theory_min_unfolded, muon_ttbar_theory_max_unfolded
-    combined_ttbar_theory_systematics_unfolded['total_lower'], combined_ttbar_theory_systematics_unfolded['total_upper'] = combined_ttbar_theory_min_unfolded, combined_ttbar_theory_max_unfolded
-    
-    electron_pdf_systematics['total_lower'], electron_pdf_systematics['total_upper'] = electron_pdf_min, electron_pdf_max
-    muon_pdf_systematics['total_lower'], muon_pdf_systematics['total_upper'] = muon_pdf_min, muon_pdf_max
-    combined_pdf_systematics['total_lower'], combined_pdf_systematics['total_upper'] = combined_pdf_min, combined_pdf_max
-    electron_pdf_systematics_unfolded['total_lower'], electron_pdf_systematics_unfolded['total_upper'] = electron_pdf_min_unfolded, electron_pdf_max_unfolded
-    muon_pdf_systematics_unfolded['total_lower'], muon_pdf_systematics_unfolded['total_upper'] = muon_pdf_min_unfolded, muon_pdf_max_unfolded
-    combined_pdf_systematics_unfolded['total_lower'], combined_pdf_systematics_unfolded['total_upper'] = combined_pdf_min_unfolded, combined_pdf_max_unfolded
-    
-    electron_met_systematics['total_lower'], electron_met_systematics['total_upper'] = electron_met_min, electron_met_max
-    muon_met_systematics['total_lower'], muon_met_systematics['total_upper'] = muon_met_min, muon_met_max
-    combined_met_systematics['total_lower'], combined_met_systematics['total_upper'] = combined_met_min, combined_met_max
-    electron_met_systematics_unfolded['total_lower'], electron_met_systematics_unfolded['total_upper'] = electron_met_min_unfolded, electron_met_max_unfolded
-    muon_met_systematics_unfolded['total_lower'], muon_met_systematics_unfolded['total_upper'] = muon_met_min_unfolded, muon_met_max_unfolded
-    combined_met_systematics_unfolded['total_lower'], combined_met_systematics_unfolded['total_upper'] = combined_met_min_unfolded, combined_met_max_unfolded
-    
-    electron_other_systematics['total_lower'], electron_other_systematics['total_upper'] = electron_other_min, electron_other_max
-    muon_other_systematics['total_lower'], muon_other_systematics['total_upper'] = muon_other_min, muon_other_max
-    combined_other_systematics['total_lower'], combined_other_systematics['total_upper'] = combined_other_min, combined_other_max
-    electron_other_systematics_unfolded['total_lower'], electron_other_systematics_unfolded['total_upper'] = electron_other_min_unfolded, electron_other_max_unfolded
-    muon_other_systematics_unfolded['total_lower'], muon_other_systematics_unfolded['total_upper'] = muon_other_min_unfolded, muon_other_max_unfolded
-    combined_other_systematics_unfolded['total_lower'], combined_other_systematics_unfolded['total_upper'] = combined_other_min_unfolded, combined_other_max_unfolded
-    
-    write_normalised_xsection_measurement(electron_ttbar_theory_systematics, electron_ttbar_theory_systematics_unfolded, 'electron', summary='ttbar_theory')
-    write_normalised_xsection_measurement(muon_ttbar_theory_systematics, muon_ttbar_theory_systematics_unfolded, 'muon', summary='ttbar_theory')
-    write_normalised_xsection_measurement(combined_ttbar_theory_systematics, combined_ttbar_theory_systematics_unfolded, 'combined', summary='ttbar_theory')
-    
-    write_normalised_xsection_measurement(electron_pdf_systematics, electron_pdf_systematics_unfolded, 'electron', summary='PDF')
-    write_normalised_xsection_measurement(muon_pdf_systematics, muon_pdf_systematics_unfolded, 'muon', summary='PDF')
-    write_normalised_xsection_measurement(combined_pdf_systematics, combined_pdf_systematics_unfolded, 'combined', summary='PDF')
-    
-    write_normalised_xsection_measurement(electron_met_systematics, electron_met_systematics_unfolded, 'electron', summary='MET')
-    write_normalised_xsection_measurement(muon_met_systematics, muon_met_systematics_unfolded, 'muon', summary='MET')
-    write_normalised_xsection_measurement(combined_met_systematics, combined_met_systematics_unfolded, 'combined', summary='MET')
-    
-    write_normalised_xsection_measurement(electron_other_systematics, electron_other_systematics_unfolded, 'electron', summary='other')
-    write_normalised_xsection_measurement(muon_other_systematics, muon_other_systematics_unfolded, 'muon', summary='other')
-    write_normalised_xsection_measurement(combined_other_systematics, combined_other_systematics_unfolded, 'combined', summary='other')
+    for channel in ['electron', 'muon', 'combined']:
+        # read central measurement
+        central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement('central', channel)
+        # read groups of systematics
+        ttbar_theory_systematics, ttbar_theory_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=ttbar_theory_uncertainties, channel=channel)
+        pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=pdf_uncertainties, channel=channel)
+        met_systematics, met_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=met_uncertainties, channel=channel)
+        other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=other_uncertainties, channel=channel)
+        # get the minimal and maximal deviation for each group of systematics
+        # ttbar theory (factorisation scale and matching threshold)
+        ttbar_theory_min, ttbar_theory_max = summarise_systematics(central_measurement, ttbar_theory_systematics)
+        ttbar_theory_min_unfolded, ttbar_theory_max_unfolded = summarise_systematics(central_measurement_unfolded, ttbar_theory_systematics_unfolded)
+        # 44 PDFs
+        pdf_min, pdf_max = summarise_systematics(central_measurement, pdf_systematics, pdf_calculation=True)
+        pdf_min_unfolded, pdf_max_unfolded = summarise_systematics(central_measurement_unfolded, pdf_systematics_unfolded, pdf_calculation=True)
+        # MET
+        met_min, met_max = summarise_systematics(central_measurement, met_systematics)
+        met_min_unfolded, met_max_unfolded = summarise_systematics(central_measurement_unfolded, met_systematics_unfolded)
+        # other
+        other_min, other_max = summarise_systematics(central_measurement, other_systematics)
+        other_min_unfolded, other_max_unfolded = summarise_systematics(central_measurement_unfolded, other_systematics_unfolded)
+        
+        # get the central measurement with fit, unfolding and systematic errors combined
+        central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors(central_measurement,
+                                                                                                [ttbar_theory_min, pdf_min, met_min, other_min],
+                                                                                                [ttbar_theory_max, pdf_max, met_max, other_max])
+        central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors(central_measurement_unfolded,
+                                                                                                [ttbar_theory_min_unfolded, pdf_min_unfolded, met_min_unfolded, other_min_unfolded],
+                                                                                                [ttbar_theory_max_unfolded, pdf_max_unfolded, met_max_unfolded, other_max_unfolded])
+        
+        write_normalised_xsection_measurement(central_measurement_with_systematics, central_measurement_unfolded_with_systematics, channel)
+        
+        # create entries in the previous dictionary
+        # replace measurement with deviation from central
+        ttbar_theory_systematics = replace_measurement_with_deviation_from_central(central_measurement, ttbar_theory_systematics)
+        pdf_systematics = replace_measurement_with_deviation_from_central(central_measurement, pdf_systematics)
+        met_systematics = replace_measurement_with_deviation_from_central(central_measurement, met_systematics)
+        other_systematics = replace_measurement_with_deviation_from_central(central_measurement, other_systematics)
+        
+        ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, ttbar_theory_systematics_unfolded)
+        pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, pdf_systematics_unfolded)
+        met_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, met_systematics_unfolded)
+        other_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, other_systematics_unfolded)
+        
+        # add total errors
+        # TODO: these are currently still storing the measurement, but should store the difference to the measurement like total_*
+        ttbar_theory_systematics['total_lower'], ttbar_theory_systematics['total_upper'] = ttbar_theory_min, ttbar_theory_max
+        ttbar_theory_systematics_unfolded['total_lower'], ttbar_theory_systematics_unfolded['total_upper'] = ttbar_theory_min_unfolded, ttbar_theory_max_unfolded
+        pdf_systematics['total_lower'], pdf_systematics['total_upper'] = pdf_min, pdf_max
+        pdf_systematics_unfolded['total_lower'], pdf_systematics_unfolded['total_upper'] = pdf_min_unfolded, pdf_max_unfolded
+        met_systematics['total_lower'], met_systematics['total_upper'] = met_min, met_max
+        met_systematics_unfolded['total_lower'], met_systematics_unfolded['total_upper'] = met_min_unfolded, met_max_unfolded
+        other_systematics['total_lower'], other_systematics['total_upper'] = other_min, other_max
+        other_systematics_unfolded['total_lower'], other_systematics_unfolded['total_upper'] = other_min_unfolded, other_max_unfolded
+        write_normalised_xsection_measurement(ttbar_theory_systematics, ttbar_theory_systematics_unfolded, channel, summary='ttbar_theory')
+        write_normalised_xsection_measurement(pdf_systematics, pdf_systematics_unfolded, channel, summary='PDF')
+        write_normalised_xsection_measurement(met_systematics, met_systematics_unfolded, channel, summary='MET')
+        write_normalised_xsection_measurement(other_systematics, other_systematics_unfolded, channel, summary='other')
+        
