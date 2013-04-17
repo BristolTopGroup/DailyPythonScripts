@@ -1,6 +1,5 @@
 from __future__ import division#the result of the division will be always a float
 from optparse import OptionParser
-import tools.plotting_utilities as plotting
 import os
 from copy import deepcopy
 
@@ -9,13 +8,9 @@ from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist,\
     value_errors_tuplelist_to_graph
 from math import sqrt
-import ROOT
-from ROOT import TPaveText, kRed, TH1F, Double, TMinuit, Long, kGreen, gROOT, TCanvas, kMagenta, kBlue, TGraphAsymmErrors, TMath
-from ROOT import kAzure, kYellow, kViolet, THStack, gStyle
 # rootpy
-from rootpy.io import File
-from rootpy import asrootpy
-from rootpy.plotting import Hist, HistStack, Legend, Canvas
+import ROOT
+from ROOT import kRed, kGreen, kMagenta, kBlue, kAzure, kYellow, kViolet
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from config import CMS
@@ -118,56 +113,6 @@ def read_fit_templates_and_results_as_histograms(category, channel):
         
     return template_histograms, fit_results_histograms
 
-def make_template_plots(histograms, category, channel):
-    global variable, output_folder
-    
-    for variable_bin in variable_bins_ROOT[variable]:
-        path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category + '/fit_templates/'
-        make_folder_if_not_exists(path)
-        plotname = path + channel + '_templates_bin_' + variable_bin
-        #check if template plots exist already
-        for output_format in output_formats:
-            if os.path.isfile(plotname + '.' + output_format):
-                continue
-        canvas = Canvas(width=700, height=500)
-        canvas.SetLeftMargin(0.15)
-        canvas.SetBottomMargin(0.15)
-        canvas.SetTopMargin(0.05)
-        canvas.SetRightMargin(0.05)
-        legend = plotting.create_legend(x0=0.7, y1=0.8)
-        h_signal = histograms[variable_bin]['signal']
-        h_VJets = histograms[variable_bin]['V+Jets']
-        h_QCD = histograms[variable_bin]['QCD']
-        
-        h_signal.GetXaxis().SetTitle('Lepton #eta')
-        h_signal.GetYaxis().SetTitle('Normalised Events')
-        h_signal.GetXaxis().SetTitleSize(0.05)
-        h_signal.GetYaxis().SetTitleSize(0.05)
-        h_signal.SetMinimum(0)
-        h_signal.SetMaximum(0.2)
-        h_signal.SetLineWidth(2)
-        h_VJets.SetLineWidth(2)
-        h_QCD.SetLineWidth(2)
-        h_signal.SetLineColor(kRed + 1)
-        h_VJets.SetLineColor(kBlue)
-        h_QCD.SetLineColor(kYellow)
-        h_signal.Draw('hist')
-        h_VJets.Draw('hist same')
-        h_QCD.Draw('hist same')
-        legend.AddEntry(h_signal, 'signal', 'l')
-        legend.AddEntry(h_VJets, 'V+Jets', 'l')
-        legend.AddEntry(h_QCD, 'QCD', 'l')
-        legend.Draw()
-        
-        cms_label, channel_label = get_cms_labels(channel)
-        cms_label.Draw()
-        channel_label.Draw()
-        
-        canvas.Modified()
-        canvas.Update()
-        for output_format in output_formats:
-            canvas.SaveAs(plotname + '.' + output_format)
-        
 def make_template_plots_matplotlib(histograms, category, channel):
     global variable, output_folder
     from matplotlib import rc
@@ -217,85 +162,9 @@ def make_template_plots_matplotlib(histograms, category, channel):
         for output_format in output_formats:
             plt.savefig(plotname + '.' + output_format) 
 
-def plot_fit_results(histograms, category, channel):
-    global variable, translate_options, b_tag_bin, output_folder
-    #ROOT.TH1.SetDefaultSumw2(False)
-    
-    for variable_bin in variable_bins_ROOT[variable]:
-        path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category + '/fit_results/'
-        make_folder_if_not_exists(path)
-        plotname = path + channel + '_bin_' + variable_bin
-        # check if template plots exist already
-        for output_format in output_formats:
-            if os.path.isfile(plotname + '.' + output_format):
-                continue
-        canvas = Canvas(width=700, height=500)
-        canvas.SetLeftMargin(0.15)
-        canvas.SetBottomMargin(0.15)
-        canvas.SetTopMargin(0.05)
-        canvas.SetRightMargin(0.05)
-        legend = plotting.create_legend(x0=0.7, y1=0.8)
-        h_data = histograms[variable_bin]['data']
-        h_signal = histograms[variable_bin]['signal']
-        h_background = histograms[variable_bin]['background']
-        
-        h_data.GetXaxis().SetTitle('Lepton #eta')
-        h_data.GetYaxis().SetTitle('Number of Events')
-        h_data.GetXaxis().SetTitleSize(0.05)
-        h_data.GetYaxis().SetTitleSize(0.05)
-        h_data.SetMinimum(0)
-        h_data.SetMarkerSize(1)
-        h_data.SetMarkerStyle(20)
-        gStyle.SetEndErrorSize(20)
-        h_data.Draw('P')
-        
-        h_signal.SetFillColor(kRed + 1)
-        h_background.SetFillColor(kGreen-3)
-        h_signal.SetLineWidth(2)
-        h_background.SetLineWidth(2)
-        h_signal.SetFillStyle(1001)
-        h_background.SetFillStyle(1001)
-        
-        mcStack = THStack("MC", "MC")
-        mcStack.Add(h_background)
-        mcStack.Add(h_signal)
-        
-        mcStack.Draw('hist same')
-        h_data.Draw('error P same')
-        legend.AddEntry(h_data, 'data', 'P')
-        legend.AddEntry(h_signal, 'signal', 'F')
-        legend.AddEntry(h_background, 'background', 'F')
-        legend.Draw()
-        
-        mytext = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
-        channelLabel = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
-        if channel == 'electron':
-            channelLabel.AddText("e, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
-        elif channel == 'muon':
-            channelLabel.AddText("#mu, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
-        else:
-            channelLabel.AddText("combined, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
-        mytext.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = 8 TeV" % (5.8));
-             
-        mytext.SetFillStyle(0)
-        mytext.SetBorderSize(0)
-        mytext.SetTextFont(42)
-        mytext.SetTextAlign(13)
-        
-        channelLabel.SetFillStyle(0)
-        channelLabel.SetBorderSize(0)
-        channelLabel.SetTextFont(42)
-        channelLabel.SetTextAlign(13)
-        mytext.Draw()
-        channelLabel.Draw()
-        
-        canvas.Modified()
-        canvas.Update()
-        for output_format in output_formats:
-            canvas.SaveAs(plotname + '.' + output_format)
 
 def plot_fit_results_matplotlib(histograms, category, channel):
-    global variable, translate_options, b_tag_bin, output_folder
+    global variable, b_tag_bin, output_folder
     from matplotlib import rc
     rc('text', usetex=True)
     
@@ -342,32 +211,6 @@ def plot_fit_results_matplotlib(histograms, category, channel):
         for output_format in output_formats:
             plt.savefig(plotname + '.' + output_format) 
 
-def get_cms_labels(channel):     
-    global b_tag_bin,  b_tag_bins_latex  
-    
-    cms_label = TPaveText(0.5, 0.97, 1, 1.01, "NDC")
-    channel_label = TPaveText(0.18, 0.97, 0.5, 1.01, "NDC")
-    
-    if channel == 'electron':
-        channel_label.AddText("e, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
-    elif channel == 'muon':
-        channel_label.AddText("#mu, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
-    else:
-        channel_label.AddText("combined, %s, %s" % ("#geq 4 jets", b_tag_bins_latex[b_tag_bin]))
-        
-    cms_label.AddText("CMS Preliminary, L = %.1f fb^{-1} at #sqrt{s} = %d TeV" % (measurement_config.luminosity/1000, measurement_config.centre_of_mass));
-             
-    cms_label.SetFillStyle(0)
-    cms_label.SetBorderSize(0)
-    cms_label.SetTextFont(42)
-    cms_label.SetTextAlign(13)
-    
-    channel_label.SetFillStyle(0)
-    channel_label.SetBorderSize(0)
-    channel_label.SetTextFont(42)
-    channel_label.SetTextAlign(13)
-    
-    return cms_label, channel_label
 
 def get_cms_labels_matplotlib(channel):
     global b_tag_bin, b_tag_bins_latex_matplotlib
@@ -384,102 +227,6 @@ def get_cms_labels_matplotlib(channel):
     return label
     
     
-def make_plots(histograms, category, output_folder, histname):
-    global variable, variables_latex, measurements_latex, k_value, b_tag_bin, maximum
-    
-    channel = 'electron'
-    if 'electron' in histname:
-        channel = 'electron'
-    elif 'muon' in histname:
-        channel = 'muon'
-    else:
-        channel = 'combined'
-
-    canvas = Canvas(width=700, height=500)
-    canvas.SetLeftMargin(0.15)
-    canvas.SetBottomMargin(0.15)
-    canvas.SetTopMargin(0.05)
-    canvas.SetRightMargin(0.05)
-    legend = plotting.create_legend(x0=0.6, y1=0.5)
-    
-    hist_data = histograms['unfolded']
-    hist_data.GetXaxis().SetTitle(variables_latex[variable] + ' [GeV]')
-    hist_data.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + variables_latex[variable] + '} [GeV^{-1}]')
-    hist_data.GetXaxis().SetTitleSize(0.05)
-    hist_data.GetYaxis().SetTitleSize(0.05)
-    hist_data.SetMinimum(0)
-    hist_data.SetMaximum(maximum[variable])
-    hist_data.SetMarkerSize(1)
-    hist_data.SetMarkerStyle(8)
-    plotAsym = TGraphAsymmErrors(hist_data)
-    plotStatErr = TGraphAsymmErrors(hist_data)
-    
-    xsections = read_unfolded_xsections(channel)
-    bins = variable_bins_ROOT[variable]
-    assert(len(bins) == len(xsections['central']))
-    
-#    for bin_i in range(len(bins)):
-#        scale = 1# / width
-#        centralresult = xsections['central'][bin_i]
-#        fit_error = centralresult[1]
-#        uncertainty = calculateTotalUncertainty(xsections, bin_i)
-#        uncertainty_total_plus = uncertainty['Total+'][0]
-#        uncertainty_total_minus = uncertainty['Total-'][0]
-#        uncertainty_total_plus, uncertainty_total_minus = symmetriseErrors(uncertainty_total_plus, uncertainty_total_minus)
-#        error_up = sqrt(fit_error ** 2 + uncertainty_total_plus ** 2) * scale
-#        error_down = sqrt(fit_error ** 2 + uncertainty_total_minus ** 2) * scale
-#        plotStatErr.SetPointEYhigh(bin_i, fit_error * scale)
-#        plotStatErr.SetPointEYlow(bin_i, fit_error * scale)
-#        plotAsym.SetPointEYhigh(bin_i, error_up)
-#        plotAsym.SetPointEYlow(bin_i, error_down)
-
-    gStyle.SetEndErrorSize(20)
-    plotAsym.SetLineWidth(2)
-    plotStatErr.SetLineWidth(2)
-    hist_data.Draw('P')
-    plotStatErr.Draw('same P')
-    plotAsym.Draw('same P Z')
-    legend.AddEntry(hist_data, 'unfolded', 'P')
-    
-    hist_measured = histograms['measured']
-    hist_measured.SetMarkerSize(1)
-    hist_measured.SetMarkerStyle(20)
-    hist_measured.SetMarkerColor(2)
-    hist_measured.Draw('same P')
-    legend.AddEntry(hist_measured, 'measured', 'P')
-    
-    for key, hist in histograms.iteritems():
-        if not 'unfolded' in key and not 'measured' in key:
-            hist.SetLineStyle(7)
-            hist.SetLineWidth(2)
-            #setting colours
-            if 'POWHEG' in key or 'matchingdown' in key:
-                hist.SetLineColor(kBlue)
-            elif 'MADGRAPH' in key or 'matchingup' in key:
-                hist.SetLineColor(kRed + 1)
-            elif 'MCATNLO'  in key or 'scaleup' in key:
-                hist.SetLineColor(kMagenta + 3)
-            elif 'scaledown' in key:
-                hist.SetLineColor(kGreen)
-            hist.Draw('hist same')
-            legend.AddEntry(hist, measurements_latex[key], 'l')
-            
-    
-    legend.Draw()
-             
-    cms_label, channel_label = get_cms_labels(channel)
-    cms_label.Draw()
-    channel_label.Draw()
-    
-    canvas.Modified()
-    canvas.Update()
-    
-    path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category
-    make_folder_if_not_exists(path)
-    
-    for output_format in output_formats:
-        canvas.SaveAs(path + '/' + histname + '_kv' + str(k_value) + '.' + output_format)
-
 def make_plots_matplotlib(histograms, category, output_folder, histname):
     global variable, variables_latex_matplotlib, measurements_latex_matplotlib, k_value
     
@@ -539,62 +286,6 @@ def make_plots_matplotlib(histograms, category, output_folder, histname):
     for output_format in output_formats:
         plt.savefig(path + '/' + histname + '_kv' + str(k_value) + '.' + output_format)
 
-
-def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altogether'):
-    global variable, variables_latex, k_value, b_tag_bin, maximum, ttbar_generator_systematics
-
-    canvas = Canvas(width=700, height=500)
-    canvas.SetLeftMargin(0.15)
-    canvas.SetBottomMargin(0.15)
-    canvas.SetTopMargin(0.05)
-    canvas.SetRightMargin(0.05)
-    legend = plotting.create_legend(x0=0.6, y1=0.5)
-    
-    hist_data_central = read_xsection_measurement_results('central', channel)[0]['unfolded']
-    
-    hist_data_central.GetXaxis().SetTitle(variables_latex[variable] + ' [GeV]')
-    hist_data_central.GetYaxis().SetTitle('#frac{1}{#sigma} #frac{d#sigma}{d' + variables_latex[variable] + '} [GeV^{-1}]')
-    hist_data_central.GetXaxis().SetTitleSize(0.05)
-    hist_data_central.GetYaxis().SetTitleSize(0.05)
-    hist_data_central.SetMinimum(0)
-    hist_data_central.SetMaximum(maximum[variable])
-    hist_data_central.SetMarkerSize(1)
-    hist_data_central.SetMarkerStyle(20)
-
-    gStyle.SetEndErrorSize(20)
-    hist_data_central.Draw('P')
-    legend.AddEntry(hist_data_central, 'measured (unfolded)', 'P')
-    
-    for systematic in systematics:
-        if systematic in exclude or systematic == 'central':
-            continue
-
-        hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
-        hist_data_systematic.SetMarkerSize(0.5)
-        hist_data_systematic.SetMarkerStyle(20)
-        colour_number = systematics.index(systematic)+1
-        if colour_number == 10:
-            colour_number = 42
-        hist_data_systematic.SetMarkerColor(colour_number)
-        hist_data_systematic.Draw('same P')
-        legend.AddEntry(hist_data_systematic, systematic, 'P')
-    
-    legend.Draw()
-    
-    cms_label, channel_label = get_cms_labels(channel)
-    cms_label.Draw()
-    
-    channel_label.Draw()
-    
-    canvas.Modified()
-    canvas.Update()
-    
-    path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable
-    make_folder_if_not_exists(path)
-    
-    for output_format in output_formats:
-        canvas.SaveAs(path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_value) + '.' + output_format)
-
 def plot_central_and_systematics_matplotlib(channel, systematics, exclude=[], suffix='altogether'):
     global variable, variables_latex_matplotlib, k_value, b_tag_bin
 
@@ -641,13 +332,6 @@ def plot_central_and_systematics_matplotlib(channel, systematics, exclude=[], su
 def plot_templates():
     pass
 if __name__ == '__main__':
-    ROOT.TH1.SetDefaultSumw2(False)
-    ROOT.gROOT.SetBatch(True)
-    ROOT.gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
-    plotting.setStyle()
-    gStyle.SetTitleYOffset(1.4)
-    ROOT.gROOT.ForceStyle()
-    
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data/',
                   help="set path to JSON files")
@@ -666,8 +350,6 @@ if __name__ == '__main__':
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
     parser.add_option("-a", "--additional-plots", action="store_true", dest="additional_plots",
                       help="creates a set of plots for each systematic (in addition to central result).")
-    parser.add_option("--nice-plots", action="store_true", dest="nice_plots",
-                      help="plot using matplotlib instead of ROOT")
     
     maximum = {
                'MET': 0.02,
@@ -676,46 +358,17 @@ if __name__ == '__main__':
                'MT': 0.02
                }
     
-    b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b-tags',
-                    '1orMoreBtag':'#geq 1 b-tags',
-                    '2btags':'2 b-tags', '2orMoreBtags':'#geq 2 b-tags',
-                    '3btags':'3 b-tags', '3orMoreBtags':'#geq 3 b-tags',
-                    '4orMoreBtags':'#geq 4 b-tags'}
-    
     b_tag_bins_latex_matplotlib = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag':'1 b-tags',
                     '1orMoreBtag':'$\geq$ 1 b-tags',
                     '2btags':'2 b-tags', '2orMoreBtags':'$\geq$ 2 b-tags',
                     '3btags':'3 b-tags', '3orMoreBtags':'$\geq$ 3 b-tags',
                     '4orMoreBtags':'$\geq$ 4 b-tags'}
     
-    variables_latex = {
-                       'MET': 'E_{T}^{miss}',
-                        'HT': 'H_{T}',
-                        'ST': 'S_{T}',
-                        'MT': 'M_{T}'}
     variables_latex_matplotlib = {
                        'MET': 'E_{\mathrm{T}}^{\mathrm{miss}}',
                         'HT': 'H_{\mathrm{T}}',
                         'ST': 'S_{\mathrm{T}}',
                         'MT': 'M_{\mathrm{T}}'}
-    measurements_latex = {'unfolded': 'unfolded',
-                        'measured': 'measured',
-                        'MADGRAPH': 't#bar{t} (MADGRAPH)',
-                        'MCATNLO': 't#bar{t} (MC@NLO)',
-                        'POWHEG': 't#bar{t} (POWHEG)',
-                        'matchingdown': 't#bar{t} (matching down)',
-                        'matchingup': 't#bar{t} (matching up)',
-                        'scaledown': 't#bar{t} (Q^{2} down)',
-                        'scaleup': 't#bar{t} (Q^{2} up)',
-                        'TTJets_matchingdown': 't#bar{t} (matching down)',
-                        'TTJets_matchingup': 't#bar{t} (matching up)',
-                        'TTJets_scaledown': 't#bar{t} (Q^{2} down)',
-                        'TTJets_scaleup': 't#bar{t} (Q^{2} up)',
-                        'VJets_matchingdown': 'V+jets (matching down)',
-                        'VJets_matchingup': 'V+jets (matching up)',
-                        'VJets_scaledown': 'V+jets (Q^{2} down)',
-                        'VJets_scaleup': 'V+jets(Q^{2} up)',
-                          }
     measurements_latex_matplotlib = {'unfolded': 'unfolded',
                         'measured': 'measured',
                         'MADGRAPH': '$t\\bar{t}$ (MADGRAPH)',
@@ -794,82 +447,41 @@ if __name__ == '__main__':
         if met_type == 'PFMET':
             met_type = 'patMETsPFlow'
         
-        if options.nice_plots:
-            make_template_plots_matplotlib(electron_fit_templates, category, 'electron')
-            make_template_plots_matplotlib(muon_fit_templates, category, 'muon')
-            plot_fit_results_matplotlib(electron_fit_results, category, 'electron')
-            plot_fit_results_matplotlib(muon_fit_results, category, 'muon')
-        else:
-            make_template_plots(electron_fit_templates, category, 'electron')
-            make_template_plots(muon_fit_templates, category, 'muon')
-            plot_fit_results(electron_fit_results, category, 'electron')
-            plot_fit_results(muon_fit_results, category, 'muon')
+        make_template_plots_matplotlib(electron_fit_templates, category, 'electron')
+        make_template_plots_matplotlib(muon_fit_templates, category, 'muon')
+        plot_fit_results_matplotlib(electron_fit_results, category, 'electron')
+        plot_fit_results_matplotlib(muon_fit_results, category, 'muon')
         
         histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
         histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
 
-        if options.nice_plots:        
-            make_plots_matplotlib(histograms_normalised_xsection_muon_different_generators, category, output_folder, 'normalised_xsection_muon_different_generators')
-            make_plots_matplotlib(histograms_normalised_xsection_muon_systematics_shifts, category, output_folder, 'normalised_xsection_muon_systematics_shifts')
-        
-            make_plots_matplotlib(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
-            make_plots_matplotlib(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
-        else:
-            make_plots(histograms_normalised_xsection_muon_different_generators, category, output_folder, 'normalised_xsection_muon_different_generators')
-            make_plots(histograms_normalised_xsection_muon_systematics_shifts, category, output_folder, 'normalised_xsection_muon_systematics_shifts')
-        
-            make_plots(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
-            make_plots(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
-    if options.nice_plots:
-        plot_central_and_systematics_matplotlib('electron', categories, exclude=ttbar_generator_systematics)
-        plot_central_and_systematics_matplotlib('muon', categories, exclude=ttbar_generator_systematics)
-        
-        plot_central_and_systematics_matplotlib('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
-        plot_central_and_systematics_matplotlib('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
-        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
-        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
-        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
-        plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-        plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-        
-        plot_central_and_systematics_matplotlib('electron', met_uncertainties, suffix='MET_only')
-        plot_central_and_systematics_matplotlib('muon', met_uncertainties, suffix='MET_only')
-    else:
-        plot_central_and_systematics('electron', categories, exclude=ttbar_generator_systematics)
-        plot_central_and_systematics('muon', categories, exclude=ttbar_generator_systematics)
-        
-        plot_central_and_systematics('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
-        plot_central_and_systematics('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
-        plot_central_and_systematics('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-        plot_central_and_systematics('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
-        plot_central_and_systematics('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-        plot_central_and_systematics('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
-        plot_central_and_systematics('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-        plot_central_and_systematics('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-        
-        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
-        plot_central_and_systematics('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-        plot_central_and_systematics('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-        
-        plot_central_and_systematics('electron', met_uncertainties, suffix='MET_only')
-        plot_central_and_systematics('muon', met_uncertainties, suffix='MET_only')
+        make_plots_matplotlib(histograms_normalised_xsection_muon_different_generators, category, output_folder, 'normalised_xsection_muon_different_generators')
+        make_plots_matplotlib(histograms_normalised_xsection_muon_systematics_shifts, category, output_folder, 'normalised_xsection_muon_systematics_shifts')
     
+        make_plots_matplotlib(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
+        make_plots_matplotlib(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
 
+    plot_central_and_systematics_matplotlib('electron', categories, exclude=ttbar_generator_systematics)
+    plot_central_and_systematics_matplotlib('muon', categories, exclude=ttbar_generator_systematics)
     
+    plot_central_and_systematics_matplotlib('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
+    plot_central_and_systematics_matplotlib('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+    
+    plot_central_and_systematics_matplotlib('electron', met_uncertainties, suffix='MET_only')
+    plot_central_and_systematics_matplotlib('muon', met_uncertainties, suffix='MET_only')
