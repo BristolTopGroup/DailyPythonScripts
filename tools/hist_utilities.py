@@ -4,7 +4,7 @@ Created on 20 Nov 2012
 @author: kreczko
 '''
 
-from rootpy.plotting import Hist
+from rootpy.plotting import Hist, Graph
 
 def hist_to_value_error_tuplelist(hist):
     values = list(hist)
@@ -21,6 +21,20 @@ def values_and_errors_to_hist(values, errors, bins):
         errors = [0.]*len(values)
     value_error_tuplelist = zip(values, errors)
     return value_error_tuplelist_to_hist(value_error_tuplelist, bins)
+
+def value_errors_tuplelist_to_graph(value_errors_tuplelist, bin_edges):
+    value_error_tuplelist = [(value, 0) for value, lower_error, upper_error in value_errors_tuplelist]
+    hist = value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges)
+    
+    rootpy_graph = Graph(hist = hist)
+    set_lower_error = rootpy_graph.SetPointEYlow
+    set_upper_error = rootpy_graph.SetPointEYhigh
+    
+    for point_i, (value, lower_error, upper_error) in enumerate(value_errors_tuplelist):
+        set_lower_error(point_i, lower_error)
+        set_upper_error(point_i, upper_error)
+        
+    return rootpy_graph
 
 def value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges):
     assert(len(bin_edges) == len(value_error_tuplelist) + 1)
@@ -71,3 +85,20 @@ if __name__ == '__main__':
     plt.title('Testing')
     plt.legend(numpoints=1)
     plt.savefig('Array2Hist.png')
+    plt.close()
+    
+    value_errors_tuplelist = [(0.006480446927374301, 0.0004647547547401945, 0.0004647547547401945*2), 
+                             (0.012830288388947605, 0.0010071677178938234, 0.0010071677178938234*2), 
+                             (0.011242639287332025, 0.000341258792551077*2, 0.000341258792551077), 
+                             (0.005677185565453722, 0.00019082371879446718*2, 0.00019082371879446718), 
+                             (0.0008666767325985203, 5.0315979327182054e-05, 5.0315979327182054e-05)]
+    hist = value_errors_tuplelist_to_graph(value_errors_tuplelist, bin_edges = [0, 25, 45, 70, 100, 300])
+
+    plt.figure(figsize=(16, 10), dpi=100)
+    plt.figure(1)
+    rplt.errorbar(hist, label='test2')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Testing')
+    plt.legend(numpoints=1)
+    plt.savefig('Array2Graph.png')
