@@ -468,10 +468,10 @@ if __name__ == '__main__':
         if met_type == 'PFMET':
             met_type = 'patMETsPFlow'
         
-#        make_template_plots_matplotlib(electron_fit_templates, category, 'electron')
-#        make_template_plots_matplotlib(muon_fit_templates, category, 'muon')
-#        plot_fit_results_matplotlib(electron_fit_results, category, 'electron')
-#        plot_fit_results_matplotlib(muon_fit_results, category, 'muon')
+        make_template_plots_matplotlib(electron_fit_templates, category, 'electron')
+        make_template_plots_matplotlib(muon_fit_templates, category, 'muon')
+        plot_fit_results_matplotlib(electron_fit_results, category, 'electron')
+        plot_fit_results_matplotlib(muon_fit_results, category, 'muon')
         
         histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
         histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
@@ -482,27 +482,27 @@ if __name__ == '__main__':
         make_plots_matplotlib(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
         make_plots_matplotlib(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
 
-#    plot_central_and_systematics_matplotlib('electron', categories, exclude=ttbar_generator_systematics)
-#    plot_central_and_systematics_matplotlib('muon', categories, exclude=ttbar_generator_systematics)
-#    
-#    plot_central_and_systematics_matplotlib('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
-#    plot_central_and_systematics_matplotlib('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
-#    
-#    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
-#    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-#    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-#    
-#    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
-#    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-#    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-#    
-#    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
-#    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-#    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-#    
-#    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
-#    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-#    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-#    
-#    plot_central_and_systematics_matplotlib('electron', met_uncertainties, suffix='MET_only')
-#    plot_central_and_systematics_matplotlib('muon', met_uncertainties, suffix='MET_only')
+    plot_central_and_systematics_matplotlib('electron', categories, exclude=ttbar_generator_systematics)
+    plot_central_and_systematics_matplotlib('muon', categories, exclude=ttbar_generator_systematics)
+    
+    plot_central_and_systematics_matplotlib('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
+    plot_central_and_systematics_matplotlib('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+    
+    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
+    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+    
+    plot_central_and_systematics_matplotlib('electron', met_uncertainties, suffix='MET_only')
+    plot_central_and_systematics_matplotlib('muon', met_uncertainties, suffix='MET_only')
