@@ -278,7 +278,7 @@ def get_cms_labels(channel):
     return cms_label, channel_label
 
     
-def make_plots(histograms, category, output_folder, histname):
+def make_plots(histograms, category, output_folder, histname, show_before_unfolding = False):
     global variable, variables_latex, measurements_latex, k_value, b_tag_bin, maximum
     
     channel = 'electron'
@@ -330,14 +330,15 @@ def make_plots(histograms, category, output_folder, histname):
     hist_data.Draw('P')
     plotStatErr.Draw('same P')
     plotAsym.Draw('same P Z')
-    legend.AddEntry(hist_data, 'unfolded', 'P')
+    legend.AddEntry(hist_data, 'data', 'P')
     
-    hist_measured = histograms['measured']
-    hist_measured.SetMarkerSize(1)
-    hist_measured.SetMarkerStyle(20)
-    hist_measured.SetMarkerColor(2)
-    hist_measured.Draw('same P')
-    legend.AddEntry(hist_measured, 'measured', 'P')
+    if show_before_unfolding:
+        hist_measured = histograms['measured']
+        hist_measured.SetMarkerSize(1)
+        hist_measured.SetMarkerStyle(20)
+        hist_measured.SetMarkerColor(2)
+        hist_measured.Draw('same P')
+        legend.AddEntry(hist_measured, 'data (before unfolding)', 'P')
     
     for key, hist in histograms.iteritems():
         if not 'unfolded' in key and not 'measured' in key:
@@ -396,7 +397,7 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
 
     gStyle.SetEndErrorSize(20)
     hist_data_central.Draw('P')
-    legend.AddEntry(hist_data_central, 'measured (unfolded)', 'P')
+    legend.AddEntry(hist_data_central, 'data', 'P')
     
     for systematic in systematics:
         if systematic in exclude or systematic == 'central':
@@ -437,7 +438,7 @@ if __name__ == '__main__':
     plotting.setStyle()
     gStyle.SetTitleYOffset(1.4)
     ROOT.gROOT.ForceStyle()
-    
+    print 'DO NOT USE THIS SCRIPT'
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data/',
                   help="set path to JSON files")
