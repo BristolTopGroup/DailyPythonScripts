@@ -3,8 +3,8 @@
 *.pyo
 *.log
 #data and plots potentially include non-approved data == don't make them public
-*/data/*
-*/plots/*
+**/data/*
+**/plots*/*
 src/cross_section_measurement/data/
 src/log_*
 src/*.root

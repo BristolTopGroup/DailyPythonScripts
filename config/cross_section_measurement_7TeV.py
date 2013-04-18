@@ -32,6 +32,9 @@ categories_and_prefixes = {
                  'BJet_up':'_plusBjet',
                  'JES_down':'_minusJES',
                  'JES_up':'_plusJES',
+                 #placeholders
+#                 'JER_down':'_minusJER',
+#                 'JER_up':'_plusJER',
                  'LightJet_down':'_minusLightJet',
                  'LightJet_up':'_plusLightJet',
                  'PU_down':'_PU_64600mb',

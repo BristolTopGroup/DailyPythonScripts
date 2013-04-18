@@ -5,7 +5,7 @@ Created on 30 Oct 2012
 '''
 
 title = {
-         'fontsize':30,
+         'fontsize':24,
           'verticalalignment':'bottom'
           }
 

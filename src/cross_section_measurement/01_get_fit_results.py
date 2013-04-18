@@ -212,7 +212,7 @@ if __name__ == '__main__':
     
     
     (options, args) = parser.parse_args()
-    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options
+    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
     
     if options.CoM == 8:
         from config.variable_binning_8TeV import variable_bins_ROOT
@@ -244,9 +244,10 @@ if __name__ == '__main__':
     
     SingleTop_file = File(measurement_config.SingleTop_file)
     muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_file)
-    # matching/scale up/down systematics
+    TTJet_file = File(measurement_config.ttbar_category_templates['central'])
+    # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
-        TTJet_file = File(measurement_config.generator_systematic_ttbar_templates[systematic])
+#        TTJet_file = File(measurement_config.generator_systematic_ttbar_templates[systematic])
         VJets_file = File(measurement_config.generator_systematic_vjets_templates[systematic])
         
         
@@ -274,8 +275,40 @@ if __name__ == '__main__':
                       b_tag_bin=b_tag_bin,
                       )
         
-        write_fit_results_and_initial_values('electron', systematic, fit_results_electron, initial_values_electron, templates_electron)
-        write_fit_results_and_initial_values('muon', systematic, fit_results_muon, initial_values_muon, templates_muon)
+        write_fit_results_and_initial_values('electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
+        write_fit_results_and_initial_values('muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+        
+    VJets_file = File(measurement_config.VJets_category_templates['central'])
+    # matching/scale up/down systematics for ttbar + jets
+    for systematic in generator_systematics:
+        TTJet_file = File(measurement_config.generator_systematic_ttbar_templates[systematic])
+        
+        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_electron,
+                                   },
+                      variable=variable,
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        
+        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_muon,
+                                   },
+                      variable=variable,
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        
+        write_fit_results_and_initial_values('electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
+        write_fit_results_and_initial_values('muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
     
     # central measurement and the rest of the systematics
     last_systematic = ''
@@ -377,8 +410,8 @@ if __name__ == '__main__':
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
        
     for met_systematic in met_systematics_suffixes:
-        #all MET uncertainties except JES as this is already included
-        if 'JetEn' in met_systematic or variable == 'HT':#HT is not dependent on MET!
+        #all MET uncertainties except JES & JER - as this is already included
+        if 'JetEn' in met_systematic or 'JetRes' in met_systematic or variable == 'HT':#HT is not dependent on MET!
             continue
         category = met_type + met_systematic
         if 'PFMET' in met_type:
