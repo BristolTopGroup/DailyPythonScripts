@@ -286,8 +286,11 @@ if __name__ == '__main__':
     all_measurements.extend(met_uncertainties)
     
     for category in all_measurements:
+        if variable == 'HT' and category in met_uncertainties:
+            continue
         #Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
+        
         if category == 'JES_up':
             met_type += 'JetEnUp'
             if met_type == 'PFMETJetEnUp':

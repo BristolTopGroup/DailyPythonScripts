@@ -25,8 +25,14 @@ rc('text', usetex=True)
 def read_xsection_measurement_results(category, channel):
     global path_to_JSON, variable, k_value, met_type
     
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
+    normalised_xsection_unfolded = None
+    if category in met_uncertainties and variable == 'HT':
+        normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
+                                                       + 'central' + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    else:
+        normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
                                                        + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+        
     h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
     
@@ -38,7 +44,7 @@ def read_xsection_measurement_results(category, channel):
                                                          'unfolded':h_normalised_xsection_unfolded}
     
     if category == 'central':
-        #true distributions
+        # true distributions
         h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable])
         h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist(normalised_xsection_unfolded['POWHEG'], bin_edges[variable])
         h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist(normalised_xsection_unfolded['MCATNLO'], bin_edges[variable])
@@ -56,18 +62,18 @@ def read_xsection_measurement_results(category, channel):
                                                                   'scaledown': h_normalised_xsection_scaledown,
                                                                   'scaleup': h_normalised_xsection_scaleup})
         
-        normalised_xsection_unfolded_with_errors = read_data_from_JSON(path_to_JSON  + '/xsection_measurement_results' + '/kv' + 
+        normalised_xsection_unfolded_with_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
                                                                    str(k_value) + '/' + category + '/normalised_xsection_' + 
                                                                    channel + '_' + met_type + '_with_errors.txt')
-        #a rootpy.Graph with asymmetric errors!
+        # a rootpy.Graph with asymmetric errors!
         h_normalised_xsection_with_systematics = value_errors_tuplelist_to_graph(normalised_xsection_unfolded_with_errors['TTJet_measured'], bin_edges[variable])
         h_normalised_xsection_with_systematics_unfolded = value_errors_tuplelist_to_graph(normalised_xsection_unfolded_with_errors['TTJet_unfolded'], bin_edges[variable])
         
         histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics
-        histograms_normalised_xsection_different_generators['unfolded_with_systematics']  = h_normalised_xsection_with_systematics_unfolded
+        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_unfolded
         
         histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_with_systematics
-        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics']  = h_normalised_xsection_with_systematics_unfolded
+        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_unfolded
     
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
@@ -533,63 +539,52 @@ if __name__ == '__main__':
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
     
-    for category in all_measurements:
-        if not category == 'central' and not options.additional_plots:
-            continue
-        #setting up systematic MET for JES up/down samples for reading fit templates
-        met_type = translate_options[options.metType]
-        if category == 'JES_up':
-            met_type += 'JetEnUp'
-            if met_type == 'PFMETJetEnUp':
-                met_type = 'patPFMetJetEnUp'
-        elif category == 'JES_down':
-            met_type += 'JetEnDown'
-            if met_type == 'PFMETJetEnDown':
-                met_type = 'patPFMetJetEnDown'
+    for channel in ['electron', 'muon', 'combined']:
+        for category in all_measurements:
+            if not category == 'central' and not options.additional_plots:
+                continue
+            if variable == 'HT' and category in met_uncertainties:
+                continue
+            # setting up systematic MET for JES up/down samples for reading fit templates
+            met_type = translate_options[options.metType]
+            if category == 'JES_up':
+                met_type += 'JetEnUp'
+                if met_type == 'PFMETJetEnUp':
+                    met_type = 'patPFMetJetEnUp'
+            elif category == 'JES_down':
+                met_type += 'JetEnDown'
+                if met_type == 'PFMETJetEnDown':
+                    met_type = 'patPFMetJetEnDown'
+            
+            fit_templates, fit_results = read_fit_templates_and_results_as_histograms(category, channel)
+            
+            # change back to original MET type
+            met_type = translate_options[options.metType]
+            if met_type == 'PFMET':
+                met_type = 'patMETsPFlow'
+            
+            make_template_plots(fit_templates, category, channel)
+            plot_fit_results(fit_results, category, channel)
+            
+            histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results(category, channel)
+    
+            make_plots(histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators')
+            make_plots(histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts')
+    
+        plot_central_and_systematics(channel, categories, exclude=ttbar_generator_systematics)
         
-        electron_fit_templates, electron_fit_results = read_fit_templates_and_results_as_histograms(category, 'electron')
-        muon_fit_templates, muon_fit_results = read_fit_templates_and_results_as_histograms(category, 'muon')
+        plot_central_and_systematics(channel, ttbar_generator_systematics, suffix='ttbar_theory_only')
         
-        #change back to original MET type
-        met_type = translate_options[options.metType]
-        if met_type == 'PFMET':
-            met_type = 'patMETsPFlow'
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
+        plot_central_and_systematics(channel, pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
         
-        make_template_plots(electron_fit_templates, category, 'electron')
-        make_template_plots(muon_fit_templates, category, 'muon')
-        plot_fit_results(electron_fit_results, category, 'electron')
-        plot_fit_results(muon_fit_results, category, 'muon')
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
+        plot_central_and_systematics(channel, pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
         
-        histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
-        histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
-
-        make_plots(histograms_normalised_xsection_muon_different_generators, category, output_folder, 'normalised_xsection_muon_different_generators')
-        make_plots(histograms_normalised_xsection_muon_systematics_shifts, category, output_folder, 'normalised_xsection_muon_systematics_shifts')
-    
-        make_plots(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
-        make_plots(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
-
-    plot_central_and_systematics('electron', categories, exclude=ttbar_generator_systematics)
-    plot_central_and_systematics('muon', categories, exclude=ttbar_generator_systematics)
-    
-    plot_central_and_systematics('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
-    plot_central_and_systematics('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
-    plot_central_and_systematics('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-    plot_central_and_systematics('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
-    plot_central_and_systematics('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-    plot_central_and_systematics('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
-    plot_central_and_systematics('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-    plot_central_and_systematics('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
-    plot_central_and_systematics('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-    plot_central_and_systematics('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-    
-    plot_central_and_systematics('electron', met_uncertainties, suffix='MET_only')
-    plot_central_and_systematics('muon', met_uncertainties, suffix='MET_only')
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
+        plot_central_and_systematics(channel, pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
+        plot_central_and_systematics(channel, pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+        
+        plot_central_and_systematics(channel, met_uncertainties, suffix='MET_only')

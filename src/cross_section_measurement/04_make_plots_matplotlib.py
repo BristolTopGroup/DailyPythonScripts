@@ -24,8 +24,14 @@ rc('text', usetex=True)
 def read_xsection_measurement_results(category, channel):
     global path_to_JSON, variable, k_value, met_type
     
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
+    normalised_xsection_unfolded = None
+    if category in met_uncertainties and variable == 'HT':
+        normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
+                                                       + 'central' + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    else:
+        normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
                                                        + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+        
     h_normalised_xsection = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable])
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist(normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable])
     
@@ -122,7 +128,7 @@ def read_fit_templates_and_results_as_histograms(category, channel):
         
     return template_histograms, fit_results_histograms
 
-def make_template_plots_matplotlib(histograms, category, channel):
+def make_template_plots(histograms, category, channel):
     global variable, output_folder
     from matplotlib import rc
     rc('text', usetex=True)
@@ -150,7 +156,7 @@ def make_template_plots_matplotlib(histograms, category, channel):
         h_VJets.linewidth = 5
         h_QCD.linewidth = 5
     
-        plt.figure(figsize=(14, 14), dpi=200, facecolor='white')
+        plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
         axes = plt.axes()
         axes.minorticks_on()
         
@@ -165,17 +171,15 @@ def make_template_plots_matplotlib(histograms, category, channel):
         axes.set_ylim([0, 0.2])
         
         plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
-        plt.title(get_cms_labels_matplotlib(channel), CMS.title)
+        plt.title(get_cms_labels(channel), CMS.title)
         plt.tight_layout()
     
         for output_format in output_formats:
             plt.savefig(plotname + '.' + output_format) 
 
 
-def plot_fit_results_matplotlib(histograms, category, channel):
+def plot_fit_results(histograms, category, channel):
     global variable, b_tag_bin, output_folder
-    from matplotlib import rc
-    rc('text', usetex=True)
     
     for variable_bin in variable_bins_ROOT[variable]:
         path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category + '/fit_results/'
@@ -199,7 +203,7 @@ def plot_fit_results_matplotlib(histograms, category, channel):
         h_signal.linewidth = 5
         h_background.linewidth = 5
         
-        plt.figure(figsize=(14, 14), dpi=200, facecolor='white')
+        plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
         axes = plt.axes()
         axes.minorticks_on()
         
@@ -213,15 +217,15 @@ def plot_fit_results_matplotlib(histograms, category, channel):
         rplt.hist(h_background, axes=axes, label='background')
         
         plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
-        plt.title(get_cms_labels_matplotlib(channel), CMS.title)
+        plt.title(get_cms_labels(channel), CMS.title)
         plt.tight_layout()
                      
         for output_format in output_formats:
             plt.savefig(plotname + '.' + output_format) 
 
 
-def get_cms_labels_matplotlib(channel):
-    global b_tag_bin, b_tag_bins_latex_matplotlib
+def get_cms_labels(channel):
+    global b_tag_bin, b_tag_bins_latex
     lepton = 'e'
     if channel == 'electron':
         lepton = 'e'
@@ -229,14 +233,14 @@ def get_cms_labels_matplotlib(channel):
         lepton = '$\mu$'
     else:
         lepton = 'combined'
-    channel_label = '%s, $\geq$ 4 jets, %s' % (lepton, b_tag_bins_latex_matplotlib[b_tag_bin])
+    channel_label = '%s, $\geq$ 4 jets, %s' % (lepton, b_tag_bins_latex[b_tag_bin])
     template = '%s, CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV'
     label = template % (channel_label, measurement_config.luminosity / 1000, measurement_config.centre_of_mass) 
     return label
     
     
-def make_plots_matplotlib(histograms, category, output_folder, histname, show_before_unfolding=False):
-    global variable, variables_latex_matplotlib, measurements_latex_matplotlib, k_value
+def make_plots(histograms, category, output_folder, histname, show_before_unfolding=False):
+    global variable, variables_latex, measurements_latex, k_value
     
     channel = 'electron'
     if 'electron' in histname:
@@ -260,12 +264,12 @@ def make_plots_matplotlib(histograms, category, output_folder, histname, show_be
     hist_measured.marker = 'o'
     hist_measured.color = 'red'
 
-    plt.figure(figsize=(14, 14), dpi=200, facecolor='white')
+    plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
     axes = plt.axes()
     axes.minorticks_on()
     
-    plt.xlabel('$%s$ [GeV]' % variables_latex_matplotlib[variable], CMS.x_axis_title)
-    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex_matplotlib[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
+    plt.xlabel('$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title)
+    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
@@ -289,7 +293,7 @@ def make_plots_matplotlib(histograms, category, output_folder, histname, show_be
                 hist.SetLineColor(kMagenta + 3)
             elif 'scaledown' in key:
                 hist.SetLineColor(kGreen)
-            rplt.hist(hist, axes=axes, label=measurements_latex_matplotlib[key])
+            rplt.hist(hist, axes=axes, label=measurements_latex[key])
             
     handles, labels = axes.get_legend_handles_labels()
     new_handles, new_labels = [], []
@@ -299,7 +303,7 @@ def make_plots_matplotlib(histograms, category, output_folder, histname, show_be
             new_labels.append(label)
     
     plt.legend(new_handles, new_labels, numpoints=1, loc='upper right', prop=CMS.legend_properties)
-    plt.title(get_cms_labels_matplotlib(channel), CMS.title)
+    plt.title(get_cms_labels(channel), CMS.title)
     plt.tight_layout()
 
     path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category
@@ -307,20 +311,20 @@ def make_plots_matplotlib(histograms, category, output_folder, histname, show_be
     for output_format in output_formats:
         plt.savefig(path + '/' + histname + '_kv' + str(k_value) + '.' + output_format)
 
-def plot_central_and_systematics_matplotlib(channel, systematics, exclude=[], suffix='altogether'):
-    global variable, variables_latex_matplotlib, k_value, b_tag_bin
+def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altogether'):
+    global variable, variables_latex, k_value, b_tag_bin
 
-    plt.figure(figsize=(14, 14), dpi=200, facecolor='white')
+    plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
     axes = plt.axes()
     axes.minorticks_on()
     
-    hist_data_central = read_xsection_measurement_results('central', channel)[0]['unfolded']
+    hist_data_central = read_xsection_measurement_results('central', channel)[0]['unfolded_with_systematics']
     hist_data_central.markersize = 2  # points. Imagine, tangible units!
     hist_data_central.marker = 'o'
     
     
-    plt.xlabel('$%s$ [GeV]' % variables_latex_matplotlib[variable], CMS.x_axis_title)
-    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex_matplotlib[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
+    plt.xlabel('$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title)
+    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
@@ -341,7 +345,7 @@ def plot_central_and_systematics_matplotlib(channel, systematics, exclude=[], su
                       xerr=False)
             
     plt.legend(numpoints=1, loc='upper right', prop={'size': 24}, ncol=2)
-    plt.title(get_cms_labels_matplotlib(channel), CMS.title)
+    plt.title(get_cms_labels(channel), CMS.title)
     plt.tight_layout()
 
     
@@ -379,18 +383,18 @@ if __name__ == '__main__':
                'MT': 0.02
                }
     
-    b_tag_bins_latex_matplotlib = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag':'1 b-tags',
+    b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag':'1 b-tags',
                     '1orMoreBtag':'$\geq$ 1 b-tags',
                     '2btags':'2 b-tags', '2orMoreBtags':'$\geq$ 2 b-tags',
                     '3btags':'3 b-tags', '3orMoreBtags':'$\geq$ 3 b-tags',
                     '4orMoreBtags':'$\geq$ 4 b-tags'}
     
-    variables_latex_matplotlib = {
+    variables_latex = {
                        'MET': 'E_{\mathrm{T}}^{\mathrm{miss}}',
                         'HT': 'H_{\mathrm{T}}',
                         'ST': 'S_{\mathrm{T}}',
                         'MT': 'M_{\mathrm{T}}'}
-    measurements_latex_matplotlib = {'unfolded': 'unfolded',
+    measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
                         'MADGRAPH': '$t\\bar{t}$ (MADGRAPH)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO)',
@@ -446,63 +450,53 @@ if __name__ == '__main__':
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
     
-    for category in all_measurements:
-        if not category == 'central' and not options.additional_plots:
-            continue
-        # setting up systematic MET for JES up/down samples for reading fit templates
-        met_type = translate_options[options.metType]
-        if category == 'JES_up':
-            met_type += 'JetEnUp'
-            if met_type == 'PFMETJetEnUp':
-                met_type = 'patPFMetJetEnUp'
-        elif category == 'JES_down':
-            met_type += 'JetEnDown'
-            if met_type == 'PFMETJetEnDown':
-                met_type = 'patPFMetJetEnDown'
+    for channel in ['electron', 'muon', 'combined']:
+        for category in all_measurements:
+            if not category == 'central' and not options.additional_plots:
+                continue
+            if variable == 'HT' and category in met_uncertainties:
+                continue
+            # setting up systematic MET for JES up/down samples for reading fit templates
+            met_type = translate_options[options.metType]
+            if category == 'JES_up':
+                met_type += 'JetEnUp'
+                if met_type == 'PFMETJetEnUp':
+                    met_type = 'patPFMetJetEnUp'
+            elif category == 'JES_down':
+                met_type += 'JetEnDown'
+                if met_type == 'PFMETJetEnDown':
+                    met_type = 'patPFMetJetEnDown'
+            
+            
+            # change back to original MET type
+            met_type = translate_options[options.metType]
+            if met_type == 'PFMET':
+                met_type = 'patMETsPFlow'
+#            this is problematic when templates are 0 i.e. for ST and HT
+            if not channel == 'combined' or variable in ['ST', 'HT']:
+                fit_templates, fit_results = read_fit_templates_and_results_as_histograms(category, channel)
+                make_template_plots(fit_templates, category, channel)
+            plot_fit_results(fit_results, category, channel)
+            
+            histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results(category, channel)
+    
+            make_plots(histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators')
+            make_plots(histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts')
+    
+        plot_central_and_systematics(channel, categories, exclude=ttbar_generator_systematics)
         
-        electron_fit_templates, electron_fit_results = read_fit_templates_and_results_as_histograms(category, 'electron')
-        muon_fit_templates, muon_fit_results = read_fit_templates_and_results_as_histograms(category, 'muon')
+        plot_central_and_systematics(channel, ttbar_generator_systematics, suffix='ttbar_theory_only')
         
-        # change back to original MET type
-        met_type = translate_options[options.metType]
-        if met_type == 'PFMET':
-            met_type = 'patMETsPFlow'
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
+        plot_central_and_systematics(channel, pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
         
-        make_template_plots_matplotlib(electron_fit_templates, category, 'electron')
-        make_template_plots_matplotlib(muon_fit_templates, category, 'muon')
-        plot_fit_results_matplotlib(electron_fit_results, category, 'electron')
-        plot_fit_results_matplotlib(muon_fit_results, category, 'muon')
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
+        plot_central_and_systematics(channel, pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
         
-        histograms_normalised_xsection_electron_different_generators, histograms_normalised_xsection_electron_systematics_shifts = read_xsection_measurement_results(category, 'electron')
-        histograms_normalised_xsection_muon_different_generators, histograms_normalised_xsection_muon_systematics_shifts = read_xsection_measurement_results(category, 'muon')
-
-        make_plots_matplotlib(histograms_normalised_xsection_muon_different_generators, category, output_folder, 'normalised_xsection_muon_different_generators')
-        make_plots_matplotlib(histograms_normalised_xsection_muon_systematics_shifts, category, output_folder, 'normalised_xsection_muon_systematics_shifts')
-    
-        make_plots_matplotlib(histograms_normalised_xsection_electron_different_generators, category, output_folder, 'normalised_xsection_electron_different_generators')
-        make_plots_matplotlib(histograms_normalised_xsection_electron_systematics_shifts, category, output_folder, 'normalised_xsection_electron_systematics_shifts')
-
-    plot_central_and_systematics_matplotlib('electron', categories, exclude=ttbar_generator_systematics)
-    plot_central_and_systematics_matplotlib('muon', categories, exclude=ttbar_generator_systematics)
-    
-    plot_central_and_systematics_matplotlib('electron', ttbar_generator_systematics, suffix='ttbar_theory_only')
-    plot_central_and_systematics_matplotlib('muon', ttbar_generator_systematics, suffix='ttbar_theory_only')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_1_to_11))
-    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_1_to_11, exclude=exclude, suffix='PDF_1_to_11')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_12_to_22))
-    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_12_to_22, exclude=exclude, suffix='PDF_12_to_22')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
-    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
-    
-    exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
-    plot_central_and_systematics_matplotlib('electron', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-    plot_central_and_systematics_matplotlib('muon', pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
-    
-    plot_central_and_systematics_matplotlib('electron', met_uncertainties, suffix='MET_only')
-    plot_central_and_systematics_matplotlib('muon', met_uncertainties, suffix='MET_only')
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_23_to_33))
+        plot_central_and_systematics(channel, pdf_uncertainties_23_to_33, exclude=exclude, suffix='PDF_23_to_33')
+        
+        exclude = set(pdf_uncertainties).difference(set(pdf_uncertainties_34_to_44))
+        plot_central_and_systematics(channel, pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
+        
+        plot_central_and_systematics(channel, met_uncertainties, suffix='MET_only')

@@ -16,7 +16,6 @@ This module produces several results for the three channels (electron, muon, com
 '''
 from optparse import OptionParser
 from copy import deepcopy
-from math import sqrt
 
 from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
@@ -24,9 +23,13 @@ from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
     calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 
 def read_normalised_xsection_measurement(category, channel):
-    global path_to_JSON, met_type
+    global path_to_JSON, met_type, met_uncertainties
+    normalised_xsection = None
     
-    normalised_xsection = read_data_from_JSON(path_to_JSON + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    if category in met_uncertainties and variable == 'HT':
+        normalised_xsection = read_data_from_JSON(path_to_JSON + 'central' + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    else:
+        normalised_xsection = read_data_from_JSON(path_to_JSON + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
     
     measurement = normalised_xsection['TTJet_measured']
     measurement_unfolded = normalised_xsection['TTJet_unfolded']
