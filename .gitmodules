@@ -7,3 +7,6 @@
 [submodule "external/virtualenv"]
 	path = external/virtualenv
 	url = git://github.com/pypa/virtualenv.git
+[submodule "external/matplotlib"]
+	path = external/matplotlib
+	url = git@github.com:matplotlib/matplotlib.git
