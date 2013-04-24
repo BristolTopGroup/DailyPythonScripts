@@ -15,6 +15,9 @@ from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 import numpy
 from numpy import frompyfunc
 from pylab import plot
+
+from matplotlib import rc
+rc('text', usetex=True)
             
 def make_efficiency_plot(pass_data, total_data, pass_mc, total_mc, trigger_under_study):
     global output_folder, output_formats
@@ -59,9 +62,6 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
                       fit_data, fit_mc, fit_SF, fit_function,
                       x_limits, x_title, y_title, save_as_name):    
     # plot with matplotlib
-    from matplotlib import rc
-    rc('text', usetex=True)
-    
     plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
     gs = gridspec.GridSpec(2, 1, height_ratios=[5, 1]) 
 
@@ -69,6 +69,9 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
     ax0.minorticks_on()
     ax0.grid(True, 'major', linewidth=2)
     ax0.grid(True, 'minor')
+    plt.tick_params(**CMS.axis_label_major)
+    plt.tick_params(**CMS.axis_label_minor)
+    
     ax0.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     
     rplt.errorbar(efficiency_data, xerr=True, emptybins=True, axes=ax0)
@@ -77,10 +80,9 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
     ax0.set_xlim(x_limits)
     
     plt.ylabel(y_title, CMS.y_axis_title)
-    plt.tick_params(**CMS.axis_label_major)
-    plt.tick_params(**CMS.axis_label_minor)
+    
     plt.title(r'e+jets, CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
-    plt.legend(['data', r'$\mathrm{t}\bar{\mathrm{t}}$ MC'], numpoints=1, loc='lower right', prop={'size':40})
+    plt.legend(['data', r'$\mathrm{t}\bar{\mathrm{t}}$ MC'], numpoints=1, loc='lower right', prop=CMS.legend_properties)
     
     #add fits
     x = numpy.linspace(fit_data.GetXmin(), fit_data.GetXmax(), fit_data.GetNpx())
@@ -105,11 +107,9 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
     ax1.xaxis.set_major_formatter(FormatStrFormatter('%d'))
-    if 'jet_pt' in trigger_under_study:
-        ax1.xaxis.set_minor_formatter(FormatStrFormatter('%d'))
-        
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
+
     plt.xlabel(x_title, CMS.x_axis_title)
     plt.ylabel('data/MC', CMS.y_axis_title)
     
@@ -136,6 +136,24 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
     function_SF = frompyfunc(fit_SF.Eval, 1, 1)
     plot(x, function_SF(x), axes=ax1, color = 'green', linewidth = 2)
     
+    if 'jet_pt' in trigger_under_study:
+        ax1.xaxis.set_minor_formatter(FormatStrFormatter('%d'))
+        plt.draw()
+        labels = [item.get_text() for item in ax1.get_xmajorticklabels()]
+        minor_labels = [item.get_text() for item in ax1.get_xminorticklabels()]
+        new_labels, new_minor_labels = [], []
+        keep_labels = ['20','50','100','150','200']
+        for label in labels:
+            if not label in keep_labels:
+                label = ''
+            new_labels.append(label)
+        for label in minor_labels:
+            if not label in keep_labels:
+                label = ''
+            new_minor_labels.append(label)
+        ax1.set_xticklabels(new_labels)
+        ax1.set_xticklabels(new_minor_labels, minor = True)
+        
     plt.tight_layout()
     
     for output_format in output_formats:
@@ -264,6 +282,13 @@ def get_input_plots(data_file, mc_file, trigger_under_study):
 if __name__ == '__main__':
     gROOT.SetBatch(True)
     gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    
+    CMS.title['fontsize'] = 40
+    CMS.x_axis_title['fontsize'] = 50
+    CMS.y_axis_title['fontsize'] = 50
+    CMS.axis_label_major['labelsize'] = 40
+    CMS.axis_label_minor['labelsize'] = 40
+    CMS.legend_properties['size'] = 40
     
     output_formats = ['png', 'pdf']
     output_folder = '/storage/TopQuarkGroup/results/plots/Trigger/'

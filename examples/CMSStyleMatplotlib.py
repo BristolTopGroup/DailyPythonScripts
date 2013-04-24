@@ -8,7 +8,8 @@ from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from config import CMS
-
+CMS.axis_label_major['labelsize'] = 40
+CMS.title['fontsize'] = 40
 # create a normal distribution
 mu, sigma = 100, 15
 x = mu + sigma * np.random.randn(10000)
@@ -45,5 +46,6 @@ plt.title(r'$\mu$+jets, CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt
 #            arrowprops=dict(facecolor='black', shrink=0.05))
 plt.tick_params(**CMS.axis_label_major)
 plt.tick_params(**CMS.axis_label_minor)
-plt.legend(numpoints=1)
+plt.legend(numpoints=1, prop=CMS.legend_properties)
+plt.tight_layout()
 plt.savefig('plots/CMSStyleMatplotlib.png')
