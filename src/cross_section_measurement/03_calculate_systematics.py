@@ -118,7 +118,7 @@ def replace_measurement_with_deviation_from_central(central_measurement, diction
     
     for systematic, systematic_measurement in dictionary_of_systematic_measurements.iteritems():
         new_set_of_values = []
-        for (value, error), (central, central_error) in zip(systematic_measurement, central_measurement):
+        for (value, _), (central, _) in zip(systematic_measurement, central_measurement):
             deviation = abs(value) - abs(central)    
             new_set_of_values.append(deviation)
         new_dictionary_of_systematic_measurements[systematic] = new_set_of_values
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                   help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
     parser.add_option("-k", "--k_value", type='int',
-                      dest="k_value", default=6,
+                      dest="k_value", default=4,
                       help="k-value for SVD unfolding, used in histogram names")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")

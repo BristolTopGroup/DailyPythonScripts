@@ -115,8 +115,9 @@ def root_file_mkdir(root_file, directory):
     return pointer_to_directory
     
 def get_histogram_info_tuple(histogram_in_path):
-     histogram_name = histogram_in_path.split('/')[-1]
-     directory = ''.join(histogram_in_path.rsplit(histogram_name, 1)[:-1])
-     b_tag_bin = histogram_name.split('_')[-1]
-     return directory, histogram_name, b_tag_bin    
+    histogram_name = histogram_in_path.split('/')[-1]
+    directory = ''.join(histogram_in_path.rsplit(histogram_name, 1)[:-1])
+    b_tag_bin = histogram_name.split('_')[-1]
+    
+    return directory, histogram_name, b_tag_bin    
         

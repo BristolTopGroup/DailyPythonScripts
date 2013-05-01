@@ -4,7 +4,6 @@ from optparse import OptionParser
 import os
 #from array import array
 # rootpy
-from ROOT import TFile
 from rootpy import asrootpy
 from rootpy.io import File
 from rootpy.plotting import Hist2D
@@ -34,7 +33,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     SVD_path = path_to_JSON  + '/unfolding_objects/' + channel + '/kv_' + str(unfoldCfg.SVD_k_value) + '/'
     make_folder_if_not_exists(SVD_path)
     if method == 'TSVDUnfold':
-        SVDdist = TFile(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
+        SVDdist = File(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
         directory = SVDdist.mkdir('SVDdist')
         directory.cd()
         unfolding.unfoldObject.GetD().Write()
@@ -42,7 +41,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
         #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
         SVDdist.Close()
     else:
-        SVDdist = TFile(SVD_path + method + '_SVDdistributions_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root', 'recreate')
+        SVDdist = File(SVD_path + method + '_SVDdistributions_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root', 'recreate')
         directory = SVDdist.mkdir('SVDdist')
         directory.cd()
         unfolding.unfoldObject.Impl().GetD().Write()
@@ -59,7 +58,7 @@ def unfold_results(results, category, channel, h_truth, h_measured, h_response, 
     else:
         unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root'
     if not os.path.isfile(unfolding_object_file_name):
-        unfoldingObjectFile = TFile(unfolding_object_file_name, 'recreate')
+        unfoldingObjectFile = File(unfolding_object_file_name, 'recreate')
         directory = unfoldingObjectFile.mkdir('unfoldingObject')
         directory.cd()
         if method == 'TSVDUnfold':

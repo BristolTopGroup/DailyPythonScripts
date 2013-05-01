@@ -476,7 +476,7 @@ if __name__ == '__main__':
             if not channel == 'combined' or variable in ['ST', 'HT']:
                 fit_templates, fit_results = read_fit_templates_and_results_as_histograms(category, channel)
                 make_template_plots(fit_templates, category, channel)
-            plot_fit_results(fit_results, category, channel)
+                plot_fit_results(fit_results, category, channel)
             
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results(category, channel)
     

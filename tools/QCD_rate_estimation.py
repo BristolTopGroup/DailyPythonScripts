@@ -15,9 +15,13 @@ from math import sqrt
 
 DEBUG = False
 relative_isolation_bias = 0.0
+rebin = 10 
+bin_width = 0.01
+
 
 def estimate_with_fit_to_relative_isolation(input_histogram, function='expo',
                    fit_range=(0.3, 1.6), fit_ranges_for_systematics=[(0.2, 1.6), (0.4, 1.6)]):
+    global rebin
     if DEBUG:
         print '*' * 120
         print "Estimating QCD using a fit to relative isolation"
@@ -26,7 +30,7 @@ def estimate_with_fit_to_relative_isolation(input_histogram, function='expo',
         print 'Fit range = ', fit_range
         print 'Fit ranges for systematics = ', fit_ranges_for_systematics
         print '*' * 120
-    
+    input_histogram.Rebin(rebin)
     result = fit_to_relative_isolation_with_systematics(input_histogram, function, fit_range=fit_range, fit_ranges_for_systematics=fit_ranges_for_systematics)
     return result
      
@@ -62,13 +66,14 @@ def fit_to_relative_isolation_with_systematics(input_histogram, function, fit_ra
     return result
 
 def fit_to_relative_isolation(input_histogram, function, fit_range, signal_region=(0., 0.1)):
+    global rebin, bin_width
     value, error = 0,0
     relative_error_squared = 0
     
     histogram = input_histogram.Clone('tmp')
     fit = perform_fit(histogram, function, fit_range)
     if fit:
-        value = fit.Integral(signal_region[0], signal_region[1])
+        value = fit.Integral(signal_region[0], signal_region[1])/(bin_width * rebin)
         for n in range(0, fit.GetNumberFreeParameters()):
             parameter = fit.GetParameter(n)
             error = fit.GetParError(n)
