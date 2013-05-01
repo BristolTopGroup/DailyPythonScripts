@@ -30,6 +30,7 @@ def make_control_region_comparison(control_region_1, control_region_2,
     
     ratio = control_region_1.Clone('ratio')
     ratio.Divide(control_region_2)
+    ratio.SetMarkerSize(3)
     
     control_region_1.fillcolor = 'yellow'
     control_region_2.fillcolor = 'red'
@@ -48,11 +49,8 @@ def make_control_region_comparison(control_region_1, control_region_2,
     plt.ylabel(y_label, CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    if '3jets' in variable:
-        plt.title(r'e+jets, 3 jets, CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
-    else:
-        plt.title(r'e+jets, $\geq$4 jets, CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
-    plt.legend([name_region_1 + ' (1)', name_region_2 + ' (2)'], numpoints=1, loc='upper right', prop={'size':32})
+    plt.title(get_title(variable), CMS.title)
+    plt.legend([name_region_1 + ' (1)', name_region_2 + ' (2)'], numpoints=1, loc='upper right', prop=CMS.legend_properties)
     ax0.set_xlim(xmin=x_min, xmax=x_max)
     ax0.set_ylim(ymin=y_min, ymax=y_max)
     plt.setp(ax0.get_xticklabels(), visible=False)
@@ -86,7 +84,7 @@ def make_control_region_data_mc_comparision(histograms, histogram_name,
     single_top = histograms['SingleTop'][histogram_name]
     other = ttjet + wjets + zjets + single_top
     data = histograms['data'][histogram_name]
-    
+    data.SetMarkerSize(3)
     qcd.SetTitle('QCD from data')
     other.SetTitle('Combined other background')
     data.SetTitle('Data')
@@ -102,9 +100,7 @@ def make_control_region_data_mc_comparision(histograms, histogram_name,
     
     # plot with matplotlib
     plt.figure(figsize=(16, 12), dpi=200, facecolor='white')
-#    gs = gridspec.GridSpec(2, 1, height_ratios=[5, 1]) 
     axes = plt.axes()
-#    axes = plt.axes([0.15, 0.15, 0.8, 0.8])
     
     rplt.hist(stack, stacked=True, axes=axes)
     rplt.errorbar(data, xerr=False, emptybins=False, axes=axes)
@@ -113,40 +109,39 @@ def make_control_region_data_mc_comparision(histograms, histogram_name,
     plt.ylabel(y_label, CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    if '3jets' in variable:
-        plt.title(r'e+jets, 3 jets, CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
-    else:
-        plt.title(r'e+jets, $\geq$4 jets, CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV', CMS.title)
-#    plt.legend(['data', 'QCD from data', 'Combined other background'], numpoints=1, loc='upper right', prop={'size':32})
-    plt.legend(numpoints=1, loc='upper right', prop={'size':32})
+    plt.title(get_title(variable), CMS.title)
+    plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
     axes.set_xlim(xmin=x_min, xmax=x_max)
     axes.set_ylim(ymin=0)
     plt.tight_layout()
     plt.savefig(variable + '.png')  
     plt.savefig(variable + '.pdf')  
 
-def prepare_histograms(histograms, scale_factor=5028. / 1091.45):
-    global rebin
+def prepare_histograms(histograms, rebin = 1, scale_factor=1.):
     
-    for sample, histogram_dict in histograms.iteritems():
-        for histogram_name, histogram in histogram_dict.iteritems():
+    for _, histogram_dict in histograms.iteritems():
+        for _, histogram in histogram_dict.iteritems():
             histogram = asrootpy(histogram)
             histogram.Rebin(rebin)
+            histogram.Scale(scale_factor)
             
-            if 'BCtoE' in histogram_name or 'BCtoE' in histogram_name:
-                histogram.Scale(scale_factor)
-    histograms['QCD'] = sum_histograms(histograms, summations.electron_qcd_samples)
-    histograms['SingleTop'] = sum_histograms(histograms, summations.singleTop_samples)
+def get_title(variable):
+    if '3jets' in variable:
+        return 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, 3 jets'
+    else:
+        return 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets'
+        
     
 if __name__ == '__main__':
     gROOT.SetBatch(True)
     gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
-    # for mttbar
-    rebin = 50  
-    path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-11-265_V2/'
-    lumi = 5028
-    data = 'ElectronHad'
-    pfmuon = 'PFMuon_'
+    CMS.title['fontsize'] = 40
+    CMS.x_axis_title['fontsize'] = 50
+    CMS.y_axis_title['fontsize'] = 50
+    CMS.axis_label_major['labelsize'] = 40
+    CMS.axis_label_minor['labelsize'] = 40
+    CMS.legend_properties['size'] = 40
+    
     # for reliso 
     rebin = 10  
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-11-265_V1/'
@@ -158,63 +153,28 @@ if __name__ == '__main__':
             'data' : path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
             'WJets': path_to_files + 'WJetsToLNu_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
             'ZJets': path_to_files + 'DYJetsToLL_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'GJets_HT-40To100': path_to_files + 'GJets_TuneD6T_HT-40To100_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'GJets_HT-100To200': path_to_files + 'GJets_TuneD6T_HT-100To200_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'GJets_HT-200': path_to_files + 'GJets_TuneD6T_HT-200_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD_Pt-20to30_BCtoE': path_to_files + 'QCD_Pt-20to30_BCtoE_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD_Pt-30to80_BCtoE': path_to_files + 'QCD_Pt-30to80_BCtoE_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD_Pt-80to170_BCtoE': path_to_files + 'QCD_Pt-80to170_BCtoE_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD_Pt-20to30_EMEnriched': path_to_files + 'QCD_Pt-20to30_EMEnriched_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD_Pt-30to80_EMEnriched': path_to_files + 'QCD_Pt-30to80_EMEnriched_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD_Pt-80to170_EMEnriched': path_to_files + 'QCD_Pt-80to170_EMEnriched_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            
-            'Tbar_s-channel': path_to_files + 'Tbar_TuneZ2_s-channel_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'Tbar_t-channel': path_to_files + 'Tbar_TuneZ2_t-channel_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'Tbar_tW-channel': path_to_files + 'Tbar_TuneZ2_tW-channel_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'T_s-channel': path_to_files + 'T_TuneZ2_s-channel_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'T_t-channel': path_to_files + 'T_TuneZ2_t-channel_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'T_tW-channel': path_to_files + 'T_TuneZ2_tW-channel_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
+            'QCD': path_to_files + 'QCD_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
+            'SingleTop': path_to_files + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
                        }
 
-    control_region_1 = 'topReconstruction/backgroundShape/mttbar_3jets_conversions_withMETAndAsymJets_0btag'
-    control_region_2 = 'topReconstruction/backgroundShape/mttbar_3jets_antiIsolated_withMETAndAsymJets_0btag'
-    control_region_3 = 'topReconstruction/backgroundShape/mttbar_conversions_withMETAndAsymJets_0btag'
-    control_region_4 = 'topReconstruction/backgroundShape/mttbar_antiIsolated_withMETAndAsymJets_0btag'
-    control_region_5 = 'QCDStudy/PFIsolation_controlRegion_0btag'
+    control_region = 'QCDStudy/PFIsolation_controlRegion_0btag'
     
-    histograms_to_read = [control_region_1, control_region_2, control_region_3, control_region_4]
-#    histograms = get_histograms_from_files(histograms_to_read, histogram_files)
-    histograms = get_histograms_from_files([control_region_5], histogram_files)
-    prepare_histograms(histograms, scale_factor=1.)
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=rebin)
     
-#    make_control_region_data_mc_comparision(histograms, control_region_1, 'mttbar_3jets_conversions_withMETAndAsymJets_0btag')
-#    make_control_region_data_mc_comparision(histograms, control_region_2, 'mttbar_3jets_antiIsolated_withMETAndAsymJets_0btag')
-#    make_control_region_data_mc_comparision(histograms, control_region_3, 'mttbar_conversions_withMETAndAsymJets_0btag')
-#    make_control_region_data_mc_comparision(histograms, control_region_4, 'mttbar_antiIsolated_withMETAndAsymJets_0btag')
 
-    nonQCDMC = histograms['TTJet'][control_region_5] + histograms['WJets'][control_region_5] + histograms['ZJets'][control_region_5] + histograms['SingleTop'][control_region_5]
-    make_control_region_data_mc_comparision(histograms, control_region_5, 'PFIsolation_0btag',
+    nonQCDMC = histograms['TTJet'][control_region] + histograms['WJets'][control_region] + histograms['ZJets'][control_region] + histograms['SingleTop'][control_region]
+    make_control_region_data_mc_comparision(histograms, control_region, 'PFIsolation_0btag',
                                             x_label='relative isolation', x_min=0, x_max=1.6, y_label='Events/0.1')
 
-#    make_control_region_comparison(histograms['data'][control_region_1],
-#                                   histograms['data'][control_region_2],
-#                                   'conversions',
-#                                   'non-isolated electrons',
-#                                   'mttbar_3jets_withMETAndAsymJets_0btag')
-#    make_control_region_comparison(histograms['data'][control_region_3],
-#                                   histograms['data'][control_region_4],
-#                                   'conversions',
-#                                   'non-isolated electrons',
-#                                   'mttbar_withMETAndAsymJets_0btag')
-
-    make_control_region_comparison(histograms['data'][control_region_5],
-                                   histograms['QCD'][control_region_5],
+    make_control_region_comparison(histograms['data'][control_region],
+                                   histograms['QCD'][control_region],
                                    'data',
                                    'QCD MC',
                                    'PFIsolation_0btag',
                                    x_label='relative isolation', x_min=0, x_max=1.6, y_label='Events/0.1', y_max = 0.4)
-    make_control_region_comparison(histograms['data'][control_region_5] - nonQCDMC,
-                                   histograms['QCD'][control_region_5],
+    make_control_region_comparison(histograms['data'][control_region] - nonQCDMC,
+                                   histograms['QCD'][control_region],
                                    'data',
                                    'QCD MC',
                                    'PFIsolation_mc_subtracted_0btag',
