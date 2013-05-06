@@ -37,6 +37,10 @@ axis_label_minor = {
 
 legend_properties = {'size':30}
 
-#load into matplotlib
+figsize = (16,16)
+dpi = 200
+facecolor = 'white'
+data_marker_size = 3
+data_marker_style = 'o' 
 
 

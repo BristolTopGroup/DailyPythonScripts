@@ -4,8 +4,8 @@ Created on 19 Jan 2013
 @author: kreczko
 '''
 from rootpy.logger import logging
-from ROOT import TFile, gROOT
-File = TFile.Open
+from rootpy.io import File
+from ROOT import gROOT
 gcd = gROOT.cd
 from config.summations import b_tag_bins_inclusive, b_tag_summations
 

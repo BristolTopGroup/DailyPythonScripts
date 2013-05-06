@@ -68,6 +68,12 @@ def sum_histograms(histogram_dict, sample_list):
         summary[histogram_name] = sum(histogram_list)
     return summary
 
+def prepare_histograms(histograms, rebin=1, scale_factor=1.):
+    for _, histogram_dict in histograms.iteritems():
+        for _, histogram in histogram_dict.iteritems():
+            histogram.Rebin(rebin)
+            histogram.Scale(scale_factor)
+            
 if __name__ == '__main__':
     value_error_tuplelist = [(0.006480446927374301, 0.0004647547547401945), 
                              (0.012830288388947605, 0.0010071677178938234), 
