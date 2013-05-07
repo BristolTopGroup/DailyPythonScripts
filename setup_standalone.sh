@@ -36,11 +36,15 @@ echo "Installing pypm"
 pip install -U pypm
 echo "Installing numpy"
 pip install -U numpy
-echo "Installing matplotlib"
-pip install -U matplotlib
 
 echo "Installing rootpy"
 pip install -e $base/external/rootpy
+
+echo "Installing matplotlib"
+#Adding freetype and libpng library and include paths from CMSSW, specific to the version but should be ok for now.
+export LDFLAGS="$LDFLAGS -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/lib -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/lib"
+export CFLAGS="$CFLAGS -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include/freetype2 -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/include"
+pip install -e $base/external/matplotlib
 
 echo "Building RooUnfold"
 cd $base/external/RooUnfold/
