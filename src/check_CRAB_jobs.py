@@ -51,8 +51,12 @@ def main():
 
 	#Now, check that all job root files are present in Bristol Storage Element folder:
 
+	missingOrBrokenTemp = []
 	missingOrBroken = []
+	goodFilesTemp = []
+	goodFiles = []
 	presentJobList = []
+	duplicatesToDelete = []
 
 	#make list of all the job numbers which should be present.
 	jobList = range(1,int(options.numberOfJobs)+1)
@@ -62,21 +66,43 @@ def main():
 		#make list of all jobs numbers in the Bristol Storage Element folder
 		jobNumber = int((re.split('[\W+,_]',file))[-4])
 		presentJobList.append(jobNumber)
+
+		#check if files are corrupt or not
 		try:
 			rootFile = ROOT.TFile.Open(file)
 			rootFile.Close()
 		except:
-			print "Adding Job Number", jobNumber, "to missingOrBroken list."
-			missingOrBroken.append(jobNumber)
-	
+			print "Adding Job Number", jobNumber, "to missingOrBroken list because file is corrupted."
+			missingOrBrokenTemp.append(jobNumber)
+		else:
+			goodFilesTemp.append(jobNumber)
+
 	#now add any absent files to the missing list:
 	for job in jobList:
 		if job not in presentJobList:
-			print "Adding Job Number", job, "to missingOrBroken list."
-			missingOrBroken.append(job)
+			print "Adding Job Number", job, "to missingOrBroken list because it doesn't exist on the Storage Element."
+			missingOrBrokenTemp.append(job)
 
-	print "\n The following", len(missingOrBroken), "job numbers could not be found in the Bristol Storage Element folder:"
-	print str(missingOrBroken).replace(" ", "")
+	#Remove any job numbers from missingOrBroken which appear in both goodFiles and missingOrBroken lists
+	for job in missingOrBrokenTemp:
+		if job not in goodFilesTemp:
+			missingOrBroken.append(job)
+		else:
+			print "Removing", job, "from missingOrBroken list because there is at least one duplicate good output file."
+
+	#Remove any job numbers from goodFiles which appear more than once in goodFiles
+	for job in goodFilesTemp:
+		if job not in goodFiles:
+			goodFiles.append(job)
+		else:
+			duplicatesToDelete.append(job)
+
+	print "\n The following", len(goodFiles), "good output files were found in the Bristol Storage Element folder:"
+        print str(goodFiles).replace(" ", "")  
+        print "\n The following", len(duplicatesToDelete), "job numbers have multiple good files on the Bristol Storage Element folder which can be deleted:"
+        print str(duplicatesToDelete).replace(" ", "")
+        print "\n The following", len(missingOrBroken), "job numbers could not be found in the Bristol Storage Element folder:"
+        print str(missingOrBroken).replace(" ", "")
 
 if __name__ == '__main__':
 	main()
