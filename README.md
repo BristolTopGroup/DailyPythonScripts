@@ -26,8 +26,13 @@ Real data is not included at any point.
 Structure
 ==================
 config/* - files to save presets for available modules
+
 data/* - example ROOT input files
+
 examples/* - generic examples for available modules
+
 src/* - specific use of available modules
+
 test/* - unit tests for available modules
+
 tools/* - available modules
