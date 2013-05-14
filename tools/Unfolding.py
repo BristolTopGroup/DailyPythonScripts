@@ -29,6 +29,7 @@ class Unfolding:
         self.unfoldObject = None
         self.unfoldResponse = None
         self.closure_test = None
+        self.verbose = 0
     
     def unfold(self, data):
         self.data = data
@@ -58,7 +59,7 @@ class Unfolding:
         if self.method == 'TSVDUnfold':
             self.unfolded_data = asrootpy(self.unfoldObject.Unfold(unfoldCfg.SVD_k_value))
         else:
-            self.unfoldObject.SetVerbose(1)
+            self.unfoldObject.SetVerbose(self.verbose)
             self.unfolded_data = asrootpy(self.unfoldObject.Hreco(unfoldCfg.Hreco))
         #remove unfold reports (faster)
         return self.unfolded_data
