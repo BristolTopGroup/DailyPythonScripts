@@ -8,6 +8,7 @@
 **/data/*
 **/plots*/*
 src/cross_section_measurement/data/
+src/unfolding_tests/plots/
 src/log_*
 src/*.root
 src/*.png
