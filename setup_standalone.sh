@@ -46,18 +46,18 @@ export LDFLAGS="$LDFLAGS -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/li
 export CFLAGS="$CFLAGS -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include/freetype2 -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/include"
 pip install -e $base/external/matplotlib
 
-echo "Building RooUnfold"
-cd $base/external/RooUnfold/
-make -j4
-#remove tmp folder
-rm -fr $base/external/RooUnfold/tmp
-
 if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
+	echo "Building RooUnfold"
+	cd $base/external/RooUnfold/
+	make -j4
+	#remove tmp folder
+	rm -fr $base/external/RooUnfold/tmp
+	mv $base/external/RooUnfold/libRooUnfold.rootmap $base/external/lib/.
+	mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
+	echo "Updating RooUnfold config"
+	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
+	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
 fi
-mv $base/external/RooUnfold/libRooUnfold.rootmap $base/external/lib/.
-mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
 
-echo "Updating RooUnfold config"
-cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
-echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
+cd $base
