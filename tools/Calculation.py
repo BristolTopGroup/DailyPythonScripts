@@ -37,16 +37,16 @@ def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False):
     
     normalisation = 0
     for measurement, bin_width in zip(inputs, bin_widths):
-        value = ufloat(measurement)
+        value = ufloat(measurement[0], measurement[1])
         
         if normalise_to_one:
             normalisation += value / bin_width
         else:
             normalisation += value
     for measurement, bin_width in zip(inputs, bin_widths):
-        value = ufloat(measurement)
+        value = ufloat(measurement[0], measurement[1])
         xsection = value / normalisation / bin_width
-        add_result((xsection.nominal_value, xsection.std_dev()))   
+        add_result((xsection.nominal_value, xsection.std_dev))   
     return result
 
 def decombine_result(combined_result, original_ratio):
@@ -59,10 +59,10 @@ def decombine_result(combined_result, original_ratio):
     return (sample_1_value, sample_1_error), (sample_2_value, sample_2_error)
     with the proper errors
     '''
-    combined_result = ufloat(combined_result)
+    combined_result = ufloat(combined_result[0], combined_result[1])
     sample_1 = combined_result * original_ratio / (1 + original_ratio)
     sample_2 = combined_result - sample_1
-    return (sample_1.nominal_value, sample_1.std_dev()), (sample_2.nominal_value, sample_2.std_dev())
+    return (sample_1.nominal_value, sample_1.std_dev), (sample_2.nominal_value, sample_2.std_dev)
 
 def combine_results(result1, result2):
     '''

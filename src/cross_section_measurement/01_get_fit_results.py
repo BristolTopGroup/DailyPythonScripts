@@ -67,7 +67,7 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         
 #        abs_eta = measurement_config.special_muon_histogram
 #        h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
-        abs_eta = abs_eta_data.replace('Ref selection', 'QCD non iso mu+jets')
+        abs_eta = abs_eta_data.replace('Ref selection', 'QCD non iso mu+jets ge3j')
         h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
         muon_QCD_normalisation_factor = 1
         h_abs_eta.Rebin(rebin)

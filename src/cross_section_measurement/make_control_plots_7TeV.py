@@ -34,15 +34,6 @@ if __name__ == '__main__':
             'SingleTop': path_to_files + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
                        }
     
-    histogram_files = {
-            'TTJet': path_to_files + 'TTJet_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'data' : path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
-            'WJets': path_to_files + 'WJets_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'ZJets': path_to_files + 'DYJetsToLL_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'QCD': path_to_files + 'QCD_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-            'SingleTop': path_to_files + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
-                       }
-    
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin
     qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
@@ -106,7 +97,7 @@ if __name__ == '__main__':
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties)
-    MET log
+    #MET log
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
     qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
