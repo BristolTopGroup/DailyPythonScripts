@@ -167,7 +167,10 @@ def make_template_plots(histograms, category, channel):
 
         rplt.hist(h_signal, axes=axes, label='signal')
         rplt.hist(h_VJets, axes=axes, label='V+Jets')
-        rplt.hist(h_QCD, axes=axes, label='QCD')
+        if (h_QCD.Integral() != 0):
+            rplt.hist(h_QCD, axes=axes, label='QCD')
+        else:
+            print "WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % (variable, variable_bin, category, channel)
         axes.set_ylim([0, 0.2])
         
         plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
@@ -446,7 +449,7 @@ if __name__ == '__main__':
             if met_type == 'PFMET':
                 met_type = 'patMETsPFlow'
 #            this is problematic when templates are 0 i.e. for ST and HT
-            if not channel == 'combined' or variable in ['ST', 'HT']:
+            if not channel == 'combined' or not variable in ['ST', 'HT', 'MT', 'WPT']:
                 fit_templates, fit_results = read_fit_templates_and_results_as_histograms(category, channel)
                 make_template_plots(fit_templates, category, channel)
                 plot_fit_results(fit_results, category, channel)
