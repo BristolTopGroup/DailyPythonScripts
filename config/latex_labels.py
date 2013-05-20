@@ -11,9 +11,10 @@ b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag'
     
 variables_latex = {
                        'MET': 'E_{\mathrm{T}}^{\mathrm{miss}}',
-                        'HT': 'H_{\mathrm{T}}',
-                        'ST': 'S_{\mathrm{T}}',
-                        'MT': 'M_{\mathrm{T}}'}
+                       'HT': 'H_{\mathrm{T}}',
+                       'ST': 'S_{\mathrm{T}}',
+                       'MT': 'M_{\mathrm{T}}',
+                       'WPT': 'W p_{\mathrm{T}}'}
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
@@ -31,7 +32,7 @@ measurements_latex = {'unfolded': 'unfolded',
                         'VJets_matchingdown': 'V+jets (matching down)',
                         'VJets_matchingup': 'V+jets (matching up)',
                         'VJets_scaledown': 'V+jets ($Q^{2}$ down)',
-                        'VJets_scaleup': 'V+jets ($Q^{2}$ up)',
+                        'VJets_scaleup': 'V+jets ($Q^{2}$ up)'
                           }
 
 samples_latex = {
