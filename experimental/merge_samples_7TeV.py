@@ -1,4 +1,4 @@
-from config.summations import sample_summations
+from config.summations_7TeV import sample_summations
 import config.cross_section_measurement_7TeV as measurement_config
 
 from tools.file_utilities import merge_ROOT_files
