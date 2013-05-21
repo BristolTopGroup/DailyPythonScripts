@@ -9,6 +9,7 @@ centre_of_mass = 8  # TeV
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6/'
+path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/'
 luminosity = 19584  # pb-1
 ttbar_xsection = 245.8  # pb
 
@@ -21,6 +22,7 @@ SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
+central_general_template = path_to_files + 'central/%s' + middle + '.root'
 generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets_%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 
@@ -32,12 +34,15 @@ categories_and_prefixes = {
                  'BJet_up':'_plusBjet',
                  'JES_down':'_minusJES',
                  'JES_up':'_plusJES',
+                 'JER_down':'_minusJER',
+                 'JER_up':'_plusJER',
                  'LightJet_down':'_minusLightJet',
                  'LightJet_up':'_plusLightJet',
                  'PU_down':'_PU_65835mb',
                  'PU_up':'_PU_72765mb'
                  }
 
+general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
 ttbar_category_templates = {category: path_to_files + category + '/TTJet' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
 SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
@@ -52,6 +57,15 @@ data_muon_category_templates = {'central': data_file_muon,
                                     'JES_down': path_to_files + 'JES_down/SingleMu' + middle + categories_and_prefixes['JES_down'] + '.root'
                                     }
 
+unfolding_input_templates = {'unfolding_merged': path_to_unfolding_ntuples + 'TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/%s*.root',
+                            'unfolding_TTJets_8TeV_mcatnlo': path_to_unfolding_ntuples + 'TT_8TeV-mcatnlo/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
+                            'unfolding_TTJets_8TeV_powheg': path_to_unfolding_ntuples + 'TT_CT10_TuneZ2star_8TeV-powheg-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
+                            'unfolding_TTJets_8TeV_matchingup': path_to_unfolding_ntuples + 'TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
+                            'unfolding_TTJets_8TeV_matchingdown': path_to_unfolding_ntuples + 'TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
+                            'unfolding_TTJets_8TeV_scaleup': path_to_unfolding_ntuples + 'TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
+                            'unfolding_TTJets_8TeV_scaledown': path_to_unfolding_ntuples + 'TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root'
+			    }
+unfolding_output_general_template = path_to_files + '%s.root'
 unfolding_madgraph_file = path_to_files + 'unfolding_merged.root'
 unfolding_powheg = path_to_files + 'unfolding_TTJets_8TeV_powheg.root'
 unfolding_mcatnlo = path_to_files + 'unfolding_TTJets_8TeV_mcatnlo.root'
