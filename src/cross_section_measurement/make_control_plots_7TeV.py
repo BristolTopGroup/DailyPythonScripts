@@ -12,12 +12,9 @@ from tools.plotting import make_plot
 from tools.hist_utilities import prepare_histograms
 
 if __name__ == '__main__':
-    CMS.title['fontsize'] = 40
-    CMS.x_axis_title['fontsize'] = 50
-    CMS.y_axis_title['fontsize'] = 50
-    CMS.axis_label_major['labelsize'] = 40
-    CMS.axis_label_minor['labelsize'] = 40
-    CMS.legend_properties['size'] = 40
+    from ROOT import gROOT
+    gROOT.SetBatch(True)
+    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
     
     from config.latex_labels import b_tag_bins_latex, samples_latex
     
@@ -33,7 +30,28 @@ if __name__ == '__main__':
             'QCD': path_to_files + 'QCD_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
             'SingleTop': path_to_files + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon),
                        }
+    path_to_files_PU_down = path_to_files.replace('central', 'PU_down')
+    histogram_files_PU_down = {
+            'TTJet': path_to_files_PU_down + 'TTJet_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon),
+            'data' : path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
+            'WJets': path_to_files_PU_down + 'WJets_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon),
+            'ZJets': path_to_files_PU_down + 'DYJetsToLL_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon),
+            'QCD': path_to_files_PU_down + 'QCD_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon),
+            'SingleTop': path_to_files_PU_down + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon),
+                       }
     
+    path_to_files_PU_up = path_to_files.replace('central', 'PU_up')
+    histogram_files_PU_up = {
+            'TTJet': path_to_files_PU_up + 'TTJet_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon),
+            'data' : path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
+            'WJets': path_to_files_PU_up + 'WJets_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon),
+            'ZJets': path_to_files_PU_up + 'DYJetsToLL_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon),
+            'QCD': path_to_files_PU_up + 'QCD_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon),
+            'SingleTop': path_to_files_PU_up + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon),
+                       }
+    
+    electron_title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, '
+
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin
     qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
@@ -56,9 +74,9 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'electron_AbsEta_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
-    histogram_properties.y_axis_title = 'Events/(0.2 GeV)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.15
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
@@ -88,7 +106,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(5 GeV)'
     histogram_properties.x_limits = [0, 200]
@@ -120,7 +138,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_log_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [200, 600]
@@ -155,7 +173,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_phi_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\phi\left(E_{\mathrm{T}}^{\mathrm{miss}}\\right)$'
     histogram_properties.y_axis_title = 'Events/(0.2)'
     histogram_properties.x_limits = [-3.3, 3.3]
@@ -191,7 +209,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_MT_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = 'transverse W boson mass [GeV]'
     histogram_properties.y_axis_title = 'Events/(5 GeV)'
     histogram_properties.x_limits = [0, 200]
@@ -223,7 +241,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_M3_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$M3$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [0, 500]
@@ -233,16 +251,15 @@ if __name__ == '__main__':
                                  histogram_properties)
     
     b_tag_bin = '0orMoreBtag'
-#    control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Jets/all_jet_eta_' + b_tag_bin
     control_region = 'JetAnalysis/all_jet_eta_' + b_tag_bin
     histograms = get_histograms_from_files([control_region], histogram_files)
     prepare_histograms(histograms, rebin=10)
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'jet_eta_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(\mathrm{jet})\\right|$'
-    histogram_properties.y_axis_title = 'arbitrary units/(0.2 GeV)'
+    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 0.06]
     
@@ -270,7 +287,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'conversion_control_region_electron_AbsEta_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1 GeV)'
     histogram_properties.x_limits = [0, 2.6]
@@ -303,7 +320,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'non_iso_control_region_electron_AbsEta_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1 GeV)'
     histogram_properties.x_limits = [0, 2.6]
@@ -328,7 +345,7 @@ if __name__ == '__main__':
     
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'control_region_comparison_electron_AbsEta_' + b_tag_bin
-    histogram_properties.title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'arbitrary units/(0.1 GeV)'
     histogram_properties.x_limits = [0, 2.6]
@@ -339,10 +356,152 @@ if __name__ == '__main__':
                                    name_region_1 = 'conversions', name_region_2='non-isolated electrons',
                                    histogram_properties=histogram_properties)
 
-#muons
+
+    #b-tag multiplicity
+    b_tag_bin = ''
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/N_BJets'
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'EPlusJets_N_BJets' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex['0orMoreBtag']
+    histogram_properties.x_axis_title = 'B-tag multiplicity'
+    histogram_properties.y_axis_title = 'Events'
+    histogram_properties.x_limits = [-0.5, 5.5]
+    histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties)
+    
+    b_tag_bin = ''
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/N_BJets_reweighted'
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'EPlusJets_N_BJets_reweighted' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex['0orMoreBtag']
+    histogram_properties.x_axis_title = 'B-tag multiplicity'
+    histogram_properties.y_axis_title = 'Events'
+    histogram_properties.x_limits = [-0.5, 5.5]
+    histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties)
+    #vertex
+    b_tag_bin = ''
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Vertices/nVertex'
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'EPlusJets_nVertex' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex['0orMoreBtag']
+    histogram_properties.x_axis_title = 'N(PV)'
+    histogram_properties.y_axis_title = 'arbitrary units'
+    histogram_properties.x_limits = [0, 22]
+    histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, normalise=True)
+    
+    b_tag_bin = ''
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Vertices/nVertex_reweighted'
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'EPlusJets_nVertex_reweighted' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex['0orMoreBtag']
+    histogram_properties.x_axis_title = 'N(PV)'
+    histogram_properties.y_axis_title = 'arbitrary units'
+    histogram_properties.x_limits = [0, 22]
+    histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, normalise=True)
+    
+    #PU systematics
+    b_tag_bin = ''
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Vertices/nVertex_reweighted'
+    
+    histograms = get_histograms_from_files([control_region], histogram_files_PU_down)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'EPlusJets_nVertex_reweighted_PU_down' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex['0orMoreBtag']
+    histogram_properties.x_axis_title = 'N(PV)'
+    histogram_properties.y_axis_title = 'arbitrary units'
+    histogram_properties.x_limits = [0, 22]
+    histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, normalise=True)
+    
+    histograms = get_histograms_from_files([control_region], histogram_files_PU_up)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties.name = 'EPlusJets_nVertex_reweighted_PU_up' + b_tag_bin
+
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, normalise=True)
+    #muons
     data = 'SingleMu'
     histogram_files['data'] = path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon)
     histogram_files['QCD'] = path_to_files + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (str(lumi), pfmuon)
+    histogram_files_PU_down['data'] = histogram_files['data']
+    histogram_files_PU_up['data'] = histogram_files['data']
+    histogram_files_PU_down['QCD'] = path_to_files_PU_down + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon)
+    histogram_files_PU_up['QCD'] = path_to_files_PU_up + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon)
     mu_title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n $\mu$+jets, $\geq$4 jets, '
     
     #Muon |eta|
@@ -369,7 +528,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'muon_AbsEta_' + b_tag_bin
     histogram_properties.title = mu_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
-    histogram_properties.y_axis_title = 'Events/(0.2 GeV)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.15
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
@@ -636,5 +795,46 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'arbitrary units'
     histogram_properties.x_limits = [0, 22]
     histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, normalise=True)
+    
+    #PU systematics
+    b_tag_bin = ''
+    control_region = 'TTbarPlusMetAnalysis/MuPlusJets/Ref selection/Vertices/nVertex_reweighted'
+    
+    histograms = get_histograms_from_files([control_region], histogram_files_PU_down)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'MuPlusJets_nVertex_reweighted_PU_down' + b_tag_bin
+    histogram_properties.title = mu_title + b_tag_bins_latex['0orMoreBtag']
+    histogram_properties.x_axis_title = 'N(PV)'
+    histogram_properties.y_axis_title = 'arbitrary units'
+    histogram_properties.x_limits = [0, 22]
+    histogram_properties.mc_error = 0.0
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, normalise=True)
+    
+    histograms = get_histograms_from_files([control_region], histogram_files_PU_up)
+    prepare_histograms(histograms, rebin=1)
+    
+    n_qcd_predicted_mc = histograms['QCD'][control_region]
+    
+    histograms_to_draw = [histograms['data'][control_region], n_qcd_predicted_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties.name = 'MuPlusJets_nVertex_reweighted_PU_up' + b_tag_bin
+
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, normalise=True)

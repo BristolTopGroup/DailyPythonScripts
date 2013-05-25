@@ -5,6 +5,8 @@ Created on 20 Nov 2012
 '''
 
 from rootpy.plotting import Hist, Graph
+from rootpy import asrootpy
+from ROOT import TGraphAsymmErrors
 
 def hist_to_value_error_tuplelist(hist):
     values = list(hist)
@@ -25,8 +27,8 @@ def values_and_errors_to_hist(values, errors, bins):
 def value_errors_tuplelist_to_graph(value_errors_tuplelist, bin_edges):
     value_error_tuplelist = [(value, 0) for value, lower_error, upper_error in value_errors_tuplelist]
     hist = value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges)
-    
-    rootpy_graph = Graph(hist = hist)
+    rootpy_graph = asrootpy(TGraphAsymmErrors(hist)) 
+#    rootpy_graph = Graph(hist = hist)
     set_lower_error = rootpy_graph.SetPointEYlow
     set_upper_error = rootpy_graph.SetPointEYhigh
     

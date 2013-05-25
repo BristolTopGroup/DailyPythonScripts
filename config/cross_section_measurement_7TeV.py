@@ -10,7 +10,7 @@ centre_of_mass = 7  # TeV
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-12-241_V4/'
-luminosity = 5050  # pb-1
+luminosity = 5051  # pb-1 (if you add 1 pb-1 the rounding works as it should....)
 ttbar_xsection = 164  # pb
 middle = '_' + str(luminosity) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
 

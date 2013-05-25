@@ -5,18 +5,18 @@ Created on 30 Oct 2012
 '''
 
 title = {
-         'fontsize':24,
+         'fontsize':40,
           'verticalalignment':'bottom'
           }
 
 x_axis_title = {
-              'fontsize':40,
+              'fontsize':50,
               'position' : (1., 0.),
               'horizontalalignment': 'right'
               }
 
 y_axis_title = {
-              'fontsize':40,
+              'fontsize':50,
               'position' : (0., 1.),
 #              'horizontalalignment': 'right'
                 'verticalalignment': 'top'
@@ -24,18 +24,18 @@ y_axis_title = {
 
 axis_label_major = {
                     'which':'major',
-              'labelsize':30,
+              'labelsize':40,
               'length':20,
               'width': 1
               }
 axis_label_minor = {
                     'which':'minor',
-              'labelsize':30,
+              'labelsize':40,
               'length':10,
               'width': 1
               }
 
-legend_properties = {'size':30}
+legend_properties = {'size':40}
 
 figsize = (16,16)
 dpi = 200

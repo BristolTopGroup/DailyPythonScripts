@@ -11,7 +11,7 @@ def generate_toy_MC_from_distribution(distribution):
     initial_values = list(distribution)
     new_values = [rnd.poisson(value) for value in initial_values]
     #statistical errors
-    new_errors = [1/sqrt(value) for value in new_values]
+    new_errors = [sqrt(value) for value in new_values]
     toy_MC = value_error_tuplelist_to_hist(zip(new_values, new_errors), list(distribution.xedges()))
     return toy_MC
     

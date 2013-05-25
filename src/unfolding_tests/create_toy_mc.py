@@ -45,7 +45,7 @@ def get_new_set_of_histograms(h_truth, h_measured, h_fakes, h_response_AsymBins,
 def read_and_scale_histograms(channel):
     global bins, nbins, options
     input_file = File(options.input_file, 'read')
-    h_truth, h_measured, h_fakes, h_response_AsymBins, h_reco_truth, h_truth_selected = None, None, None, None, None, None
+    h_truth, h_measured, h_fakes, h_response_AsymBins = None, None, None, None
     
     if channel == 'electron':
         h_truth = asrootpy(input_file.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth', bins))
@@ -77,9 +77,9 @@ def read_and_scale_histograms(channel):
 
 
 if __name__ == '__main__':
-    #prevent directory ownership of ROOT histograms (python does the garbage collection)
+    # prevent directory ownership of ROOT histograms (python does the garbage collection)
     ROOT.TH1F.AddDirectory(False)
-    #define bins
+    # define bins
     bins = array('d', [0, 25, 45, 70, 100, 1000])
     nbins = len(bins) - 1
     parser = OptionParser()
@@ -89,12 +89,12 @@ if __name__ == '__main__':
     parser.add_option("-i", "--input",
                       dest="input_file", default='/storage/TopQuarkGroup/unfolding/unfolding_merged_sub1.root',
                       help="input file for templates")
-    parser.add_option("-f", "--file",
+    parser.add_option("-o", "--output",
                       dest="output_file", default='../data/unfolding_toy_mc.root',
                       help="output file for toy MC")
     
     (options, args) = parser.parse_args()
-    #define output file
+    # define output file
     output = File(options.output_file, 'recreate')
     for channel in ['electron', 'muon']:
         # get histograms
@@ -103,10 +103,10 @@ if __name__ == '__main__':
         directory.cd()
         mkdir = directory.mkdir
         cd = directory.cd
-        #generate toy MC
-        for i in range(1,10001):
+        # generate toy MC
+        for i in range(1, options.n_toy_mc + 1):
             mkdir('toy_%d' % i)
-            cd('toy_%d' % i)#should the numbering be transferred to the histograms?
+            cd('toy_%d' % i)  # should the numbering be transferred to the histograms?
             if i % 100 == 0:
                 print 'Done %d toy MC' % i
             new_histograms = get_new_set_of_histograms(h_truth, h_measured, h_fakes, h_response_AsymBins, h_reco_truth, h_truth_selected)
