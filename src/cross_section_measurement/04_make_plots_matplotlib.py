@@ -9,7 +9,6 @@ from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_
     value_errors_tuplelist_to_graph
 from math import sqrt
 # rootpy
-import ROOT
 from ROOT import kRed, kGreen, kMagenta, kBlue, kAzure, kYellow, kViolet
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
@@ -130,8 +129,6 @@ def read_fit_templates_and_results_as_histograms(category, channel):
 
 def make_template_plots(histograms, category, channel):
     global variable, output_folder
-    from matplotlib import rc
-    rc('text', usetex=True)
     
     for variable_bin in variable_bins_ROOT[variable]:
         path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category + '/fit_templates/'
@@ -156,7 +153,7 @@ def make_template_plots(histograms, category, channel):
         h_VJets.linewidth = 5
         h_QCD.linewidth = 5
     
-        plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
+        plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
         axes = plt.axes()
         axes.minorticks_on()
         
@@ -183,11 +180,12 @@ def make_template_plots(histograms, category, channel):
 
 def plot_fit_results(histograms, category, channel):
     global variable, b_tag_bin, output_folder
+    from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
     
     for variable_bin in variable_bins_ROOT[variable]:
         path = output_folder + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/' + category + '/fit_results/'
         make_folder_if_not_exists(path)
-        plotname = path + channel + '_bin_' + variable_bin
+        plotname = channel + '_bin_' + variable_bin
         # check if template plots exist already
         for output_format in output_formats:
             if os.path.isfile(plotname + '.' + output_format):
@@ -198,47 +196,57 @@ def plot_fit_results(histograms, category, channel):
         h_signal = histograms[variable_bin]['signal']
         h_background = histograms[variable_bin]['background']
         
-        h_data.linecolor = 'black'
-        h_signal.linecolor = 'red'
-        h_background.linecolor = 'green'
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = plotname
+        histogram_properties.x_axis_title = channel + ' $\left|\eta\\right|$'
+        histogram_properties.y_axis_title = 'events/0.2'
+        histogram_properties.title = get_cms_labels(channel)
         
-        h_data.linewidth = 5
-        h_signal.linewidth = 5
-        h_background.linewidth = 5
+        make_data_mc_comparison_plot([h_data, h_background, h_signal], 
+                                     ['data', 'background', 'signal'], 
+                                     ['black', 'green', 'red'], histogram_properties, 
+                                     save_folder = path, save_as = output_formats)    
+#        h_data.linecolor = 'black'
+#        h_signal.linecolor = 'red'
+#        h_background.linecolor = 'green'
+#        
+#        h_data.linewidth = 5
+#        h_signal.linewidth = 5
+#        h_background.linewidth = 5
+#        
+#        plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
+#        axes = plt.axes()
+#        axes.minorticks_on()
+#        
+#        plt.xlabel(r'lepton $|\eta|$', CMS.x_axis_title)
+#        plt.ylabel('events/0.2', CMS.y_axis_title)
+#        plt.tick_params(**CMS.axis_label_major)
+#        plt.tick_params(**CMS.axis_label_minor)
         
-        plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
-        axes = plt.axes()
-        axes.minorticks_on()
+#        rplt.hist(h_data, axes=axes, label='data')
+#        rplt.hist(h_signal, axes=axes, label='signal')
+#        rplt.hist(h_background, axes=axes, label='background')
         
-        plt.xlabel(r'lepton $|\eta|$', CMS.x_axis_title)
-        plt.ylabel('normalised to unit area/0.2', CMS.y_axis_title)
-        plt.tick_params(**CMS.axis_label_major)
-        plt.tick_params(**CMS.axis_label_minor)
-        
-        rplt.hist(h_data, axes=axes, label='data')
-        rplt.hist(h_signal, axes=axes, label='signal')
-        rplt.hist(h_background, axes=axes, label='background')
-        
-        plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
-        plt.title(get_cms_labels(channel), CMS.title)
-        plt.tight_layout()
-                     
-        for output_format in output_formats:
-            plt.savefig(plotname + '.' + output_format) 
+#        plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
+#        plt.title(get_cms_labels(channel), CMS.title)
+#        plt.tight_layout()
+#                     
+#        for output_format in output_formats:
+#            plt.savefig(plotname + '.' + output_format) 
 
 
 def get_cms_labels(channel):
     global b_tag_bin, b_tag_bins_latex
     lepton = 'e'
     if channel == 'electron':
-        lepton = 'e'
+        lepton = 'e + jets'
     elif channel == 'muon':
-        lepton = '$\mu$'
+        lepton = '$\mu$ + jets'
     else:
         lepton = 'combined'
     channel_label = '%s, $\geq$ 4 jets, %s' % (lepton, b_tag_bins_latex[b_tag_bin])
-    template = '%s, CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV'
-    label = template % (channel_label, measurement_config.luminosity / 1000, measurement_config.centre_of_mass) 
+    template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+    label = template % (measurement_config.luminosity / 1000., measurement_config.centre_of_mass, channel_label)
     return label
     
     
@@ -267,7 +275,7 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     hist_measured.marker = 'o'
     hist_measured.color = 'red'
 
-    plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
+    plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
     axes = plt.axes()
     axes.minorticks_on()
     
@@ -275,7 +283,8 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-
+    hist_data_with_systematics.visible = True
+    hist_data.visible = True
     rplt.errorbar(hist_data_with_systematics, axes=axes, label='do_not_show', xerr=False, capsize=0, elinewidth=2)
     rplt.errorbar(hist_data, axes=axes, label='do_not_show', xerr=False, capsize=15, capthick=3, elinewidth=2)
     rplt.errorbar(hist_data, axes=axes, label='data', xerr=False, yerr= False)#this makes a nicer legend entry
@@ -317,7 +326,7 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
 def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altogether'):
     global variable, variables_latex, k_value, b_tag_bin
 
-    plt.figure(figsize=(14, 12), dpi=200, facecolor='white')
+    plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
     axes = plt.axes()
     axes.minorticks_on()
     
@@ -347,7 +356,7 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
         rplt.errorbar(hist_data_systematic, axes=axes, label=systematic.replace('_', ' '),
                       xerr=False)
             
-    plt.legend(numpoints=1, loc='upper right', prop={'size': 24}, ncol=2)
+    plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties, ncol=2)
     plt.title(get_cms_labels(channel), CMS.title)
     plt.tight_layout()
 
@@ -357,9 +366,10 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
     for output_format in output_formats:
         plt.savefig(path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_value) + '.' + output_format) 
 
-def plot_templates():
-    pass
 if __name__ == '__main__':
+    from ROOT import gROOT
+    gROOT.SetBatch(True)
+    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data/',
                   help="set path to JSON files")
