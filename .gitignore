@@ -4,9 +4,12 @@
 *.log
 *.png
 *.pdf
-#data and plots potentially include non-approved data == don't make them public
-**/data/*
+*~
+.DS_Store
+#data, plots and tables potentially include non-approved data == don't make them public
+**/data*/*
 **/plots*/*
+**/tables*/*
 src/cross_section_measurement/data/
 src/unfolding_tests/plots/
 src/log_*
