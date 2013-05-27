@@ -9,9 +9,10 @@ from rootpy.io import File
 from tools.Calculation import decombine_result
 from tools.Fitting import TMinuitFit
 from tools.file_utilities import write_data_to_JSON
-from config.summations import b_tag_summations
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
+    global b_tag_bin_VJets
+
     histograms = {}
     if not variable in measurement_config.histogram_path_templates.keys():
         print 'Fatal Error: unknown variable ', variable
@@ -41,6 +42,12 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta = None
         if sample == 'data':
             h_abs_eta = get_histogram(file_name, abs_eta_data, b_tag_bin)
+        elif sample == 'V+Jets':
+            #exctracting the V+Jets template from its specific b-tag bin (>=0 by default) and scaling it to analysis b-tag bin
+            h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
+            h_abs_eta_VJets_specific_b_tag_bin = get_histogram(file_name, abs_eta, b_tag_bin_VJets)
+            h_abs_eta_VJets_specific_b_tag_bin.Scale(h_abs_eta.Integral()/h_abs_eta_VJets_specific_b_tag_bin.Integral())
+            h_abs_eta = h_abs_eta_VJets_specific_b_tag_bin
         else:
             h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
         h_abs_eta.Rebin(rebin)
@@ -59,7 +66,6 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         
     if channel == 'muon':
         # data-driven QCD
-        # for now custom file
         global muon_QCD_file, muon_QCD_MC_file
 
         h_abs_eta_mc = get_histogram(muon_QCD_MC_file, abs_eta, b_tag_bin)
@@ -78,7 +84,6 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         
         h_abs_eta.Scale(muon_QCD_normalisation_factor)
         histograms['QCD'] = h_abs_eta
-#        histograms['QCD'].Scale(0.05*histograms['data'].Integral()/histograms['QCD'].Integral())
         
     return histograms
 
@@ -190,6 +195,8 @@ if __name__ == '__main__':
                       help="set the variable to analyse (MET, HT, ST, MT)")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                       help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
+    parser.add_option("--bjetbin-vjets", dest="bjetbin_VJets", default='0m',
+                      help="set b-jet multiplicity for V+Jets samples. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
                       help="set MET type for analysis of MET, ST or MT")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
@@ -216,9 +223,11 @@ if __name__ == '__main__':
     
     if options.CoM == 8:
         from config.variable_binning_8TeV import variable_bins_ROOT
+        from config.summations_8TeV import b_tag_summations
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
         from config.variable_binning_7TeV import variable_bins_ROOT
+        from config.summations_7TeV import b_tag_summations
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         sys.exit('Unknown centre of mass energy')
@@ -231,6 +240,7 @@ if __name__ == '__main__':
     variable = options.variable
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
+    b_tag_bin_VJets = translate_options[options.bjetbin_VJets]
     path_to_files = measurement_config.path_to_files
     
     # possible options:
@@ -247,9 +257,7 @@ if __name__ == '__main__':
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
-#        TTJet_file = File(measurement_config.generator_systematic_ttbar_templates[systematic])
         VJets_file = File(measurement_config.generator_systematic_vjets_templates[systematic])
-        
         
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
