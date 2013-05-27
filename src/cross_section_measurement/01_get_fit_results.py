@@ -43,7 +43,7 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         if sample == 'data':
             h_abs_eta = get_histogram(file_name, abs_eta_data, b_tag_bin)
         elif sample == 'V+Jets':
-            #exctracting the V+Jets template from its specific b-tag bin (>=0 by default) and scaling it to analysis b-tag bin
+            #extracting the V+Jets template from its specific b-tag bin (>=0 by default) and scaling it to analysis b-tag bin
             h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
             h_abs_eta_VJets_specific_b_tag_bin = get_histogram(file_name, abs_eta, b_tag_bin_VJets)
             h_abs_eta_VJets_specific_b_tag_bin.Scale(h_abs_eta.Integral()/h_abs_eta_VJets_specific_b_tag_bin.Integral())
