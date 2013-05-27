@@ -1,5 +1,5 @@
 '''
-Created on 6 May 2013
+Created on 9 Dec 2012
 
 @author: kreczko
 '''
@@ -9,45 +9,12 @@ from rootpy.io import File
 from array import array
 from tools.Unfolding import Unfolding
 from config import RooUnfold
+from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.file_utilities import write_data_to_JSON
-
-def check_one_data_multiple_unfolding(input_file, method, channel):
-    global use_N_toy, nbins, output_folder
-    # same data different unfolding input
-    get_folder = input_file.Get
-    h_data = get_folder(channel + '/toy_1').measured
-    pulls = []
-    add_pull = pulls.append
-    for nth_toy in range(2, use_N_toy + 1):
-        folder = get_folder(channel + '/toy_%d' % nth_toy)
-        h_truth, h_measured, h_response = get_histograms(folder)
-        unfolding_obj = Unfolding(h_truth, h_measured, h_response, method=method)
-        unfolding_obj.unfold(h_data)
-        pull = unfolding_obj.pull()
-        add_pull(pull)
-    save_pulls(pulls, test='multiple_data_multiple_unfolding', method=method, channel=channel)
- 
-def check_multiple_data_one_unfolding(input_file, method, channel):
-    global nbins, use_N_toy, output_folder
-    # same unfolding input, different data
-    get_folder = input_file.Get
-    h_truth, h_measured, h_response = get_histograms(get_folder(channel + '/toy_1'))
-    unfolding_obj = Unfolding(h_truth, h_measured, h_response, method=method)
-    pulls = []
-    # cache functions
-    unfold, get_pull, add_pull, reset = unfolding_obj.unfold, unfolding_obj.pull, pulls.append, unfolding_obj.Reset
-
-    for nth_toy in range(2, use_N_toy + 1):
-        folder = get_folder(channel + '/toy_%d' % nth_toy)
-        h_data = folder.measured
-        unfold(h_data)
-        pull = get_pull()
-        add_pull(pull)
-        reset()
-    save_pulls(pulls, test='multiple_data_multiple_unfolding', method=method, channel=channel)
+from time import clock, time
     
 def check_multiple_data_multiple_unfolding(input_file, method, channel):
-    global nbins, use_N_toy, skip_N_toy, output_folder
+    global nbins, use_N_toy, output_folder, offset_toy_mc, offset_toy_data
     # same unfolding input, different data
     get_folder = input_file.Get
     pulls = []
@@ -55,31 +22,53 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel):
     histograms = []
     add_histograms = histograms.append
     
-    for nth_toy_mc in range(skip_N_toy + 1, skip_N_toy + use_N_toy + 1):
-        folder_mc = get_folder(channel + '/toy_%d' % nth_toy_mc)
-        add_histograms(get_histograms(folder_mc))
-           
-    for nth_toy_mc in range(skip_N_toy + 1, skip_N_toy + use_N_toy + 1):
+    print 'Reading toy MC'
+    start1 = time()
+    mc_range = range(offset_toy_mc + 1, offset_toy_mc + use_N_toy + 1)
+    data_range = range(offset_toy_data + 1, offset_toy_data + use_N_toy + 1)
+    for nth_toy_mc in range(1, 10000 + 1):  # read all of them (easier)
+        if nth_toy_mc in mc_range or nth_toy_mc in data_range:
+            folder_mc = get_folder(channel + '/toy_%d' % nth_toy_mc)
+            add_histograms(get_histograms(folder_mc))
+        else:
+            add_histograms((0, 0, 0))
+    print 'Done reading toy MC in', time() - start1, 's'       
+    
+    for nth_toy_mc in range(offset_toy_mc + 1, offset_toy_mc + use_N_toy + 1):
         print 'Doing MC no', nth_toy_mc
-        h_truth, h_measured, h_response = histograms[nth_toy_mc - 1 - skip_N_toy]
+        h_truth, h_measured, h_response = histograms[nth_toy_mc - 1]
         unfolding_obj = Unfolding(h_truth, h_measured, h_response, method=method)
         unfold, get_pull, reset = unfolding_obj.unfold, unfolding_obj.pull, unfolding_obj.Reset
         
-        for nth_toy_data in range(skip_N_toy + 1, skip_N_toy + use_N_toy + 1):
+        for nth_toy_data in range(offset_toy_data + 1, offset_toy_data + use_N_toy + 1):
             if nth_toy_data == nth_toy_mc:
                 continue
-            h_data = histograms[nth_toy_data - 1 - skip_N_toy][1]
+            print 'Doing MC no, ' + str(nth_toy_mc) + ', data no', nth_toy_data
+            h_data = histograms[nth_toy_data - 1][1]
             unfold(h_data)
             pull = get_pull()
-            add_pull(pull)
+            diff = unfolding_obj.unfolded_data - unfolding_obj.truth
+            diff_tuple = hist_to_value_error_tuplelist(diff)
+            unfolded = unfolding_obj.unfolded_data
+            unfolded_tuple = hist_to_value_error_tuplelist(unfolded)
+            all_data = {'unfolded': unfolded_tuple,
+                        'difference' : diff_tuple,
+                        'pull': pull,
+                        'nth_toy_mc': nth_toy_mc,
+                        'nth_toy_data':nth_toy_data
+                        }
+            
+            add_pull(all_data)
             reset()
     save_pulls(pulls, test='multiple_data_multiple_unfolding', method=method, channel=channel)
 
+
 def save_pulls(pulls, test, method, channel):    
-    global use_N_toy, skip_N_toy
-    file_template = 'Pulls_%s_%s_%s_toy_MC_%d_to_%d.txt'
-    output_file = output_folder + file_template % (test, method, channel, skip_N_toy + 1, use_N_toy + skip_N_toy)
+    global use_N_toy, offset_toy_mc, offset_toy_data
+    file_template = 'Pulls_%s_%s_%s_toy_MC_%d_to_%d_MC_%d_to_%d_data.txt'
+    output_file = output_folder + file_template % (test, method, channel, offset_toy_mc + 1, use_N_toy + offset_toy_mc, offset_toy_data + 1, use_N_toy + offset_toy_data)
     write_data_to_JSON(pulls, output_file)
+    
     
 def get_histograms(folder):
     h_truth = folder.truth.Clone()
@@ -98,9 +87,6 @@ if __name__ == "__main__":
     parser.add_option("-n", "--n_input_mc", type='int',
                       dest="n_input_mc", default=100,
                       help="number of toy MC used for the tests")
-    parser.add_option("-s", "--skip_mc", type='int',
-                      dest="skip_mc", default=0,
-                      help="skip first n toy MC used for the tests")
     parser.add_option("-e", "--error_toy_MC", type='int',
                       dest="error_toy_MC", default=1000,
                       help="number of toy MC used for the error calculation in SVD unfolding")
@@ -111,18 +97,26 @@ if __name__ == "__main__":
                       dest="method", default='RooUnfoldSvd',
                       help="unfolding method")
     parser.add_option("-f", "--file", type='string',
-                      dest="file", default='../data/unfolding_toy_mc.root',
+                      dest="file", default='../../data/unfolding_toy_mc.root',
                       help="file with toy MC")
     parser.add_option("-c", "--channel", type='string',
                       dest="channel", default='both',
                       help="channel to be analysed: electron|muon|both")
+    
+    parser.add_option("--offset_toy_mc", type='int',
+                      dest="offset_toy_mc", default=0,
+                      help="offset of the toy MC used to response matrix")
+    parser.add_option("--offset_toy_data", type='int',
+                      dest="offset_toy_data", default=0,
+                      help="offset of the toy MC used as data for unfolding")
     (options, args) = parser.parse_args()
     
     # set the number of toy MC for error calculation
     RooUnfold.SVD_n_toy = options.error_toy_MC
     RooUnfold.SVD_k_value = options.k_value
     use_N_toy = options.n_input_mc
-    skip_N_toy = options.skip_mc
+    offset_toy_mc = options.offset_toy_mc
+    offset_toy_data = options.offset_toy_data
     method = options.method
     
     output_folder = 'plots/%d_input_toy_mc/k_value_%d/%d_error_toy_MC/' % (use_N_toy, RooUnfold.SVD_k_value, RooUnfold.SVD_n_toy)
@@ -131,12 +125,6 @@ if __name__ == "__main__":
         
     input_file = input_file = File(options.file, 'read')
     
-#    check_one_data_multiple_unfolding(input_file, method, 'electron')
-#    check_multiple_data_one_unfolding(input_file, method, 'electron')
-#    check_one_data_multiple_unfolding(input_file, method, 'muon')
-#    check_multiple_data_one_unfolding(input_file, method, 'muon')
-    
-    from time import clock, time
     start1, start2 = clock(), time()
     if options.channel == 'electron':
         check_multiple_data_multiple_unfolding(input_file, method, 'electron')

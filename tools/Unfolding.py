@@ -6,6 +6,7 @@ Created on 31 Oct 2012
 
 from ROOT import gSystem, cout, TDecompSVD
 import config.RooUnfold as unfoldCfg
+from tools.hist_utilities import hist_to_value_error_tuplelist
 gSystem.Load(unfoldCfg.library)
 from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
@@ -124,13 +125,13 @@ class Unfolding:
     
     def pull(self):
         result = [9999999]
+        
         if self.unfolded_data and self.truth:
             diff = self.unfolded_data - self.truth 
-            errors = []
-            values = list(diff)
-            for bin_i in range(len(values)):
-                errors.append(diff.GetBinError(bin_i + 1))
-            result = [value/error for value, error in zip(values, errors)]
+            value_error_tuplelist = hist_to_value_error_tuplelist(diff)
+
+            result = [value/error for value, error in value_error_tuplelist]
+        
         return result
     
     def pull_inputErrorOnly(self):
