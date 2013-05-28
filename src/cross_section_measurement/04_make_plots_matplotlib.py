@@ -147,7 +147,10 @@ def make_template_plots(histograms, category, channel):
         
         h_signal.linecolor = 'red'
         h_VJets.linecolor = 'green'
-        h_QCD.linecolor = 'yellow'
+        h_QCD.linecolor = 'gray'
+        h_VJets.linestyle = 'dashed'
+        h_QCD.linestyle = 'dotted'# currently not working
+        #bug report: http://trac.sagemath.org/sage_trac/ticket/13834
         
         h_signal.linewidth = 5
         h_VJets.linewidth = 5
