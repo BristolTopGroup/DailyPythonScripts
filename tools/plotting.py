@@ -100,14 +100,13 @@ def make_data_mc_comparison_plot(histograms=[],
     rplt.hist(stack, stacked=True, axes=axes)
     rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, snap_zero = False)
     
-    
     plt.xlabel(histogram_properties.x_axis_title, CMS.x_axis_title)
     plt.ylabel(histogram_properties.y_axis_title, CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
     plt.title(histogram_properties.title, CMS.title)
     
-    # put legend into the correct order (data is always first!
+    # put legend into the correct order (data is always first!)
     handles, labels = axes.get_legend_handles_labels()
     data_label_index = labels.index('data')
     data_handle = handles[data_label_index]
@@ -137,7 +136,9 @@ def make_data_mc_comparison_plot(histograms=[],
     plt.tight_layout()    
     
     for save in save_as:
-        plt.savefig(save_folder + histogram_properties.name + '.' + save) 
+        plt.savefig(save_folder + histogram_properties.name + '.' + save)
+
+    plt.close()
         
 def make_control_region_comparison(control_region_1, control_region_2,
                                    name_region_1, name_region_2, 
