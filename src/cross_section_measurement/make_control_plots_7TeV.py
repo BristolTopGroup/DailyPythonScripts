@@ -289,7 +289,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'conversion_control_region_electron_AbsEta_' + b_tag_bin
     histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
-    histogram_properties.y_axis_title = 'Events/(0.1 GeV)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.0
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
@@ -322,7 +322,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'non_iso_control_region_electron_AbsEta_' + b_tag_bin
     histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
-    histogram_properties.y_axis_title = 'Events/(0.1 GeV)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.0
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
@@ -347,7 +347,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'control_region_comparison_electron_AbsEta_' + b_tag_bin
     histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
-    histogram_properties.y_axis_title = 'arbitrary units/(0.1 GeV)'
+    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 0.14]
     histogram_properties.mc_error = 0.0
@@ -356,6 +356,94 @@ if __name__ == '__main__':
                                    name_region_1 = 'conversions', name_region_2='non-isolated electrons',
                                    histogram_properties=histogram_properties)
 
+    b_tag_bin = '0btag'
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
+    qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
+    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+    
+    histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
+    prepare_histograms(histograms, rebin=5)
+    
+    qcd_from_data = histograms['QCD'][qcd_control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'conversion_control_region_MET_' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$'
+    histogram_properties.y_axis_title = 'Events/(5 GeV)'
+    histogram_properties.x_limits = [0, 200]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties)
+    
+    b_tag_bin = '0btag'
+    control_region = 'TTbarPlusMetAnalysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
+    qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
+    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+    
+    histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
+    prepare_histograms(histograms, rebin=5)
+    
+    qcd_from_data = histograms['QCD'][qcd_control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'non_iso_control_region_MET_' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$'
+    histogram_properties.y_axis_title = 'Events/(5 GeV)'
+    histogram_properties.x_limits = [0, 200]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties)
+    
+    #shape comparison MET
+    b_tag_bin = '0btag'
+    control_region_1 = 'TTbarPlusMetAnalysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
+    control_region_2 = 'TTbarPlusMetAnalysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
+    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+    
+    histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
+    prepare_histograms(histograms, rebin=5)
+    
+    region_1 = histograms['data'][control_region_1].Clone()
+    region_2 = histograms['data'][control_region_2].Clone()
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'control_region_comparison_MET_' + b_tag_bin
+    histogram_properties.title = electron_title + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$'
+    histogram_properties.y_axis_title = 'arbitrary units/(5 GeV)'
+    histogram_properties.x_limits = [0, 200]
+    histogram_properties.y_limits = [0, 0.16]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.legend_location = 'upper right'
+    make_control_region_comparison(region_1, region_2, 
+                                   name_region_1 = 'conversions', name_region_2='non-isolated electrons',
+                                   histogram_properties=histogram_properties)
 
     #b-tag multiplicity
     b_tag_bin = ''
