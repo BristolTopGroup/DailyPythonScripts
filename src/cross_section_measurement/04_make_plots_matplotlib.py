@@ -1,12 +1,12 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
-import os
+import os, gc
 from copy import deepcopy
 
 from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
+from config.latex_labels import b_tag_bins_latex, variables_latex, measurements_latex, met_systematics_latex
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, \
-    value_errors_tuplelist_to_graph
+from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from math import sqrt
 # rootpy
 from ROOT import kRed, kGreen, kMagenta, kBlue, kAzure, kYellow, kViolet
@@ -163,7 +163,10 @@ def make_template_plots(histograms, category, channel):
         plt.tick_params(**CMS.axis_label_minor)
 
         rplt.hist(h_signal, axes=axes, label='signal')
-        rplt.hist(h_VJets, axes=axes, label='V+Jets')
+        if (h_VJets.Integral() != 0):
+            rplt.hist(h_VJets, axes=axes, label='V+Jets')
+        else:
+            print "WARNING: in %s bin %s, %s category, %s channel, V+Jets template is empty: not plotting." % (variable, variable_bin, category, channel)
         if (h_QCD.Integral() != 0):
             rplt.hist(h_QCD, axes=axes, label='QCD')
         else:
@@ -175,7 +178,10 @@ def make_template_plots(histograms, category, channel):
         plt.tight_layout()
     
         for output_format in output_formats:
-            plt.savefig(plotname + '.' + output_format) 
+            plt.savefig(plotname + '.' + output_format)
+        
+        plt.close()
+        gc.collect()
 
 
 def plot_fit_results(histograms, category, channel):
@@ -206,34 +212,6 @@ def plot_fit_results(histograms, category, channel):
                                      ['data', 'background', 'signal'], 
                                      ['black', 'green', 'red'], histogram_properties, 
                                      save_folder = path, save_as = output_formats)    
-#        h_data.linecolor = 'black'
-#        h_signal.linecolor = 'red'
-#        h_background.linecolor = 'green'
-#        
-#        h_data.linewidth = 5
-#        h_signal.linewidth = 5
-#        h_background.linewidth = 5
-#        
-#        plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
-#        axes = plt.axes()
-#        axes.minorticks_on()
-#        
-#        plt.xlabel(r'lepton $|\eta|$', CMS.x_axis_title)
-#        plt.ylabel('events/0.2', CMS.y_axis_title)
-#        plt.tick_params(**CMS.axis_label_major)
-#        plt.tick_params(**CMS.axis_label_minor)
-        
-#        rplt.hist(h_data, axes=axes, label='data')
-#        rplt.hist(h_signal, axes=axes, label='signal')
-#        rplt.hist(h_background, axes=axes, label='background')
-        
-#        plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties)
-#        plt.title(get_cms_labels(channel), CMS.title)
-#        plt.tight_layout()
-#                     
-#        for output_format in output_formats:
-#            plt.savefig(plotname + '.' + output_format) 
-
 
 def get_cms_labels(channel):
     global b_tag_bin, b_tag_bins_latex
@@ -251,7 +229,7 @@ def get_cms_labels(channel):
     
     
 def make_plots(histograms, category, output_folder, histname, show_before_unfolding=False):
-    global variable, variables_latex, measurements_latex, k_value
+    global variable, k_value
     
     channel = 'electron'
     if 'electron' in histname:
@@ -263,13 +241,16 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
         
     # plot with matplotlib
     hist_data = histograms['unfolded']
-    hist_data_with_systematics = histograms['unfolded_with_systematics']
+    if category == 'central':
+        hist_data_with_systematics = histograms['unfolded_with_systematics']
     hist_measured = histograms['measured']
     
     hist_data.markersize = 2
     hist_data.marker = 'o'
-    hist_data_with_systematics.markersize = 2
-    hist_data_with_systematics.marker = 'o'
+
+    if category == 'central':
+        hist_data_with_systematics.markersize = 2
+        hist_data_with_systematics.marker = 'o'
     
     hist_measured.markersize = 2
     hist_measured.marker = 'o'
@@ -283,16 +264,18 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    hist_data_with_systematics.visible = True
+
     hist_data.visible = True
-    rplt.errorbar(hist_data_with_systematics, axes=axes, label='do_not_show', xerr=False, capsize=0, elinewidth=2)
-    rplt.errorbar(hist_data, axes=axes, label='do_not_show', xerr=False, capsize=15, capthick=3, elinewidth=2)
+    if category == 'central':
+        hist_data_with_systematics.visible = True
+        rplt.errorbar(hist_data_with_systematics, axes=axes, label='do_not_show', xerr=None, capsize=0, elinewidth=2)
+    rplt.errorbar(hist_data, axes=axes, label='do_not_show', xerr=None, capsize=15, capthick=3, elinewidth=2)
     rplt.errorbar(hist_data, axes=axes, label='data', xerr=False, yerr= False)#this makes a nicer legend entry
 
     if show_before_unfolding:
-        rplt.errorbar(hist_measured, axes=axes, label='data (before unfolding)', xerr=False)
+        rplt.errorbar(hist_measured, axes=axes, label='data (before unfolding)', xerr=None)
     
-    for key, hist in histograms.iteritems():
+    for key, hist in sorted(histograms.iteritems()):
         if not 'unfolded' in key and not 'measured' in key:
             hist.linestyle = 'dashed'
             hist.linewidth = 2
@@ -308,6 +291,14 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
             rplt.hist(hist, axes=axes, label=measurements_latex[key])
             
     handles, labels = axes.get_legend_handles_labels()
+    # making data first in the list
+    data_label_index = labels.index('data')
+    data_handle = handles[data_label_index]
+    labels.remove('data')
+    handles.remove(data_handle)
+    labels.insert(0, 'data')
+    handles.insert(0, data_handle)
+
     new_handles, new_labels = [], []
     for handle, label in zip(handles, labels):
         if not label == 'do_not_show':
@@ -323,8 +314,12 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     for output_format in output_formats:
         plt.savefig(path + '/' + histname + '_kv' + str(k_value) + '.' + output_format)
 
+    del hist_data, hist_measured
+    plt.close()
+    gc.collect()
+
 def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altogether'):
-    global variable, variables_latex, k_value, b_tag_bin
+    global variable, k_value, b_tag_bin, met_type
 
     plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
     axes = plt.axes()
@@ -342,21 +337,25 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
 
     rplt.errorbar(hist_data_central, axes=axes, label='data', xerr=True)
 
-    for systematic in systematics:
+    for systematic in sorted(systematics):
         if systematic in exclude or systematic == 'central':
             continue
 
         hist_data_systematic = read_xsection_measurement_results(systematic, channel)[0]['unfolded']
         hist_data_systematic.markersize = 2
         hist_data_systematic.marker = 'o'
-        colour_number = systematics.index(systematic) + 1
+        colour_number = systematics.index(systematic) + 2
         if colour_number == 10:
             colour_number = 42
         hist_data_systematic.SetMarkerColor(colour_number)
-        rplt.errorbar(hist_data_systematic, axes=axes, label=systematic.replace('_', ' '),
-                      xerr=False)
+        if 'PDF' in systematic:
+            rplt.errorbar(hist_data_systematic, axes=axes, label=systematic.replace('Weights_', ' '), xerr=False)
+        elif met_type in systematic:
+            rplt.errorbar(hist_data_systematic, axes=axes, label=met_systematics_latex[systematic.replace(met_type, '')], xerr=False)
+        else:
+            rplt.errorbar(hist_data_systematic, axes=axes, label=measurements_latex[systematic], xerr=False)
             
-    plt.legend(numpoints=1, loc='upper right', prop=CMS.legend_properties, ncol=2)
+    plt.legend(numpoints=1, loc='upper right', prop={'size':25}, ncol=2)
     plt.title(get_cms_labels(channel), CMS.title)
     plt.tight_layout()
 
@@ -365,6 +364,9 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
     make_folder_if_not_exists(path)
     for output_format in output_formats:
         plt.savefig(path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_value) + '.' + output_format) 
+
+    plt.close()
+    gc.collect()
 
 if __name__ == '__main__':
     from ROOT import gROOT
@@ -395,8 +397,6 @@ if __name__ == '__main__':
                'ST': 0.004,
                'MT': 0.02
                }
-    
-    from config.latex_labels import b_tag_bins_latex, variables_latex, measurements_latex
 
     output_formats = ['png', 'pdf']
     (options, args) = parser.parse_args()
@@ -453,21 +453,22 @@ if __name__ == '__main__':
                 if met_type == 'PFMETJetEnDown':
                     met_type = 'patPFMetJetEnDown'
             
-            
+            if not channel == 'combined':
+                fit_templates, fit_results = read_fit_templates_and_results_as_histograms(category, channel)
+                make_template_plots(fit_templates, category, channel)
+                plot_fit_results(fit_results, category, channel)
+
             # change back to original MET type
             met_type = translate_options[options.metType]
             if met_type == 'PFMET':
                 met_type = 'patMETsPFlow'
-#            this is problematic when templates are 0 i.e. for ST and HT
-            if not channel == 'combined' or not variable in ['ST', 'HT', 'MT', 'WPT']:
-                fit_templates, fit_results = read_fit_templates_and_results_as_histograms(category, channel)
-                make_template_plots(fit_templates, category, channel)
-                plot_fit_results(fit_results, category, channel)
             
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results(category, channel)
     
             make_plots(histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators')
             make_plots(histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts')
+
+            del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
     
         plot_central_and_systematics(channel, categories, exclude=ttbar_generator_systematics)
         
