@@ -200,6 +200,7 @@ def make_control_region_comparison(control_region_1, control_region_2,
     plt.tight_layout()
     for save in save_as:
         plt.savefig(save_folder + histogram_properties.name + '.' + save) 
+    plt.close()
 
 def make_plot(histogram, histogram_label, histogram_properties = Histogram_properties(),
                                  save_folder='plots/',
@@ -241,4 +242,5 @@ def make_plot(histogram, histogram_label, histogram_properties = Histogram_prope
     plt.tight_layout()    
     
     for save in save_as:
-        plt.savefig(save_folder + histogram_properties.name + '.' + save) 
+        plt.savefig(save_folder + histogram_properties.name + '.' + save)
+    plt.close()
