@@ -46,8 +46,12 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
             #extracting the V+Jets template from its specific b-tag bin (>=0 by default) and scaling it to analysis b-tag bin
             h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
             h_abs_eta_VJets_specific_b_tag_bin = get_histogram(file_name, abs_eta, b_tag_bin_VJets)
-            h_abs_eta_VJets_specific_b_tag_bin.Scale(h_abs_eta.Integral()/h_abs_eta_VJets_specific_b_tag_bin.Integral())
-            h_abs_eta = h_abs_eta_VJets_specific_b_tag_bin
+            try:
+                h_abs_eta_VJets_specific_b_tag_bin.Scale(h_abs_eta.Integral()/h_abs_eta_VJets_specific_b_tag_bin.Integral())
+                h_abs_eta = h_abs_eta_VJets_specific_b_tag_bin
+            except:
+                print 'WARNING: V+Jets template from ' + str(file_name) + ', histogram ' + abs_eta + ' in ' + b_tag_bin_VJets +\
+                    ' b-tag bin is empty. Using central bin (' + b_tag_bin + '), integral = ' + str(h_abs_eta.Integral())
         else:
             h_abs_eta = get_histogram(file_name, abs_eta, b_tag_bin)
         h_abs_eta.Rebin(rebin)
@@ -180,8 +184,8 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
     return results, initial_values, templates
     
 def write_fit_results_and_initial_values(channel, category, fit_results, initial_values, templates):
-    global variable, met_type
-    output_folder = 'data/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
+    global variable, met_type, output_path
+    output_folder = output_path + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
     
     write_data_to_JSON(fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt')
     write_data_to_JSON(initial_values, output_folder + 'initial_values_' + channel + '_' + met_type + '.txt')
@@ -191,6 +195,8 @@ def write_fit_results_and_initial_values(channel, category, fit_results, initial
 if __name__ == '__main__':
     # setup
     parser = OptionParser()
+    parser.add_option("-p", "--path", dest="path", default='data/',
+                  help="set output path for JSON files")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT)")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
@@ -242,6 +248,7 @@ if __name__ == '__main__':
     b_tag_bin = translate_options[options.bjetbin]
     b_tag_bin_VJets = translate_options[options.bjetbin_VJets]
     path_to_files = measurement_config.path_to_files
+    output_path = options.path
     
     # possible options:
     # --continue : continue from saved - skips ROOT files, reads from JSON?
