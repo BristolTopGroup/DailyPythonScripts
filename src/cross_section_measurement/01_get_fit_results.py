@@ -185,7 +185,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
     
 def write_fit_results_and_initial_values(channel, category, fit_results, initial_values, templates):
     global variable, met_type, output_path
-    output_folder = output_path + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
+    output_folder = output_path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
     
     write_data_to_JSON(fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt')
     write_data_to_JSON(initial_values, output_folder + 'initial_values_' + channel + '_' + met_type + '.txt')
@@ -195,7 +195,7 @@ def write_fit_results_and_initial_values(channel, category, fit_results, initial
 if __name__ == '__main__':
     # setup
     parser = OptionParser()
-    parser.add_option("-p", "--path", dest="path", default='data/',
+    parser.add_option("-p", "--path", dest="path", default='data',
                   help="set output path for JSON files")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT)")
@@ -226,14 +226,13 @@ if __name__ == '__main__':
     
     (options, args) = parser.parse_args()
     from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-    
+    from config.summations_common import b_tag_summations
+
     if options.CoM == 8:
         from config.variable_binning_8TeV import variable_bins_ROOT
-        from config.summations_8TeV import b_tag_summations
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
         from config.variable_binning_7TeV import variable_bins_ROOT
-        from config.summations_7TeV import b_tag_summations
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         sys.exit('Unknown centre of mass energy')
