@@ -7,7 +7,7 @@ from rootpy.logger import logging
 from rootpy.io import File
 from ROOT import gROOT
 gcd = gROOT.cd
-from config.summations import b_tag_bins_inclusive, b_tag_summations
+from config.summations_common import b_tag_bins_inclusive, b_tag_summations
 
 def get_histogram_from_file(histogram_path, input_file):
     current_btag = b_tag_bins_inclusive[0]
