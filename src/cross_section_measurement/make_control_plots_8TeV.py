@@ -3,6 +3,7 @@ from tools.ROOT_utililities import get_histograms_from_files
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_control_region_comparison
 from tools.plotting import make_plot
 from tools.hist_utilities import prepare_histograms
+from config.variable_binning_8TeV import variable_bins_ROOT
                 
 if __name__ == '__main__':
     CMS.title['fontsize'] = 40
@@ -421,6 +422,317 @@ if __name__ == '__main__':
     histogram_properties.mc_error = 0.15
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties)
+
+
+    #QCD control regions (electron |eta|), MET bins
+    for variable_bin in variable_bins_ROOT['MET']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCDConversions')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_conversion_control_region_electron_AbsEta_MET_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), ST bins
+    for variable_bin in variable_bins_ROOT['ST']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_ST_Analysis/ST_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCDConversions')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_conversion_control_region_electron_AbsEta_ST_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), HT bins
+    for variable_bin in variable_bins_ROOT['HT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCDConversions')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_conversion_control_region_electron_AbsEta_HT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), MT bins
+    for variable_bin in variable_bins_ROOT['MT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCDConversions')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_conversion_control_region_electron_AbsEta_MT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), WPT bins
+    for variable_bin in variable_bins_ROOT['WPT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCDConversions')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_conversion_control_region_electron_AbsEta_WPT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD non-iso control regions (electron |eta|), MET bins
+    for variable_bin in variable_bins_ROOT['MET']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso e+jets')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_electron_AbsEta_MET_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), ST bins
+    for variable_bin in variable_bins_ROOT['ST']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_ST_Analysis/ST_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso e+jets')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_electron_AbsEta_ST_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), HT bins
+    for variable_bin in variable_bins_ROOT['HT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso e+jets')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_electron_AbsEta_HT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), MT bins
+    for variable_bin in variable_bins_ROOT['MT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso e+jets')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_electron_AbsEta_MT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (electron |eta|), WPT bins
+    for variable_bin in variable_bins_ROOT['WPT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso e+jets')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_electron_AbsEta_WPT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
 
     #QCD control regions (electron |eta|)
     b_tag_bin = '0btag'
@@ -1005,3 +1317,158 @@ if __name__ == '__main__':
     histogram_properties.mc_error = 0.0
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, normalise=True)
+
+    #QCD non-iso control regions (muon |eta|), MET bins
+    for variable_bin in variable_bins_ROOT['MET']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MET_Analysis/patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets ge3j')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_MET_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (muon |eta|), ST bins
+    for variable_bin in variable_bins_ROOT['ST']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_ST_Analysis/ST_with_patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets ge3j')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_ST_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (muon |eta|), HT bins
+    for variable_bin in variable_bins_ROOT['HT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets ge3j')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_HT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (muon |eta|), MT bins
+    for variable_bin in variable_bins_ROOT['MT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets ge3j')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_MT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)
+
+    #QCD control regions (muon |eta|), WPT bins
+    for variable_bin in variable_bins_ROOT['WPT']:
+        b_tag_bin = '0btag'
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
+        control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets ge3j')
+        qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+        
+        histograms = get_histograms_from_files([control_region], histogram_files)
+        prepare_histograms(histograms, rebin=1)
+        
+        qcd_from_mc = histograms['QCD'][control_region].Clone()
+        
+        histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                              histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                              histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+        histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_WPT_bin_' + variable_bin + '_' + b_tag_bin
+        histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
+        histogram_properties.y_axis_title = 'Events/(0.1)'
+        histogram_properties.x_limits = [0, 2.6]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        histogram_properties.legend_location = 'upper right'
+        
+        make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                     histogram_properties)

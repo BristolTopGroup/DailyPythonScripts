@@ -1,9 +1,5 @@
-'''
-Created on 19 Jan 2013
 
-@author: kreczko
-'''
-
+# 8 TeV
 electron_qcd_samples = [ 'QCD_Pt_20_30_BCtoE',
                          'QCD_Pt_30_80_BCtoE',
                          'QCD_Pt_80_170_BCtoE',
@@ -67,40 +63,23 @@ ttjets_scaledown_unfolding_samples = ['TTJets-scaledown']
 
 sample_summations = {
                   'QCD_Electron':electron_qcd_samples,
-		  'QCD_Muon':muon_qcd_samples,
+                  'QCD_Muon':muon_qcd_samples,
                   'SingleTop' : singleTop_samples,
                   'WJets' : wplusjets_samples,
-		  'DYJets' : dyplusjets_samples,
+                  'DYJets' : dyplusjets_samples,
                   'VJets' : vplusjets_samples,
                   'DiBoson': diboson_samples,
                   'Signal': signal_samples,
                   'VJets_matchingup' : vplusjets_matchingup_samples,
                   'VJets_matchingdown' : vplusjets_matchingdown_samples,
-	          'VJets_scaledown' : vplusjets_scaledown_samples,
+                  'VJets_scaledown' : vplusjets_scaledown_samples,
                   'VJets_scaleup' : vplusjets_scaleup_samples,
-		  'unfolding_merged' : ttjets_unfolding_samples,
-		  'unfolding_TTJets_8TeV_mcatnlo' : ttjets_mcatnlo_unfolding_samples,
-		  'unfolding_TTJets_8TeV_powheg' : ttjets_powheg_unfolding_samples,
-		  'unfolding_TTJets_8TeV_matchingup' : ttjets_matchingup_unfolding_samples,
-		  'unfolding_TTJets_8TeV_matchingdown' : ttjets_matchingdown_unfolding_samples,
-		  'unfolding_TTJets_8TeV_scaleup' : ttjets_scaleup_unfolding_samples,
-		  'unfolding_TTJets_8TeV_scaledown' : ttjets_scaledown_unfolding_samples
+                  'unfolding_merged' : ttjets_unfolding_samples,
+                  'unfolding_TTJets_8TeV_mcatnlo' : ttjets_mcatnlo_unfolding_samples,
+                  'unfolding_TTJets_8TeV_powheg' : ttjets_powheg_unfolding_samples,
+                  'unfolding_TTJets_8TeV_matchingup' : ttjets_matchingup_unfolding_samples,
+                  'unfolding_TTJets_8TeV_matchingdown' : ttjets_matchingdown_unfolding_samples,
+                  'unfolding_TTJets_8TeV_scaleup' : ttjets_scaleup_unfolding_samples,
+                  'unfolding_TTJets_8TeV_scaledown' : ttjets_scaledown_unfolding_samples
                   }
 
-from copy import copy
-b_tag_bins_inclusive = ['0orMoreBtag', '1orMoreBtag', '2orMoreBtags', '3orMoreBtags']
-b_tag_bins_exclusive = ['0btag', '1btag', '2btags', '3btags', '4orMoreBtags']
-all_b_tag_bins = copy(b_tag_bins_inclusive)
-all_b_tag_bins.extend(b_tag_bins_exclusive)
-
-b_tag_summations = {
-             '0orMoreBtag':['0btag', '1btag', '2btags', '3btags', '4orMoreBtags'],
-             '1orMoreBtag':['1btag', '2btags', '3btags', '4orMoreBtags'],
-             '2orMoreBtags':['2btags', '3btags', '4orMoreBtags'],
-             '3orMoreBtags':['3btags', '4orMoreBtags']
-             }
-
-jet_bins_inclusive = ["0orMoreJets", "1orMoreJets", "2orMoreJets", "3orMoreJets" , "4orMoreJets"]
-jet_bins_exclusive = ["0jet", "1jet", "2jets", "3jets"]
-all_jet_bins = copy(b_tag_bins_inclusive)
-all_jet_bins.extend(b_tag_bins_exclusive)
