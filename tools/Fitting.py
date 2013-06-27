@@ -161,9 +161,9 @@ class TMinuitFit(TemplateFit):
         #Adding the QCD and V+jets constraints
         N_QCD = self.normalisation['QCD']
         N_VJets = self.normalisation['V+Jets']
-        f[0] += ((par[param_QCD] - N_QCD)*(par[param_QCD]-N_QCD))/(4*N_QCD*N_QCD)
+        f[0] += (par[param_QCD] - N_QCD)**2/(2*N_QCD)**2
 	if N_VJets != 0:
-            f[0] += ((par[param_VJets] - N_VJets)*(par[param_VJets]-N_VJets))/(0.5*0.5*N_VJets*N_VJets)
+            f[0] += (par[param_VJets] - N_VJets)**2/(0.5*N_VJets)**2
 
     def readResults(self):
         return self.results
