@@ -1472,3 +1472,31 @@ if __name__ == '__main__':
         
         make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                      histogram_properties)
+
+    
+    b_tag_bin = '0btag'
+    control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin
+
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10)
+
+    qcd_from_mc = histograms['QCD'][control_region].Clone()
+
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                          histograms['ZJets'][control_region], histograms['WJets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', samples_latex['ZJets'], samples_latex['WJets'], 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'blue', 'green', 'magenta', 'red']
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_' + b_tag_bin
+    histogram_properties.title = mu_title.replace('4 jets','3 jets') + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 2.5]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.legend_location = 'upper right'
+
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties)
