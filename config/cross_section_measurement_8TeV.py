@@ -8,8 +8,10 @@ centre_of_mass = 8  # TeV
 '''
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
-path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6/'
-path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/'
+path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_22JanRereco/'
+path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables/'
+
+path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging
 luminosity = 19584  # pb-1
 ttbar_xsection = 245.8  # pb
 
@@ -65,15 +67,16 @@ unfolding_input_templates = {'unfolding_merged': path_to_unfolding_ntuples + 'TT
                             'unfolding_TTJets_8TeV_scaleup': path_to_unfolding_ntuples + 'TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
                             'unfolding_TTJets_8TeV_scaledown': path_to_unfolding_ntuples + 'TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root'
 			    }
-unfolding_output_general_template = path_to_files + '%s.root'
-unfolding_madgraph_file = path_to_files + 'unfolding_merged.root'
-unfolding_powheg = path_to_files + 'unfolding_TTJets_8TeV_powheg.root'
-unfolding_mcatnlo = path_to_files + 'unfolding_TTJets_8TeV_mcatnlo.root'
 
-unfolding_scale_down = path_to_files + 'unfolding_TTJets_8TeV_scaledown.root'
-unfolding_scale_up = path_to_files + 'unfolding_TTJets_8TeV_scaleup.root'
-unfolding_matching_down = path_to_files + 'unfolding_TTJets_8TeV_matchingdown.root'
-unfolding_matching_up = path_to_files + 'unfolding_TTJets_8TeV_matchingup.root'
+unfolding_output_general_template = path_to_unfolding_histograms + '%s.root'
+unfolding_madgraph_file = path_to_unfolding_histograms + 'unfolding_merged.root'
+unfolding_powheg = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_powheg.root'
+unfolding_mcatnlo = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_mcatnlo.root'
+
+unfolding_scale_down = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaledown.root'
+unfolding_scale_up = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaleup.root'
+unfolding_matching_down = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingdown.root'
+unfolding_matching_up = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingup.root'
 
 histogram_path_templates = {
                    'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_absolute_eta',
