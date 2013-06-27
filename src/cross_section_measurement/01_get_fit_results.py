@@ -58,10 +58,14 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         histograms[sample] = h_abs_eta
     
     if channel == 'electron':
-        # data-driven QCD
-        abs_eta = abs_eta_data.replace('Ref selection', 'QCDConversions')
+        # data-driven QCD template extracted from all-inclusive eta distributions
+        abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Electron/electron_AbsEta' % (analysis_type[channel])
+        abs_eta = abs_eta.replace('Ref selection', 'QCDConversions')
         h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
-        h_abs_eta.Rebin(rebin)
+        h_abs_eta = h_abs_eta - get_histogram(input_files['V+Jets'], abs_eta, '0btag')
+        h_abs_eta = h_abs_eta - get_histogram(input_files['TTJet'], abs_eta, '0btag')
+        h_abs_eta = h_abs_eta - get_histogram(input_files['SingleTop'], abs_eta, '0btag')
+        h_abs_eta.Rebin(20)
         histograms['QCD'] = h_abs_eta
         # scaling to 10% of data (proper implementation: relIso fit)
         qcd_mc_normalisation =  histograms['QCD'].Integral()
@@ -69,20 +73,24 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
             histograms['QCD'].Scale(0.1 * histograms['data'].Integral() / histograms['QCD'].Integral())
         
     if channel == 'muon':
-        # data-driven QCD
+        # data-driven QCD template extracted from all-inclusive eta distributions
         global muon_QCD_file, muon_QCD_MC_file
-
         h_abs_eta_mc = get_histogram(muon_QCD_MC_file, abs_eta, b_tag_bin)
         h_abs_eta_mc.Rebin(rebin)
-        
+        abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Muon/muon_AbsEta' % (analysis_type[channel])
+        abs_eta = abs_eta.replace('Ref selection', 'QCD non iso mu+jets ge3j')
 #        abs_eta = measurement_config.special_muon_histogram
 #        h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
-        abs_eta = abs_eta_data.replace('Ref selection', 'QCD non iso mu+jets ge3j')
         h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
+        h_abs_eta = h_abs_eta - get_histogram(input_files['TTJet'], abs_eta, '0btag')
+        h_abs_eta = h_abs_eta - get_histogram(input_files['V+Jets'], abs_eta, '0btag')
+        h_abs_eta = h_abs_eta - get_histogram(input_files['SingleTop'], abs_eta, '0btag')
         muon_QCD_normalisation_factor = 1
-        h_abs_eta.Rebin(rebin)
+        h_abs_eta.Rebin(20)
         if measurement_config.centre_of_mass == 8:
             muon_QCD_normalisation_factor = h_abs_eta_mc.Integral() / h_abs_eta.Integral()
+            if muon_QCD_normalisation_factor == 0:
+                muon_QCD_normalisation_factor = 1 / h_abs_eta.Integral()
         if measurement_config.centre_of_mass == 7:
             muon_QCD_normalisation_factor = 0.05 * histograms['data'].Integral() / h_abs_eta.Integral()
         
