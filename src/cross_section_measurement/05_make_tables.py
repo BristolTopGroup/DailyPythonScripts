@@ -50,6 +50,104 @@ def read_xsection_measurement_results_with_errors(channel):
     
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
+def read_fit_results(channel):
+    global path_to_JSON, variable, met_type
+    category = 'central'
+    fit_results = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
+    return fit_results
+
+def read_initial_values(channel):
+    global path_to_JSON, variable, met_type
+    category = 'central'
+    initial_values = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')
+    return initial_values
+
+def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
+    global output_folder, variable, met_type
+    printout = '=' * 60
+    printout += '\n'
+    printout += 'Results for %s variable, %s channel, met type %s\n' % (variables_latex[variable], channel, met_type)
+    printout += '=' * 60
+    printout += '\n'
+    printout += '\\\\ \n\hline\n'
+    header = 'Process'
+    signal_in_line = 'signal in'
+    vjets_in_line = 'V+jets in'
+    qcd_in_line = 'QCD in'
+
+    signal_fit_line = 'signal fit'
+    vjets_fit_line = 'V+jets fit'
+    qcd_fit_line = 'QCD fit'
+
+    N_initial_signal = 0
+    N_initial_vjets = 0
+    N_initial_qcd = 0
+
+    N_fit_signal = 0
+    N_fit_vjets = 0
+    N_fit_qcd = 0
+    N_fit_signal_error = 0
+    N_fit_vjets_error = 0
+    N_fit_qcd_error = 0
+
+    bins = variable_bins_ROOT[variable]
+    for bin_i, variable_bin in enumerate(bins):
+        header += ' & %s' % (variable_bins_latex[variable_bin])
+        signal_in_line += ' & %.1f' % (initial_values['signal'][bin_i])
+        N_initial_signal += initial_values['signal'][bin_i]
+
+        vjets_in_line += ' & %.1f' % (initial_values['V+Jets'][bin_i])
+        N_initial_vjets += initial_values['V+Jets'][bin_i]
+
+        qcd_in_line += ' & %.1f' % (initial_values['QCD'][bin_i])
+        N_initial_qcd += initial_values['QCD'][bin_i]
+
+
+        signal_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['signal'][bin_i][0], fit_results['signal'][bin_i][1])
+        N_fit_signal += fit_results['signal'][bin_i][0]
+        N_fit_signal_error += (fit_results['signal'][bin_i][1])*(fit_results['signal'][bin_i][1])
+
+        vjets_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['V+Jets'][bin_i][0], fit_results['V+Jets'][bin_i][1])
+        N_fit_vjets += fit_results['V+Jets'][bin_i][0]
+        N_fit_vjets_error += (fit_results['V+Jets'][bin_i][1])*(fit_results['V+Jets'][bin_i][1])
+
+        qcd_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['QCD'][bin_i][0], fit_results['QCD'][bin_i][1])
+        N_fit_qcd += fit_results['QCD'][bin_i][0]
+        N_fit_qcd_error += (fit_results['QCD'][bin_i][1])*(fit_results['QCD'][bin_i][1])
+
+    header += '& Total \\\\'
+    signal_in_line += ' & %.1f \\\\' % (N_initial_signal)
+    vjets_in_line += ' & %.1f \\\\' % (N_initial_vjets)
+    qcd_in_line += ' & %.1f \\\\' % (N_initial_qcd)
+    signal_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_signal, sqrt(N_fit_signal_error))
+    vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, sqrt(N_fit_vjets_error))
+    qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, sqrt(N_fit_qcd_error))
+
+    printout += header
+    printout += '\n\hline\n'
+    printout += signal_in_line
+    printout += '\n'
+    printout += signal_fit_line
+    printout += '\n\hline\n'
+    printout += vjets_in_line
+    printout += '\n'
+    printout += vjets_fit_line
+    printout += '\n\hline\n'
+    printout += qcd_in_line
+    printout += '\n'
+    printout += qcd_fit_line
+    printout += '\n\hline\n'
+    printout += '\hline\n'
+
+    if toFile:
+        path = output_folder + '/'  + str(measurement_config.centre_of_mass) + 'TeV/'  + variable
+        make_folder_if_not_exists(path)
+        output_file = open(path + '/fit_results_table_' + channel + '_' + met_type + '.tex', 'w')
+        output_file.write(printout)
+        output_file.close()
+    else:
+        print printout
+
 def print_xsections(xsections, channel, toFile = True, print_before_unfolding = False):
     global output_folder, variable, k_value, met_type, b_tag_bin
     printout = '=' * 60
@@ -226,5 +324,8 @@ if __name__ == '__main__':
 
         print_error_table(normalised_xsection_measured_unfolded, normalised_xsection_unfolded_errors, channel, toFile = True, print_before_unfolding = False)
         print_error_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
+
+        if not channel == 'combined':
+            print_fit_results_table(read_initial_values(channel), read_fit_results(channel), channel, toFile = True)
 
     
