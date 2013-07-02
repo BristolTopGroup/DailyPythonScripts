@@ -186,9 +186,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_electron['MET'])
+        prepare_histograms(histograms, rebin=4, normalisation=normalisations_electron['MET'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=4)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_log_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]'
-    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [200, 700]
     #histogram_properties.y_limits = [0.1, 50]
     if normalise_to_fit:
@@ -271,9 +271,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_electron['HT'])
+        prepare_histograms(histograms, rebin=4, normalisation=normalisations_electron['HT'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=4)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -291,7 +291,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'EPlusJets_HT_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = 'HT [GeV]'
-    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [100, 1000]
     if normalise_to_fit:
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['HT'])
@@ -311,9 +311,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_electron['ST'])
+        prepare_histograms(histograms, rebin=4, normalisation=normalisations_electron['ST'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=4)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -331,7 +331,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_ST_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = 'ST [GeV]'
-    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [150, 1200]
     if normalise_to_fit:
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['ST'])
@@ -1084,9 +1084,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=5, normalisation=normalisations_muon['MET'])
+        prepare_histograms(histograms, rebin=4, normalisation=normalisations_muon['MET'])
     else:
-        prepare_histograms(histograms, rebin=5)
+        prepare_histograms(histograms, rebin=4)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1104,7 +1104,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'MuPlusJets_patType1CorrectedPFMet_log_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]'
-    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [200, 700]
     #histogram_properties.y_limits = [0.1, 50]
     if normalise_to_fit:
@@ -1169,9 +1169,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_muon['HT'])
+        prepare_histograms(histograms, rebin=4, normalisation=normalisations_muon['HT'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=4)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1189,7 +1189,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'MuPlusJets_HT_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = 'HT [GeV]'
-    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [100, 1000]
     if normalise_to_fit:
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['HT'])
@@ -1209,9 +1209,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_muon['ST'])
+        prepare_histograms(histograms, rebin=4, normalisation=normalisations_muon['ST'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=4)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1229,7 +1229,7 @@ if __name__ == '__main__':
     histogram_properties.name = 'MuPlusJets_patType1CorrectedPFMet_ST_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = 'ST [GeV]'
-    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [150, 1200]
     if normalise_to_fit:
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['ST'])
