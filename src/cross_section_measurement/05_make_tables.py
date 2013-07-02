@@ -105,23 +105,23 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
 
         signal_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['signal'][bin_i][0], fit_results['signal'][bin_i][1])
         N_fit_signal += fit_results['signal'][bin_i][0]
-        N_fit_signal_error += (fit_results['signal'][bin_i][1])*(fit_results['signal'][bin_i][1])
+        N_fit_signal_error += fit_results['signal'][bin_i][1]
 
         vjets_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['V+Jets'][bin_i][0], fit_results['V+Jets'][bin_i][1])
         N_fit_vjets += fit_results['V+Jets'][bin_i][0]
-        N_fit_vjets_error += (fit_results['V+Jets'][bin_i][1])*(fit_results['V+Jets'][bin_i][1])
+        N_fit_vjets_error += fit_results['V+Jets'][bin_i][1]
 
         qcd_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['QCD'][bin_i][0], fit_results['QCD'][bin_i][1])
         N_fit_qcd += fit_results['QCD'][bin_i][0]
-        N_fit_qcd_error += (fit_results['QCD'][bin_i][1])*(fit_results['QCD'][bin_i][1])
+        N_fit_qcd_error += fit_results['QCD'][bin_i][1]
 
     header += '& Total \\\\'
     signal_in_line += ' & %.1f \\\\' % (N_initial_signal)
     vjets_in_line += ' & %.1f \\\\' % (N_initial_vjets)
     qcd_in_line += ' & %.1f \\\\' % (N_initial_qcd)
-    signal_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_signal, sqrt(N_fit_signal_error))
-    vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, sqrt(N_fit_vjets_error))
-    qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, sqrt(N_fit_qcd_error))
+    signal_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_signal, N_fit_signal_error)
+    vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, N_fit_vjets_error)
+    qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, N_fit_qcd_error)
 
     printout += header
     printout += '\n\hline\n'
@@ -264,11 +264,11 @@ if __name__ == '__main__':
     parser.add_option("-p", "--path", dest="path", default='data/',
                   help="set path to JSON files")
     parser.add_option("-o", "--output_folder", dest="output_folder", default='tables/',
-                  help="set path to save plots")
+                  help="set path to save tables")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
-                  help="set variable to plot (MET, HT, ST, MT)")
+                  help="set variable to plot (MET, HT, ST, MT, WPT)")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
-                      help="set MET type used in the analysis of MET, ST or MT")
+                      help="set MET type used in the analysis of MET-dependent variables")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                   help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
     parser.add_option("-k", "--k_value", type='int',
