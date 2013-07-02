@@ -58,6 +58,9 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         histograms[sample] = h_abs_eta
     
     if channel == 'electron':
+        global electron_QCD_MC_file
+        h_abs_eta_mc = get_histogram(electron_QCD_MC_file, abs_eta, b_tag_bin)
+        h_abs_eta_mc.Rebin(rebin)
         # data-driven QCD template extracted from all-inclusive eta distributions
         abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Electron/electron_AbsEta' % (analysis_type[channel])
         abs_eta = abs_eta.replace('Ref selection', 'QCDConversions')
@@ -65,12 +68,18 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta = h_abs_eta - get_histogram(input_files['V+Jets'], abs_eta, '0btag')
         h_abs_eta = h_abs_eta - get_histogram(input_files['TTJet'], abs_eta, '0btag')
         h_abs_eta = h_abs_eta - get_histogram(input_files['SingleTop'], abs_eta, '0btag')
+        electron_QCD_normalisation_factor = 1
         h_abs_eta.Rebin(20)
+        if measurement_config.centre_of_mass == 8:
+            electron_QCD_normalisation_factor = h_abs_eta_mc.Integral() / h_abs_eta.Integral()
+            if electron_QCD_normalisation_factor == 0:
+                electron_QCD_normalisation_factor = 1 / h_abs_eta.Integral()
+        if measurement_config.centre_of_mass == 7:
+            # scaling to 10% of data
+            electron_QCD_normalisation_factor = 0.1 * histograms['data'].Integral() / h_abs_eta.Integral()
+
+        h_abs_eta.Scale(electron_QCD_normalisation_factor)
         histograms['QCD'] = h_abs_eta
-        # scaling to 10% of data (proper implementation: relIso fit)
-        qcd_mc_normalisation =  histograms['QCD'].Integral()
-        if not qcd_mc_normalisation == 0:
-            histograms['QCD'].Scale(0.1 * histograms['data'].Integral() / histograms['QCD'].Integral())
         
     if channel == 'muon':
         # data-driven QCD template extracted from all-inclusive eta distributions
@@ -268,6 +277,7 @@ if __name__ == '__main__':
     
     SingleTop_file = File(measurement_config.SingleTop_file)
     muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_file)
+    electron_QCD_MC_file = File(measurement_config.electron_QCD_MC_file)
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
