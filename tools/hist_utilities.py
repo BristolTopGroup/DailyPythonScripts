@@ -70,11 +70,36 @@ def sum_histograms(histogram_dict, sample_list):
         summary[histogram_name] = sum(histogram_list)
     return summary
 
-def prepare_histograms(histograms, rebin=1, scale_factor=1.):
-    for _, histogram_dict in histograms.iteritems():
+def scale_histogram_errors(histogram, total_error):
+    bins_number = histogram.GetNbinsX()
+    current_total_error = 0
+    for bin_i in range(bins_number):
+        current_total_error += histogram.GetBinError(bin_i+1)
+
+    scale_factor = total_error/current_total_error
+
+    for bin_i in range(bins_number):
+        histogram.SetBinError(bin_i+1, scale_factor*histogram.GetBinError(bin_i+1))
+
+def prepare_histograms(histograms, rebin=1, scale_factor=1., normalisation={}):
+    for sample, histogram_dict in histograms.iteritems():
         for _, histogram in histogram_dict.iteritems():
             histogram.Rebin(rebin)
             histogram.Scale(scale_factor)
+            if normalisation != {} and histogram.Integral() != 0:
+                if sample == 'TTJet':
+                    histogram.Scale(normalisation['TTJet'][0]/histogram.Integral())
+                    scale_histogram_errors(histogram, normalisation['TTJet'][1])
+                if sample == 'SingleTop':
+                    histogram.Scale(normalisation['SingleTop'][0]/histogram.Integral())
+                    scale_histogram_errors(histogram, normalisation['SingleTop'][1])
+                if sample == 'V+Jets':
+                    histogram.Scale(normalisation['V+Jets'][0]/histogram.Integral())
+                    scale_histogram_errors(histogram, normalisation['V+Jets'][1])
+                if sample == 'QCD':
+                    histogram.Scale(normalisation['QCD'][0]/histogram.Integral())
+                    scale_histogram_errors(histogram, normalisation['QCD'][1])
+
             
 if __name__ == '__main__':
     value_error_tuplelist = [(0.006480446927374301, 0.0004647547547401945), 
