@@ -261,7 +261,7 @@ if __name__ == '__main__':
     file_for_mcatnlo = File(measurement_config.unfolding_mcatnlo, 'read')
         
     file_for_scaledown = File(measurement_config.unfolding_scale_down, 'read')
-    file_for_scaleup = File(measurement_config.unfolding_scale_down, 'read')
+    file_for_scaleup = File(measurement_config.unfolding_scale_up, 'read')
     file_for_matchingdown = File(measurement_config.unfolding_matching_down, 'read')
     file_for_matchingup = File(measurement_config.unfolding_matching_up, 'read')
     variable = options.variable

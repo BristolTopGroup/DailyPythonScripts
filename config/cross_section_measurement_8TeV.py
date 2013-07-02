@@ -9,7 +9,7 @@ centre_of_mass = 8  # TeV
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_22JanRereco/'
-path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables/'
+path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables_ARC_review/'
 
 path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging
 luminosity = 19584  # pb-1
@@ -22,6 +22,7 @@ data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
 muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
+electron_QCD_MC_file =  path_to_files + 'central/QCD' + middle + '.root'
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
 central_general_template = path_to_files + 'central/%s' + middle + '.root'

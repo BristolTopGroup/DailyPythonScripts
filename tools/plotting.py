@@ -56,7 +56,8 @@ def make_data_mc_comparison_plot(histograms=[],
                                  data_index=0,
                                  save_folder='plots/',
                                  save_as=['pdf', 'png'],
-                                 normalise = False
+                                 normalise = False,
+                                 show_ratio = False
                                  ):
         
     stack = HistStack()
@@ -84,7 +85,15 @@ def make_data_mc_comparison_plot(histograms=[],
     
     # plot with matplotlib
     plt.figure(figsize=CMS.figsize, dpi=CMS.dpi, facecolor=CMS.facecolor)
-    axes = plt.axes()
+    if show_ratio:
+        ratio = data.Clone('ratio')
+        ratio.Divide(sum(stack.GetHists()))
+        ratio.SetMarkerSize(3)
+        gs = gridspec.GridSpec(2, 1, height_ratios=[5, 1]) 
+        axes = plt.subplot(gs[0])
+    else:
+        axes = plt.axes()
+
     if histogram_properties.set_log_y:
         axes.set_yscale('log', nonposy="clip")
         axes.set_ylim(ymin=1e-2)
@@ -100,7 +109,8 @@ def make_data_mc_comparison_plot(histograms=[],
     rplt.hist(stack, stacked=True, axes=axes)
     rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, snap_zero = False)
     
-    plt.xlabel(histogram_properties.x_axis_title, CMS.x_axis_title)
+    if not show_ratio:
+        plt.xlabel(histogram_properties.x_axis_title, CMS.x_axis_title)
     plt.ylabel(histogram_properties.y_axis_title, CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
@@ -133,7 +143,24 @@ def make_data_mc_comparison_plot(histograms=[],
     if histogram_properties.set_log_y:
         if not len(y_limits) == 2:#if not user set y-limits, set default
             axes.set_ylim(ymin=1e-1)
-    plt.tight_layout()    
+
+    if show_ratio:
+        plt.setp(axes.get_xticklabels(), visible=False)
+        ax1 = plt.subplot(gs[1])
+        ax1.minorticks_on()
+        ax1.grid(True, 'major', linewidth=1)
+        ax1.yaxis.set_major_locator(MultipleLocator(1.0))
+        ax1.yaxis.set_minor_locator(MultipleLocator(0.5))
+        plt.tick_params(**CMS.axis_label_major)
+        plt.tick_params(**CMS.axis_label_minor)
+        plt.xlabel(histogram_properties.x_axis_title, CMS.x_axis_title)
+        plt.ylabel('data/MC', CMS.y_axis_title)
+        rplt.errorbar(ratio, xerr=True, emptybins=False, axes=ax1)
+        if len(x_limits) == 2:
+            ax1.set_xlim(xmin=x_limits[0], xmax=x_limits[1])
+        ax1.set_ylim(ymin= 0, ymax=2)
+
+    plt.tight_layout()
     
     for save in save_as:
         plt.savefig(save_folder + histogram_properties.name + '.' + save)

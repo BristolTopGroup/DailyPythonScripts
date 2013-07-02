@@ -280,16 +280,19 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     
     for key, hist in sorted(histograms.iteritems()):
         if not 'unfolded' in key and not 'measured' in key:
-            hist.linestyle = 'dashed'
             hist.linewidth = 2
             # setting colours
             if 'POWHEG' in key or 'matchingdown' in key:
+                hist.linestyle = 'longdashdot'
                 hist.SetLineColor(kBlue)
             elif 'MADGRAPH' in key or 'matchingup' in key:
+                hist.linestyle = 'solid'
                 hist.SetLineColor(kRed + 1)
             elif 'MCATNLO'  in key or 'scaleup' in key:
+                hist.linestyle = 'dotted'
                 hist.SetLineColor(kMagenta + 3)
             elif 'scaledown' in key:
+                hist.linestyle = 'dashed'
                 hist.SetLineColor(kGreen)
             rplt.hist(hist, axes=axes, label=measurements_latex[key])
             
