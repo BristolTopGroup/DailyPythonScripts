@@ -18,7 +18,7 @@ variables_latex = {
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
-                        'MADGRAPH': '$t\\bar{t}$ (MADGRAPH)',
+                        'MADGRAPH': '$t\\bar{t}$ (MadGraph)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO)',
                         'POWHEG': '$t\\bar{t}$ (POWHEG)',
                         'matchingdown': '$t\\bar{t}$ (matching down)',
