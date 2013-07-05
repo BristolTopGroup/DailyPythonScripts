@@ -304,6 +304,10 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     handles.remove(data_handle)
     labels.insert(0, 'data')
     handles.insert(0, data_handle)
+    
+    #replace MADGPRAPH with MadGraph
+    MADGPRAPH_label_index = labels.index('MADGPRAPH')
+    labels[MADGPRAPH_label_index] = 'MadGraph'
 
     new_handles, new_labels = [], []
     for handle, label in zip(handles, labels):
