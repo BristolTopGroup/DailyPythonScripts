@@ -302,7 +302,7 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     data_handle = handles[data_label_index]
     labels.remove('data')
     handles.remove(data_handle)
-    labels.insert(0, 'data')
+    labels.insert(0, 'unfolded data')
     handles.insert(0, data_handle)
     
     #replace MADGPRAPH with MadGraph
