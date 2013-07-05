@@ -264,7 +264,7 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     axes.minorticks_on()
     
     plt.xlabel('$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title)
-    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
+    plt.ylabel(r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
@@ -341,7 +341,7 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
     
     
     plt.xlabel('$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title)
-    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
+    plt.ylabel(r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
