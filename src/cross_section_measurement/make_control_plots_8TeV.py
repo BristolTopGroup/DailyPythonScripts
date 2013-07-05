@@ -290,7 +290,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_HT_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'HT [GeV]'
+    histogram_properties.x_axis_title = '$H_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [100, 1000]
     if normalise_to_fit:
@@ -330,7 +330,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_ST_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'ST [GeV]'
+    histogram_properties.x_axis_title = '$S_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [150, 1200]
     if normalise_to_fit:
@@ -371,7 +371,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_WPT_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'W $p_T$ [GeV]'
+    histogram_properties.x_axis_title = '$p^\mathrm{W}_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [0, 500]
     if normalise_to_fit:
@@ -411,7 +411,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'EPlusJets_patType1CorrectedPFMet_MT_' + b_tag_bin
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'transverse W boson mass [GeV]'
+    histogram_properties.x_axis_title = '$M^\mathrm{W}_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(5 GeV)'
     histogram_properties.x_limits = [0, 200]
     if normalise_to_fit:
@@ -1188,7 +1188,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'MuPlusJets_HT_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'HT [GeV]'
+    histogram_properties.x_axis_title = '$H_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [100, 1000]
     if normalise_to_fit:
@@ -1228,7 +1228,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'MuPlusJets_patType1CorrectedPFMet_ST_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'ST [GeV]'
+    histogram_properties.x_axis_title = '$S_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(20 GeV)'
     histogram_properties.x_limits = [150, 1200]
     if normalise_to_fit:
@@ -1269,7 +1269,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'MuPlusJets_patType1CorrectedPFMet_WPT_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'W $p_T$ [GeV]'
+    histogram_properties.x_axis_title = '$p^\mathrm{W}_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [0, 500]
     if normalise_to_fit:
@@ -1309,7 +1309,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'MuPlusJets_patType1CorrectedPFMet_MT_' + b_tag_bin
     histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = 'transverse W boson mass [GeV]'
+    histogram_properties.x_axis_title = '$M^\mathrm{W}_\mathrm{T}$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(5 GeV)'
     histogram_properties.x_limits = [0, 200]
     if normalise_to_fit:
