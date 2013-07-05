@@ -13,8 +13,8 @@ variables_latex = {
                        'MET': 'E_{\mathrm{T}}^{\mathrm{miss}}',
                        'HT': 'H_{\mathrm{T}}',
                        'ST': 'S_{\mathrm{T}}',
-                       'MT': 'M_{\mathrm{T}} (\ell, E_{\mathrm{T}}^{\mathrm{miss}})',
-                       'WPT': '\mathrm{W} p_{\mathrm{T}}'}
+                       'MT': 'M^{\mathrm{W}}_{\mathrm{T}}',
+                       'WPT': 'p^\mathrm{W}_{\mathrm{T}}'}
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
