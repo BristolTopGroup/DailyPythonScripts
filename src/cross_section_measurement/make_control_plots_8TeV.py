@@ -137,6 +137,9 @@ if __name__ == '__main__':
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
     #MET
@@ -176,6 +179,9 @@ if __name__ == '__main__':
         histogram_properties.mc_error = 0.10
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     #MET log
@@ -217,6 +223,9 @@ if __name__ == '__main__':
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.set_log_y = True
     
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
@@ -261,6 +270,9 @@ if __name__ == '__main__':
     #histogram_properties.legend_location = 'upper center'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
     #HT
@@ -301,6 +313,9 @@ if __name__ == '__main__':
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
     #ST
@@ -340,6 +355,9 @@ if __name__ == '__main__':
         histogram_properties.mc_error = 0.10
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
@@ -382,7 +400,11 @@ if __name__ == '__main__':
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
+    
     
     #MT
     b_tag_bin = '2orMoreBtags'
@@ -421,6 +443,9 @@ if __name__ == '__main__':
         histogram_properties.mc_error = 0.10
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
     #M3
@@ -444,6 +469,9 @@ if __name__ == '__main__':
     histogram_properties.x_limits = [100, 600]
     histogram_properties.mc_error = 0.15
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
@@ -469,6 +497,9 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Normalised events/(10 GeV)'
     histogram_properties.x_limits = [0, 800]
     histogram_properties.mc_error = 0.15
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
@@ -1035,6 +1066,9 @@ if __name__ == '__main__':
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
     #MET
@@ -1073,6 +1107,9 @@ if __name__ == '__main__':
         histogram_properties.mc_error = 0.10
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
@@ -1115,6 +1152,9 @@ if __name__ == '__main__':
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.set_log_y = True
     
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
@@ -1159,6 +1199,9 @@ if __name__ == '__main__':
     #histogram_properties.legend_location = 'upper center'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
     #HT
@@ -1199,6 +1242,9 @@ if __name__ == '__main__':
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
     #ST
@@ -1238,6 +1284,9 @@ if __name__ == '__main__':
         histogram_properties.mc_error = 0.10
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
@@ -1280,6 +1329,9 @@ if __name__ == '__main__':
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
     #MT
@@ -1319,6 +1371,9 @@ if __name__ == '__main__':
         histogram_properties.mc_error = 0.10
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
     #M3
@@ -1342,6 +1397,9 @@ if __name__ == '__main__':
     histogram_properties.x_limits = [100, 600]
     histogram_properties.mc_error = 0.15
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
     
@@ -1392,6 +1450,9 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Normalised events/(10 GeV)'
     histogram_properties.x_limits = [0, 800]
     histogram_properties.mc_error = 0.15
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
