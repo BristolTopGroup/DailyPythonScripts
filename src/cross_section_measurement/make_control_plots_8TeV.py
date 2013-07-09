@@ -1580,7 +1580,10 @@ if __name__ == '__main__':
             histogram_properties.legend_location = 'upper right'
             
             make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder)
+                                         histogram_properties, save_folder = output_folder, show_ratio= False)
+            histogram_properties.name += '_with_ratio'
+            make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                         histogram_properties, save_folder = output_folder, show_ratio= True)
 
         #QCD control regions (muon |eta|), ST bins
         for variable_bin in variable_bins_ROOT['ST']:
