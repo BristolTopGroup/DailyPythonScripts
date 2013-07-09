@@ -57,7 +57,8 @@ def make_data_mc_comparison_plot(histograms=[],
                                  save_folder='plots/',
                                  save_as=['pdf', 'png'],
                                  normalise = False,
-                                 show_ratio = False
+                                 show_ratio = False,
+                                 show_stat_errors_on_mc = False,
                                  ):
         
     stack = HistStack()
@@ -104,6 +105,14 @@ def make_data_mc_comparison_plot(histograms=[],
         stack_lower.Scale(1 - mc_error)
         stack_upper.Scale(1 + mc_error)
         rplt.fill_between(stack_upper, stack_lower, axes, facecolor='0.75', alpha=0.5, hatch='/', zorder=2)
+    if not mc_error > 0 and show_stat_errors_on_mc:
+        stack_lower = sum(stack.GetHists())
+        mc_errors = list(stack_lower.errors())
+        stack_upper = stack_lower.Clone('upper')
+        for bin in range(1, stack_lower.GetNbinsX()):
+            stack_lower.SetBinContent(bin, stack_lower.GetBinContent(bin) - mc_errors[bin -1])
+            stack_upper.SetBinContent(bin, stack_lower.GetBinContent(bin) + mc_errors[bin -1])
+        rplt.fill_between(stack_upper, stack_lower, axes, facecolor='0.75', alpha=0.5, hatch='/', zorder=2)
 #    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, zorder=3)
 #    rplt.hist(stack, stacked=True, axes=axes, zorder=1)
     rplt.hist(stack, stacked=True, axes=axes)
@@ -124,7 +133,7 @@ def make_data_mc_comparison_plot(histograms=[],
     handles.remove(data_handle)
     labels.insert(0, 'data')
     handles.insert(0, data_handle)
-    if mc_error > 0:
+    if mc_error > 0 or (not mc_error > 0 and show_stat_errors_on_mc):
         p1 = Rectangle((0, 0), 1, 1, fc="0.75", alpha=0.5, hatch='/')
         handles.append(p1)
         labels.append(histogram_properties.mc_errors_label)

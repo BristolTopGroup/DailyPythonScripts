@@ -898,10 +898,6 @@ if __name__ == '__main__':
     prepare_histograms(histograms, rebin=10)
     
     qcd_from_data = histograms['QCD'][qcd_control_region].Clone()
-    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
-    n_qcd_control_region = qcd_from_data.Integral()
-    if not n_qcd_control_region == 0:
-        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
     
     histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
                           histograms['V+Jets'][control_region],
@@ -916,11 +912,11 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper left'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder)
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
     
     b_tag_bin = '0btag'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
