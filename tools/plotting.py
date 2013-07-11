@@ -111,7 +111,7 @@ def make_data_mc_comparison_plot(histograms=[],
         stack_upper = stack_lower.Clone('upper')
         for bin in range(1, stack_lower.GetNbinsX()):
             stack_lower.SetBinContent(bin, stack_lower.GetBinContent(bin) - mc_errors[bin -1])
-            stack_upper.SetBinContent(bin, stack_lower.GetBinContent(bin) + mc_errors[bin -1])
+            stack_upper.SetBinContent(bin, stack_upper.GetBinContent(bin) + mc_errors[bin -1])
         rplt.fill_between(stack_upper, stack_lower, axes, facecolor='0.75', alpha=0.5, hatch='/', zorder=2)
 #    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, zorder=3)
 #    rplt.hist(stack, stacked=True, axes=axes, zorder=1)
