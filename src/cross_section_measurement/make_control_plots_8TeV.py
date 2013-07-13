@@ -911,6 +911,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
+    histogram_properties.y_limits = [0, 7000]
     histogram_properties.mc_error = 0.0
     histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper left'
