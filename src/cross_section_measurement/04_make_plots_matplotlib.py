@@ -55,7 +55,8 @@ def read_xsection_measurement_results(category, channel):
                                                                     'POWHEG':h_normalised_xsection_POWHEG,
                                                                     'MCATNLO':h_normalised_xsection_MCATNLO})
         
-        histograms_normalised_xsection_systematics_shifts.update({'matchingdown': h_normalised_xsection_mathchingdown,
+        histograms_normalised_xsection_systematics_shifts.update({'MADGRAPH':h_normalised_xsection_MADGRAPH,
+                                                                  'matchingdown': h_normalised_xsection_mathchingdown,
                                                                   'matchingup': h_normalised_xsection_mathchingup,
                                                                   'scaledown': h_normalised_xsection_scaledown,
                                                                   'scaleup': h_normalised_xsection_scaleup})
@@ -285,9 +286,12 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
             if 'POWHEG' in key or 'matchingdown' in key:
                 hist.linestyle = 'longdashdot'
                 hist.SetLineColor(kBlue)
-            elif 'MADGRAPH' in key or 'matchingup' in key:
+            elif 'MADGRAPH' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor(kRed + 1)
+            elif 'matchingup' in key:
+                hist.linestyle = 'solid'
+                hist.linecolor = 'orange'
             elif 'MCATNLO'  in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor(kMagenta + 3)
