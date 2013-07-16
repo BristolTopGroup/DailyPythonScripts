@@ -279,6 +279,38 @@ if __name__ == '__main__':
     muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_file)
     electron_QCD_MC_file = File(measurement_config.electron_QCD_MC_file)
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
+    VJets_file = File(measurement_config.VJets_category_templates['central'])
+    # matching/scale up/down systematics for ttbar + jets
+    for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
+        TTJet_file = File(filename)
+        
+        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_electron,
+                                   },
+                      variable=variable,
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        
+        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_muon,
+                                   },
+                      variable=variable,
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+        
+        write_fit_results_and_initial_values('electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
+        write_fit_results_and_initial_values('muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+    TTJet_file = File(measurement_config.ttbar_category_templates['central'])    
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
         VJets_file = File(measurement_config.generator_systematic_vjets_templates[systematic])
@@ -309,38 +341,7 @@ if __name__ == '__main__':
         
         write_fit_results_and_initial_values('electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
-        
-    VJets_file = File(measurement_config.VJets_category_templates['central'])
-    # matching/scale up/down systematics for ttbar + jets
-    for systematic in generator_systematics:
-        TTJet_file = File(measurement_config.generator_systematic_ttbar_templates[systematic])
-        
-        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
-                      input_files={
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_electron,
-                                   },
-                      variable=variable,
-                      met_type=met_type,
-                      b_tag_bin=b_tag_bin,
-                      )
-        
-        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
-                      input_files={
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_muon,
-                                   },
-                      variable=variable,
-                      met_type=met_type,
-                      b_tag_bin=b_tag_bin,
-                      )
-        
-        write_fit_results_and_initial_values('electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
-        write_fit_results_and_initial_values('muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+    VJets_file = File(measurement_config.VJets_category_templates['central'])    
     
     # central measurement and the rest of the systematics
     last_systematic = ''

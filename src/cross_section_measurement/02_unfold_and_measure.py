@@ -273,6 +273,7 @@ if __name__ == '__main__':
     
     categories = deepcopy(measurement_config.categories_and_prefixes.keys())
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    ttbar_generator_systematics.append(ttbar_theory_systematic_prefix + 'ptreweight')
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     categories.extend(ttbar_generator_systematics)
     categories.extend(vjets_generator_systematics)
@@ -329,3 +330,56 @@ if __name__ == '__main__':
         calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
         calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon', normalise_to_one)
         calculate_normalised_xsections(unfolded_normalisation_combined, category, 'combined', normalise_to_one)
+        
+    #special MC@NLO systematic
+    met_type = translate_options[options.metType]
+    category = ttbar_theory_systematic_prefix + 'mcatnlo'
+    TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt')['TTJet']
+    TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt')['TTJet']
+    unfolded_normalisation_electron = get_unfolded_normalisation(TTJet_fit_results_electron, category, 'electron')
+    unfolded_normalisation_muon = get_unfolded_normalisation(TTJet_fit_results_muon, category, 'muon')
+    unfolded_normalisation_combined = combine_complex_results(unfolded_normalisation_electron, unfolded_normalisation_muon)
+    
+    write_data_to_JSON(unfolded_normalisation_combined, 
+                       path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_combined_' + met_type + '.txt')
+    #measure xsection
+    calculate_xsections(unfolded_normalisation_electron, category, 'electron')
+    calculate_xsections(unfolded_normalisation_muon, category, 'muon')
+    calculate_xsections(unfolded_normalisation_combined, category, 'combined')
+    
+    calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron')
+    calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon')
+    calculate_normalised_xsections(unfolded_normalisation_combined, category, 'combined')
+    
+    normalise_to_one = True
+    calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
+    calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon', normalise_to_one)
+    calculate_normalised_xsections(unfolded_normalisation_combined, category, 'combined', normalise_to_one)
+    
+    #now use MC@NLO and unfold with MC@NLO response matrix
+    category = ttbar_theory_systematic_prefix + 'mcatnlo_matrix'
+    TTJet_fit_results_electron = read_data_from_JSON(path_to_JSON + '/fit_results/' + ttbar_theory_systematic_prefix + 'mcatnlo' + '/fit_results_electron_' + met_type + '.txt')['TTJet']
+    TTJet_fit_results_muon = read_data_from_JSON(path_to_JSON + '/fit_results/' + ttbar_theory_systematic_prefix + 'mcatnlo' + '/fit_results_muon_' + met_type + '.txt')['TTJet']
+    tmp = file_for_unfolding
+    file_for_unfolding = file_for_mcatnlo
+    unfolded_normalisation_electron = get_unfolded_normalisation(TTJet_fit_results_electron, category, 'electron')
+    unfolded_normalisation_muon = get_unfolded_normalisation(TTJet_fit_results_muon, category, 'muon')
+    unfolded_normalisation_combined = combine_complex_results(unfolded_normalisation_electron, unfolded_normalisation_muon)
+    
+    write_data_to_JSON(unfolded_normalisation_combined, 
+                       path_to_JSON  + '/xsection_measurement_results' + '/kv' + str(unfoldCfg.SVD_k_value) + '/' + category + '/normalisation_combined_' + met_type + '.txt')
+    #measure xsection
+    calculate_xsections(unfolded_normalisation_electron, category, 'electron')
+    calculate_xsections(unfolded_normalisation_muon, category, 'muon')
+    calculate_xsections(unfolded_normalisation_combined, category, 'combined')
+    
+    calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron')
+    calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon')
+    calculate_normalised_xsections(unfolded_normalisation_combined, category, 'combined')
+    
+    normalise_to_one = True
+    calculate_normalised_xsections(unfolded_normalisation_electron, category, 'electron', normalise_to_one)
+    calculate_normalised_xsections(unfolded_normalisation_muon, category, 'muon', normalise_to_one)
+    calculate_normalised_xsections(unfolded_normalisation_combined, category, 'combined', normalise_to_one)
+    
+    

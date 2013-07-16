@@ -179,6 +179,7 @@ if __name__ == "__main__":
     # all other uncertainties (including JES and JER)
     other_uncertainties = deepcopy(measurement_config.categories_and_prefixes.keys())
     other_uncertainties.extend(vjets_generator_systematics)
+    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo', ttbar_theory_systematic_prefix + 'mcatnlo_matrix']
     
     for channel in ['electron', 'muon', 'combined']:
         # read central measurement
@@ -188,6 +189,7 @@ if __name__ == "__main__":
         pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=pdf_uncertainties, channel=channel)
         met_systematics, met_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=met_uncertainties, channel=channel)
         other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=other_uncertainties, channel=channel)
+        new_systematics, new_systematics_unfolded = read_normalised_xsection_systematics(list_of_systematics=new_uncertainties, channel=channel)
         # get the minimal and maximal deviation for each group of systematics
         # ttbar theory (factorisation scale and matching threshold)
         ttbar_theory_min, ttbar_theory_max = summarise_systematics(central_measurement, ttbar_theory_systematics)
@@ -201,14 +203,23 @@ if __name__ == "__main__":
         # other
         other_min, other_max = summarise_systematics(central_measurement, other_systematics)
         other_min_unfolded, other_max_unfolded = summarise_systematics(central_measurement_unfolded, other_systematics_unfolded)
+        #new ones
+        ptreweight_min, ptreweight_max = summarise_systematics(central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']})
+        ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics(central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']})
+        mcatnlo_min, mcatnlo_max =  summarise_systematics(new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo_matrix'], {'mcatnlo':new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo']})
+        mcatnlo_min_unfolded, mcatnlo_max_unfolded =  summarise_systematics(new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo_matrix'], {'mcatnlo':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo']})
         
         # get the central measurement with fit, unfolding and systematic errors combined
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors(central_measurement,
-                                                                                                [ttbar_theory_min, pdf_min, met_min, other_min],
-                                                                                                [ttbar_theory_max, pdf_max, met_max, other_max])
+                                                                                                [ttbar_theory_min, pdf_min, met_min, other_min, 
+                                                                                                 ptreweight_min, mcatnlo_min],
+                                                                                                [ttbar_theory_max, pdf_max, met_max, other_max, 
+                                                                                                 ptreweight_max, mcatnlo_max])
         central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors(central_measurement_unfolded,
-                                                                                                [ttbar_theory_min_unfolded, pdf_min_unfolded, met_min_unfolded, other_min_unfolded],
-                                                                                                [ttbar_theory_max_unfolded, pdf_max_unfolded, met_max_unfolded, other_max_unfolded])
+                                                                                                [ttbar_theory_min_unfolded, pdf_min_unfolded, met_min_unfolded, 
+                                                                                                 other_min_unfolded, ptreweight_min_unfolded, mcatnlo_min_unfolded],
+                                                                                                [ttbar_theory_max_unfolded, pdf_max_unfolded, met_max_unfolded, 
+                                                                                                 other_max_unfolded, ptreweight_max_unfolded, mcatnlo_max_unfolded])
         
         write_normalised_xsection_measurement(central_measurement_with_systematics, central_measurement_unfolded_with_systematics, channel)
         
@@ -218,12 +229,13 @@ if __name__ == "__main__":
         pdf_systematics = replace_measurement_with_deviation_from_central(central_measurement, pdf_systematics)
         met_systematics = replace_measurement_with_deviation_from_central(central_measurement, met_systematics)
         other_systematics = replace_measurement_with_deviation_from_central(central_measurement, other_systematics)
+        ptreweight_systematics = replace_measurement_with_deviation_from_central(central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']})
         
         ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, ttbar_theory_systematics_unfolded)
         pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, pdf_systematics_unfolded)
         met_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, met_systematics_unfolded)
         other_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, other_systematics_unfolded)
-        
+        ptreweight_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']})
         # add total errors
         # TODO: these are currently still storing the measurement, but should store the difference to the measurement like total_*
         ttbar_theory_systematics['total_lower'], ttbar_theory_systematics['total_upper'] = ttbar_theory_min, ttbar_theory_max
@@ -234,8 +246,14 @@ if __name__ == "__main__":
         met_systematics_unfolded['total_lower'], met_systematics_unfolded['total_upper'] = met_min_unfolded, met_max_unfolded
         other_systematics['total_lower'], other_systematics['total_upper'] = other_min, other_max
         other_systematics_unfolded['total_lower'], other_systematics_unfolded['total_upper'] = other_min_unfolded, other_max_unfolded
+        new_systematics['mcatnlo_min'], new_systematics['mcatnlo_max'] = mcatnlo_min, mcatnlo_max
+        new_systematics_unfolded['mcatnlo_min'], new_systematics_unfolded['mcatnlo_max'] = mcatnlo_min_unfolded, mcatnlo_max_unfolded
+        new_systematics['ptreweight_min'], new_systematics['ptreweight_max'] = ptreweight_min, ptreweight_max
+        new_systematics_unfolded['ptreweight_min'], new_systematics_unfolded['ptreweight_max'] = ptreweight_min_unfolded, ptreweight_max_unfolded
+        
         write_normalised_xsection_measurement(ttbar_theory_systematics, ttbar_theory_systematics_unfolded, channel, summary='ttbar_theory')
         write_normalised_xsection_measurement(pdf_systematics, pdf_systematics_unfolded, channel, summary='PDF')
         write_normalised_xsection_measurement(met_systematics, met_systematics_unfolded, channel, summary='MET')
         write_normalised_xsection_measurement(other_systematics, other_systematics_unfolded, channel, summary='other')
+        write_normalised_xsection_measurement(new_systematics, new_systematics_unfolded, channel, summary='new')
         
