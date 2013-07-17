@@ -43,7 +43,10 @@ measurements_latex = {'unfolded': 'unfolded',
                         'LightJet_up':'Light jet +',
                         'PU_down':'Pile-up -',
                         'PU_up':'Pile-up +',
-                        'central':'central'
+                        'central':'central',
+                        'TTJets_ptreweight': '$p_\mathrm{T}(\\bar{t})$ reweight',
+                        'TTJets_mcatnlo': '(ignore)',
+                        'TTJets_mcatnlo_matrix': 'hadronisation uncertainty',
                           }
 
 met_systematics_latex = {

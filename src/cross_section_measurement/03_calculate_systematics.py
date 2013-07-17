@@ -206,8 +206,8 @@ if __name__ == "__main__":
         #new ones
         ptreweight_min, ptreweight_max = summarise_systematics(central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']})
         ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics(central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']})
-        mcatnlo_min, mcatnlo_max =  summarise_systematics(new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo_matrix'], {'mcatnlo':new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo']})
-        mcatnlo_min_unfolded, mcatnlo_max_unfolded =  summarise_systematics(new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo_matrix'], {'mcatnlo':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo']})
+        mcatnlo_min, mcatnlo_max =  summarise_systematics(central_measurement, {'mcatnlo_matrix':new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']})
+        mcatnlo_min_unfolded, mcatnlo_max_unfolded =  summarise_systematics(central_measurement_unfolded, {'mcatnlo_matrix':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']})
         
         # get the central measurement with fit, unfolding and systematic errors combined
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors(central_measurement,
@@ -229,13 +229,15 @@ if __name__ == "__main__":
         pdf_systematics = replace_measurement_with_deviation_from_central(central_measurement, pdf_systematics)
         met_systematics = replace_measurement_with_deviation_from_central(central_measurement, met_systematics)
         other_systematics = replace_measurement_with_deviation_from_central(central_measurement, other_systematics)
-        ptreweight_systematics = replace_measurement_with_deviation_from_central(central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']})
+        new_systematics = replace_measurement_with_deviation_from_central(central_measurement, new_systematics)
+#        ptreweight_systematics = replace_measurement_with_deviation_from_central(central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']})
         
         ttbar_theory_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, ttbar_theory_systematics_unfolded)
         pdf_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, pdf_systematics_unfolded)
         met_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, met_systematics_unfolded)
         other_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, other_systematics_unfolded)
-        ptreweight_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']})
+        new_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, new_systematics_unfolded)
+#        ptreweight_systematics_unfolded = replace_measurement_with_deviation_from_central(central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']})
         # add total errors
         # TODO: these are currently still storing the measurement, but should store the difference to the measurement like total_*
         ttbar_theory_systematics['total_lower'], ttbar_theory_systematics['total_upper'] = ttbar_theory_min, ttbar_theory_max

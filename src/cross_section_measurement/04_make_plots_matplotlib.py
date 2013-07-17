@@ -442,10 +442,11 @@ if __name__ == '__main__':
     pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34, 45)]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix']
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
-    
+    all_measurements.extend(new_uncertainties)
     for channel in ['electron', 'muon', 'combined']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:
@@ -497,3 +498,4 @@ if __name__ == '__main__':
         plot_central_and_systematics(channel, pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
         
         plot_central_and_systematics(channel, met_uncertainties, suffix='MET_only')
+        plot_central_and_systematics(channel, new_uncertainties, suffix='new_only')
