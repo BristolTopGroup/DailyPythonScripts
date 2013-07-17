@@ -15,6 +15,7 @@ class TemplateFit():
         self.performedFit = False
         self.results = {}
         self.normalisation = {}
+        self.normalisation_errors = {}
         self.data_label = data_label
         self.histograms = histograms
         self.templates = {}
@@ -24,7 +25,7 @@ class TemplateFit():
         keys.remove(data_label)
         self.samples = keys
         
-        self.templates, self.normalisation = TemplateFit.generateTemplatesAndNormalisation(histograms)
+        self.templates, self.normalisation, self.normalisation_errors = TemplateFit.generateTemplatesAndNormalisation(histograms)
         self.vectors = TemplateFit.vectorise(self.templates)
         #check for consistency
         #vectos and templates all same size!!
@@ -48,15 +49,17 @@ class TemplateFit():
     @staticmethod
     def generateTemplatesAndNormalisation(histograms):
         normalisation = {}
+        normalisation_errors = {}
         templates = {}
         for sample, histogram in histograms.iteritems():
             normalisation[sample] = histogram.Integral()
+            normalisation_errors[sample] = sum(histogram.errors())
             temp = histogram.Clone(sample + '_' + 'template')
             nEntries = temp.Integral()
             if not nEntries == 0:
                 temp.Scale(1 / nEntries)
             templates[sample] = temp
-        return templates, normalisation
+        return templates, normalisation, normalisation_errors
             
     @staticmethod
     def vectorise(histograms):
