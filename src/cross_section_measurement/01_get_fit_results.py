@@ -479,4 +479,43 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
-        
+    
+    #QCD systematic
+    SingleTop_file = File(measurement_config.SingleTop_category_templates['central'])
+    VJets_file = File(measurement_config.VJets_category_templates['central'])
+    muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates['central'])
+    data_file_electron = File(measurement_config.data_electron_category_templates['central'])
+    data_file_muon = File(measurement_config.data_muon_category_templates['central']) 
+    TTJet_file = File(measurement_config.ttbar_category_templates['central']) 
+
+    electron_control_region = measurement_config.electron_control_region_systematic   
+    fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
+                      input_files={
+                                   'TTJet': TTJet_file,
+                                   'SingleTop': SingleTop_file,
+                                   'V+Jets': VJets_file,
+                                   'data': data_file_electron,
+                                   },
+                      variable=variable,
+                      met_type=met_type,
+                      b_tag_bin=b_tag_bin,
+                      )
+    
+    muon_control_region = measurement_config.muon_control_region_systematic    
+    fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                  input_files={
+                               'TTJet': TTJet_file,
+                               'SingleTop': SingleTop_file,
+                               'V+Jets': VJets_file,
+                               'data': data_file_muon,
+                               },
+                  variable=variable,
+                  met_type=met_type,
+                  b_tag_bin=b_tag_bin,
+                  )
+    
+    systematic = 'QCD_shape'
+    write_fit_results_and_initial_values('electron', systematic, fit_results_electron, initial_values_electron, templates_electron)
+    write_fit_results_and_initial_values('muon', systematic, fit_results_muon, initial_values_muon, templates_muon)
+    electron_control_region = measurement_config.electron_control_region
+    muon_control_region = measurement_config.muon_control_region
