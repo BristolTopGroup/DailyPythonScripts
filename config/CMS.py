@@ -38,7 +38,7 @@ axis_label_minor = {
 legend_properties = {'size':40}
 
 figsize = (16,16)
-dpi = 200
+dpi = 400
 facecolor = 'white'
 data_marker_size = 3
 data_marker_style = 'o' 

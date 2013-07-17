@@ -13,12 +13,12 @@ variables_latex = {
                        'MET': 'E_{\mathrm{T}}^{\mathrm{miss}}',
                        'HT': 'H_{\mathrm{T}}',
                        'ST': 'S_{\mathrm{T}}',
-                       'MT': 'M_{\mathrm{T}} (\ell, E_{\mathrm{T}}^{\mathrm{miss}})',
-                       'WPT': '\mathrm{W} p_{\mathrm{T}}'}
+                       'MT': 'M^{\mathrm{W}}_{\mathrm{T}}',
+                       'WPT': 'p^\mathrm{W}_{\mathrm{T}}'}
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
-                        'MADGRAPH': '$t\\bar{t}$ (MADGRAPH)',
+                        'MADGRAPH': '$t\\bar{t}$ (MadGraph)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO)',
                         'POWHEG': '$t\\bar{t}$ (POWHEG)',
                         'matchingdown': '$t\\bar{t}$ (matching down)',
@@ -43,7 +43,11 @@ measurements_latex = {'unfolded': 'unfolded',
                         'LightJet_up':'Light jet +',
                         'PU_down':'Pile-up -',
                         'PU_up':'Pile-up +',
-                        'central':'central'
+                        'central':'central',
+                        'TTJets_ptreweight': '$p_\mathrm{T}(\\bar{t})$ reweight',
+                        'TTJets_mcatnlo': '(ignore)',
+                        'TTJets_mcatnlo_matrix': 'hadronisation uncertainty',
+                        'QCD_shape' : 'QCD shape uncertainty',
                           }
 
 met_systematics_latex = {

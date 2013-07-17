@@ -34,6 +34,9 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_other_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
                                                                 str(k_value) + '/' + category + '/normalised_xsection_' + 
                                                                 channel + '_' + met_type + '_other_errors.txt')
+    normalised_xsection_new_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
+                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
+                                                                channel + '_' + met_type + '_new_errors.txt')
     
     normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
                                                 'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded']})
@@ -42,11 +45,13 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
 
     normalised_xsection_unfolded_errors = normalised_xsection_ttbar_theory_errors['TTJet_unfolded']
     normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
     
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
@@ -312,9 +317,11 @@ if __name__ == '__main__':
     pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34, 45)]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
+    all_measurements.extend(new_uncertainties)
 
     for channel in ['electron', 'muon', 'combined']:                        
         normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors = read_xsection_measurement_results_with_errors(channel)

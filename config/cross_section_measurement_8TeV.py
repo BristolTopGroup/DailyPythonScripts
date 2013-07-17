@@ -24,9 +24,10 @@ SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
 electron_QCD_MC_file =  path_to_files + 'central/QCD' + middle + '.root'
 
-generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
+generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown']
+ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo', 'ptreweight']
 central_general_template = path_to_files + 'central/%s' + middle + '.root'
-generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
+generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in ttbar_generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets_%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 
 pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWeights_%d.root'
@@ -87,5 +88,10 @@ histogram_path_templates = {
                    'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
+electron_control_region = 'QCDConversions'
+electron_control_region_systematic = 'QCD non iso e+jets'
+
+muon_control_region = 'QCD non iso mu+jets ge3j'
+muon_control_region_systematic = 'QCD non iso mu+jets ge3j' #no systematic yet
 special_muon_histogram = 'muon_AbsEta_0btag'
 rebin = 2
