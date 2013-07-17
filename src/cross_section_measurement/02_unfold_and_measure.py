@@ -298,6 +298,7 @@ if __name__ == '__main__':
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
+    all_measurements.append('QCD_shape')
     
     for category in all_measurements:
         if variable == 'HT' and category in met_uncertainties:
