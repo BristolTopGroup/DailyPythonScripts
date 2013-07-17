@@ -55,7 +55,8 @@ def read_xsection_measurement_results(category, channel):
                                                                     'POWHEG':h_normalised_xsection_POWHEG,
                                                                     'MCATNLO':h_normalised_xsection_MCATNLO})
         
-        histograms_normalised_xsection_systematics_shifts.update({'matchingdown': h_normalised_xsection_mathchingdown,
+        histograms_normalised_xsection_systematics_shifts.update({'MADGRAPH':h_normalised_xsection_MADGRAPH,
+                                                                  'matchingdown': h_normalised_xsection_mathchingdown,
                                                                   'matchingup': h_normalised_xsection_mathchingup,
                                                                   'scaledown': h_normalised_xsection_scaledown,
                                                                   'scaleup': h_normalised_xsection_scaleup})
@@ -224,7 +225,7 @@ def get_cms_labels(channel):
     elif channel == 'muon':
         lepton = '$\mu$ + jets'
     else:
-        lepton = 'combined'
+        lepton = 'e, $\mu$ + jets combined'
     channel_label = '%s, $\geq$ 4 jets, %s' % (lepton, b_tag_bins_latex[b_tag_bin])
     template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
     label = template % (measurement_config.luminosity / 1000., measurement_config.centre_of_mass, channel_label)
@@ -264,7 +265,7 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     axes.minorticks_on()
     
     plt.xlabel('$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title)
-    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
+    plt.ylabel(r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
@@ -285,9 +286,12 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
             if 'POWHEG' in key or 'matchingdown' in key:
                 hist.linestyle = 'longdashdot'
                 hist.SetLineColor(kBlue)
-            elif 'MADGRAPH' in key or 'matchingup' in key:
+            elif 'MADGRAPH' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor(kRed + 1)
+            elif 'matchingup' in key:
+                hist.linestyle = 'solid'
+                hist.linecolor = 'orange'
             elif 'MCATNLO'  in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor(kMagenta + 3)
@@ -302,9 +306,9 @@ def make_plots(histograms, category, output_folder, histname, show_before_unfold
     data_handle = handles[data_label_index]
     labels.remove('data')
     handles.remove(data_handle)
-    labels.insert(0, 'data')
+    labels.insert(0, 'unfolded data')
     handles.insert(0, data_handle)
-
+    
     new_handles, new_labels = [], []
     for handle, label in zip(handles, labels):
         if not label == 'do_not_show':
@@ -337,7 +341,7 @@ def plot_central_and_systematics(channel, systematics, exclude=[], suffix='altog
     
     
     plt.xlabel('$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title)
-    plt.ylabel(r'$\frac{1}{\sigma} \times \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
+    plt.ylabel(r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
 
@@ -438,10 +442,11 @@ if __name__ == '__main__':
     pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34, 45)]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
-    
+    all_measurements.extend(new_uncertainties)
     for channel in ['electron', 'muon', 'combined']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:
@@ -493,3 +498,4 @@ if __name__ == '__main__':
         plot_central_and_systematics(channel, pdf_uncertainties_34_to_44, exclude=exclude, suffix='PDF_34_to_44')
         
         plot_central_and_systematics(channel, met_uncertainties, suffix='MET_only')
+        plot_central_and_systematics(channel, new_uncertainties, suffix='new_only')
