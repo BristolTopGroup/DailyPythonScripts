@@ -87,6 +87,9 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     N_initial_signal = 0
     N_initial_vjets = 0
     N_initial_qcd = 0
+    N_initial_signal_error = 0
+    N_initial_vjets_error = 0
+    N_initial_qcd_error = 0
 
     N_fit_signal = 0
     N_fit_vjets = 0
@@ -98,14 +101,17 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     bins = variable_bins_ROOT[variable]
     for bin_i, variable_bin in enumerate(bins):
         header += ' & %s' % (variable_bins_latex[variable_bin])
-        signal_in_line += ' & %.1f' % (initial_values['signal'][bin_i])
-        N_initial_signal += initial_values['signal'][bin_i]
+        signal_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['signal'][bin_i][0], initial_values['signal'][bin_i][1])
+        N_initial_signal += initial_values['signal'][bin_i][0]
+        N_initial_signal_error += initial_values['signal'][bin_i][1]
 
-        vjets_in_line += ' & %.1f' % (initial_values['V+Jets'][bin_i])
-        N_initial_vjets += initial_values['V+Jets'][bin_i]
+        vjets_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['V+Jets'][bin_i][0], initial_values['V+Jets'][bin_i][1])
+        N_initial_vjets += initial_values['V+Jets'][bin_i][0]
+        N_initial_vjets_error += initial_values['V+Jets'][bin_i][1]
 
-        qcd_in_line += ' & %.1f' % (initial_values['QCD'][bin_i])
-        N_initial_qcd += initial_values['QCD'][bin_i]
+        qcd_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['QCD'][bin_i][0], initial_values['QCD'][bin_i][1])
+        N_initial_qcd += initial_values['QCD'][bin_i][0]
+        N_initial_qcd_error += initial_values['QCD'][bin_i][1]
 
 
         signal_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['signal'][bin_i][0], fit_results['signal'][bin_i][1])
@@ -121,9 +127,9 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         N_fit_qcd_error += fit_results['QCD'][bin_i][1]
 
     header += '& Total \\\\'
-    signal_in_line += ' & %.1f \\\\' % (N_initial_signal)
-    vjets_in_line += ' & %.1f \\\\' % (N_initial_vjets)
-    qcd_in_line += ' & %.1f \\\\' % (N_initial_qcd)
+    signal_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_signal, N_initial_signal_error)
+    vjets_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_vjets, N_initial_vjets_error)
+    qcd_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_qcd, N_initial_qcd_error)
     signal_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_signal, N_fit_signal_error)
     vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, N_fit_vjets_error)
     qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, N_fit_qcd_error)
@@ -234,9 +240,9 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             elif 'PDF' in source:
                 continue
             elif met_type in source:
-                rows[source] = [met_systematics_latex[source.replace(met_type, '')], text]
+                rows[source] = [met_systematics_latex[source.replace(met_type, '')] + ' (\%)', text]
             else:
-                rows[source] = [measurements_latex[source], text]
+                rows[source] = [measurements_latex[source] + ' (\%)', text]
 
     header += ' \\\\'
     printout += header

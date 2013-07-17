@@ -164,9 +164,12 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         fitter.fit()
         fit_results = fitter.readResults()
         normalisation = fitter.normalisation
+        normalisation_errors = fitter.normalisation_errors
         
         N_ttbar_before_fit = histograms['TTJet'].Integral()
         N_SingleTop_before_fit = histograms['SingleTop'].Integral()
+        N_ttbar_error_before_fit = sum(histograms['TTJet'].errors())
+        N_SingleTop_error_before_fit = sum(histograms['SingleTop'].errors())
 
         if (N_SingleTop_before_fit != 0):
             TTJet_SingleTop_ratio = N_ttbar_before_fit / N_SingleTop_before_fit
@@ -181,21 +184,23 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         fit_results['SingleTop'] = N_SingleTop
         normalisation['TTJet'] = N_ttbar_before_fit
         normalisation['SingleTop'] = N_SingleTop_before_fit
+        normalisation_errors['TTJet'] = N_ttbar_error_before_fit
+        normalisation_errors['SingleTop'] = N_SingleTop_error_before_fit
         
         if results == {}:  # empty
-            initial_values['data'] = [normalisation['data']]
+            initial_values['data'] = [(normalisation['data'], normalisation_errors['data'])]
             templates['data'] = [fitter.vectors['data']]
             for sample in fit_results.keys():
                 results[sample] = [fit_results[sample]]
-                initial_values[sample] = [normalisation[sample]]
+                initial_values[sample] = [(normalisation[sample], normalisation_errors[sample])]
                 if not sample == 'TTJet' and not sample == 'SingleTop':
                     templates[sample] = [fitter.vectors[sample]]
         else:
-            initial_values['data'].append(normalisation['data'])
+            initial_values['data'].append([normalisation['data'], normalisation_errors['data']])
             templates['data'].append(fitter.vectors['data'])
             for sample in fit_results.keys():
                 results[sample].append(fit_results[sample])
-                initial_values[sample].append(normalisation[sample])
+                initial_values[sample].append([normalisation[sample], normalisation_errors[sample]])
                 if not sample == 'TTJet' and not sample == 'SingleTop':
                     templates[sample].append(fitter.vectors[sample])
         
