@@ -84,8 +84,8 @@ if __name__ == '__main__':
             'data' : measurement_config.data_file_electron,
             'TTJet': measurement_config.ttbar_category_templates[category],
             'V+Jets': measurement_config.VJets_category_templates[category],
-            'QCD': measurement_config.electron_QCD_MC_file,
-            'SingleTop': measurement_config.SingleTop_file
+            'QCD': measurement_config.electron_QCD_MC_file, #this should also be category-dependent, but unimportant and not available atm
+            'SingleTop': measurement_config.SingleTop_category_templates[category]
     }
 
     #getting normalisations
@@ -891,13 +891,11 @@ if __name__ == '__main__':
     #QCD control regions (electron |eta|)
     b_tag_bin = '0btag'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
-    qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
-    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
     
-    histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
+    histograms = get_histograms_from_files([control_region], histogram_files)
     prepare_histograms(histograms, rebin=10)
     
-    qcd_from_data = histograms['QCD'][qcd_control_region].Clone()
+    qcd_from_data = histograms['QCD'][control_region].Clone()
     
     histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
                           histograms['V+Jets'][control_region],
@@ -921,13 +919,11 @@ if __name__ == '__main__':
     
     b_tag_bin = '0btag'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
-    qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
-    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
     
-    histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
+    histograms = get_histograms_from_files([control_region], histogram_files)
     prepare_histograms(histograms, rebin=10)
     
-    qcd_from_data = histograms['QCD'][qcd_control_region].Clone()
+    qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
     n_qcd_control_region = qcd_from_data.Integral()
     if not n_qcd_control_region == 0:
@@ -956,7 +952,6 @@ if __name__ == '__main__':
     b_tag_bin = '0btag'
     control_region_1 = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
-    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
     
     histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
     prepare_histograms(histograms, rebin=10)
@@ -975,6 +970,116 @@ if __name__ == '__main__':
     histogram_properties.legend_location = 'upper right'
     make_control_region_comparison(region_1, region_2, 
                                    name_region_1 = 'conversions', name_region_2='non-isolated electrons',
+                                   histogram_properties=histogram_properties, save_folder = output_folder)
+
+    #QCD control regions (electron |eta|), 1 or more btags
+    b_tag_bin = '1orMoreBtag'
+    control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10)
+    
+    qcd_from_data = histograms['QCD'][control_region].Clone()
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_conversion_control_region_electron_AbsEta_' + b_tag_bin
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 2.6]
+    histogram_properties.y_limits = [0, 1000]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = 'MC unc.'
+    histogram_properties.legend_location = 'upper left'
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
+    
+    b_tag_bin = '1orMoreBtag'
+    control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10)
+    
+    qcd_from_data = histograms['QCD'][control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_non_iso_control_region_electron_AbsEta_' + b_tag_bin
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 2.6]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.legend_location = 'upper right'
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder)
+
+    #QCD conversions btag bin shape comparison
+    b_tag_bin_1 = '0btag'
+    b_tag_bin_2 = '1orMoreBtag'
+    control_region_1 = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin_1
+    control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin_2
+    
+    histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
+    prepare_histograms(histograms, rebin=10)
+    
+    region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
+    region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_Conversions_btag_bin_comparison_electron_AbsEta_' + b_tag_bin_1 + '_' + b_tag_bin_2
+    histogram_properties.title = e_title + ', conversions, ' + b_tag_bins_latex[b_tag_bin_1] + '/' + b_tag_bins_latex[b_tag_bin_2]
+    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
+    histogram_properties.x_limits = [0, 2.6]
+    histogram_properties.y_limits = [0, 0.14]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.legend_location = 'upper right'
+    make_control_region_comparison(region_1, region_2, 
+                                   name_region_1 = b_tag_bins_latex[b_tag_bin_1], name_region_2 = b_tag_bins_latex[b_tag_bin_2],
+                                   histogram_properties=histogram_properties, save_folder = output_folder)
+
+    #QCD non-iso btag bin shape comparison
+    b_tag_bin_1 = '0btag'
+    b_tag_bin_2 = '1orMoreBtag'
+    control_region_1 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin_1
+    control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin_2
+    
+    histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
+    prepare_histograms(histograms, rebin=10)
+    
+    region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
+    region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_non_iso_btag_bin_comparison_electron_AbsEta_' + b_tag_bin_1 + '_' + b_tag_bin_2
+    histogram_properties.title = e_title + ', non-iso, ' + b_tag_bins_latex[b_tag_bin_1] + '/' + b_tag_bins_latex[b_tag_bin_2]
+    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
+    histogram_properties.x_limits = [0, 2.6]
+    histogram_properties.y_limits = [0, 0.14]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.legend_location = 'upper right'
+    make_control_region_comparison(region_1, region_2, 
+                                   name_region_1 = b_tag_bins_latex[b_tag_bin_1], name_region_2 = b_tag_bins_latex[b_tag_bin_2],
                                    histogram_properties=histogram_properties, save_folder = output_folder)
 
     # Number of vertices
@@ -1029,7 +1134,7 @@ if __name__ == '__main__':
     #muons
     data = 'SingleMu'
     histogram_files['data'] = measurement_config.data_file_muon
-    histogram_files['QCD'] = measurement_config.muon_QCD_MC_file
+    histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates[category]
 
     mu_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
     
@@ -1737,3 +1842,28 @@ if __name__ == '__main__':
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
+    
+    #QCD non-iso btag bin shape comparison
+    b_tag_bin_1 = '0btag'
+    b_tag_bin_2 = '1orMoreBtag'
+    control_region_1 = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin_1
+    control_region_2 = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin_2
+    
+    histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
+    prepare_histograms(histograms, rebin=10)
+    
+    region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
+    region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_non_iso_btag_bin_comparison_muon_AbsEta_' + b_tag_bin_1 + '_' + b_tag_bin_2
+    histogram_properties.title = mu_title + ', non-iso, ' + b_tag_bins_latex[b_tag_bin_1] + '/' + b_tag_bins_latex[b_tag_bin_2]
+    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
+    histogram_properties.x_limits = [0, 2.5]
+    histogram_properties.y_limits = [0, 0.14]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.legend_location = 'upper right'
+    make_control_region_comparison(region_1, region_2, 
+                                   name_region_1 = b_tag_bins_latex[b_tag_bin_1], name_region_2 = b_tag_bins_latex[b_tag_bin_2],
+                                   histogram_properties=histogram_properties, save_folder = output_folder)
