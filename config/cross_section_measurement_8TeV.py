@@ -88,5 +88,8 @@ histogram_path_templates = {
                    'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
+electron_control_region = 'QCDConversions'
+electron_control_region_systematic = 'QCD non iso e+jets'
+
 special_muon_histogram = 'muon_AbsEta_0btag'
 rebin = 2

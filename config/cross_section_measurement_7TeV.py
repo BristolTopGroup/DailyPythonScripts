@@ -73,6 +73,9 @@ histogram_path_templates = {
 #                   'MT': 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
+electron_control_region = 'QCDConversions'
+electron_control_region_systematic = 'QCD non iso e+jets'
+
 special_muon_histogram = 'etaAbs_ge2j_data'
 
 rebin = 20
