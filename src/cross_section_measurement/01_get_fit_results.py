@@ -12,6 +12,7 @@ from tools.file_utilities import write_data_to_JSON
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
     global b_tag_bin_VJets
+    global electron_control_region, muon_control_region
 
     histograms = {}
     if not variable in measurement_config.histogram_path_templates.keys():
@@ -63,7 +64,7 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta_mc.Rebin(rebin)
         # data-driven QCD template extracted from all-inclusive eta distributions
         abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Electron/electron_AbsEta' % (analysis_type[channel])
-        abs_eta = abs_eta.replace('Ref selection', 'QCDConversions')
+        abs_eta = abs_eta.replace('Ref selection', electron_control_region)
         h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
         h_abs_eta = h_abs_eta - get_histogram(input_files['V+Jets'], abs_eta, '0btag')
         h_abs_eta = h_abs_eta - get_histogram(input_files['TTJet'], abs_eta, '0btag')
@@ -87,7 +88,7 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta_mc = get_histogram(muon_QCD_MC_file, abs_eta, b_tag_bin)
         h_abs_eta_mc.Rebin(rebin)
         abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Muon/muon_AbsEta' % (analysis_type[channel])
-        abs_eta = abs_eta.replace('Ref selection', 'QCD non iso mu+jets ge3j')
+        abs_eta = abs_eta.replace('Ref selection', muon_control_region)
 #        abs_eta = measurement_config.special_muon_histogram
 #        h_abs_eta = get_histogram(muon_QCD_file, abs_eta, '')
         h_abs_eta = get_histogram(input_files['data'], abs_eta, '0btag')
@@ -280,6 +281,8 @@ if __name__ == '__main__':
     electron_QCD_MC_file = File(measurement_config.electron_QCD_MC_file)
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
     VJets_file = File(measurement_config.VJets_category_templates['central'])
+    electron_control_region = measurement_config.electron_control_region
+    muon_control_region = measurement_config.muon_control_region
     # matching/scale up/down systematics for ttbar + jets
     for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
         TTJet_file = File(filename)

@@ -76,6 +76,7 @@ histogram_path_templates = {
 electron_control_region = 'QCDConversions'
 electron_control_region_systematic = 'QCD non iso e+jets'
 
+muon_control_region = 'QCD non iso mu+jets ge3j'
 special_muon_histogram = 'etaAbs_ge2j_data'
 
 rebin = 20
