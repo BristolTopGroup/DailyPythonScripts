@@ -317,7 +317,7 @@ if __name__ == '__main__':
     pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34, 45)]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix']
+    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)

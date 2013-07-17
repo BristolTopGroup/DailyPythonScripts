@@ -47,6 +47,7 @@ measurements_latex = {'unfolded': 'unfolded',
                         'TTJets_ptreweight': '$p_\mathrm{T}(\\bar{t})$ reweight',
                         'TTJets_mcatnlo': '(ignore)',
                         'TTJets_mcatnlo_matrix': 'hadronisation uncertainty',
+                        'QCD_shape' : 'QCD shape uncertainty',
                           }
 
 met_systematics_latex = {
