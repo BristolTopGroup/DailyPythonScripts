@@ -179,6 +179,7 @@ if __name__ == "__main__":
     # all other uncertainties (including JES and JER)
     other_uncertainties = deepcopy(measurement_config.categories_and_prefixes.keys())
     other_uncertainties.extend(vjets_generator_systematics)
+    other_uncertainties.append('QCD_shape')
     new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo', ttbar_theory_systematic_prefix + 'mcatnlo_matrix']
     
     for channel in ['electron', 'muon', 'combined']:
