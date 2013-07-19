@@ -1,5 +1,7 @@
 DailyPythonScripts
 ==================
+master branch [![Build Status](https://www.travis-ci.org/HEP-Puppet/motd.png?branch=master)](https://www.travis-ci.org/HEP-Puppet/motd)
+
 Python scripts for the daily tasks in particle physics
 
 Get submodules
