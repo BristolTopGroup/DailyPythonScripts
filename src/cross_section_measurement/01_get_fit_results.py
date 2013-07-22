@@ -161,6 +161,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                                       'QCD':histograms['QCD']
                                       })
         
+        fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
         fitter.fit()
         fit_results = fitter.readResults()
         normalisation = fitter.normalisation
