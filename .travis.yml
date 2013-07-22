@@ -6,20 +6,21 @@ python:
   #- "3.2"
 
 env:
-  #- ROOT=5-32-00
-  #- ROOT=5-32-01
-  #- ROOT=5-32-02
-  #- ROOT=5-32-03
-  - ROOT=5-32-04
-  #- ROOT=5-33-02
-  #- ROOT=5-33-02b
-  #- ROOT=5-34-00
-  #- ROOT=5-34-04
-  #- ROOT=5-34-05
-  #- ROOT=5-34-06
-  #- ROOT=5-34-07
-  - ROOT=5-34-08
-  #- ROOT=5-99-02
+  matrix:
+    #- ROOT=5-32-00
+    #- ROOT=5-32-01
+    #- ROOT=5-32-02
+    #- ROOT=5-32-03
+    - ROOT=5-32-04
+    #- ROOT=5-33-02
+    #- ROOT=5-33-02b
+    #- ROOT=5-34-00
+    #- ROOT=5-34-04
+    #- ROOT=5-34-05
+    #- ROOT=5-34-06
+    #- ROOT=5-34-07
+    - ROOT=5-34-08
+    #- ROOT=5-99-02
 
 install:
   # Check if we are running Python 2 or 3. This is needed for the apt-get package names
@@ -49,6 +50,8 @@ install:
   
   # setup vpython with all packages
   - source setup_standalone.sh
+  # add base path from setup_standalone to PYTHONPATH
+  - export PYTHONPATH=$PYTHONPATH:$base
 
 script:
 
