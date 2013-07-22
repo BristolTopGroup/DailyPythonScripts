@@ -106,7 +106,7 @@ def read_fit_templates_and_results_as_histograms(category, channel):
         h_VJets = h_template_VJets.Clone()
         h_QCD = h_template_QCD.Clone()
         
-        data_normalisation = data_values[bin_i]
+        data_normalisation = data_values[bin_i][0]
         signal_normalisation = fit_results['signal'][bin_i][0]
         VJets_normalisation = fit_results['V+Jets'][bin_i][0]
         QCD_normalisation = fit_results['QCD'][bin_i][0]
