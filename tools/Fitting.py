@@ -27,6 +27,7 @@ class TemplateFit():
         
         self.templates, self.normalisation, self.normalisation_errors = TemplateFit.generateTemplatesAndNormalisation(histograms)
         self.vectors = TemplateFit.vectorise(self.templates)
+        self.param_indices = {}
         #check for consistency
         #vectos and templates all same size!!
         data_length = len(self.vectors[data_label])
@@ -81,6 +82,8 @@ class TMinuitFit(TemplateFit):
         TemplateFit.__init__(self, histograms, dataLabel)
         self.method = method
         self.logger = logging.getLogger('TMinuitFit')
+        self.constraints = {}
+        self.constraint_type = ''
         
     def fit(self):
         numberOfParameters = len(self.samples)
@@ -138,17 +141,12 @@ class TMinuitFit(TemplateFit):
         data_vector = self.vectors[self.data_label]
         
         vector_entry = 0
-        param_VJets = 0
-        param_QCD = 0
         for data in data_vector:
             x_i = 0
             param_index = 0
             for sample in self.samples:
                 x_i += par[param_index] * self.vectors[sample][vector_entry]
-                if sample == 'QCD':
-                    param_QCD = param_index
-                if sample == 'V+Jets':      
-                    param_VJets = param_index
+                self.param_indices[sample] = param_index
                 param_index += 1
             data_i = self.normalisation[self.data_label] * data
             if not data == 0 and not x_i == 0:
@@ -162,15 +160,23 @@ class TMinuitFit(TemplateFit):
         f[0] = -2.0 * lnL
         
         #Adding the QCD and V+jets constraints
-        N_QCD = self.normalisation['QCD']
-        N_VJets = self.normalisation['V+Jets']
-        f[0] += (par[param_QCD] - N_QCD)**2/(2*N_QCD)**2
-	if N_VJets != 0:
-            f[0] += (par[param_VJets] - N_VJets)**2/(0.5*N_VJets)**2
+        if self.constraint_type == 'normalisation':
+            f[0] += self.get_fit_normalisation_constraints(par)
 
     def readResults(self):
         return self.results
-
+    
+    # constraints = {sample: constraint}
+    def set_fit_constraints(self, constraints, constraint_type = 'normalisation'):
+        self.constraints = constraints
+        self.constraint_type = constraint_type
+    
+    def get_fit_normalisation_constraints(self, params):
+        result = 0
+        for sample, constraint in self.constraints.iteritems():
+            if self.normalisation[sample] != 0:
+                result += (params[self.param_indices[sample]] - self.normalisation[sample]) ** 2 / (constraint * self.normalisation[sample]) ** 2
+        return result
 #class CurveFit():
 #    defined_functions = ['gaus', 'gauss'] 
 #    
