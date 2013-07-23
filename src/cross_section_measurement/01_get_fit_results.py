@@ -122,7 +122,6 @@ def get_histogram(input_file, histogram_path, b_tag_bin=''):
             histogram = input_file.Get(histogram_path)
         else:
             histogram = input_file.Get(histogram_path + '_' + b_tag_bin)
-    
     return histogram.Clone()
 
 def get_fitted_normalisation(channel, input_files, variable, met_type, b_tag_bin, JSON=False):
@@ -319,6 +318,8 @@ if __name__ == '__main__':
         
         write_fit_results_and_initial_values('electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+        TTJet_file.Close()
+    
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])    
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
@@ -350,23 +351,26 @@ if __name__ == '__main__':
         
         write_fit_results_and_initial_values('electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+        VJets_file.Close()
+    
     VJets_file = File(measurement_config.VJets_category_templates['central'])    
     
     # central measurement and the rest of the systematics
+
     last_systematic = ''
     for category, prefix in categories_and_prefixes.iteritems():
         TTJet_file = File(measurement_config.ttbar_category_templates[category])
         SingleTop_file = File(measurement_config.SingleTop_category_templates[category])
         VJets_file = File(measurement_config.VJets_category_templates[category])
         muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates[category])
-        
-        if last_systematic in ['JES_up', 'JES_down'] and not category in ['JES_up', 'JES_down']:
-            data_file_electron = File(measurement_config.data_electron_category_templates['central'])
-            data_file_muon = File(measurement_config.data_muon_category_templates['central'])
+        data_file_electron = File(measurement_config.data_electron_category_templates['central'])
+        data_file_muon = File(measurement_config.data_muon_category_templates['central'])
         
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
         if category in ['JES_up', 'JES_down']:  # these systematics affect the data as well
+            data_file_electron.Close()
+            data_file_muon.Close()
             data_file_electron = File(measurement_config.data_electron_category_templates[category])
             data_file_muon = File(measurement_config.data_muon_category_templates[category])
             
@@ -405,8 +409,17 @@ if __name__ == '__main__':
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
         last_systematic = category
+        
+        TTJet_file.Close()
+        SingleTop_file.Close()
+        VJets_file.Close()
+        muon_QCD_MC_file.Close()
+        data_file_electron.Close()
+        data_file_muon.Close()
     
-    # now do PDF uncertainty    
+    # now do PDF uncertainty
+    data_file_electron = File(measurement_config.data_electron_category_templates['central'])
+    data_file_muon = File(measurement_config.data_muon_category_templates['central'])
     SingleTop_file = File(measurement_config.SingleTop_category_templates['central'])
     VJets_file = File(measurement_config.VJets_category_templates['central'])
     muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates['central'])
@@ -416,8 +429,7 @@ if __name__ == '__main__':
     for index in range(1, 45):
         category = 'PDFWeights_%d' % index
         TTJet_file = File(measurement_config.pdf_uncertainty_template % index)
-        
-        
+                
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -443,14 +455,10 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
-    
-    SingleTop_file = File(measurement_config.SingleTop_category_templates['central'])
-    VJets_file = File(measurement_config.VJets_category_templates['central'])
-    muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates['central'])
-    data_file_electron = File(measurement_config.data_electron_category_templates['central'])
-    data_file_muon = File(measurement_config.data_muon_category_templates['central']) 
+        TTJet_file.Close()
+
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
-       
+    
     for met_systematic in met_systematics_suffixes:
         #all MET uncertainties except JES & JER - as this is already included
         if 'JetEn' in met_systematic or 'JetRes' in met_systematic or variable == 'HT':#HT is not dependent on MET!
@@ -487,13 +495,7 @@ if __name__ == '__main__':
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
     
     #QCD systematic
-    SingleTop_file = File(measurement_config.SingleTop_category_templates['central'])
-    VJets_file = File(measurement_config.VJets_category_templates['central'])
-    muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates['central'])
-    data_file_electron = File(measurement_config.data_electron_category_templates['central'])
-    data_file_muon = File(measurement_config.data_muon_category_templates['central']) 
-    TTJet_file = File(measurement_config.ttbar_category_templates['central']) 
-
+    
     electron_control_region = measurement_config.electron_control_region_systematic   
     fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
