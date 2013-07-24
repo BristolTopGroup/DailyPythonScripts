@@ -60,8 +60,8 @@ class Test(unittest.TestCase):
         
     def testSignalResult(self):
         results = self.minuitFitter.readResults()
-        self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta = results['signal'][1])
-        self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta = results['bkg1'][1])
+        self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta=2 * results['signal'][1])
+        self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta=2 * results['bkg1'][1])
         
 
 
