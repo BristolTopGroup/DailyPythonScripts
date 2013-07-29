@@ -210,7 +210,7 @@ if __name__ == '__main__':
                    x_title='$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
-                   y_limits=([0, 0.18], [0, 0.65]),
+                   y_limits=([0, 0.18], [0, 1]),
                    rebin=1)
     
     do_shape_check(channel = 'muon', 
@@ -222,7 +222,7 @@ if __name__ == '__main__':
                    x_title='$H_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[80, 1000],
-                   y_limits=([0, 0.12], [0, 0.45]),
+                   y_limits=([0, 0.12], [0, 1]),
                    rebin=4)
     
     do_shape_check(channel = 'muon', 
@@ -234,7 +234,7 @@ if __name__ == '__main__':
                    x_title='$S_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[106, 1000],
-                   y_limits=([0, 0.12], [0, 0.65]),
+                   y_limits=([0, 0.12], [0, 1]),
                    rebin=4)
     
     do_shape_check(channel = 'muon', 
@@ -246,7 +246,7 @@ if __name__ == '__main__':
                    x_title='$M^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(10 GeV)',
                    x_limits=[0, 200],
-                   y_limits=([0, 0.18], [0, 0.45]),
+                   y_limits=([0, 0.18], [0, 1]),
                    rebin=10)
     
     do_shape_check(channel = 'muon', 
@@ -258,5 +258,5 @@ if __name__ == '__main__':
                    x_title='$p^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
-                   y_limits=([0, 0.10], [0, 0.45]),
+                   y_limits=([0, 0.10], [0, 1]),
                    rebin=5)
