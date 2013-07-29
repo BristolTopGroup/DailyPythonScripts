@@ -17,63 +17,63 @@ def get_fit_results(variable, channel):
     fit_results = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
     return fit_results
 
-def do_shape_check(control_region_1, control_region_2, variable, normalisation, title, x_title, y_title, x_limits, y_limits, rebin=1):
+def do_shape_check(channel, control_region_1, control_region_2, variable, normalisation, title, x_title, y_title, x_limits, y_limits, rebin=1):
+    global b_tag_bin
     # QCD shape comparison
-    b_tag_bin = '0btag'
-    
-    histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
-    
-    region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
-    region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
-    
-    region_1.Rebin(rebin)
-    region_2.Rebin(rebin)
-    
-    histogram_properties = Histogram_properties()
-    histogram_properties.name = 'QCD_control_region_comparison_electron_' + variable + '_' + b_tag_bin
-    histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = x_title
-    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
-    histogram_properties.x_limits = x_limits
-    histogram_properties.y_limits = y_limits[0]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.legend_location = 'upper right'
-    make_control_region_comparison(region_1, region_2,
-                                   name_region_1='conversions', name_region_2='non-isolated electrons',
-                                   histogram_properties=histogram_properties, save_folder=output_folder)
-    
-    # QCD shape comparison to fit results
-    histograms = get_histograms_from_files([control_region_1], histogram_files)
-    
-    region_1_tmp = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
-    region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])
-    
-    fit_results_QCD = normalisations_electron[variable]['QCD']
-    region_2 = value_error_tuplelist_to_hist(fit_results_QCD, bin_edges[variable])
-    
-    histogram_properties = Histogram_properties()
-    histogram_properties.name = 'QCD_control_region_comparison_electron_' + variable + '_fits_with_conversions_' + b_tag_bin
-    histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = x_title
-    histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
-    histogram_properties.x_limits = x_limits
-    histogram_properties.y_limits = y_limits[1]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.legend_location = 'upper right'
-    make_control_region_comparison(region_1, region_2,
-                                   name_region_1='conversions', name_region_2='fit results',
-                                   histogram_properties=histogram_properties, save_folder=output_folder)
+    if channel == 'electron':
+        histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
+        
+        region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
+        region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
+        
+        region_1.Rebin(rebin)
+        region_2.Rebin(rebin)
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_control_region_comparison_' + channel + '_' + variable + '_' + b_tag_bin
+        histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = x_title
+        histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
+        histogram_properties.x_limits = x_limits
+        histogram_properties.y_limits = y_limits[0]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.legend_location = 'upper right'
+        make_control_region_comparison(region_1, region_2,
+                                       name_region_1='conversions', name_region_2='non-isolated ' + channel + 's',
+                                       histogram_properties=histogram_properties, save_folder=output_folder)
+        
+        # QCD shape comparison to fit results
+        histograms = get_histograms_from_files([control_region_1], histogram_files)
+        
+        region_1_tmp = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
+        region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])
+        
+        fit_results_QCD = normalisation[variable]['QCD']
+        region_2 = value_error_tuplelist_to_hist(fit_results_QCD, bin_edges[variable])
+        
+        histogram_properties = Histogram_properties()
+        histogram_properties.name = 'QCD_control_region_comparison_' + channel + '_' + variable + '_fits_with_conversions_' + b_tag_bin
+        histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.x_axis_title = x_title
+        histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
+        histogram_properties.x_limits = x_limits
+        histogram_properties.y_limits = y_limits[1]
+        histogram_properties.mc_error = 0.0
+        histogram_properties.legend_location = 'upper right'
+        make_control_region_comparison(region_1, region_2,
+                                       name_region_1='conversions', name_region_2='fit results',
+                                       histogram_properties=histogram_properties, save_folder=output_folder)
     
     histograms = get_histograms_from_files([control_region_2], histogram_files)
     
     region_1_tmp = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
     region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])    
     
-    fit_results_QCD = normalisations_electron[variable]['QCD']
+    fit_results_QCD = normalisation[variable]['QCD']
     region_2 = value_error_tuplelist_to_hist(fit_results_QCD, bin_edges[variable])
     
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'QCD_control_region_comparison_electron_' + variable + '_fits_with_noniso_' + b_tag_bin
+    histogram_properties.name = 'QCD_control_region_comparison_' + channel + '_' + variable + '_fits_with_noniso_' + b_tag_bin
     histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = x_title
     histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
@@ -82,7 +82,7 @@ def do_shape_check(control_region_1, control_region_2, variable, normalisation, 
     histogram_properties.mc_error = 0.0
     histogram_properties.legend_location = 'upper right'
     make_control_region_comparison(region_1, region_2,
-                                   name_region_1='non-isolated electrons', name_region_2='fit results',
+                                   name_region_1='non-isolated ' + channel + 's', name_region_2='fit results',
                                    histogram_properties=histogram_properties, save_folder=output_folder)
 
 if __name__ == '__main__':
@@ -136,59 +136,127 @@ if __name__ == '__main__':
             'WPT':get_fit_results('WPT', 'muon')
             }
     
-    e_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
+    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
     b_tag_bin = '0btag'
-    do_shape_check(control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
+    do_shape_check(channel = 'electron', 
+                   control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                    variable='MET',
                    normalisation=normalisations_electron,
-                   title=e_title,
+                   title=histogram_title,
                    x_title='$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
                    y_limits=([0, 0.18], [0, 0.65]),
                    rebin=1)
     
-    do_shape_check(control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/HT_' + b_tag_bin,
+    do_shape_check(channel = 'electron', 
+                   control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/HT_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/HT_' + b_tag_bin,
                    variable='HT',
                    normalisation=normalisations_electron,
-                   title=e_title,
+                   title=histogram_title,
                    x_title='$H_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[80, 1000],
                    y_limits=([0, 0.12], [0, 0.45]),
                    rebin=4)
     
-    do_shape_check(control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
+    do_shape_check(channel = 'electron', 
+                   control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                    variable='ST',
                    normalisation=normalisations_electron,
-                   title=e_title,
+                   title=histogram_title,
                    x_title='$S_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[106, 1000],
                    y_limits=([0, 0.12], [0, 0.65]),
                    rebin=4)
     
-    do_shape_check(control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
+    do_shape_check(channel = 'electron', 
+                   control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                    variable='MT',
                    normalisation=normalisations_electron,
-                   title=e_title,
+                   title=histogram_title,
                    x_title='$M^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(10 GeV)',
                    x_limits=[0, 200],
                    y_limits=([0, 0.18], [0, 0.45]),
-                   rebin = 10)
+                   rebin=10)
     
-    do_shape_check(control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
+    do_shape_check(channel = 'electron', 
+                   control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                    variable='WPT',
                    normalisation=normalisations_electron,
-                   title=e_title,
+                   title=histogram_title,
                    x_title='$p^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
                    y_limits=([0, 0.10], [0, 0.45]),
-                   rebin = 5)
+                   rebin=5)
+    
+    # muons
+    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
+    
+    do_shape_check(channel = 'muon', 
+                   control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
+                   control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
+                   variable='MET',
+                   normalisation=normalisations_muon,
+                   title=histogram_title,
+                   x_title='$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]',
+                   y_title='arbitrary units/(5 GeV)',
+                   x_limits=[0, 250],
+                   y_limits=([0, 0.18], [0, 0.65]),
+                   rebin=1)
+    
+    do_shape_check(channel = 'muon', 
+                   control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/HT_' + b_tag_bin,
+                   control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/HT_' + b_tag_bin,
+                   variable='HT',
+                   normalisation=normalisations_muon,
+                   title=histogram_title,
+                   x_title='$H_\mathrm{T}$ [GeV]',
+                   y_title='arbitrary units/(20 GeV)',
+                   x_limits=[80, 1000],
+                   y_limits=([0, 0.12], [0, 0.45]),
+                   rebin=4)
+    
+    do_shape_check(channel = 'muon', 
+                   control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
+                   control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
+                   variable='ST',
+                   normalisation=normalisations_muon,
+                   title=histogram_title,
+                   x_title='$S_\mathrm{T}$ [GeV]',
+                   y_title='arbitrary units/(20 GeV)',
+                   x_limits=[106, 1000],
+                   y_limits=([0, 0.12], [0, 0.65]),
+                   rebin=4)
+    
+    do_shape_check(channel = 'muon', 
+                   control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
+                   control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
+                   variable='MT',
+                   normalisation=normalisations_muon,
+                   title=histogram_title,
+                   x_title='$M^\mathrm{W}_\mathrm{T}$ [GeV]',
+                   y_title='arbitrary units/(10 GeV)',
+                   x_limits=[0, 200],
+                   y_limits=([0, 0.18], [0, 0.45]),
+                   rebin=10)
+    
+    do_shape_check(channel = 'muon', 
+                   control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
+                   control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
+                   variable='WPT',
+                   normalisation=normalisations_muon,
+                   title=histogram_title,
+                   x_title='$p^\mathrm{W}_\mathrm{T}$ [GeV]',
+                   y_title='arbitrary units/(5 GeV)',
+                   x_limits=[0, 250],
+                   y_limits=([0, 0.10], [0, 0.45]),
+                   rebin=5)
