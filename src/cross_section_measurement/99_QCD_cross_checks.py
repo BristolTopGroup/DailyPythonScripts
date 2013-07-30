@@ -23,8 +23,8 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
     if channel == 'electron':
         histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
         
-        region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
-        region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
+        region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone() - histograms['SingleTop'][control_region_1].Clone()
+        region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone() - histograms['SingleTop'][control_region_2].Clone()
         
         region_1.Rebin(rebin)
         region_2.Rebin(rebin)
@@ -45,7 +45,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
         # QCD shape comparison to fit results
         histograms = get_histograms_from_files([control_region_1], histogram_files)
         
-        region_1_tmp = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
+        region_1_tmp = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone() - histograms['SingleTop'][control_region_1].Clone()
         region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])
         
         fit_results_QCD = normalisation[variable]['QCD']
@@ -66,7 +66,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
     
     histograms = get_histograms_from_files([control_region_2], histogram_files)
     
-    region_1_tmp = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
+    region_1_tmp = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone() - histograms['SingleTop'][control_region_2].Clone()
     region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])    
     
     fit_results_QCD = normalisation[variable]['QCD']
