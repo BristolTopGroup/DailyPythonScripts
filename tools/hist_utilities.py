@@ -7,6 +7,7 @@ Created on 20 Nov 2012
 from rootpy.plotting import Hist, Graph
 from rootpy import asrootpy
 from ROOT import TGraphAsymmErrors
+from array import array
 
 def hist_to_value_error_tuplelist(hist):
     values = list(hist)
@@ -20,7 +21,7 @@ def hist_to_value_error_tuplelist(hist):
 def values_and_errors_to_hist(values, errors, bins):
     assert(len(values) == len(bins))
     if len(errors) == 0:
-        errors = [0.]*len(values)
+        errors = [0.] * len(values)
     value_error_tuplelist = zip(values, errors)
     return value_error_tuplelist_to_hist(value_error_tuplelist, bins)
 
@@ -57,7 +58,7 @@ def value_tuplelist_to_hist(value_tuplelist, bin_edges):
     return rootpy_hist
 
 def sum_histograms(histogram_dict, sample_list):
-    #histogram_dict = {sample:{histogram_name:histogram}
+    # histogram_dict = {sample:{histogram_name:histogram}
     summary = {}
     preparation = {}
     for sample in sample_list:
@@ -73,10 +74,10 @@ def sum_histograms(histogram_dict, sample_list):
 def scale_histogram_errors(histogram, total_error):
     bins_number = histogram.GetNbinsX()
     current_total_error = sum(histogram.errors())
-    scale_factor = total_error/current_total_error
+    scale_factor = total_error / current_total_error
     
     for bin_i in range(bins_number):
-        histogram.SetBinError(bin_i+1, scale_factor*histogram.GetBinError(bin_i+1))
+        histogram.SetBinError(bin_i + 1, scale_factor * histogram.GetBinError(bin_i + 1))
 
 def prepare_histograms(histograms, rebin=1, scale_factor=1., normalisation={}):
     for sample, histogram_dict in histograms.iteritems():
@@ -85,26 +86,31 @@ def prepare_histograms(histograms, rebin=1, scale_factor=1., normalisation={}):
             histogram.Scale(scale_factor)
             if normalisation != {} and histogram.Integral() != 0:
                 if sample == 'TTJet':
-                    histogram.Scale(normalisation['TTJet'][0]/histogram.Integral())
+                    histogram.Scale(normalisation['TTJet'][0] / histogram.Integral())
                     scale_histogram_errors(histogram, normalisation['TTJet'][1])
                 if sample == 'SingleTop':
-                    histogram.Scale(normalisation['SingleTop'][0]/histogram.Integral())
+                    histogram.Scale(normalisation['SingleTop'][0] / histogram.Integral())
                     scale_histogram_errors(histogram, normalisation['SingleTop'][1])
                 if sample == 'V+Jets':
-                    histogram.Scale(normalisation['V+Jets'][0]/histogram.Integral())
+                    histogram.Scale(normalisation['V+Jets'][0] / histogram.Integral())
                     scale_histogram_errors(histogram, normalisation['V+Jets'][1])
                 if sample == 'QCD':
-                    histogram.Scale(normalisation['QCD'][0]/histogram.Integral())
+                    histogram.Scale(normalisation['QCD'][0] / histogram.Integral())
                     scale_histogram_errors(histogram, normalisation['QCD'][1])
 
+def rebin_asymmetric(histogram, bins):
+    bin_array = array('d', bins)
+    nbins = len(bin_array) - 1
+    new_histogram = histogram.Rebin(nbins, histogram.GetName() + 'new', bin_array)
+    return asrootpy(new_histogram)
             
 if __name__ == '__main__':
-    value_error_tuplelist = [(0.006480446927374301, 0.0004647547547401945), 
-                             (0.012830288388947605, 0.0010071677178938234), 
-                             (0.011242639287332025, 0.000341258792551077), 
-                             (0.005677185565453722, 0.00019082371879446718), 
+    value_error_tuplelist = [(0.006480446927374301, 0.0004647547547401945),
+                             (0.012830288388947605, 0.0010071677178938234),
+                             (0.011242639287332025, 0.000341258792551077),
+                             (0.005677185565453722, 0.00019082371879446718),
                              (0.0008666767325985203, 5.0315979327182054e-05)]
-    hist = value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges = [0, 25, 45, 70, 100, 300])
+    hist = value_error_tuplelist_to_hist(value_error_tuplelist, bin_edges=[0, 25, 45, 70, 100, 300])
     import rootpy.plotting.root2matplotlib as rplt
     import matplotlib.pyplot as plt
     plt.figure(figsize=(16, 10), dpi=100)
@@ -117,12 +123,12 @@ if __name__ == '__main__':
     plt.savefig('Array2Hist.png')
     plt.close()
     
-    value_errors_tuplelist = [(0.006480446927374301, 0.0004647547547401945, 0.0004647547547401945*2), 
-                             (0.012830288388947605, 0.0010071677178938234, 0.0010071677178938234*2), 
-                             (0.011242639287332025, 0.000341258792551077*2, 0.000341258792551077), 
-                             (0.005677185565453722, 0.00019082371879446718*2, 0.00019082371879446718), 
+    value_errors_tuplelist = [(0.006480446927374301, 0.0004647547547401945, 0.0004647547547401945 * 2),
+                             (0.012830288388947605, 0.0010071677178938234, 0.0010071677178938234 * 2),
+                             (0.011242639287332025, 0.000341258792551077 * 2, 0.000341258792551077),
+                             (0.005677185565453722, 0.00019082371879446718 * 2, 0.00019082371879446718),
                              (0.0008666767325985203, 5.0315979327182054e-05, 5.0315979327182054e-05)]
-    hist = value_errors_tuplelist_to_graph(value_errors_tuplelist, bin_edges = [0, 25, 45, 70, 100, 300])
+    hist = value_errors_tuplelist_to_graph(value_errors_tuplelist, bin_edges=[0, 25, 45, 70, 100, 300])
 
     plt.figure(figsize=(16, 10), dpi=100)
     plt.figure(1)

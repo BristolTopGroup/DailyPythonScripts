@@ -414,7 +414,7 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=5, normalisation=normalisations_electron['WPT'])
+        prepare_histograms(histograms, rebin=5, normalisation=normalisations_electron['MT'])
     else:
         prepare_histograms(histograms, rebin=5)
     
