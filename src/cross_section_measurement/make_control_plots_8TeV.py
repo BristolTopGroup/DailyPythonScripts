@@ -1833,7 +1833,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'QCD_non_iso_control_region_muon_AbsEta_' + b_tag_bin
     histogram_properties.title = mu_title.replace('4 jets','3 jets') + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.5]
     histogram_properties.mc_error = 0.0
@@ -1858,7 +1858,7 @@ if __name__ == '__main__':
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'QCD_non_iso_btag_bin_comparison_muon_AbsEta_' + b_tag_bin_1 + '_' + b_tag_bin_2
     histogram_properties.title = mu_title + ', non-iso, ' + b_tag_bins_latex[b_tag_bin_1] + '/' + b_tag_bins_latex[b_tag_bin_2]
-    histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
+    histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
     histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.5]
     histogram_properties.y_limits = [0, 0.14]

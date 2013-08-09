@@ -84,19 +84,27 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     vjets_fit_line = 'V+jets fit'
     qcd_fit_line = 'QCD fit'
 
+    sum_MC_in_line = 'Sum MC in'
+    sum_MC_fit_line = 'Sum MC fit'
+    sum_data_line = 'Sum data'
+
     N_initial_signal = 0
     N_initial_vjets = 0
     N_initial_qcd = 0
+    N_initial_sum_MC = 0
     N_initial_signal_error = 0
     N_initial_vjets_error = 0
     N_initial_qcd_error = 0
+    N_initial_sum_MC_error = 0
 
     N_fit_signal = 0
     N_fit_vjets = 0
     N_fit_qcd = 0
+    N_fit_sum_MC = 0
     N_fit_signal_error = 0
     N_fit_vjets_error = 0
     N_fit_qcd_error = 0
+    N_fit_sum_MC_error = 0
 
     bins = variable_bins_ROOT[variable]
     for bin_i, variable_bin in enumerate(bins):
@@ -113,6 +121,12 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         N_initial_qcd += initial_values['QCD'][bin_i][0]
         N_initial_qcd_error += initial_values['QCD'][bin_i][1]
 
+        sumMCin = initial_values['signal'][bin_i][0] + initial_values['V+Jets'][bin_i][0] + initial_values['QCD'][bin_i][0]
+        sumMCinerror = initial_values['signal'][bin_i][1] + initial_values['V+Jets'][bin_i][1] + initial_values['QCD'][bin_i][1]
+
+        sum_MC_in_line += ' & %.1f $\pm$ %.1f' % (sumMCin, sumMCinerror)
+        N_initial_sum_MC += sumMCin
+        N_initial_sum_MC_error += sumMCinerror
 
         signal_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['signal'][bin_i][0], fit_results['signal'][bin_i][1])
         N_fit_signal += fit_results['signal'][bin_i][0]
@@ -125,14 +139,27 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         qcd_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['QCD'][bin_i][0], fit_results['QCD'][bin_i][1])
         N_fit_qcd += fit_results['QCD'][bin_i][0]
         N_fit_qcd_error += fit_results['QCD'][bin_i][1]
+        
+        sumMCfit = fit_results['signal'][bin_i][0] + fit_results['V+Jets'][bin_i][0] + fit_results['QCD'][bin_i][0]
+        sumMCfiterror = fit_results['signal'][bin_i][1] + fit_results['V+Jets'][bin_i][1] + fit_results['QCD'][bin_i][1]
+
+        sum_MC_fit_line += ' & %.1f $\pm$ %.1f' % (sumMCfit, sumMCfiterror)
+        N_fit_sum_MC += sumMCfit
+        N_fit_sum_MC_error += sumMCfiterror
 
     header += '& Total \\\\'
     signal_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_signal, N_initial_signal_error)
     vjets_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_vjets, N_initial_vjets_error)
     qcd_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_qcd, N_initial_qcd_error)
+    sum_MC_in_line += '& %.1f $\pm$ %.1f \\\\' % (N_initial_sum_MC, N_initial_sum_MC_error)
     signal_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_signal, N_fit_signal_error)
     vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, N_fit_vjets_error)
     qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, N_fit_qcd_error)
+    sum_MC_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_sum_MC, N_fit_sum_MC_error)
+    if channel == 'electron':
+        sum_data_line += (len(bins) * ' & ') + ' & 76379 $\pm$ 276'
+    elif channel == 'muon':
+        sum_data_line += (len(bins) * ' & ') + ' & 85028 $\pm$ 292'
 
     printout += header
     printout += '\n\hline\n'
@@ -147,6 +174,12 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     printout += qcd_in_line
     printout += '\n'
     printout += qcd_fit_line
+    printout += '\n\hline\n'
+    printout += sum_MC_in_line
+    printout += '\n'
+    printout += sum_MC_fit_line
+    printout += '\n\hline\n'
+    printout += sum_data_line
     printout += '\n\hline\n'
     printout += '\hline\n'
 
