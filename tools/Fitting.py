@@ -115,6 +115,7 @@ class TMinuitFit(TemplateFit):
         # minimisation itself
         gMinuit.mnexcm("SET STR", arglist, 1, errorFlag)
         gMinuit.Migrad()
+        gMinuit.mnmatu(1)
         self.module = gMinuit
         self.performedFit = True
         
