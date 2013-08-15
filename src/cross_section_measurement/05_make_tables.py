@@ -96,6 +96,8 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     N_initial_vjets_error = 0
     N_initial_qcd_error = 0
     N_initial_sum_MC_error = 0
+    N_data = 0
+    N_data_error = 0
 
     N_fit_signal = 0
     N_fit_vjets = 0
@@ -147,6 +149,10 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         N_fit_sum_MC += sumMCfit
         N_fit_sum_MC_error += sumMCfiterror
 
+        sum_data_line += ' & %.1f $\pm$ %.1f' % (initial_values['data'][bin_i][0], initial_values['data'][bin_i][1])
+        N_data += initial_values['data'][bin_i][0]
+        N_data_error += initial_values['data'][bin_i][1]
+
     header += '& Total \\\\'
     signal_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_signal, N_initial_signal_error)
     vjets_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_vjets, N_initial_vjets_error)
@@ -156,10 +162,7 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, N_fit_vjets_error)
     qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, N_fit_qcd_error)
     sum_MC_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_sum_MC, N_fit_sum_MC_error)
-    if channel == 'electron':
-        sum_data_line += (len(bins) * ' & ') + ' & 76379 $\pm$ 276'
-    elif channel == 'muon':
-        sum_data_line += (len(bins) * ' & ') + ' & 85028 $\pm$ 292'
+    sum_data_line += ' & %.1f $\pm$ %.1f \\\\' % (N_data, N_data_error)
 
     printout += header
     printout += '\n\hline\n'

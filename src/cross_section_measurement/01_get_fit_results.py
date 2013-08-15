@@ -1,3 +1,7 @@
+#
+#    Run this script writing the output to a file: fitchecks/correlation_<variable>.txt where variable=MET/HT/ST/MT/WPT.
+#    This output .txt file is then be used by the 98_fit_cross_checks.py script to extract the correlation coefficients from the fit.
+
 # general
 from __future__ import division
 from optparse import OptionParser
@@ -161,6 +165,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                                       })
         
         fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
+        print "FITTING: " + channel + '_' + variable + '_' + variable_bin + '_' + met_type + '_' + b_tag_bin
         fitter.fit()
         fit_results = fitter.readResults()
         normalisation = fitter.normalisation
@@ -291,7 +296,7 @@ if __name__ == '__main__':
     # matching/scale up/down systematics for ttbar + jets
     for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
         TTJet_file = File(filename)
-        
+        print "\n" + systematic + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -324,7 +329,7 @@ if __name__ == '__main__':
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
         VJets_file = File(measurement_config.generator_systematic_vjets_templates[systematic])
-        
+        print "\n" + systematic + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -383,6 +388,7 @@ if __name__ == '__main__':
             if met_type == 'PFMETJetEnDown':
                 met_type = 'patPFMetJetEnDown'
         
+        print "\n" + category + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -429,7 +435,7 @@ if __name__ == '__main__':
     for index in range(1, 45):
         category = 'PDFWeights_%d' % index
         TTJet_file = File(measurement_config.pdf_uncertainty_template % index)
-                
+        print "\nPDF_" + str(index) + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -467,7 +473,7 @@ if __name__ == '__main__':
         if 'PFMET' in met_type:
             category = category.replace('PFMET', 'patPFMet')
         
-        
+        print "\n" + met_systematic + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -496,7 +502,8 @@ if __name__ == '__main__':
     
     #QCD systematic
     
-    electron_control_region = measurement_config.electron_control_region_systematic   
+    electron_control_region = measurement_config.electron_control_region_systematic
+    print "\nQCD shape systematic\n"
     fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,

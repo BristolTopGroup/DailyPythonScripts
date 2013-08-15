@@ -117,7 +117,7 @@ def make_data_mc_comparison_plot(histograms=[],
 #    rplt.hist(stack, stacked=True, axes=axes, zorder=1)
     rplt.hist(stack, stacked=True, axes=axes)
 #    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, snap_zero = False)
-    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2)
+    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, zorder=4)
     
     if not show_ratio:
         plt.xlabel(histogram_properties.x_axis_title, CMS.x_axis_title)
