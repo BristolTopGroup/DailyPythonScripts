@@ -8,6 +8,7 @@ from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, RooArg
 from config.variable_binning_8TeV import variable_bins_ROOT
 import config.cross_section_measurement_8TeV as measurement_config
 from tools.Calculation import decombine_result
+from uncertainties import ufloat
         
 # copied from 01_get_fit_results.py
 def get_histogram(input_file, histogram_path, b_tag_bin=''):
@@ -165,10 +166,10 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         vars.add(leptonAbsEta)
         vars_set = RooArgSet()
         vars_set.add(leptonAbsEta)
-        n_event_obs = histograms['data'].GetEntries()
+        n_event_obs = histograms['data'].Integral()
         
-        lowerBound = 0 #-10 * sqrt(n_event_obs) 
-        upperBound = n_event_obs #+ 10 * sqrt(n_event_obs)
+        lowerBound = 0. 
+        upperBound = n_event_obs + 10 * sqrt(n_event_obs)
         n_init = n_event_obs / 2.
         
         data = RooDataHist("data", "dataset with leptonAbsEta", vars, histograms['data'])
@@ -193,12 +194,13 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         
         fit_results = {}
         fit_results['signal'] = (nSignal.getVal(), nSignal.getError())
-        fit_results['QCD'] = (nqcd.getVal(), nqcd.getError())
-        fit_results['V+Jets'] = (nvj.getVal(), nvj.getError())
+        fit_results['QCD'] = ufloat(nqcd.getVal(), nqcd.getError())
+        fit_results['V+Jets'] = ufloat(nvj.getVal(), nvj.getError())
         
         N_ttbar, N_SingleTop = decombine_result(fit_results['signal'], TTJet_SingleTop_ratio)
-        fit_results['TTJet'] = N_ttbar
-        fit_results['SingleTop'] = N_SingleTop
+        fit_results['signal'] = ufloat(nSignal.getVal(), nSignal.getError())
+        fit_results['TTJet'] = ufloat(N_ttbar)
+        fit_results['SingleTop'] = ufloat(N_SingleTop)
         
         if results == {}:  # empty
             for sample in fit_results.keys():
@@ -301,11 +303,14 @@ if __name__ == '__main__':
                       b_tag_bin=b_tag_bin,
                       )
     
-    print 'TTJet:', fit_results_electron['TTJet']
+    print 'TTJet:', fit_results_electron['TTJet'] 
+    print 'Sum = {:10.2f}'.format(sum(fit_results_electron['TTJet']))
     print
     print 'SingleTop:', fit_results_electron['SingleTop']
+    print 'Sum = {:10.2f}'.format(sum(fit_results_electron['SingleTop']))
     print
     print 'V+Jets:', fit_results_electron['V+Jets']
+    print 'Sum = {:10.2f}'.format(sum(fit_results_electron['V+Jets']))
     print
     print 'QCD:', fit_results_electron['QCD']
-    
+    print 'Sum = {:10.2f}'.format(sum(fit_results_electron['QCD']))
