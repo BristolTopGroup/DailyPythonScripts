@@ -7,20 +7,8 @@ python:
 
 env:
   matrix:
-    #- ROOT=5-32-00
-    #- ROOT=5-32-01
-    #- ROOT=5-32-02
-    #- ROOT=5-32-03
     - ROOT=5-32-04
-    #- ROOT=5-33-02
-    #- ROOT=5-33-02b
-    #- ROOT=5-34-00
-    #- ROOT=5-34-04
-    #- ROOT=5-34-05
-    #- ROOT=5-34-06
-    #- ROOT=5-34-07
     - ROOT=5-34-08
-    #- ROOT=5-99-02
 
 install:
   # Check if we are running Python 2 or 3. This is needed for the apt-get package names
@@ -73,3 +61,4 @@ script:
 
   # Now run the actual tests (from the installed version, not the local build dir)
   - time python test/test_TMinuitFit.py
+  - time python test/test_RooFitFit.py

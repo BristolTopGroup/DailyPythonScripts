@@ -7,6 +7,7 @@ import unittest
 from tools.Fitting import TMinuitFit
 from rootpy.plotting import Hist
 from math import sqrt
+from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, RooArgSet, RooAddPdf
 
 import numpy as np
 N_bkg1 = 9000
