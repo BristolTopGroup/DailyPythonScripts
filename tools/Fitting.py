@@ -187,12 +187,14 @@ class TMinuitFit(TemplateFit):
 class RooFitFit(TemplateFit):
     
     def __init__(self, histograms={}, dataLabel='data', method='TMinuit', fit_boundries=(0., 2.4)):
+        RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
         TemplateFit.__init__(self, histograms, dataLabel)
         self.method = method
         self.logger = logging.getLogger('RooFit')
         self.fit_boundries = fit_boundries
         self.constraints = {}
         self.constraint_type = ''
+        self.saved_result = None
         
     def fit(self):
         fit_variable = RooRealVar("fit_variable", "fit_variable", self.fit_boundries[0], self.fit_boundries[1])
@@ -244,9 +246,12 @@ class RooFitFit(TemplateFit):
             
         if self.method == 'TMinuit':
             #WARNING: number of cores changes the results!!!
-            use_model.fitTo(roofit_histograms[self.data_label],
+            self.saved_result = use_model.fitTo(
+                        roofit_histograms[self.data_label],
                         RooFit.Minimizer("Minuit2", "Migrad"),
                         RooFit.NumCPU(1),
+                        RooFit.Extended(),
+                        RooFit.Save(),
                         )    
         results = {}
         for sample in self.samples:
