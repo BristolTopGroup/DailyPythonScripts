@@ -11,7 +11,7 @@ import ROOT
 from rootpy.io import File
 # DailyPythonScripts
 from tools.Calculation import decombine_result
-from tools.Fitting import TMinuitFit
+from tools.Fitting import TMinuitFit, RooFitFit
 from tools.file_utilities import write_data_to_JSON
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
@@ -138,6 +138,7 @@ def get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type)
     pass
 
 def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin):
+    global use_fitter
     results = {}
     initial_values = {}
     templates = {}
@@ -156,13 +157,22 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         
         # create signal histograms
         h_eta_signal = histograms['TTJet'] + histograms['SingleTop']
-        fitter = TMinuitFit(histograms={
+        fit_histograms = {
                                       'data':histograms['data'],
                                       'signal':h_eta_signal,
 #                                      'background':histograms['V+Jets']+histograms['QCD']
                                       'V+Jets':histograms['V+Jets'],
                                       'QCD':histograms['QCD']
-                                      })
+                                      }
+        fitter = None
+        if use_fitter == 'TMinuit':
+            fitter = TMinuitFit(histograms=fit_histograms)
+        elif use_fitter == 'RooFit':
+            fitter = RooFitFit(histograms=fit_histograms, fit_boundries=(0., 2.4))
+        else: #not recognised
+            import sys
+            sys.stderr.write('Do not recognise fitter "%s". Using default (TMinuit).\n' % fitter)
+            fitter = TMinuitFit(histograms=fit_histograms)
         
         fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
         print "FITTING: " + channel + '_' + variable + '_' + variable_bin + '_' + met_type + '_' + b_tag_bin
@@ -208,7 +218,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                 initial_values[sample].append([normalisation[sample], normalisation_errors[sample]])
                 if not sample == 'TTJet' and not sample == 'SingleTop':
                     templates[sample].append(fitter.vectors[sample])
-        
+                    
     return results, initial_values, templates
     
 def write_fit_results_and_initial_values(channel, category, fit_results, initial_values, templates):
@@ -235,6 +245,8 @@ if __name__ == '__main__':
                       help="set MET type for analysis of MET, ST or MT")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
+    parser.add_option('--fitter', dest = "use_fitter", default='TMinuit', 
+                      help = 'Fitter to be used: TMinuit|RooFit. Default = TMinuit.')
 
     translate_options = {
                         '0':'0btag',
@@ -276,6 +288,8 @@ if __name__ == '__main__':
     b_tag_bin_VJets = translate_options[options.bjetbin_VJets]
     path_to_files = measurement_config.path_to_files
     output_path = options.path
+    
+    use_fitter = options.use_fitter
     
     # possible options:
     # --continue : continue from saved - skips ROOT files, reads from JSON?
