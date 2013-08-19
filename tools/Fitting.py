@@ -221,7 +221,11 @@ class RooFitFit(TemplateFit):
             pdf_arglist.add(roofit_pdf)
             variable_arglist.add(roofit_variable)
                 
-        model = RooAddPdf("model", "sum of all known", pdf_arglist, variable_arglist)
+        model = RooAddPdf("model", 
+                          "sum of all known", 
+                          pdf_arglist, 
+                          variable_arglist
+                          )
         if self.method == 'TMinuit':
             #WARNING: number of cores changes the results!!!
             model.fitTo(roofit_histograms[self.data_label], 
