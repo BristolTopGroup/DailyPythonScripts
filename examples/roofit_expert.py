@@ -5,6 +5,7 @@ import ROOT
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, RooArgSet, RooAddPdf
+from ROOT import RooChi2Var, RooFormulaVar, RooMinuit, TCanvas, RooPlot, RooGaussian, RooProdPdf, RooLinkedList
 from config.variable_binning_8TeV import variable_bins_ROOT
 import config.cross_section_measurement_8TeV as measurement_config
 from tools.Calculation import decombine_result
@@ -181,7 +182,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         pdf_qcd = RooHistPdf("pdf_qcd", "QCD pdf ", vars_set, rh_qcd, 0)
         pdf_signal = RooHistPdf("pdf_signal", "single top pdf", vars_set, rh_signal, 0)
         
-        #RooRealVar(const char *name, const char *title, Double_t value, Double_t minValue, Double_t maxValue, const char *unit) :
+        # RooRealVar(const char *name, const char *title, Double_t value, Double_t minValue, Double_t maxValue, const char *unit) :
         nSignal = RooRealVar("nSignal", "number of single top + ttbar events", N_signal_before_fit, lowerBound, upperBound, "event")
         nvj = RooRealVar  ("nvj", "number of V+Jets bgnd events", N_vjets_before_fit, lowerBound, upperBound, "event")
         nqcd = RooRealVar("nqcd", "number of QCD bgnd events", N_QCD_error_before_fit, lowerBound, upperBound, "event")
@@ -189,9 +190,45 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         model = RooAddPdf("model", "sig+vj+qcd",
                           RooArgList(pdf_signal, pdf_vj, pdf_qcd),
                           RooArgList(nSignal, nvj, nqcd)
-                          )  
-        model.fitTo(data, RooFit.Minimizer("Minuit2", "Migrad"), RooFit.NumCPU(1))#WARNING: number of cores changes the results!!!
-        
+                          )
+        vj_constraint = RooGaussian("nvj_constraint", "nvj_constraint", nvj, RooFit.RooConst(N_vjets_before_fit), RooFit.RooConst(0.5 * N_vjets_before_fit))
+        qcd_constraint = RooGaussian("nqcd_constraint", "nqcd_constraint", nqcd, RooFit.RooConst(N_qcd_before_fit), RooFit.RooConst(2 * N_qcd_before_fit))  
+        model_with_constraints = RooProdPdf("model_with_constraints", "model with gaussian constraints",
+                                            RooArgSet(model, vj_constraint, qcd_constraint), RooLinkedList())
+        model_with_constraints.fitTo(data, RooFit.Minimizer("Minuit2", "Migrad"))  #WARNING: number of cores changes the results!!!
+#         nll = model.createNLL(data, RooFit.NumCPU(2))
+#         RooMinuit(nll).migrad()
+#         frame1 = nSignal.frame(RooFit.Bins(100), RooFit.Range(lowerBound, n_event_obs), RooFit.Title("LL and profileLL in nSignal")) 
+#         nll.plotOn(frame1, RooFit.ShiftToZero())
+#         frame2 = nvj.frame(RooFit.Bins(100), RooFit.Range(lowerBound, n_event_obs), RooFit.Title("LL and profileLL in nvj"))
+#         nll.plotOn(frame2, RooFit.ShiftToZero())
+#         frame3 = nqcd.frame(RooFit.Bins(100), RooFit.Range(lowerBound, n_event_obs), RooFit.Title("LL and profileLL in nqcd"))
+#         nll.plotOn(frame3, RooFit.ShiftToZero())  
+#         
+#         pll_nSignal = nll.createProfile(nSignal)
+#         pll_nSignal.plotOn(frame1, RooFit.LineColor(2)) 
+#         frame1.SetMinimum(0)
+#         frame1.SetMaximum(3)
+#         
+#         pll_nvj = nll.createProfile(nvj)
+#         pll_nvj.plotOn(frame2, RooFit.LineColor(2)) 
+#         frame2.SetMinimum(0)
+#         frame2.SetMaximum(3)
+#         
+#         pll_nqcd = nll.createProfile(nqcd)
+#         pll_nqcd.plotOn(frame3, RooFit.LineColor(2)) 
+#         frame3.SetMinimum(0)
+#         frame3.SetMaximum(3)
+#         c = TCanvas("profilell","profilell",1200, 400)
+#         c.Divide(3)
+#         c.cd(1)
+#         frame1.Draw()
+#         c.cd(2)
+#         frame2.Draw()
+#         c.cd(3)
+#         frame3.Draw()
+#         c.SaveAs('profileLL.png')
+#         model.fitTo(data, RooFit.Minimizer("Minuit2", "Migrad"), RooFit.NumCPU(1))#WARNING: number of cores changes the results!!!
         fit_results = {}
         fit_results['signal'] = (nSignal.getVal(), nSignal.getError())
         fit_results['QCD'] = ufloat(nqcd.getVal(), nqcd.getError())
