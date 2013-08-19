@@ -63,6 +63,13 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta=2 * results['signal'][1])
         self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta=2 * results['bkg1'][1])
         
+    def testConstraints(self):
+        self.roofitFitter.set_fit_constraints({'signal': 0.8, 'bkg1': 0.5})
+        self.roofitFitter.fit()
+        results = self.roofitFitter.readResults()
+        self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta=2 * results['signal'][1])
+        self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta=2 * results['bkg1'][1])
+        
 
 
 if __name__ == "__main__":

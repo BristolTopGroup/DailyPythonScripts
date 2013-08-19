@@ -9,7 +9,8 @@ from array import array
 import math
 import logging
 from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, RooArgSet, RooAddPdf, RooMsgService
-#RooFit is really verbose. Make it stop
+from ROOT import RooProdPdf, RooGaussian, RooLinkedList
+# RooFit is really verbose. Make it stop
 RooMsgService.instance().setGlobalKillBelow(RooFit.FATAL)
 # from scipy.optimize import curve_fit
 
@@ -185,11 +186,13 @@ class TMinuitFit(TemplateFit):
 # This class name won't cause any confusion, right?    
 class RooFitFit(TemplateFit):
     
-    def __init__(self, histograms={}, dataLabel='data', method='TMinuit', fit_boundries = (0., 2.4)):
+    def __init__(self, histograms={}, dataLabel='data', method='TMinuit', fit_boundries=(0., 2.4)):
         TemplateFit.__init__(self, histograms, dataLabel)
         self.method = method
         self.logger = logging.getLogger('RooFit')
         self.fit_boundries = fit_boundries
+        self.constraints = {}
+        self.constraint_type = ''
         
     def fit(self):
         fit_variable = RooRealVar("fit_variable", "fit_variable", self.fit_boundries[0], self.fit_boundries[1])
@@ -207,9 +210,9 @@ class RooFitFit(TemplateFit):
         pdf_arglist = RooArgList()
         variable_arglist = RooArgList()
         
-        roofit_histograms[self.data_label] = RooDataHist(self.data_label, 
-                                                         self.data_label, 
-                                                         variables, 
+        roofit_histograms[self.data_label] = RooDataHist(self.data_label,
+                                                         self.data_label,
+                                                         variables,
                                                          self.histograms[self.data_label])
         for sample in self.samples:
             roofit_histogram = RooDataHist(sample, sample, variables, self.histograms[sample])
@@ -221,21 +224,52 @@ class RooFitFit(TemplateFit):
             pdf_arglist.add(roofit_pdf)
             variable_arglist.add(roofit_variable)
                 
-        model = RooAddPdf("model", 
-                          "sum of all known", 
-                          pdf_arglist, 
+        model = RooAddPdf("model",
+                          "sum of all known",
+                          pdf_arglist,
                           variable_arglist
                           )
+        use_model = model
+        if self.constraints:
+            arg_set = RooArgSet(model)
+            constraints = self.get_fit_normalisation_constraints(model, roofit_variables)
+            for constraint in constraints:
+                arg_set.add(constraint)
+            model_with_constraints = RooProdPdf("model_with_constraints", 
+                                                "model with gaussian constraints",
+                                                arg_set, 
+                                                RooLinkedList()
+                                                )
+            use_model = model_with_constraints
+            
         if self.method == 'TMinuit':
             #WARNING: number of cores changes the results!!!
-            model.fitTo(roofit_histograms[self.data_label], 
-                        RooFit.Minimizer("Minuit2", "Migrad"), 
-                        RooFit.NumCPU(1), 
+            use_model.fitTo(roofit_histograms[self.data_label],
+                        RooFit.Minimizer("Minuit2", "Migrad"),
+                        RooFit.NumCPU(1),
                         )    
         results = {}
         for sample in self.samples:
             results[sample] = (roofit_variables[sample].getVal(), roofit_variables[sample].getError())    
         self.results = results
+        
+    # constraints = {sample: constraint}
+    def set_fit_constraints(self, constraints, constraint_type='normalisation'):
+        self.constraints = constraints
+        self.constraint_type = constraint_type
+    
+    def get_fit_normalisation_constraints(self, model, roofit_variables):
+        result = []
+        for sample, constraint in self.constraints.iteritems():
+            if self.normalisation[sample] != 0:
+                roo_constraint = RooGaussian(sample + "_constraint",
+                                             sample + "_constraint",
+                                             roofit_variables[sample],
+                                             RooFit.RooConst(self.normalisation[sample]),
+                                             RooFit.RooConst(constraint * self.normalisation[sample]),
+                                             )
+                result.append(roo_constraint)
+        return result
         
 # class CurveFit():
 #    defined_functions = ['gaus', 'gauss'] 
