@@ -10,6 +10,7 @@ from tools.ROOT_utililities import get_histograms_from_files
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_control_region_comparison
 from tools.plotting import make_plot
 from tools.hist_utilities import prepare_histograms
+import config.cross_section_measurement_7TeV as measurement_config
 
 if __name__ == '__main__':
     from ROOT import gROOT
@@ -50,7 +51,8 @@ if __name__ == '__main__':
             'SingleTop': path_to_files_PU_up + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon),
                        }
     
-    electron_title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets, '
+    title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s, '
+    e_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$4 jets')
 
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin
@@ -590,7 +592,8 @@ if __name__ == '__main__':
     histogram_files_PU_up['data'] = histogram_files['data']
     histogram_files_PU_down['QCD'] = path_to_files_PU_down + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon)
     histogram_files_PU_up['QCD'] = path_to_files_PU_up + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon)
-    mu_title = 'CMS Preliminary, $\mathcal{L}$ = 5.1 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n $\mu$+jets, $\geq$4 jets, '
+    
+    mu_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, '$\mu$+jets, $\geq$4 jets')
     
     #Muon |eta|
     b_tag_bin = '2orMoreBtags'

@@ -103,8 +103,8 @@ if __name__ == '__main__':
             'MT':get_fitted_normalisation('MT', 'muon'),
             'WPT':get_fitted_normalisation('WPT', 'muon')
             }
-    
-    e_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
+    title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+    e_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$4 jets')
 
     #electron |eta|
     b_tag_bin = '2orMoreBtags'
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     qcd_control_region = control_region.replace(b_tag_bin, '0btag')
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -150,9 +150,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=1, normalisation=normalisations_electron['MET'])
+        prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['MET'])
     else:
-        prepare_histograms(histograms, rebin=1)
+        prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -192,9 +192,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=4, normalisation=normalisations_electron['MET'])
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['MET'])
     else:
-        prepare_histograms(histograms, rebin=4)
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -237,9 +237,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_electron['MET'])
+        prepare_histograms(histograms, rebin=2, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['MET'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=2, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -283,9 +283,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=4, normalisation=normalisations_electron['HT'])
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['HT'])
     else:
-        prepare_histograms(histograms, rebin=4)
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -326,9 +326,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=4, normalisation=normalisations_electron['ST'])
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['ST'])
     else:
-        prepare_histograms(histograms, rebin=4)
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -370,9 +370,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=10, normalisation=normalisations_electron['WPT'])
+        prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['WPT'])
     else:
-        prepare_histograms(histograms, rebin=10)
+        prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -414,9 +414,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=5, normalisation=normalisations_electron['MT'])
+        prepare_histograms(histograms, rebin=5, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_electron['MT'])
     else:
-        prepare_histograms(histograms, rebin=5)
+        prepare_histograms(histograms, rebin=5, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -453,7 +453,7 @@ if __name__ == '__main__':
     control_region = 'DiffVariablesAnalyser/EPlusJets/M3'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     histograms_to_draw = [histograms['data'][control_region], histograms['QCD'][control_region],
                           histograms['V+Jets'][control_region],
@@ -480,7 +480,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/bjet_invariant_mass_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -508,7 +508,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -532,7 +532,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets_reweighted'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -557,7 +557,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Jets/N_Jets_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -586,7 +586,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -617,7 +617,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -648,7 +648,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -679,7 +679,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -710,7 +710,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -741,7 +741,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -772,7 +772,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -803,7 +803,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -834,7 +834,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -865,7 +865,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -893,7 +893,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['QCD'][control_region].Clone()
     
@@ -921,7 +921,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -954,7 +954,7 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     region_1 = histograms['data'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone()
@@ -977,7 +977,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['QCD'][control_region].Clone()
     
@@ -1005,7 +1005,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1039,7 +1039,7 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin_2
     
     histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
@@ -1064,7 +1064,7 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin_2
     
     histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
@@ -1087,7 +1087,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1111,7 +1111,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex_reweighted'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1136,7 +1136,7 @@ if __name__ == '__main__':
     histogram_files['data'] = measurement_config.data_file_muon
     histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates[category]
 
-    mu_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
+    mu_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, '$\mu$+jets, $\geq$4 jets')
     
     #Muon |eta|
     b_tag_bin = '2orMoreBtags'
@@ -1145,7 +1145,7 @@ if __name__ == '__main__':
     qcd_control_region = control_region.replace(b_tag_bin, '0btag')
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()*1.2
@@ -1181,9 +1181,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=1, normalisation=normalisations_muon['MET'])
+        prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['MET'])
     else:
-        prepare_histograms(histograms, rebin=1)
+        prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()*1.2
@@ -1223,9 +1223,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=4, normalisation=normalisations_muon['MET'])
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['MET'])
     else:
-        prepare_histograms(histograms, rebin=4)
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1268,9 +1268,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=2, normalisation=normalisations_muon['MET'])
+        prepare_histograms(histograms, rebin=2, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['MET'])
     else:
-        prepare_histograms(histograms, rebin=2)
+        prepare_histograms(histograms, rebin=2, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1314,9 +1314,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=4, normalisation=normalisations_muon['HT'])
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['HT'])
     else:
-        prepare_histograms(histograms, rebin=4)
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1357,9 +1357,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=4, normalisation=normalisations_muon['ST'])
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['ST'])
     else:
-        prepare_histograms(histograms, rebin=4)
+        prepare_histograms(histograms, rebin=4, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1401,9 +1401,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=10, normalisation=normalisations_muon['WPT'])
+        prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['WPT'])
     else:
-        prepare_histograms(histograms, rebin=10)
+        prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1444,9 +1444,9 @@ if __name__ == '__main__':
     
     histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
     if normalise_to_fit:
-        prepare_histograms(histograms, rebin=5, normalisation=normalisations_muon['MT'])
+        prepare_histograms(histograms, rebin=5, scale_factor = measurement_config.luminosity_scale, normalisation=normalisations_muon['MT'])
     else:
-        prepare_histograms(histograms, rebin=5)
+        prepare_histograms(histograms, rebin=5, scale_factor = measurement_config.luminosity_scale)
     
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1483,7 +1483,7 @@ if __name__ == '__main__':
     control_region = 'DiffVariablesAnalyser/MuPlusJets/M3'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     histograms_to_draw = [histograms['data'][control_region], histograms['QCD'][control_region],
                           histograms['V+Jets'][control_region],
@@ -1510,7 +1510,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Jets/N_Jets_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1535,7 +1535,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/bjet_invariant_mass_' + b_tag_bin
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1563,7 +1563,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1587,7 +1587,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets_reweighted'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1612,7 +1612,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1636,7 +1636,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex_reweighted'
     
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=1)
+    prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
     
     n_qcd_predicted_mc = histograms['QCD'][control_region]
     
@@ -1665,7 +1665,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -1699,7 +1699,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -1730,7 +1730,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -1761,7 +1761,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -1792,7 +1792,7 @@ if __name__ == '__main__':
             qcd_control_region = control_region.replace(b_tag_bin, '0btag')
             
             histograms = get_histograms_from_files([control_region], histogram_files)
-            prepare_histograms(histograms, rebin=1)
+            prepare_histograms(histograms, rebin=1, scale_factor = measurement_config.luminosity_scale)
             
             qcd_from_mc = histograms['QCD'][control_region].Clone()
             
@@ -1820,7 +1820,7 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin
 
     histograms = get_histograms_from_files([control_region], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
 
     qcd_from_mc = histograms['QCD'][control_region].Clone()
 
@@ -1850,7 +1850,7 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin_2
     
     histograms = get_histograms_from_files([control_region_1, control_region_2], histogram_files)
-    prepare_histograms(histograms, rebin=10)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
     
     region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
