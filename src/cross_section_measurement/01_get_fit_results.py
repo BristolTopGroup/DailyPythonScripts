@@ -1,5 +1,5 @@
 #
-#    Run this script writing the output to a file: fitchecks/correlation_<variable>.txt where variable=MET/HT/ST/MT/WPT.
+#    Run this script writing the output to a file: plots/fitchecks/correlation_<variable>.txt where variable=MET/HT/ST/MT/WPT.
 #    This output .txt file is then be used by the 98_fit_cross_checks.py script to extract the correlation coefficients from the fit.
 
 # general
