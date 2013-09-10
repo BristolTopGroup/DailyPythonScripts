@@ -86,7 +86,7 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
 
     sum_MC_in_line = 'Sum MC in'
     sum_MC_fit_line = 'Sum MC fit'
-    sum_data_line = 'Sum data'
+    sum_data_line = 'Data'
 
     N_initial_signal = 0
     N_initial_vjets = 0
