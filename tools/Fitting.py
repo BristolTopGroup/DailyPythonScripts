@@ -30,7 +30,7 @@ class TemplateFit():
         self.samples = keys
         
         self.templates, self.normalisation, self.normalisation_errors = TemplateFit.generateTemplatesAndNormalisation(histograms)
-        self.vectors = TemplateFit.vectorise(self.templates)
+        self.vectors, self.errors = TemplateFit.vectorise(self.templates)
         self.param_indices = {}
         # check for consistency
         # vectos and templates all same size!!
@@ -42,6 +42,7 @@ class TemplateFit():
                 if current_length < data_length:
                     for entry in range(current_length, data_length):
                         self.vectors[sample].append(0.)
+                        self.errors[sample].append(0.)
                 else:
                     print 'Error:'
                     print 'Sample "', sample, '" has different length'
@@ -72,14 +73,17 @@ class TemplateFit():
     @staticmethod
     def vectorise(histograms):
         values = {}
+        errors = {}
         for sample in histograms.keys():
             hist = histograms[sample]
             nBins = hist.GetNbinsX()
             for bin_i in range(1, nBins + 1):
                 if not values.has_key(sample):
                     values[sample] = []
+                    errors[sample] = []
                 values[sample].append(hist.GetBinContent(bin_i))
-        return values
+                errors[sample].append(hist.GetBinError(bin_i))
+        return values, errors
         
 class TMinuitFit(TemplateFit):
     
@@ -97,9 +101,21 @@ class TMinuitFit(TemplateFit):
         gMinuit = TMinuit(numberOfParameters)
         if self.method == 'logLikelihood':  # set function for minimisation
             gMinuit.SetFCN(self.logLikelihood)
+            
+        #set Minuit print level
+        #printlevel  = -1  quiet (also suppresse all warnings)
+        #            =  0  normal
+        #            =  1  verbose
+        #            =  2  additional output giving intermediate results. 
+        #            =  3  maximum output, showing progress of minimizations. 
         gMinuit.SetPrintLevel(-1)
+        
         # Error definition: 1 for chi-squared, 0.5 for negative log likelihood
+        #SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
+        #Minuit defines parameter errors as the change in parameter value required to change the function value by UP.
+        #Normally, for chisquared fits UP=1, and for negative log likelihood, UP=0.5.
         gMinuit.SetErrorDef(1)
+        
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long(2)
         
@@ -107,6 +123,18 @@ class TMinuitFit(TemplateFit):
         N_min = 0
         
         param_index = 0
+        
+        #MNPARM
+        #Implements one parameter definition:
+        #mnparm(k, cnamj, uk, wk, a, b, ierflg)
+        #     K     (external) parameter number
+        #     CNAMK parameter name
+        #     UK    starting value
+        #     WK    starting step size or uncertainty
+        #     A, B  lower and upper physical parameter limits
+        #and sets up (updates) the parameter lists.
+        #Output: IERFLG  =0 if no problems
+        #                >0 if MNPARM unable to implement definition
         for sample in self.samples:  # all samples but data
             gMinuit.mnparm(param_index, sample, self.normalisation[sample], 10.0, N_min, N_total, errorFlag)
             param_index += 1
@@ -117,10 +145,16 @@ class TMinuitFit(TemplateFit):
 #        gMinuit.mnparm(1, "bkg1", 10, 10.0, N_min, N_total, errorFlag)
         
         arglist = array('d', 10 * [0.])
+        
         # minimisation strategy: 1 standard, 2 try to improve minimum (a bit slower)
         arglist[0] = 2
+        
         # minimisation itself
+        #SET STRategy<level>: Sets the strategy to be used in calculating first and second derivatives and in certain minimization methods.
+        #In general, low values of <level> mean fewer function calls and high values mean more reliable minimization.
+        #Currently allowed values are 0, 1 (default), and 2. 
         gMinuit.mnexcm("SET STR", arglist, 1, errorFlag)
+        
         gMinuit.Migrad()
         gMinuit.mnmatu(1)
         self.module = gMinuit
@@ -145,20 +179,30 @@ class TMinuitFit(TemplateFit):
         self.results = results
     
     def logLikelihood(self, nParameters, gin, f, par, iflag):
+        #nParameters= number of free parameters involved in the minimisation
+        #gin = computed gradient values (optional)
+        #f = the function value itself
+        #par = vector of constant and variable parameters
+        #flag = to switch between several actions of FCN
+        
         lnL = 0.0
         data_vector = self.vectors[self.data_label]
         
         vector_entry = 0
         for data in data_vector:
             x_i = 0
+#            sumxerrorssquared_i = 0
             param_index = 0
             for sample in self.samples:
                 x_i += par[param_index] * self.vectors[sample][vector_entry]
+#                sumxerrorssquared_i += par[param_index] * self.errors[sample][vector_entry]**2
                 self.param_indices[sample] = param_index
                 param_index += 1
             data_i = self.normalisation[self.data_label] * data
             if not data == 0 and not x_i == 0:
                 L = TMath.Poisson(data_i, x_i)
+#                L = TMath.Gaus(data_i, x_i, ((data_i + sumxerrorssquared_i)**0.5))
+#                L = TMath.Gaus(data_i, x_i, (x_i**0.5))
                 lnL += TMath.log(L)
             
             
