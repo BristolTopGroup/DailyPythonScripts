@@ -1,0 +1,548 @@
+---++ MC content
+Size of event: 6.232 KB +- 0.011
+---+++ BeamSpot
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *BeamSpot*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !BeamSpot.WidthX  |  6.335 |  0.681 | 9.30 |  2.752 |  0.04% |
+| !BeamSpot.WidthXError  |  6.336 |  0.681 | 9.30 |  2.771 |  0.04% |
+| !BeamSpot.WidthY  |  6.335 |  0.682 | 9.29 |  2.752 |  0.04% |
+| !BeamSpot.WidthYError  |  6.336 |  0.681 | 9.30 |  2.771 |  0.04% |
+| !BeamSpot.X0  |  6.335 |  0.682 | 9.29 |  2.736 |  0.04% |
+| !BeamSpot.X0Error  |  6.336 |  0.681 | 9.30 |  2.756 |  0.04% |
+| !BeamSpot.Y0  |  6.335 |  0.682 | 9.29 |  2.736 |  0.04% |
+| !BeamSpot.Y0Error  |  6.336 |  0.681 | 9.31 |  2.756 |  0.04% |
+| !BeamSpot.Z0  |  6.335 |  0.682 | 9.29 |  2.736 |  0.04% |
+| !BeamSpot.Z0Error  |  6.336 |  0.681 | 9.30 |  2.756 |  0.04% |
+| !BeamSpot.dxdz  |  6.335 |  0.682 | 9.29 |  2.744 |  0.04% |
+| !BeamSpot.dxdzError  |  6.336 |  0.681 | 9.30 |  2.764 |  0.04% |
+| !BeamSpot.dydz  |  6.335 |  0.681 | 9.30 |  2.744 |  0.04% |
+| !BeamSpot.dydzError  |  6.336 |  0.681 | 9.31 |  2.764 |  0.04% |
+| !BeamSpot.sigmaZ  |  6.335 |  0.682 | 9.30 |  2.752 |  0.04% |
+| !BeamSpot.sigmaZError  |  6.336 |  0.681 | 9.30 |  2.771 |  0.04% |
+| *Total*  |  95.032 |  10.221 | 9.30 |  1183.106 |  0.56% |
+%ENDTWISTY%
+
+---+++ Event
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *Event*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !Event.Bunch  |  1.155 |  0.007 | 155.27 |  1.502 |  0.00% |
+| !Event.LumiSection  |  1.156 |  0.010 | 114.11 |  1.525 |  0.00% |
+| !Event.MagneticField  |  2.306 |  0.011 | 210.95 |  1.561 |  0.00% |
+| !Event.Number  |  1.156 |  0.504 | 2.29 |  1.506 |  0.03% |
+| !Event.Orbit  |  1.155 |  0.007 | 155.27 |  1.502 |  0.00% |
+| !Event.PDFWeights  |  4.036 |  0.646 | 6.25 |  2.717 |  0.04% |
+| !Event.PileUpInteractions  |  7.486 |  1.421 | 5.27 |  2.787 |  0.08% |
+| !Event.PileUpOriginBX  |  7.485 |  0.689 | 10.87 |  2.771 |  0.04% |
+| !Event.ProcessID  |  1.156 |  0.115 | 10.02 |  1.518 |  0.01% |
+| !Event.PtHat  |  2.305 |  0.009 | 266.54 |  1.529 |  0.00% |
+| !Event.Run  |  1.155 |  0.007 | 154.07 |  1.494 |  0.00% |
+| !Event.Time  |  2.305 |  0.764 | 3.02 |  1.525 |  0.04% |
+| !Event.isData  |  0.293 |  0.007 | 43.49 |  1.500 |  0.00% |
+| !Event.rho  |  2.305 |  2.185 | 1.05 |  1.521 |  0.12% |
+| *Total*  |  34.300 |  6.376 | 5.38 |  17611.845 |  0.35% |
+%ENDTWISTY%
+
+---+++ GenJet
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *GenJet*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !GenJet.Charge  |  17.199 |  1.115 | 15.43 |  2.842 |  0.06% |
+| !GenJet.EMF  |  17.199 |  13.652 | 1.26 |  2.830 |  0.74% |
+| !GenJet.Energy  |  17.199 |  13.719 | 1.25 |  2.842 |  0.75% |
+| !GenJet.Eta  |  17.199 |  9.072 | 1.90 |  2.830 |  0.49% |
+| !GenJet.HADF  |  17.199 |  13.512 | 1.27 |  2.834 |  0.74% |
+| !GenJet.Mass  |  17.199 |  8.521 | 2.02 |  2.834 |  0.46% |
+| !GenJet.Phi  |  17.199 |  9.115 | 1.89 |  2.830 |  0.50% |
+| !GenJet.Pt  |  17.199 |  8.497 | 2.02 |  2.826 |  0.46% |
+| !GenJet.Px  |  17.199 |  13.951 | 1.23 |  2.826 |  0.76% |
+| !GenJet.Py  |  17.199 |  13.951 | 1.23 |  2.826 |  0.76% |
+| !GenJet.Pz  |  17.199 |  13.966 | 1.23 |  2.826 |  0.76% |
+| *Total*  |  171.987 |  117.956 | 1.46 |  6486.887 |  6.43% |
+%ENDTWISTY%
+
+---+++ Genmetextrue
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *Genmetextrue*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !GenMETExTrue  |  6.335 |  3.182 | 1.99 |  2.740 |  0.17% |
+%ENDTWISTY%
+
+---+++ Genmeteytrue
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *Genmeteytrue*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !GenMETEyTrue  |  6.335 |  3.183 | 1.99 |  2.740 |  0.17% |
+%ENDTWISTY%
+
+---+++ GenParticle
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *GenParticle*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !GenParticle.Energy  |  61.507 |  50.883 | 1.21 |  2.178 |  2.77% |
+| !GenParticle.Eta  |  61.506 |  32.061 | 1.92 |  2.166 |  1.75% |
+| !GenParticle.MotherIndex  |  32.769 |  1.928 | 16.99 |  1.904 |  0.11% |
+| !GenParticle.NumDaught  |  32.769 |  5.675 | 5.77 |  1.896 |  0.31% |
+| !GenParticle.PdgId  |  32.768 |  2.802 | 11.69 |  1.881 |  0.15% |
+| !GenParticle.Phi  |  61.506 |  31.726 | 1.94 |  2.166 |  1.73% |
+| !GenParticle.Pt  |  61.506 |  30.338 | 2.03 |  2.162 |  1.65% |
+| !GenParticle.Px  |  61.506 |  51.941 | 1.18 |  2.162 |  2.83% |
+| !GenParticle.Py  |  61.506 |  51.942 | 1.18 |  2.162 |  2.83% |
+| !GenParticle.Pz  |  61.506 |  51.596 | 1.19 |  2.162 |  2.81% |
+| !GenParticle.Status  |  32.769 |  1.401 | 23.39 |  1.885 |  0.08% |
+| !GenParticle.VX  |  61.506 |  2.540 | 24.22 |  2.162 |  0.14% |
+| !GenParticle.VY  |  61.506 |  2.519 | 24.42 |  2.162 |  0.14% |
+| !GenParticle.VZ  |  61.506 |  2.928 | 21.01 |  2.162 |  0.16% |
+| *Total*  |  684.633 |  269.398 | 2.54 |  285470.462 |  14.69% |
+%ENDTWISTY%
+
+---+++ Trigger
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *Trigger*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !Trigger.HLTBits  |  278.780 |  10.633 | 26.22 |  6.873 |  0.58% |
+| !Trigger.HLTNames  |  461.569 |  3.814 | 121.03 |  11.271 |  0.21% |
+| !Trigger.HLTPrescales  |  40.815 |  0.932 | 43.77 |  1.971 |  0.05% |
+| !Trigger.HLTPrescalesOther  |  84.498 |  1.360 | 62.15 |  2.459 |  0.07% |
+| !Trigger.HLTResults  |  40.815 |  1.376 | 29.67 |  1.963 |  0.08% |
+| !Trigger.HLTResultsOther  |  84.498 |  1.606 | 52.63 |  2.451 |  0.09% |
+| !Trigger.L1PhysBits  |  151.177 |  7.910 | 19.11 |  4.287 |  0.43% |
+| !Trigger.L1TechBits  |  77.600 |  1.550 | 50.07 |  2.354 |  0.08% |
+| *Total*  |  940.973 |  18.547 | 50.73 |  17568.610 |  1.01% |
+%ENDTWISTY%
+
+---+++ goodOfflinePrimaryVertices
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *goodOfflinePrimaryVertices*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !goodOfflinePrimaryVertices.Chi2  |  17.158 |  8.681 | 1.98 |  2.834 |  0.47% |
+| !goodOfflinePrimaryVertices.IsFake  |  10.599 |  1.176 | 9.01 |  2.861 |  0.06% |
+| !goodOfflinePrimaryVertices.NDF  |  17.158 |  8.610 | 1.99 |  2.830 |  0.47% |
+| !goodOfflinePrimaryVertices.NTracks  |  10.599 |  3.301 | 3.21 |  2.865 |  0.18% |
+| !goodOfflinePrimaryVertices.NTracksW05  |  10.599 |  3.258 | 3.25 |  2.877 |  0.18% |
+| !goodOfflinePrimaryVertices.Rho  |  17.158 |  13.062 | 1.31 |  2.830 |  0.71% |
+| !goodOfflinePrimaryVertices.X  |  17.157 |  7.663 | 2.24 |  2.822 |  0.42% |
+| !goodOfflinePrimaryVertices.XErr  |  17.158 |  13.714 | 1.25 |  2.834 |  0.75% |
+| !goodOfflinePrimaryVertices.Y  |  17.157 |  7.516 | 2.28 |  2.822 |  0.41% |
+| !goodOfflinePrimaryVertices.YErr  |  17.158 |  13.714 | 1.25 |  2.834 |  0.75% |
+| !goodOfflinePrimaryVertices.Z  |  17.157 |  9.270 | 1.85 |  2.822 |  0.51% |
+| !goodOfflinePrimaryVertices.ZErr  |  17.158 |  13.716 | 1.25 |  2.834 |  0.75% |
+| *Total*  |  169.057 |  95.000 | 1.78 |  17162.926 |  5.18% |
+%ENDTWISTY%
+
+---+++ goodPatJets
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *goodPatJets*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !goodPatJets.Charge  |  16.761 |  8.673 | 1.93 |  2.861 |  0.47% |
+| !goodPatJets.CombinedSVBJetTag  |  16.762 |  1.121 | 14.95 |  2.904 |  0.06% |
+| !goodPatJets.CombinedSVMVABJetTag  |  16.763 |  1.122 | 14.94 |  2.916 |  0.06% |
+| !goodPatJets.EMF  |  16.760 |  8.104 | 2.07 |  2.850 |  0.44% |
+| !goodPatJets.Energy  |  16.761 |  13.298 | 1.26 |  2.861 |  0.73% |
+| !goodPatJets.EnergyRaw  |  16.761 |  13.296 | 1.26 |  2.873 |  0.73% |
+| !goodPatJets.Eta  |  16.760 |  8.796 | 1.91 |  2.850 |  0.48% |
+| !goodPatJets.HADF  |  16.761 |  8.254 | 2.03 |  2.854 |  0.45% |
+| !goodPatJets.JECUnc  |  16.761 |  1.120 | 14.97 |  2.861 |  0.06% |
+| !goodPatJets.JetBProbabilityBTag  |  16.762 |  8.493 | 1.97 |  2.912 |  0.46% |
+| !goodPatJets.JetProbabilityBTag  |  16.762 |  7.555 | 2.22 |  2.908 |  0.41% |
+| !goodPatJets.L1OffJEC  |  16.761 |  11.380 | 1.47 |  2.869 |  0.62% |
+| !goodPatJets.L2L3ResJEC  |  16.761 |  1.120 | 14.96 |  2.877 |  0.06% |
+| !goodPatJets.L2RelJEC  |  16.761 |  12.943 | 1.29 |  2.869 |  0.71% |
+| !goodPatJets.L3AbsJEC  |  16.761 |  13.189 | 1.27 |  2.869 |  0.72% |
+| !goodPatJets.Mass  |  16.761 |  8.295 | 2.02 |  2.854 |  0.45% |
+| !goodPatJets.PartonFlavour  |  10.400 |  2.407 | 4.32 |  2.830 |  0.13% |
+| !goodPatJets.PassLooseID  |  10.399 |  1.066 | 9.76 |  2.822 |  0.06% |
+| !goodPatJets.PassTightID  |  10.399 |  1.080 | 9.63 |  2.822 |  0.06% |
+| !goodPatJets.Phi  |  16.760 |  8.849 | 1.89 |  2.850 |  0.48% |
+| !goodPatJets.Pt  |  16.760 |  8.256 | 2.03 |  2.846 |  0.45% |
+| !goodPatJets.PtRaw  |  16.761 |  8.315 | 2.02 |  2.857 |  0.45% |
+| !goodPatJets.Px  |  16.760 |  13.496 | 1.24 |  2.846 |  0.74% |
+| !goodPatJets.Py  |  16.760 |  13.496 | 1.24 |  2.846 |  0.74% |
+| !goodPatJets.Pz  |  16.760 |  13.516 | 1.24 |  2.846 |  0.74% |
+| !goodPatJets.SigmaEta  |  16.761 |  13.294 | 1.26 |  2.869 |  0.72% |
+| !goodPatJets.SigmaPhi  |  16.761 |  13.274 | 1.26 |  2.869 |  0.72% |
+| !goodPatJets.SimpleSecondaryVertexHighEffBTag  |  16.764 |  3.323 | 5.05 |  2.963 |  0.18% |
+| !goodPatJets.SimpleSecondaryVertexHighPurBTag  |  16.764 |  2.717 | 6.17 |  2.963 |  0.15% |
+| !goodPatJets.SoftElectronBJetTag  |  16.762 |  1.122 | 14.94 |  2.912 |  0.06% |
+| !goodPatJets.SoftMuonBJetTag  |  16.762 |  1.877 | 8.93 |  2.896 |  0.10% |
+| !goodPatJets.SoftMuonNoIPBJetTag  |  16.762 |  1.122 | 14.94 |  2.912 |  0.06% |
+| !goodPatJets.TrackCountingHighEffBTag  |  16.763 |  7.986 | 2.10 |  2.932 |  0.44% |
+| !goodPatJets.TrackCountingHighPurBTag  |  16.763 |  7.349 | 2.28 |  2.932 |  0.40% |
+| !goodPatJets.fHPD  |  16.761 |  8.281 | 2.02 |  2.854 |  0.45% |
+| !goodPatJets.fRBX  |  16.761 |  8.274 | 2.03 |  2.854 |  0.45% |
+| !goodPatJets.n90Hits  |  10.399 |  3.287 | 3.16 |  2.807 |  0.18% |
+| !goodPatJets.resEMF  |  16.761 |  8.102 | 2.07 |  2.861 |  0.44% |
+| *Total*  |  594.725 |  268.576 | 2.21 |  15041.044 |  14.65% |
+%ENDTWISTY%
+
+---+++ goodPatJetsCA8PF
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *goodPatJetsCA8PF*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !goodPatJetsCA8PF.BestVertexTrackAssociationFactor  |  14.689 |  11.168 | 1.32 |  2.963 |  0.61% |
+| !goodPatJetsCA8PF.BestVertexTrackAssociationIndex  |  9.365 |  1.163 | 8.05 |  2.900 |  0.06% |
+| !goodPatJetsCA8PF.Charge  |  14.686 |  7.510 | 1.96 |  2.861 |  0.41% |
+| !goodPatJetsCA8PF.ChargedEmEnergyFraction  |  14.688 |  2.415 | 6.08 |  2.928 |  0.13% |
+| !goodPatJetsCA8PF.ChargedEmEnergyFractionRAW  |  14.688 |  2.416 | 6.08 |  2.939 |  0.13% |
+| !goodPatJetsCA8PF.ChargedHadronEnergyFraction  |  14.688 |  7.066 | 2.08 |  2.943 |  0.39% |
+| !goodPatJetsCA8PF.ChargedHadronEnergyFractionRAW  |  14.689 |  7.068 | 2.08 |  2.955 |  0.39% |
+| !goodPatJetsCA8PF.ChargedHadronMultiplicity  |  9.364 |  2.542 | 3.68 |  2.877 |  0.14% |
+| !goodPatJetsCA8PF.ChargedMuEnergyFraction  |  14.688 |  1.928 | 7.62 |  2.928 |  0.11% |
+| !goodPatJetsCA8PF.ChargedMultiplicity  |  9.363 |  2.541 | 3.68 |  2.854 |  0.14% |
+| !goodPatJetsCA8PF.ClosestVertex3DIndex  |  9.363 |  2.041 | 4.59 |  2.857 |  0.11% |
+| !goodPatJetsCA8PF.ClosestVertexWeighted3DSeparation  |  14.689 |  11.396 | 1.29 |  2.967 |  0.62% |
+| !goodPatJetsCA8PF.ClosestVertexWeightedXYSeparation  |  14.689 |  1.092 | 13.46 |  2.967 |  0.06% |
+| !goodPatJetsCA8PF.ClosestVertexWeightedZSeparation  |  14.689 |  1.091 | 13.46 |  2.963 |  0.06% |
+| !goodPatJetsCA8PF.ClosestVertexXYIndex  |  9.363 |  1.054 | 8.89 |  2.857 |  0.06% |
+| !goodPatJetsCA8PF.ClosestVertexZIndex  |  9.363 |  1.053 | 8.89 |  2.854 |  0.06% |
+| !goodPatJetsCA8PF.ElectronEnergyFraction  |  14.688 |  3.079 | 4.77 |  2.924 |  0.17% |
+| !goodPatJetsCA8PF.ElectronMultiplicity  |  9.363 |  1.375 | 6.81 |  2.857 |  0.07% |
+| !goodPatJetsCA8PF.Energy  |  14.686 |  11.340 | 1.30 |  2.861 |  0.62% |
+| !goodPatJetsCA8PF.EnergyRaw  |  14.686 |  11.337 | 1.30 |  2.873 |  0.62% |
+| !goodPatJetsCA8PF.Eta  |  14.685 |  7.563 | 1.94 |  2.850 |  0.41% |
+| !goodPatJetsCA8PF.JECUnc  |  14.686 |  1.089 | 13.49 |  2.861 |  0.06% |
+| !goodPatJetsCA8PF.JetBProbabilityBTag  |  14.687 |  7.395 | 1.99 |  2.912 |  0.40% |
+| !goodPatJetsCA8PF.JetProbabilityBTag  |  14.687 |  6.765 | 2.17 |  2.908 |  0.37% |
+| !goodPatJetsCA8PF.L1OffJEC  |  14.686 |  11.014 | 1.33 |  2.869 |  0.60% |
+| !goodPatJetsCA8PF.L2L3ResJEC  |  14.686 |  1.089 | 13.49 |  2.877 |  0.06% |
+| !goodPatJetsCA8PF.L2RelJEC  |  14.686 |  10.735 | 1.37 |  2.869 |  0.59% |
+| !goodPatJetsCA8PF.L3AbsJEC  |  14.686 |  10.510 | 1.40 |  2.869 |  0.57% |
+| !goodPatJetsCA8PF.Mass  |  14.686 |  7.121 | 2.06 |  2.854 |  0.39% |
+| !goodPatJetsCA8PF.MuonEnergyFraction  |  14.687 |  1.929 | 7.62 |  2.908 |  0.11% |
+| !goodPatJetsCA8PF.MuonMultiplicity  |  9.363 |  1.283 | 7.30 |  2.842 |  0.07% |
+| !goodPatJetsCA8PF.NConstituents  |  9.362 |  2.783 | 3.36 |  2.830 |  0.15% |
+| !goodPatJetsCA8PF.NeutralEmEnergyFraction  |  14.688 |  7.195 | 2.04 |  2.928 |  0.39% |
+| !goodPatJetsCA8PF.NeutralEmEnergyFractionRAW  |  14.688 |  7.197 | 2.04 |  2.939 |  0.39% |
+| !goodPatJetsCA8PF.NeutralHadronEnergyFraction  |  14.688 |  7.012 | 2.09 |  2.943 |  0.38% |
+| !goodPatJetsCA8PF.NeutralHadronEnergyFractionRAW  |  14.689 |  7.015 | 2.09 |  2.955 |  0.38% |
+| !goodPatJetsCA8PF.NeutralHadronMultiplicity  |  9.364 |  2.160 | 4.34 |  2.877 |  0.12% |
+| !goodPatJetsCA8PF.NeutralMultiplicity  |  9.363 |  2.559 | 3.66 |  2.854 |  0.14% |
+| !goodPatJetsCA8PF.PartonFlavour  |  9.362 |  2.187 | 4.28 |  2.830 |  0.12% |
+| !goodPatJetsCA8PF.PassLooseID  |  9.362 |  1.052 | 8.90 |  2.822 |  0.06% |
+| !goodPatJetsCA8PF.PassTightID  |  9.362 |  1.056 | 8.86 |  2.822 |  0.06% |
+| !goodPatJetsCA8PF.Phi  |  14.685 |  7.598 | 1.93 |  2.850 |  0.41% |
+| !goodPatJetsCA8PF.PhotonEnergyFraction  |  14.688 |  7.199 | 2.04 |  2.916 |  0.39% |
+| !goodPatJetsCA8PF.PhotonMultiplicity  |  9.363 |  2.524 | 3.71 |  2.850 |  0.14% |
+| !goodPatJetsCA8PF.Pt  |  14.685 |  7.120 | 2.06 |  2.846 |  0.39% |
+| !goodPatJetsCA8PF.PtRaw  |  14.686 |  7.118 | 2.06 |  2.857 |  0.39% |
+| !goodPatJetsCA8PF.Px  |  14.685 |  11.510 | 1.28 |  2.846 |  0.63% |
+| !goodPatJetsCA8PF.Py  |  14.685 |  11.510 | 1.28 |  2.846 |  0.63% |
+| !goodPatJetsCA8PF.Pz  |  14.685 |  11.521 | 1.27 |  2.846 |  0.63% |
+| !goodPatJetsCA8PF.SimpleSecondaryVertexHighEffBTag  |  14.689 |  3.180 | 4.62 |  2.963 |  0.17% |
+| !goodPatJetsCA8PF.SimpleSecondaryVertexHighPurBTag  |  14.689 |  2.586 | 5.68 |  2.963 |  0.14% |
+| !goodPatJetsCA8PF.TrackCountingHighEffBTag  |  14.688 |  7.299 | 2.01 |  2.932 |  0.40% |
+| !goodPatJetsCA8PF.TrackCountingHighPurBTag  |  14.688 |  6.953 | 2.11 |  2.932 |  0.38% |
+| *Total*  |  683.872 |  272.334 | 2.51 |  14619.207 |  14.85% |
+%ENDTWISTY%
+
+---+++ goodPatJetsPFlow
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *goodPatJetsPFlow*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !goodPatJetsPFlow.BestVertexTrackAssociationFactor  |  14.277 |  10.775 | 1.33 |  2.963 |  0.59% |
+| !goodPatJetsPFlow.BestVertexTrackAssociationIndex  |  9.159 |  1.144 | 8.01 |  2.900 |  0.06% |
+| !goodPatJetsPFlow.Charge  |  14.274 |  7.277 | 1.96 |  2.861 |  0.40% |
+| !goodPatJetsPFlow.ChargedEmEnergyFraction  |  14.276 |  2.309 | 6.18 |  2.928 |  0.13% |
+| !goodPatJetsPFlow.ChargedEmEnergyFractionRAW  |  14.276 |  2.311 | 6.18 |  2.939 |  0.13% |
+| !goodPatJetsPFlow.ChargedHadronEnergyFraction  |  14.277 |  6.871 | 2.08 |  2.943 |  0.37% |
+| !goodPatJetsPFlow.ChargedHadronEnergyFractionRAW  |  14.277 |  6.873 | 2.08 |  2.955 |  0.37% |
+| !goodPatJetsPFlow.ChargedHadronMultiplicity  |  9.158 |  2.403 | 3.81 |  2.877 |  0.13% |
+| !goodPatJetsPFlow.ChargedMuEnergyFraction  |  14.276 |  1.852 | 7.71 |  2.928 |  0.10% |
+| !goodPatJetsPFlow.ChargedMultiplicity  |  9.157 |  2.402 | 3.81 |  2.854 |  0.13% |
+| !goodPatJetsPFlow.ClosestVertex3DIndex  |  9.157 |  2.007 | 4.56 |  2.857 |  0.11% |
+| !goodPatJetsPFlow.ClosestVertexWeighted3DSeparation  |  14.277 |  11.005 | 1.30 |  2.967 |  0.60% |
+| !goodPatJetsPFlow.ClosestVertexWeightedXYSeparation  |  14.277 |  1.100 | 12.98 |  2.967 |  0.06% |
+| !goodPatJetsPFlow.ClosestVertexWeightedZSeparation  |  14.277 |  1.100 | 12.98 |  2.963 |  0.06% |
+| !goodPatJetsPFlow.ClosestVertexXYIndex  |  9.157 |  1.065 | 8.60 |  2.857 |  0.06% |
+| !goodPatJetsPFlow.ClosestVertexZIndex  |  9.157 |  1.065 | 8.60 |  2.854 |  0.06% |
+| !goodPatJetsPFlow.ElectronEnergyFraction  |  14.276 |  2.951 | 4.84 |  2.924 |  0.16% |
+| !goodPatJetsPFlow.ElectronMultiplicity  |  9.157 |  1.362 | 6.72 |  2.857 |  0.07% |
+| !goodPatJetsPFlow.Energy  |  14.274 |  10.933 | 1.31 |  2.861 |  0.60% |
+| !goodPatJetsPFlow.EnergyRaw  |  14.274 |  10.931 | 1.31 |  2.873 |  0.60% |
+| !goodPatJetsPFlow.Eta  |  14.274 |  7.294 | 1.96 |  2.850 |  0.40% |
+| !goodPatJetsPFlow.JECUnc  |  14.274 |  1.097 | 13.01 |  2.861 |  0.06% |
+| !goodPatJetsPFlow.JetBProbabilityBTag  |  14.276 |  7.222 | 1.98 |  2.912 |  0.39% |
+| !goodPatJetsPFlow.JetProbabilityBTag  |  14.275 |  6.776 | 2.11 |  2.908 |  0.37% |
+| !goodPatJetsPFlow.L1OffJEC  |  14.274 |  10.498 | 1.36 |  2.869 |  0.57% |
+| !goodPatJetsPFlow.L2L3ResJEC  |  14.274 |  1.097 | 13.01 |  2.877 |  0.06% |
+| !goodPatJetsPFlow.L2RelJEC  |  14.274 |  10.350 | 1.38 |  2.869 |  0.56% |
+| !goodPatJetsPFlow.L3AbsJEC  |  14.274 |  10.151 | 1.41 |  2.869 |  0.55% |
+| !goodPatJetsPFlow.Mass  |  14.274 |  6.878 | 2.08 |  2.854 |  0.38% |
+| !goodPatJetsPFlow.MuonEnergyFraction  |  14.275 |  1.851 | 7.71 |  2.908 |  0.10% |
+| !goodPatJetsPFlow.MuonMultiplicity  |  9.157 |  1.271 | 7.21 |  2.842 |  0.07% |
+| !goodPatJetsPFlow.NConstituents  |  9.156 |  2.550 | 3.59 |  2.830 |  0.14% |
+| !goodPatJetsPFlow.NeutralEmEnergyFraction  |  14.276 |  7.010 | 2.04 |  2.928 |  0.38% |
+| !goodPatJetsPFlow.NeutralEmEnergyFractionRAW  |  14.276 |  7.012 | 2.04 |  2.939 |  0.38% |
+| !goodPatJetsPFlow.NeutralHadronEnergyFraction  |  14.277 |  6.433 | 2.22 |  2.943 |  0.35% |
+| !goodPatJetsPFlow.NeutralHadronEnergyFractionRAW  |  14.277 |  6.436 | 2.22 |  2.955 |  0.35% |
+| !goodPatJetsPFlow.NeutralHadronMultiplicity  |  9.158 |  2.006 | 4.57 |  2.877 |  0.11% |
+| !goodPatJetsPFlow.NeutralMultiplicity  |  9.157 |  2.430 | 3.77 |  2.854 |  0.13% |
+| !goodPatJetsPFlow.PartonFlavour  |  9.156 |  2.147 | 4.27 |  2.830 |  0.12% |
+| !goodPatJetsPFlow.PassLooseID  |  9.156 |  1.064 | 8.61 |  2.822 |  0.06% |
+| !goodPatJetsPFlow.PassTightID  |  9.156 |  1.070 | 8.56 |  2.822 |  0.06% |
+| !goodPatJetsPFlow.Phi  |  14.274 |  7.324 | 1.95 |  2.850 |  0.40% |
+| !goodPatJetsPFlow.PhotonEnergyFraction  |  14.276 |  7.012 | 2.04 |  2.916 |  0.38% |
+| !goodPatJetsPFlow.PhotonMultiplicity  |  9.157 |  2.404 | 3.81 |  2.850 |  0.13% |
+| !goodPatJetsPFlow.Pt  |  14.273 |  6.899 | 2.07 |  2.846 |  0.38% |
+| !goodPatJetsPFlow.PtRaw  |  14.274 |  6.898 | 2.07 |  2.857 |  0.38% |
+| !goodPatJetsPFlow.Px  |  14.273 |  11.118 | 1.28 |  2.846 |  0.61% |
+| !goodPatJetsPFlow.Py  |  14.273 |  11.119 | 1.28 |  2.846 |  0.61% |
+| !goodPatJetsPFlow.Pz  |  14.273 |  11.135 | 1.28 |  2.846 |  0.61% |
+| !goodPatJetsPFlow.SimpleSecondaryVertexHighEffBTag  |  14.277 |  3.253 | 4.39 |  2.963 |  0.18% |
+| !goodPatJetsPFlow.SimpleSecondaryVertexHighPurBTag  |  14.277 |  2.670 | 5.35 |  2.963 |  0.15% |
+| !goodPatJetsPFlow.TrackCountingHighEffBTag  |  14.276 |  7.206 | 1.98 |  2.932 |  0.39% |
+| !goodPatJetsPFlow.TrackCountingHighPurBTag  |  14.276 |  6.950 | 2.05 |  2.932 |  0.38% |
+| *Total*  |  665.544 |  263.593 | 2.52 |  6486.155 |  14.37% |
+%ENDTWISTY%
+
+---+++ patMETs
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *patMETs*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !patMETs.ET  |  6.335 |  1.992 | 3.18 |  2.732 |  0.11% |
+| !patMETs.ETUncorr  |  6.336 |  1.992 | 3.18 |  2.756 |  0.11% |
+| !patMETs.Ex  |  6.335 |  3.159 | 2.01 |  2.732 |  0.17% |
+| !patMETs.Ey  |  6.335 |  3.159 | 2.01 |  2.732 |  0.17% |
+| !patMETs.Phi  |  6.335 |  2.095 | 3.02 |  2.736 |  0.11% |
+| !patMETs.PhiUncorr  |  6.336 |  2.095 | 3.02 |  2.760 |  0.11% |
+| !patMETs.Significance  |  6.336 |  0.681 | 9.30 |  2.771 |  0.04% |
+| !patMETs.SumET  |  6.335 |  3.095 | 2.05 |  2.744 |  0.17% |
+| !patMETs.SumETUncorr  |  6.336 |  3.091 | 2.05 |  2.768 |  0.17% |
+| *Total*  |  50.683 |  19.369 | 2.62 |  6487.380 |  1.06% |
+%ENDTWISTY%
+
+---+++ patMETsPFlow
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *patMETsPFlow*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !patMETsPFlow.ET  |  6.335 |  2.003 | 3.16 |  2.752 |  0.11% |
+| !patMETsPFlow.ETUncorr  |  6.336 |  2.003 | 3.16 |  2.775 |  0.11% |
+| !patMETsPFlow.Ex  |  6.335 |  3.166 | 2.00 |  2.752 |  0.17% |
+| !patMETsPFlow.Ey  |  6.335 |  3.166 | 2.00 |  2.752 |  0.17% |
+| !patMETsPFlow.Phi  |  6.336 |  2.089 | 3.03 |  2.756 |  0.11% |
+| !patMETsPFlow.PhiUncorr  |  6.336 |  2.089 | 3.03 |  2.779 |  0.11% |
+| !patMETsPFlow.Significance  |  6.337 |  3.147 | 2.01 |  2.791 |  0.17% |
+| !patMETsPFlow.SumET  |  6.336 |  3.093 | 2.05 |  2.764 |  0.17% |
+| !patMETsPFlow.SumETUncorr  |  6.336 |  3.094 | 2.05 |  2.787 |  0.17% |
+| *Total*  |  50.687 |  21.846 | 2.32 |  7591.911 |  1.19% |
+%ENDTWISTY%
+
+---+++ selectedPatElectrons
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *selectedPatElectrons*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !selectedPatElectrons.CaloEnergy  |  7.414 |  2.886 | 2.57 |  2.814 |  0.16% |
+| !selectedPatElectrons.Charge  |  5.726 |  1.035 | 5.53 |  2.779 |  0.06% |
+| !selectedPatElectrons.DCotTheta  |  7.414 |  4.155 | 1.78 |  2.811 |  0.23% |
+| !selectedPatElectrons.DeltaEtaTrkSC  |  7.414 |  2.660 | 2.79 |  2.826 |  0.15% |
+| !selectedPatElectrons.DeltaPhiTrkSC  |  7.414 |  2.757 | 2.69 |  2.826 |  0.15% |
+| !selectedPatElectrons.Dist  |  7.413 |  3.900 | 1.90 |  2.791 |  0.21% |
+| !selectedPatElectrons.EcalIso  |  7.414 |  2.959 | 2.51 |  2.803 |  0.16% |
+| !selectedPatElectrons.EcalIso03  |  7.414 |  2.990 | 2.48 |  2.811 |  0.16% |
+| !selectedPatElectrons.EcalIsoHeep  |  7.414 |  2.990 | 2.48 |  2.818 |  0.16% |
+| !selectedPatElectrons.Energy  |  7.414 |  4.265 | 1.74 |  2.799 |  0.23% |
+| !selectedPatElectrons.EoverP  |  7.414 |  2.959 | 2.51 |  2.799 |  0.16% |
+| !selectedPatElectrons.Eta  |  7.413 |  3.036 | 2.44 |  2.787 |  0.17% |
+| !selectedPatElectrons.GSFTrack.Charge  |  5.727 |  1.036 | 5.53 |  2.814 |  0.06% |
+| !selectedPatElectrons.GSFTrack.Eta  |  7.414 |  4.354 | 1.70 |  2.822 |  0.24% |
+| !selectedPatElectrons.GSFTrack.Phi  |  7.414 |  4.359 | 1.70 |  2.822 |  0.24% |
+| !selectedPatElectrons.GSFTrack.Pt  |  7.414 |  4.270 | 1.74 |  2.818 |  0.23% |
+| !selectedPatElectrons.GSFTrack.Theta  |  7.415 |  4.294 | 1.73 |  2.830 |  0.23% |
+| !selectedPatElectrons.GSFTrack.d0  |  7.414 |  4.307 | 1.72 |  2.818 |  0.23% |
+| !selectedPatElectrons.HcalIso  |  7.414 |  2.682 | 2.76 |  2.803 |  0.15% |
+| !selectedPatElectrons.HcalIso03  |  7.414 |  2.484 | 2.99 |  2.811 |  0.14% |
+| !selectedPatElectrons.HcalIsoD1Heep  |  7.414 |  2.476 | 2.99 |  2.826 |  0.14% |
+| !selectedPatElectrons.HcalIsoD2Heep  |  7.414 |  1.138 | 6.51 |  2.826 |  0.06% |
+| !selectedPatElectrons.HoE  |  7.413 |  2.199 | 3.37 |  2.787 |  0.12% |
+| !selectedPatElectrons.MissingHits  |  5.726 |  0.922 | 6.21 |  2.799 |  0.05% |
+| !selectedPatElectrons.PassID  |  5.726 |  0.909 | 6.30 |  2.779 |  0.05% |
+| !selectedPatElectrons.Phi  |  7.413 |  3.066 | 2.42 |  2.787 |  0.17% |
+| !selectedPatElectrons.Pt  |  7.413 |  2.871 | 2.58 |  2.783 |  0.16% |
+| !selectedPatElectrons.Px  |  7.413 |  4.348 | 1.70 |  2.783 |  0.24% |
+| !selectedPatElectrons.Py  |  7.413 |  4.348 | 1.70 |  2.783 |  0.24% |
+| !selectedPatElectrons.Pz  |  7.413 |  4.357 | 1.70 |  2.783 |  0.24% |
+| !selectedPatElectrons.SCEta  |  7.413 |  4.351 | 1.70 |  2.795 |  0.24% |
+| !selectedPatElectrons.SCPhi  |  7.413 |  4.377 | 1.69 |  2.795 |  0.24% |
+| !selectedPatElectrons.SCPt  |  7.413 |  4.257 | 1.74 |  2.791 |  0.23% |
+| !selectedPatElectrons.SCRawEnergy  |  7.414 |  3.744 | 1.98 |  2.818 |  0.20% |
+| !selectedPatElectrons.SigmaEtaEta  |  7.414 |  2.860 | 2.59 |  2.818 |  0.16% |
+| !selectedPatElectrons.SigmaIEtaIEta  |  7.414 |  2.865 | 2.59 |  2.826 |  0.16% |
+| !selectedPatElectrons.TrkIso  |  7.414 |  2.552 | 2.90 |  2.799 |  0.14% |
+| !selectedPatElectrons.TrkIso03  |  7.414 |  2.432 | 3.05 |  2.807 |  0.13% |
+| !selectedPatElectrons.TrkIsoHeep  |  7.414 |  2.432 | 3.05 |  2.814 |  0.13% |
+| !selectedPatElectrons.Vertex.X  |  7.414 |  2.682 | 2.76 |  2.807 |  0.15% |
+| !selectedPatElectrons.Vertex.Y  |  7.414 |  2.634 | 2.82 |  2.807 |  0.14% |
+| !selectedPatElectrons.Vertex.Z  |  7.414 |  3.073 | 2.41 |  2.807 |  0.17% |
+| !selectedPatElectrons.VtxDistXY  |  7.414 |  4.353 | 1.70 |  2.811 |  0.24% |
+| !selectedPatElectrons.VtxDistZ  |  7.414 |  4.349 | 1.70 |  2.807 |  0.24% |
+| !selectedPatElectrons.VtxIndex  |  5.726 |  0.895 | 6.40 |  2.787 |  0.05% |
+| !selectedPatElectrons.closestCtfTrackRef  |  5.727 |  1.740 | 3.29 |  2.826 |  0.09% |
+| !selectedPatElectrons.dB  |  7.413 |  4.284 | 1.73 |  2.783 |  0.23% |
+| !selectedPatElectrons.eSeedClusterOverPout  |  7.415 |  2.982 | 2.49 |  2.854 |  0.16% |
+| !selectedPatElectrons.fbrem  |  7.413 |  2.970 | 2.50 |  2.795 |  0.16% |
+| !selectedPatElectrons.shFracInnerHits  |  7.415 |  1.053 | 7.04 |  2.834 |  0.06% |
+| *Total*  |  353.151 |  149.011 | 2.37 |  6151.015 |  8.13% |
+%ENDTWISTY%
+
+---+++ selectedPatElectronsLoosePFlow
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *selectedPatElectronsLoosePFlow*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !selectedPatElectronsLoosePFlow.CaloEnergy  |  6.007 |  2.082 | 2.89 |  2.834 |  0.11% |
+| !selectedPatElectronsLoosePFlow.Charge  |  5.023 |  0.974 | 5.16 |  2.818 |  0.05% |
+| !selectedPatElectronsLoosePFlow.DCotTheta  |  6.007 |  2.814 | 2.13 |  2.830 |  0.15% |
+| !selectedPatElectronsLoosePFlow.DeltaEtaTrkSC  |  6.008 |  1.932 | 3.11 |  2.846 |  0.11% |
+| !selectedPatElectronsLoosePFlow.DeltaPhiTrkSC  |  6.008 |  1.977 | 3.04 |  2.846 |  0.11% |
+| !selectedPatElectronsLoosePFlow.Dist  |  6.006 |  2.632 | 2.28 |  2.811 |  0.14% |
+| !selectedPatElectronsLoosePFlow.EcalIso  |  6.007 |  2.122 | 2.83 |  2.822 |  0.12% |
+| !selectedPatElectronsLoosePFlow.EcalIso03  |  6.007 |  2.136 | 2.81 |  2.830 |  0.12% |
+| !selectedPatElectronsLoosePFlow.EcalIsoHeep  |  6.007 |  2.136 | 2.81 |  2.838 |  0.12% |
+| !selectedPatElectronsLoosePFlow.Energy  |  6.007 |  2.934 | 2.05 |  2.818 |  0.16% |
+| !selectedPatElectronsLoosePFlow.EoverP  |  6.007 |  2.093 | 2.87 |  2.818 |  0.11% |
+| !selectedPatElectronsLoosePFlow.Eta  |  6.006 |  2.150 | 2.79 |  2.807 |  0.12% |
+| !selectedPatElectronsLoosePFlow.GSFTrack.Charge  |  5.024 |  0.975 | 5.15 |  2.854 |  0.05% |
+| !selectedPatElectronsLoosePFlow.GSFTrack.Eta  |  6.007 |  2.994 | 2.01 |  2.842 |  0.16% |
+| !selectedPatElectronsLoosePFlow.GSFTrack.Phi  |  6.007 |  2.996 | 2.00 |  2.842 |  0.16% |
+| !selectedPatElectronsLoosePFlow.GSFTrack.Pt  |  6.007 |  2.934 | 2.05 |  2.838 |  0.16% |
+| !selectedPatElectronsLoosePFlow.GSFTrack.Theta  |  6.008 |  2.956 | 2.03 |  2.850 |  0.16% |
+| !selectedPatElectronsLoosePFlow.GSFTrack.d0  |  6.007 |  2.967 | 2.02 |  2.838 |  0.16% |
+| !selectedPatElectronsLoosePFlow.HcalIso  |  6.007 |  1.839 | 3.27 |  2.822 |  0.10% |
+| !selectedPatElectronsLoosePFlow.HcalIso03  |  6.007 |  1.678 | 3.58 |  2.830 |  0.09% |
+| !selectedPatElectronsLoosePFlow.HcalIsoD1Heep  |  6.008 |  1.672 | 3.59 |  2.846 |  0.09% |
+| !selectedPatElectronsLoosePFlow.HcalIsoD2Heep  |  6.008 |  0.979 | 6.14 |  2.846 |  0.05% |
+| !selectedPatElectronsLoosePFlow.HoE  |  6.006 |  1.505 | 3.99 |  2.807 |  0.08% |
+| !selectedPatElectronsLoosePFlow.MissingHits  |  5.023 |  0.898 | 5.60 |  2.838 |  0.05% |
+| !selectedPatElectronsLoosePFlow.PFGammaIso  |  6.007 |  1.956 | 3.07 |  2.834 |  0.11% |
+| !selectedPatElectronsLoosePFlow.PassID  |  5.023 |  0.894 | 5.62 |  2.818 |  0.05% |
+| !selectedPatElectronsLoosePFlow.PfChargedHadronIso  |  6.008 |  2.016 | 2.98 |  2.865 |  0.11% |
+| !selectedPatElectronsLoosePFlow.PfNeutralHadronIso  |  6.008 |  1.521 | 3.95 |  2.865 |  0.08% |
+| !selectedPatElectronsLoosePFlow.Phi  |  6.006 |  2.159 | 2.78 |  2.807 |  0.12% |
+| !selectedPatElectronsLoosePFlow.Pt  |  6.006 |  2.075 | 2.90 |  2.803 |  0.11% |
+| !selectedPatElectronsLoosePFlow.Px  |  6.006 |  2.988 | 2.01 |  2.803 |  0.16% |
+| !selectedPatElectronsLoosePFlow.Py  |  6.006 |  2.987 | 2.01 |  2.803 |  0.16% |
+| !selectedPatElectronsLoosePFlow.Pz  |  6.006 |  2.992 | 2.01 |  2.803 |  0.16% |
+| !selectedPatElectronsLoosePFlow.SCEta  |  6.007 |  2.991 | 2.01 |  2.814 |  0.16% |
+| !selectedPatElectronsLoosePFlow.SCPhi  |  6.007 |  3.005 | 2.00 |  2.814 |  0.16% |
+| !selectedPatElectronsLoosePFlow.SCPt  |  6.006 |  2.929 | 2.05 |  2.811 |  0.16% |
+| !selectedPatElectronsLoosePFlow.SCRawEnergy  |  6.007 |  2.559 | 2.35 |  2.838 |  0.14% |
+| !selectedPatElectronsLoosePFlow.SigmaEtaEta  |  6.007 |  2.044 | 2.94 |  2.838 |  0.11% |
+| !selectedPatElectronsLoosePFlow.SigmaIEtaIEta  |  6.008 |  2.044 | 2.94 |  2.846 |  0.11% |
+| !selectedPatElectronsLoosePFlow.TrkIso  |  6.007 |  1.741 | 3.45 |  2.818 |  0.09% |
+| !selectedPatElectronsLoosePFlow.TrkIso03  |  6.007 |  1.635 | 3.67 |  2.826 |  0.09% |
+| !selectedPatElectronsLoosePFlow.TrkIsoHeep  |  6.007 |  1.635 | 3.67 |  2.834 |  0.09% |
+| !selectedPatElectronsLoosePFlow.Vertex.X  |  6.007 |  1.963 | 3.06 |  2.826 |  0.11% |
+| !selectedPatElectronsLoosePFlow.Vertex.Y  |  6.007 |  1.937 | 3.10 |  2.826 |  0.11% |
+| !selectedPatElectronsLoosePFlow.Vertex.Z  |  6.007 |  2.170 | 2.77 |  2.826 |  0.12% |
+| !selectedPatElectronsLoosePFlow.VtxDistXY  |  6.007 |  2.990 | 2.01 |  2.830 |  0.16% |
+| !selectedPatElectronsLoosePFlow.VtxDistZ  |  6.007 |  2.988 | 2.01 |  2.826 |  0.16% |
+| !selectedPatElectronsLoosePFlow.VtxIndex  |  5.023 |  0.886 | 5.67 |  2.826 |  0.05% |
+| !selectedPatElectronsLoosePFlow.closestCtfTrackRef  |  5.024 |  1.410 | 3.56 |  2.865 |  0.08% |
+| !selectedPatElectronsLoosePFlow.dB  |  6.006 |  2.948 | 2.04 |  2.803 |  0.16% |
+| !selectedPatElectronsLoosePFlow.eSeedClusterOverPout  |  6.008 |  2.121 | 2.83 |  2.873 |  0.12% |
+| !selectedPatElectronsLoosePFlow.fbrem  |  6.007 |  2.106 | 2.85 |  2.814 |  0.11% |
+| !selectedPatElectronsLoosePFlow.shFracInnerHits  |  6.008 |  0.991 | 6.06 |  2.854 |  0.05% |
+| *Total*  |  306.464 |  110.976 | 2.76 |  4514.554 |  6.05% |
+%ENDTWISTY%
+
+---+++ selectedPatMuons
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *selectedPatMuons*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !selectedPatMuons.Charge  |  4.409 |  0.871 | 5.06 |  2.764 |  0.05% |
+| !selectedPatMuons.CocktailCharge  |  4.410 |  0.872 | 5.06 |  2.795 |  0.05% |
+| !selectedPatMuons.CocktailEta  |  4.781 |  1.679 | 2.85 |  2.783 |  0.09% |
+| !selectedPatMuons.CocktailGlobalChi2  |  4.782 |  1.362 | 3.51 |  2.811 |  0.07% |
+| !selectedPatMuons.CocktailP  |  4.781 |  1.652 | 2.89 |  2.775 |  0.09% |
+| !selectedPatMuons.CocktailPhi  |  4.781 |  1.679 | 2.85 |  2.783 |  0.09% |
+| !selectedPatMuons.CocktailPt  |  4.781 |  1.652 | 2.89 |  2.779 |  0.09% |
+| !selectedPatMuons.CocktailTrkD0  |  4.782 |  1.668 | 2.87 |  2.791 |  0.09% |
+| !selectedPatMuons.CocktailTrkD0Error  |  4.782 |  1.645 | 2.91 |  2.811 |  0.09% |
+| !selectedPatMuons.CocktailTrkDz  |  4.782 |  1.682 | 2.84 |  2.791 |  0.09% |
+| !selectedPatMuons.CocktailTrkDzError  |  4.782 |  1.648 | 2.90 |  2.811 |  0.09% |
+| !selectedPatMuons.CocktailTrkHits  |  4.410 |  1.024 | 4.31 |  2.799 |  0.06% |
+| !selectedPatMuons.EcalIso  |  4.781 |  1.325 | 3.61 |  2.768 |  0.07% |
+| !selectedPatMuons.EcalIso03  |  4.781 |  1.325 | 3.61 |  2.775 |  0.07% |
+| !selectedPatMuons.Energy  |  4.781 |  1.654 | 2.89 |  2.764 |  0.09% |
+| !selectedPatMuons.Eta  |  4.780 |  1.392 | 3.43 |  2.752 |  0.08% |
+| !selectedPatMuons.GlobalChi2  |  4.781 |  1.365 | 3.50 |  2.779 |  0.07% |
+| !selectedPatMuons.HOIso  |  4.781 |  0.845 | 5.66 |  2.760 |  0.05% |
+| !selectedPatMuons.HcalIso  |  4.781 |  1.214 | 3.94 |  2.768 |  0.07% |
+| !selectedPatMuons.HcalIso03  |  4.781 |  1.214 | 3.94 |  2.775 |  0.07% |
+| !selectedPatMuons.P  |  4.780 |  1.651 | 2.90 |  2.744 |  0.09% |
+| !selectedPatMuons.Phi  |  4.780 |  1.394 | 3.43 |  2.752 |  0.08% |
+| !selectedPatMuons.Pt  |  4.780 |  1.356 | 3.52 |  2.748 |  0.07% |
+| !selectedPatMuons.Px  |  4.780 |  1.674 | 2.85 |  2.748 |  0.09% |
+| !selectedPatMuons.Py  |  4.780 |  1.675 | 2.85 |  2.748 |  0.09% |
+| !selectedPatMuons.Pz  |  4.780 |  1.677 | 2.85 |  2.748 |  0.09% |
+| !selectedPatMuons.TrkD0  |  4.781 |  1.667 | 2.87 |  2.760 |  0.09% |
+| !selectedPatMuons.TrkD0Error  |  4.781 |  1.643 | 2.91 |  2.779 |  0.09% |
+| !selectedPatMuons.TrkDz  |  4.781 |  1.681 | 2.84 |  2.760 |  0.09% |
+| !selectedPatMuons.TrkDzError  |  4.781 |  1.648 | 2.90 |  2.779 |  0.09% |
+| !selectedPatMuons.TrkHits  |  4.409 |  0.954 | 4.62 |  2.768 |  0.05% |
+| !selectedPatMuons.TrkIso  |  4.781 |  1.262 | 3.79 |  2.764 |  0.07% |
+| !selectedPatMuons.TrkIso03  |  4.781 |  1.262 | 3.79 |  2.771 |  0.07% |
+| !selectedPatMuons.VtxDistXY  |  4.781 |  1.675 | 2.85 |  2.775 |  0.09% |
+| !selectedPatMuons.VtxDistZ  |  4.781 |  1.676 | 2.85 |  2.771 |  0.09% |
+| !selectedPatMuons.VtxIndex  |  4.409 |  0.832 | 5.30 |  2.771 |  0.05% |
+| !selectedPatMuons.isGoodGlobalMuon  |  4.410 |  0.830 | 5.31 |  2.803 |  0.05% |
+| *Total*  |  170.260 |  51.455 | 3.31 |  4276.889 |  2.81% |
+%ENDTWISTY%
+
+---+++ selectedPatMuonsLoosePFlow
+%TWISTY{mode="div" showlink="Show&nbsp;" hidelink="Hide&nbsp;"  firststart="hide" showimgright="%ICONURLPATH{toggleopen-small}%" hideimgright="%ICONURLPATH{toggleclose-small}%"}%
+|  *selectedPatMuonsLoosePFlow*  ||||||
+| *Name* | *Total Size (MB)* | *Compressed size (MB)* | *compression factor* | *Buffer (KB)* | *Fraction of file size* |
+| !selectedPatMuonsLoosePFlow.Charge  |  4.177 |  0.800 | 5.22 |  2.783 |  0.04% |
+| !selectedPatMuonsLoosePFlow.CocktailCharge  |  4.178 |  0.801 | 5.22 |  2.814 |  0.04% |
+| !selectedPatMuonsLoosePFlow.CocktailEta  |  4.316 |  1.129 | 3.82 |  2.803 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailGlobalChi2  |  4.317 |  0.993 | 4.35 |  2.830 |  0.05% |
+| !selectedPatMuonsLoosePFlow.CocktailP  |  4.316 |  1.116 | 3.87 |  2.795 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailPhi  |  4.316 |  1.130 | 3.82 |  2.803 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailPt  |  4.316 |  1.117 | 3.86 |  2.799 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailTrkD0  |  4.316 |  1.124 | 3.84 |  2.811 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailTrkD0Error  |  4.317 |  1.112 | 3.88 |  2.830 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailTrkDz  |  4.316 |  1.129 | 3.82 |  2.811 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailTrkDzError  |  4.317 |  1.116 | 3.87 |  2.830 |  0.06% |
+| !selectedPatMuonsLoosePFlow.CocktailTrkHits  |  4.178 |  0.862 | 4.85 |  2.818 |  0.05% |
+| !selectedPatMuonsLoosePFlow.EcalIso  |  4.315 |  0.929 | 4.64 |  2.787 |  0.05% |
+| !selectedPatMuonsLoosePFlow.EcalIso03  |  4.316 |  0.930 | 4.64 |  2.795 |  0.05% |
+| !selectedPatMuonsLoosePFlow.Energy  |  4.315 |  1.117 | 3.86 |  2.783 |  0.06% |
+| !selectedPatMuonsLoosePFlow.Eta  |  4.315 |  1.001 | 4.31 |  2.771 |  0.05% |
+| !selectedPatMuonsLoosePFlow.GlobalChi2  |  4.316 |  0.992 | 4.35 |  2.799 |  0.05% |
+| !selectedPatMuonsLoosePFlow.HOIso  |  4.315 |  0.777 | 5.55 |  2.779 |  0.04% |
+| !selectedPatMuonsLoosePFlow.HcalIso  |  4.315 |  0.838 | 5.15 |  2.787 |  0.05% |
+| !selectedPatMuonsLoosePFlow.HcalIso03  |  4.316 |  0.838 | 5.15 |  2.795 |  0.05% |
+| !selectedPatMuonsLoosePFlow.P  |  4.315 |  1.116 | 3.87 |  2.764 |  0.06% |
+| !selectedPatMuonsLoosePFlow.PFGammaIso  |  4.316 |  0.904 | 4.77 |  2.799 |  0.05% |
+| !selectedPatMuonsLoosePFlow.PfChargedHadronIso  |  4.317 |  0.919 | 4.70 |  2.830 |  0.05% |
+| !selectedPatMuonsLoosePFlow.PfNeutralHadronIso  |  4.317 |  0.819 | 5.27 |  2.830 |  0.04% |
+| !selectedPatMuonsLoosePFlow.Phi  |  4.315 |  1.002 | 4.31 |  2.771 |  0.05% |
+| !selectedPatMuonsLoosePFlow.Pt  |  4.315 |  0.989 | 4.36 |  2.768 |  0.05% |
+| !selectedPatMuonsLoosePFlow.Px  |  4.315 |  1.125 | 3.84 |  2.768 |  0.06% |
+| !selectedPatMuonsLoosePFlow.Py  |  4.315 |  1.125 | 3.84 |  2.768 |  0.06% |
+| !selectedPatMuonsLoosePFlow.Pz  |  4.315 |  1.126 | 3.83 |  2.768 |  0.06% |
+| !selectedPatMuonsLoosePFlow.TrkD0  |  4.315 |  1.123 | 3.84 |  2.779 |  0.06% |
+| !selectedPatMuonsLoosePFlow.TrkD0Error  |  4.316 |  1.110 | 3.89 |  2.799 |  0.06% |
+| !selectedPatMuonsLoosePFlow.TrkDz  |  4.315 |  1.128 | 3.82 |  2.779 |  0.06% |
+| !selectedPatMuonsLoosePFlow.TrkDzError  |  4.316 |  1.114 | 3.87 |  2.799 |  0.06% |
+| !selectedPatMuonsLoosePFlow.TrkHits  |  4.177 |  0.836 | 5.00 |  2.787 |  0.05% |
+| !selectedPatMuonsLoosePFlow.TrkIso  |  4.315 |  0.871 | 4.95 |  2.783 |  0.05% |
+| !selectedPatMuonsLoosePFlow.TrkIso03  |  4.315 |  0.871 | 4.95 |  2.791 |  0.05% |
+| !selectedPatMuonsLoosePFlow.VtxDistXY  |  4.316 |  1.125 | 3.84 |  2.795 |  0.06% |
+| !selectedPatMuonsLoosePFlow.VtxDistZ  |  4.315 |  1.125 | 3.84 |  2.791 |  0.06% |
+| !selectedPatMuonsLoosePFlow.VtxIndex  |  4.177 |  0.784 | 5.32 |  2.791 |  0.04% |
+| !selectedPatMuonsLoosePFlow.isGoodGlobalMuon  |  4.178 |  0.785 | 5.32 |  2.822 |  0.04% |
+%ENDTWISTY%
+---+++ Biggest consumers
+| *Name* | *Compressed size (MB)* | *Fraction of file size* |
+| !GenParticle.Py  |  51.942 |  2.833% |
+| !GenParticle.Px  |  51.941 |  2.833% |
+| !GenParticle.Pz  |  51.596 |  2.814% |
+| !GenParticle.Energy  |  50.883 |  2.775% |
+| !GenParticle.Eta  |  32.061 |  1.748% |
+| !GenParticle.Phi  |  31.726 |  1.730% |
+| !GenParticle.Pt  |  30.338 |  1.654% |
+| !GenJet.Pz  |  13.966 |  0.762% |
+| !GenJet.Py  |  13.951 |  0.761% |
+| !GenJet.Px  |  13.951 |  0.761% |
