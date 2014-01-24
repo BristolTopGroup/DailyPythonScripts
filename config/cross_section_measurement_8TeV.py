@@ -12,7 +12,9 @@ path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_22Ja
 path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables_ARC_review/'
 
 path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging
+new_luminosity = 19712  # pb-1
 luminosity = 19584  # pb-1
+luminosity_scale = float(new_luminosity)/float(luminosity)
 ttbar_xsection = 245.8  # pb
 
 middle = '_' + str(luminosity) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'

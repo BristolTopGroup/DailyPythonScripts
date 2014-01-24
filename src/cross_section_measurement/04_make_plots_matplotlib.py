@@ -228,7 +228,7 @@ def get_cms_labels(channel):
         lepton = 'e, $\mu$ + jets combined'
     channel_label = '%s, $\geq$ 4 jets, %s' % (lepton, b_tag_bins_latex[b_tag_bin])
     template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
-    label = template % (measurement_config.luminosity / 1000., measurement_config.centre_of_mass, channel_label)
+    label = template % (measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass, channel_label)
     return label
     
     

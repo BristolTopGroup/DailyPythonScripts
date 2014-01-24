@@ -138,7 +138,7 @@ def get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type)
     pass
 
 def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin):
-    global use_fitter
+    global use_fitter, measurement_config
     results = {}
     initial_values = {}
     templates = {}
@@ -154,7 +154,12 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                                     )
         # prepare histograms
         # normalise histograms
-        
+        if not measurement_config.luminosity_scale == 1.0:
+            for sample, histogram in histograms.iteritems():
+                if sample == 'data':
+                    continue
+                histogram.Scale(measurement_config.luminosity_scale)
+            
         # create signal histograms
         h_eta_signal = histograms['TTJet'] + histograms['SingleTop']
         fit_histograms = {

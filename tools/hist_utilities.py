@@ -79,11 +79,12 @@ def scale_histogram_errors(histogram, total_error):
     for bin_i in range(bins_number):
         histogram.SetBinError(bin_i + 1, scale_factor * histogram.GetBinError(bin_i + 1))
 
-def prepare_histograms(histograms, rebin=1, scale_factor=1., normalisation={}):
+def prepare_histograms(histograms, rebin=1, scale_factor=1., normalisation={}, exclude_from_scaling = ['data']):
     for sample, histogram_dict in histograms.iteritems():
         for _, histogram in histogram_dict.iteritems():
             histogram.Rebin(rebin)
-            histogram.Scale(scale_factor)
+            if not sample in exclude_from_scaling:
+                histogram.Scale(scale_factor)
             if normalisation != {} and histogram.Integral() != 0:
                 if sample == 'TTJet':
                     histogram.Scale(normalisation['TTJet'][0] / histogram.Integral())
