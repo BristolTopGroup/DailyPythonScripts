@@ -8,8 +8,8 @@ centre_of_mass = 8  # TeV
 '''
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
-path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_22JanRereco/'
-path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables_ARC_review/'
+path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_final_approved/'
+path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_final_approved/unfolding/'
 
 path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging
 new_luminosity = 19712  # pb-1

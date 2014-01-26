@@ -25,14 +25,14 @@ def get_fit_results(variable, channel):
     fit_results = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
     return fit_results
 
-def make_correlation_plot_from_file(channel, variable, normalisation, title, x_title, y_title, x_limits, y_limits, rebin=1, save_folder='fitchecks/', save_as = ['pdf', 'png']):
+def make_correlation_plot_from_file(channel, variable, normalisation, title, x_title, y_title, x_limits, y_limits, rebin=1, save_folder='plots/fitchecks/', save_as = ['pdf', 'png']):
 
 #global b_tag_bin
     x_array = []
     y_array = []
     parameters = ["signal", "vJets", "QCD"]
     
-    file=open("fitchecks/correlation_%s.txt" %variable, "r")
+    file=open("plots/fitchecks/correlation_%s.txt" %variable, "r")
     #cycle through the lines in the file 
     for line_number, line in enumerate(file):
         #for now, only make plots for the fits for the central measurement
@@ -44,36 +44,36 @@ def make_correlation_plot_from_file(channel, variable, normalisation, title, x_t
         weights = {}
         if channel == 'electron':
                 #matrix we want is 10 lines below the line with the measurement ("central")
-            matrix_line = linecache.getline("fitchecks/correlation_%s.txt" %variable, line_number+((variable_bins_ROOT[variable].index(variable_bin)+1)*10))
-            weights["signal_signal"] = matrix_line.split()[2]
-            weights["signal_vJets"] = matrix_line.split()[3]
-            weights["signal_QCD"] = matrix_line.split()[4]
-        
-            matrix_line = linecache.getline("fitchecks/correlation_%s.txt" %variable, line_number+((variable_bins_ROOT[variable].index(variable_bin)+1)*10)+1)    
-            weights["vJets_signal"] = matrix_line.split()[2]
-            weights["vJets_vJets"] = matrix_line.split()[3]
-            weights["vJets_QCD"] = matrix_line.split()[4]
-            
-            matrix_line = linecache.getline("fitchecks/correlation_%s.txt" %variable, line_number+((variable_bins_ROOT[variable].index(variable_bin)+1)*10)+2)
-            weights["QCD_signal"] = matrix_line.split()[2]
+            matrix_line = linecache.getline("plots/fitchecks/correlation_%s.txt" %variable, line_number+((variable_bins_ROOT[variable].index(variable_bin)+1)*10))
+            weights["QCD_QCD"] = matrix_line.split()[2]
             weights["QCD_vJets"] = matrix_line.split()[3]
-            weights["QCD_QCD"] = matrix_line.split()[4]
+            weights["QCD_signal"] = matrix_line.split()[4]
+        
+            matrix_line = linecache.getline("plots/fitchecks/correlation_%s.txt" %variable, line_number+((variable_bins_ROOT[variable].index(variable_bin)+1)*10)+1)    
+            weights["vJets_QCD"] = matrix_line.split()[2]
+            weights["vJets_vJets"] = matrix_line.split()[3]
+            weights["vJets_signal"] = matrix_line.split()[4]
+            
+            matrix_line = linecache.getline("plots/fitchecks/correlation_%s.txt" %variable, line_number+((variable_bins_ROOT[variable].index(variable_bin)+1)*10)+2)
+            weights["signal_QCD"] = matrix_line.split()[2]
+            weights["signal_vJets"] = matrix_line.split()[3]
+            weights["signal_signal"] = matrix_line.split()[4]
         
         if channel == 'muon':
-            matrix_line = linecache.getline("fitchecks/correlation_%s.txt" %variable, line_number+ (((len(variable_bins_ROOT[variable]))*10) + ((variable_bins_ROOT[variable].index(variable_bin)+1)*10)))
-            weights["signal_signal"] = matrix_line.split()[2]
-            weights["signal_vJets"] = matrix_line.split()[3]
-            weights["signal_QCD"] = matrix_line.split()[4]
-        
-            matrix_line = linecache.getline("fitchecks/correlation_%s.txt" %variable, line_number+ (((len(variable_bins_ROOT[variable]))*10) + ((variable_bins_ROOT[variable].index(variable_bin)+1)*10))+1)    
-            weights["vJets_signal"] = matrix_line.split()[2]
-            weights["vJets_vJets"] = matrix_line.split()[3]
-            weights["vJets_QCD"] = matrix_line.split()[4]
-            
-            matrix_line = linecache.getline("fitchecks/correlation_%s.txt" %variable, line_number+ (((len(variable_bins_ROOT[variable]))*10) + ((variable_bins_ROOT[variable].index(variable_bin)+1)*10))+2)
-            weights["QCD_signal"] = matrix_line.split()[2]
+            matrix_line = linecache.getline("plots/fitchecks/correlation_%s.txt" %variable, line_number+ (((len(variable_bins_ROOT[variable]))*10) + ((variable_bins_ROOT[variable].index(variable_bin)+1)*10)))
+            weights["QCD_QCD"] = matrix_line.split()[2]
             weights["QCD_vJets"] = matrix_line.split()[3]
-            weights["QCD_QCD"] = matrix_line.split()[4]
+            weights["QCD_signal"] = matrix_line.split()[4]
+        
+            matrix_line = linecache.getline("plots/fitchecks/correlation_%s.txt" %variable, line_number+ (((len(variable_bins_ROOT[variable]))*10) + ((variable_bins_ROOT[variable].index(variable_bin)+1)*10))+1)    
+            weights["vJets_QCD"] = matrix_line.split()[2]
+            weights["vJets_vJets"] = matrix_line.split()[3]
+            weights["vJets_signal"] = matrix_line.split()[4]
+            
+            matrix_line = linecache.getline("plots/fitchecks/correlation_%s.txt" %variable, line_number+ (((len(variable_bins_ROOT[variable]))*10) + ((variable_bins_ROOT[variable].index(variable_bin)+1)*10))+2)
+            weights["signal_QCD"] = matrix_line.split()[2]
+            weights["signal_vJets"] = matrix_line.split()[3]
+            weights["signal_signal"] = matrix_line.split()[4]
         
         histogram_properties=Histogram_properties()
         histogram_properties.title = title
@@ -89,9 +89,6 @@ def make_correlation_plot_from_file(channel, variable, normalisation, title, x_t
         for i in range(len(parameters)):
             for j in range(len(parameters)):
                 a.fill(float(i), float(j), float(weights["%s_%s" %(parameters[i], parameters[j])]))
-                print "i = " + str(i)
-                print "j = " + str(j)
-                print "float(weights['%s_%s' %(parameters[i], parameters[j])]) = " + str(weights["%s_%s" %(parameters[i], parameters[j])])
         plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
         fig, ax = plt.subplots(nrows=1, ncols=1)
         rplt.hist2d(a)
@@ -129,7 +126,7 @@ if __name__ == '__main__':
                   help="set path to JSON files")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                   help="set the variable to analyse (MET, HT, ST, MT)")
-    parser.add_option("-o", "--output_folder", dest="output_folder", default='fitchecks/',
+    parser.add_option("-o", "--output_folder", dest="output_folder", default='plots/fitchecks/',
                   help="set path to save plots")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
                       help="set MET type used in the analysis of MET-dependent variables")
@@ -179,8 +176,8 @@ if __name__ == '__main__':
             }
     normalisations_electron, normalisations_muon = fit_results_electron, fit_results_muon
     
-    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
-    
     #make correlation plots for electron and muon channel
-    make_correlation_plot_from_file(channel='electron', variable=options.variable, normalisation=normalisations_electron, title=histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='fitchecks/', save_as=['pdf', 'png'])
-    make_correlation_plot_from_file(channel='muon', variable=options.variable, normalisation=normalisations_electron, title=histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='fitchecks/', save_as=['pdf', 'png'])
+    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
+    make_correlation_plot_from_file(channel='electron', variable=options.variable, normalisation=normalisations_electron, title=histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='plots/fitchecks/', save_as=['pdf', 'png'])
+    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
+    make_correlation_plot_from_file(channel='muon', variable=options.variable, normalisation=normalisations_electron, title=histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='plots/fitchecks/', save_as=['pdf', 'png'])
