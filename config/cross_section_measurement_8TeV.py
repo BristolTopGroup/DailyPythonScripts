@@ -8,9 +8,8 @@ centre_of_mass = 8  # TeV
 '''
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
-path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_22JanRereco/'
-#path_to_central_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_central_samples_with_corrected_errors_2/'
-path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables_ARC_review/'
+path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_final_approved/'
+path_to_unfolding_histograms = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_final_approved/unfolding/'
 
 path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging
 new_luminosity = 19712  # pb-1
@@ -24,11 +23,8 @@ data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
 data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
 muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
-#SingleTop_file = path_to_central_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
-#muon_QCD_MC_file = path_to_central_files + 'central/QCD_Muon' + middle + '.root'
 electron_QCD_MC_file =  path_to_files + 'central/QCD' + middle + '.root'
-#electron_QCD_MC_file =  path_to_central_files + 'central/QCD' + middle + '.root'
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown']
 ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo', 'ptreweight']
@@ -54,13 +50,9 @@ categories_and_prefixes = {
 
 general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
 ttbar_category_templates = {category: path_to_files + category + '/TTJet' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
-#ttbar_category_templates['central'] = path_to_central_files + 'central/TTJet' + middle + '.root'
 SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
-#SingleTop_category_templates['central'] = path_to_central_files + 'central/SingleTop' + middle + '.root'
 VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
-#VJets_category_templates['central'] = path_to_central_files + 'central/VJets' + middle + '.root'
 muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Muon' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
-#muon_QCD_MC_category_templates['central'] = path_to_central_files + 'central/QCD_Muon' + middle + '.root'
 
 data_electron_category_templates = {'central': data_file_electron,
                                     'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + categories_and_prefixes['JES_up'] + '.root',
