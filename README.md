@@ -13,6 +13,11 @@ cd DailyPythonScripts
 # get submodules:
 git submodule init && git submodule update
 
+# change matplotlib branch to 1.3.1 (stable version)
+cd external/matplotlib
+git co 1.3.1
+cd -
+
 # setup run:
 ./setup_standalone.sh
 
