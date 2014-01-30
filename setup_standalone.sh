@@ -39,14 +39,18 @@ pip install -U numpy
 echo "Installing dateutil"
 pip install python-dateutil
 
-echo "Installing rootpy"
-pip install -e $base/external/rootpy
-
 echo "Installing matplotlib"
 #Adding freetype and libpng library and include paths from CMSSW, specific to the version but should be ok for now.
 export LDFLAGS="$LDFLAGS -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/lib -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/lib"
 export CFLAGS="$CFLAGS -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include/freetype2 -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/include"
-pip install -e $base/external/matplotlib
+#pip install -e $base/external/matplotlib
+pip install matplotlib==1.3.1
+
+echo "Installing rootpy"
+pip install -e $base/external/rootpy
+
+echo "Installing root_numpy"
+pip install root_numpy
 
 if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
@@ -60,6 +64,16 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Updating RooUnfold config"
 	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
 	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
+	
+	echo "Building TopAnalysis"
+	cd $base/external/TopAnalysis/
+	make -j4
+	# remove tmp folder
+	rm -fr $base/external/TopAnalysis/tmp
+	mv $base/external/TopAnalysis/libTopSVDUnfold.rootmap $base/external/lib/.
+	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
+	echo "Updating TopSVDUnfold config"
+	echo "library = '$base/external/lib/libTopSVDUnfold.so'" > $base/config/TopSVDUnfold.py
 fi
 
 cd $base

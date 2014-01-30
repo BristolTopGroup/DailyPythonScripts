@@ -4,22 +4,23 @@
 *.log
 *.png
 *.pdf
+*.root
 *~
 .DS_Store
 #data, plots and tables potentially include non-approved data == don't make them public
 **/data*/*
+data
 **/plots*/*
 **/tables*/*
 src/cross_section_measurement/data/
 src/unfolding_tests/plots/
 src/log_*
-src/*.root
-src/*.png
-src/*.pdf
-tools/*.png
 # generated during setup
 external/vpython/
 external/lib
+external/TopAnalysis/libTopSVDUnfold.rootmap
+external/TopAnalysis/libTopSVDUnfold.so
 config/RooUnfold.py
+config/TopSVDUnfold.py
 #eclipse settings
 .settings

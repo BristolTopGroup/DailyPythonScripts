@@ -62,7 +62,7 @@ class TemplateFit():
         templates = {}
         for sample, histogram in histograms.iteritems():
             normalisation[sample] = histogram.Integral()
-            normalisation_errors[sample] = sum(histogram.errors())
+            normalisation_errors[sample] = sum(histogram.yerravg())
             temp = histogram.Clone(sample + '_' + 'template')
             nEntries = temp.Integral()
             if not nEntries == 0:

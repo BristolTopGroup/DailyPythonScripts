@@ -21,7 +21,7 @@ data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
 muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Pt-20_MuEnrichedPt-15' + middle + '.root'
-
+electron_QCD_MC_file = path_to_files + 'central/QCD_5050pb' + middle + '.root'
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
 generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
@@ -49,6 +49,7 @@ ttbar_category_templates = {category: path_to_files + category + '/TTJet' + midd
 SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Pt-20_MuEnrichedPt-15' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
+higgs_category_templates = {category: path_to_files + category + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 
 data_electron_category_templates = {'central': data_file_electron,
                                     'JES_up': path_to_files + 'JES_up/ElectronHad' + middle + categories_and_prefixes['JES_up'] + '.root',
@@ -83,3 +84,5 @@ muon_control_region_systematic = 'QCD non iso mu+jets ge3j' #no systematic yet
 special_muon_histogram = 'etaAbs_ge2j_data'
 
 rebin = 20
+
+include_higgs = False

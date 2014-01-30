@@ -3,10 +3,18 @@ Created on 31 Oct 2012
 
 @author: kreczko
 '''
-availablemethods = ['RooUnfoldTUnfold', 'RooUnfoldBayes',
-                        'RooUnfoldSvd','RooUnfoldBinByBin',
-                        'RooUnfoldInvert', 'RooUnfoldTUnfold']
+availablemethods = [
+                    'RooUnfoldTUnfold', 
+                    'RooUnfoldBayes',
+                    'RooUnfoldSvd',
+                    'RooUnfoldBinByBin',
+                    'RooUnfoldInvert',
+                    'TSVDUnfold',
+                    'TopSVDUnfold',
+                    ]
+
 SVD_k_value = 5
+SVD_tau_value = -1
 SVD_n_toy = 1000
 Hreco = 2
 Bayes_n_repeat = 4

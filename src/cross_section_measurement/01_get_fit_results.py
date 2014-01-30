@@ -44,6 +44,8 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
             abs_eta_data = abs_eta
     
     for sample, file_name in input_files.iteritems():
+        if not file_name:
+            continue
         h_abs_eta = None
         if sample == 'data':
             h_abs_eta = get_histogram(file_name, abs_eta_data, b_tag_bin)
@@ -114,6 +116,9 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
     return histograms
 
 def get_histogram(input_file, histogram_path, b_tag_bin=''):
+    if not input_file:
+        return None
+    
     b_tag_bin_sum_rules = b_tag_summations
     histogram = None
     if b_tag_bin in b_tag_bin_sum_rules.keys():  # summing needed
@@ -161,13 +166,17 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                 histogram.Scale(measurement_config.luminosity_scale)
             
         # create signal histograms
-        h_eta_signal = histograms['TTJet'] + histograms['SingleTop']
+        h_eta_signal = None
+        if measurement_config.include_higgs:
+            h_eta_signal = histograms['TTJet'] + histograms['SingleTop'] + histograms['Higgs']
+        else:
+            h_eta_signal = histograms['TTJet'] + histograms['SingleTop']
         fit_histograms = {
                                       'data':histograms['data'],
                                       'signal':h_eta_signal,
 #                                      'background':histograms['V+Jets']+histograms['QCD']
                                       'V+Jets':histograms['V+Jets'],
-                                      'QCD':histograms['QCD']
+                                      'QCD':histograms['QCD'],
                                       }
         fitter = None
         if use_fitter == 'TMinuit':
@@ -175,7 +184,6 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         elif use_fitter == 'RooFit':
             fitter = RooFitFit(histograms=fit_histograms, fit_boundries=(0., 2.4))
         else: #not recognised
-            import sys
             sys.stderr.write('Do not recognise fitter "%s". Using default (TMinuit).\n' % fitter)
             fitter = TMinuitFit(histograms=fit_histograms)
         
@@ -188,24 +196,39 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         
         N_ttbar_before_fit = histograms['TTJet'].Integral()
         N_SingleTop_before_fit = histograms['SingleTop'].Integral()
-        N_ttbar_error_before_fit = sum(histograms['TTJet'].errors())
-        N_SingleTop_error_before_fit = sum(histograms['SingleTop'].errors())
+        N_ttbar_error_before_fit = sum(histograms['TTJet'].yerravg())
+        N_SingleTop_error_before_fit = sum(histograms['SingleTop'].yerravg())
+        N_Higgs_before_fit = 0
+        N_Higgs_error_before_fit = 0
+        if measurement_config.include_higgs:
+            N_Higgs_before_fit = histograms['Higgs'].Integral()
+            N_Higgs_error_before_fit = sum(histograms['Higgs'].yerravg())
 
         if (N_SingleTop_before_fit != 0):
-            TTJet_SingleTop_ratio = N_ttbar_before_fit / N_SingleTop_before_fit
+            TTJet_SingleTop_ratio = (N_ttbar_before_fit + N_Higgs_before_fit) / N_SingleTop_before_fit
         else:
             print 'Bin ', variable_bin, ': ttbar/singleTop ratio undefined for %s channel! Setting to 0.' % channel
             TTJet_SingleTop_ratio = 0
 
-        N_ttbar, N_SingleTop = decombine_result(fit_results['signal'], TTJet_SingleTop_ratio)
+        N_ttbar_all, N_SingleTop = decombine_result(fit_results['signal'], TTJet_SingleTop_ratio)
+        if (N_Higgs_before_fit != 0):
+            TTJet_Higgs_ratio = N_ttbar_before_fit/ N_Higgs_before_fit
+        else:
+#             print 'Bin ', variable_bin, ': ttbar/higgs ratio undefined for %s channel! Setting to 0.' % channel
+            TTJet_Higgs_ratio = 0
         
+        N_ttbar, N_Higgs = decombine_result(N_ttbar_all, TTJet_Higgs_ratio)
         
         fit_results['TTJet'] = N_ttbar
         fit_results['SingleTop'] = N_SingleTop
+        fit_results['Higgs'] = N_Higgs
+        
         normalisation['TTJet'] = N_ttbar_before_fit
         normalisation['SingleTop'] = N_SingleTop_before_fit
+        normalisation['Higgs'] = N_Higgs_before_fit
         normalisation_errors['TTJet'] = N_ttbar_error_before_fit
         normalisation_errors['SingleTop'] = N_SingleTop_error_before_fit
+        normalisation_errors['Higgs'] = N_Higgs_error_before_fit
         
         if results == {}:  # empty
             initial_values['data'] = [(normalisation['data'], normalisation_errors['data'])]
@@ -213,7 +236,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
             for sample in fit_results.keys():
                 results[sample] = [fit_results[sample]]
                 initial_values[sample] = [(normalisation[sample], normalisation_errors[sample])]
-                if not sample == 'TTJet' and not sample == 'SingleTop':
+                if not sample in ['TTJet', 'SingleTop', 'Higgs']:
                     templates[sample] = [fitter.vectors[sample]]
         else:
             initial_values['data'].append([normalisation['data'], normalisation_errors['data']])
@@ -221,7 +244,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
             for sample in fit_results.keys():
                 results[sample].append(fit_results[sample])
                 initial_values[sample].append([normalisation[sample], normalisation_errors[sample]])
-                if not sample == 'TTJet' and not sample == 'SingleTop':
+                if not sample in ['TTJet', 'SingleTop', 'Higgs']:
                     templates[sample].append(fitter.vectors[sample])
                     
     return results, initial_values, templates
@@ -236,6 +259,9 @@ def write_fit_results_and_initial_values(channel, category, fit_results, initial
     
     
 if __name__ == '__main__':
+    from ROOT import gROOT
+    gROOT.SetBatch( True )
+    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
     # setup
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data',
@@ -312,6 +338,9 @@ if __name__ == '__main__':
     VJets_file = File(measurement_config.VJets_category_templates['central'])
     electron_control_region = measurement_config.electron_control_region
     muon_control_region = measurement_config.muon_control_region
+    Higgs_file = None
+    if measurement_config.include_higgs:
+        Higgs_file = File(measurement_config.higgs_category_templates['central'])
     # matching/scale up/down systematics for ttbar + jets
     for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
         TTJet_file = File(filename)
@@ -322,6 +351,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_electron,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -334,6 +364,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_muon,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -355,6 +386,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_electron,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -367,6 +399,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_muon,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -389,6 +422,8 @@ if __name__ == '__main__':
         muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates[category])
         data_file_electron = File(measurement_config.data_electron_category_templates['central'])
         data_file_muon = File(measurement_config.data_muon_category_templates['central'])
+        if measurement_config.include_higgs:
+            Higgs_file = File(measurement_config.higgs_category_templates[category])
         
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
@@ -414,6 +449,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_electron,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -426,6 +462,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_muon,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -441,6 +478,8 @@ if __name__ == '__main__':
         muon_QCD_MC_file.Close()
         data_file_electron.Close()
         data_file_muon.Close()
+        if Higgs_file:
+            Higgs_file.Close()
     
     # now do PDF uncertainty
     data_file_electron = File(measurement_config.data_electron_category_templates['central'])
@@ -450,6 +489,8 @@ if __name__ == '__main__':
     muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_category_templates['central'])
     data_file_electron = File(measurement_config.data_electron_category_templates['central'])
     data_file_muon = File(measurement_config.data_muon_category_templates['central'])
+    if measurement_config.include_higgs:
+        Higgs_file = File(measurement_config.higgs_category_templates['central'])
     
     for index in range(1, 45):
         category = 'PDFWeights_%d' % index
@@ -461,6 +502,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_electron,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -473,6 +515,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_muon,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -499,6 +542,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_electron,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=category,
@@ -511,6 +555,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_muon,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=category,
@@ -529,6 +574,7 @@ if __name__ == '__main__':
                                    'SingleTop': SingleTop_file,
                                    'V+Jets': VJets_file,
                                    'data': data_file_electron,
+                                   'Higgs' : Higgs_file,
                                    },
                       variable=variable,
                       met_type=met_type,
@@ -542,6 +588,7 @@ if __name__ == '__main__':
                                'SingleTop': SingleTop_file,
                                'V+Jets': VJets_file,
                                'data': data_file_muon,
+                               'Higgs' : Higgs_file,
                                },
                   variable=variable,
                   met_type=met_type,
