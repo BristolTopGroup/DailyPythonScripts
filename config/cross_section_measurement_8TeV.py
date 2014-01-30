@@ -25,6 +25,7 @@ muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
 electron_QCD_MC_file =  path_to_files + 'central/QCD' + middle + '.root'
+higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown']
 ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo', 'ptreweight']
@@ -53,6 +54,7 @@ ttbar_category_templates = {category: path_to_files + category + '/TTJet' + midd
 SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Muon' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
+higgs_category_templates = {category: path_to_files + category + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
 
 data_electron_category_templates = {'central': data_file_electron,
                                     'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + categories_and_prefixes['JES_up'] + '.root',
@@ -97,3 +99,5 @@ muon_control_region = 'QCD non iso mu+jets ge3j'
 muon_control_region_systematic = 'QCD non iso mu+jets ge3j' #no systematic yet
 special_muon_histogram = 'muon_AbsEta_0btag'
 rebin = 2
+
+include_higgs = False
