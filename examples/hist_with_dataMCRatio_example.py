@@ -3,11 +3,9 @@ import numpy as np
 from rootpy.plotting import Hist, HistStack, Legend, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
 import ROOT
 import matplotlib.gridspec as gridspec
 from config import CMS
-from pylab import setp
 # Setting this to True (default in rootpy)
 # changes how the histograms look in ROOT...
 ROOT.TH1.SetDefaultSumw2(False)
@@ -58,8 +56,8 @@ ax0 = plt.subplot(gs[0])
 ax0.minorticks_on()
 rplt.bar(stack, stacked=True)
 rplt.errorbar(h3, xerr=False, emptybins=False)
-plt.xlabel('Mass', position=(1., 0.), ha='right', fontsize = 24)
-plt.ylabel('Events', position=(0., 1.), va='top', fontsize = 24)
+# plt.xlabel('Mass', position=(1., 0.), ha='right', fontsize = 24)
+plt.ylabel('Events', va='top', fontsize = 40)
 plt.tick_params(**CMS.axis_label_major)
 plt.tick_params(**CMS.axis_label_minor)
 plt.legend(numpoints=1)
@@ -69,7 +67,9 @@ ax1.yaxis.set_major_locator(yloc)
 #ax1.set_ticks([-1, 1, 2, 3])
 plt.tick_params(**CMS.axis_label_major)
 plt.tick_params(**CMS.axis_label_minor)
-plt.xlabel('Mass', position=(1., 0.), ha='right', fontsize = 24)
-plt.ylabel('data/MC', position=(0., 1.), va='top', fontsize = 24)
+plt.xlabel('Mass [GeV]',position=(1., 0.), ha='right', fontsize = 40)
+plt.ylabel('data/MC', va='top', fontsize = 24)
 rplt.errorbar(ratio, emptybins=False)
+
+plt.tight_layout()
 plt.savefig('plots/Hist_with_dataMCRatio.png')
