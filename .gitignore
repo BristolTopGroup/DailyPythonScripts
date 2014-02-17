@@ -18,10 +18,9 @@ src/log_*
 # generated during setup
 external/vpython/
 external/lib
-external/RooUnfold
-external/rootpy
 external/TopAnalysis/libTopSVDUnfold.rootmap
 external/TopAnalysis/libTopSVDUnfold.so
 config/RooUnfold.py
+config/TopSVDUnfold.py
 #eclipse settings
 .settings
