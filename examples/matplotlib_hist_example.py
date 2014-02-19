@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 import numpy as np
+import matplotlib as mpl
+mpl.use('agg')
 from rootpy.plotting import Hist, HistStack, Legend, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 import ROOT
+
+from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 # Setting this to True (default in rootpy)
 # changes how the histograms look in ROOT...
 ROOT.TH1.SetDefaultSumw2(False)
@@ -18,7 +22,7 @@ x1_obs = mu1 + sigma1 * np.random.randn(10000)
 x2_obs = mu2 + sigma2 * np.random.randn(1000)
 
 # create histograms
-h1 = Hist(100, 40, 200, title='Background')
+h1 = Hist(50, 40, 200, title='Background')
 h2 = h1.Clone(title='Signal')
 h3 = h1.Clone(title='Data')
 h3.markersize=1.2
@@ -34,46 +38,32 @@ h1.fillstyle = 'solid'
 h1.fillcolor = 'green'
 h1.linecolor = 'green'
 h1.linewidth = 0
+h1.legendstyle = 'F'
 
 h2.fillstyle = 'solid'
 h2.fillcolor = 'red'
 h2.linecolor = 'red'
 h2.linewidth = 0
+h2.legendstyle = 'F'
 
 stack = HistStack()
 stack.Add(h1)
 stack.Add(h2)
 
-# plot with ROOT
-# canvas = Canvas(width=700, height=500)
-# canvas.SetLeftMargin(0.15)
-# canvas.SetBottomMargin(0.15)
-# canvas.SetTopMargin(0.05)
-# canvas.SetRightMargin(0.05)
-# stack.Draw()
-# h3.Draw('E1 same')
-# stack.xaxis.SetTitle('Mass')
-# stack.yaxis.SetTitle('Events')
-# legend = Legend(2)
-# legend.AddEntry(h1, style='F')
-# legend.AddEntry(h2, style='F')
-# legend.AddEntry(h3, style='P')
-# legend.Draw()
-# canvas.Modified()
-# canvas.Update()
-# canvas.SaveAs('plots/RootHist.png')
+# prop = Histogram_properties()
+# prop.name = 'MatplotlibHist'
+# make_data_mc_comparison_plot([h3, h1, h2], ['data','background', 'signal'], ['black', 'green', 'red'], histogram_properties=prop)
 
 # plot with matplotlib
-fig = plt.figure(figsize=(7, 5), dpi=100)#, facecolor='white')
-# axes = plt.axes([0.15, 0.15, 0.8, 0.8])
+fig = plt.figure(figsize=(14, 10), dpi=300)#, facecolor='white')
 axes = plt.axes()
 axes.xaxis.set_minor_locator(AutoMinorLocator())
 axes.yaxis.set_minor_locator(AutoMinorLocator())
 # axes.yaxis.set_major_locator(MultipleLocator(20))
 axes.tick_params(which='major', labelsize=15, length=8)
 axes.tick_params(which='minor', length=4)
-rplt.errorbar(h3, xerr=False, emptybins=False, axes=axes)
-rplt.hist(stack, stacked=True, axes=axes, yerr=False)
+rplt.errorbar(h3, xerr=False, emptybins=False, axes=axes, zorder = 4)
+rplt.hist(stack, stacked=True, axes=axes, zorder=1)
 plt.xlabel('Mass', position=(1., 0.), ha='right')
 plt.ylabel('Events', position=(0., 1.), va='top')
 plt.legend(numpoints=1)

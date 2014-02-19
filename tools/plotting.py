@@ -78,6 +78,7 @@ def make_data_mc_comparison_plot( histograms = [],
         if not index == data_index:
             histogram.fillstyle = 'solid'
             histogram.fillcolor = color
+            histogram.legendstyle = 'F'
             add_mc( histogram )
             
     data = histograms[data_index]
@@ -113,13 +114,14 @@ def make_data_mc_comparison_plot( histograms = [],
         stack_lower = sum( stack.GetHists() )
         mc_errors = list( stack_lower.errors() )
         stack_upper = stack_lower.Clone( 'upper' )
-        for bin in range( 1, stack_lower.GetNbinsX() ):
-            stack_lower.SetBinContent( bin, stack_lower.GetBinContent( bin ) - mc_errors[bin - 1] )
-            stack_upper.SetBinContent( bin, stack_upper.GetBinContent( bin ) + mc_errors[bin - 1] )
+        for bin_i in range( 1, stack_lower.GetNbinsX() ):
+            stack_lower.SetBinContent( bin_i, stack_lower.GetBinContent( bin_i ) - mc_errors[bin_i - 1] )
+            stack_upper.SetBinContent( bin_i, stack_upper.GetBinContent( bin_i ) + mc_errors[bin_i - 1] )
         rplt.fill_between( stack_upper, stack_lower, axes, facecolor = '0.75', alpha = 0.5, hatch = '/', zorder = 2 )
+    # a comment on zorder: the MC stack should be always at the very back (z=1), 
+    # then the MC error (z=2) and finally the data (z=4)
+    rplt.hist( stack, stacked = True, axes = axes, zorder = 1 )
 #    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, zorder=3)
-#    rplt.hist(stack, stacked=True, axes=axes, zorder=1)
-    rplt.hist( stack, stacked = True, axes = axes )
 #    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes, elinewidth=2, capsize=10, capthick=2, snap_zero = False)
     rplt.errorbar( data, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2, zorder = 4 )
     
@@ -309,13 +311,13 @@ def compare_measurements( models = {}, measurements = {},
         histogram.markersize = 2 
         histogram.markerstyle = next( markercycler )
         histogram.color = next( colorcycler )
-        rplt.errorbar( histogram, axes = axes, label = label , 
+        rplt.errorbar( histogram, axes = axes, label = label ,
                        yerr = show_measurement_errors, xerr = False )
     
     set_labels( plt, histogram_properties )
 
-    plt.legend( numpoints = 1, loc=histogram_properties.legend_location,  
-                prop = CMS.legend_properties)
+    plt.legend( numpoints = 1, loc = histogram_properties.legend_location,
+                prop = CMS.legend_properties )
     adjust_axis_limits( axes, histogram_properties )
     
     plt.tight_layout()    
