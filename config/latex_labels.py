@@ -3,7 +3,7 @@ Created on 4 May 2013
 
 @author: kreczko
 '''
-b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag':'1 b-tags',
+b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag':'1 b-tag',
                     '1orMoreBtag':'$\geq$ 1 b-tags',
                     '2btags':'2 b-tags', '2orMoreBtags':'$\geq$ 2 b-tags',
                     '3btags':'3 b-tags', '3orMoreBtags':'$\geq$ 3 b-tags',
