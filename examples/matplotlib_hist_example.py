@@ -6,9 +6,9 @@ from rootpy.plotting import Hist, HistStack, Legend, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
 import ROOT
 
-from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 # Setting this to True (default in rootpy)
 # changes how the histograms look in ROOT...
 ROOT.TH1.SetDefaultSumw2(False)
@@ -50,22 +50,31 @@ stack = HistStack()
 stack.Add(h1)
 stack.Add(h2)
 
-# prop = Histogram_properties()
-# prop.name = 'MatplotlibHist'
-# make_data_mc_comparison_plot([h3, h1, h2], ['data','background', 'signal'], ['black', 'green', 'red'], histogram_properties=prop)
-
 # plot with matplotlib
-fig = plt.figure(figsize=(14, 10), dpi=300)#, facecolor='white')
-axes = plt.axes()
-axes.xaxis.set_minor_locator(AutoMinorLocator())
-axes.yaxis.set_minor_locator(AutoMinorLocator())
-# axes.yaxis.set_major_locator(MultipleLocator(20))
-axes.tick_params(which='major', labelsize=15, length=8)
-axes.tick_params(which='minor', length=4)
-rplt.errorbar(h3, xerr=False, emptybins=False, axes=axes, zorder = 4)
-rplt.hist(stack, stacked=True, axes=axes, zorder=1)
-plt.xlabel('Mass', position=(1., 0.), ha='right')
-plt.ylabel('Events', position=(0., 1.), va='top')
-plt.legend(numpoints=1)
-plt.tight_layout()
-plt.savefig('plots/MatplotlibHist.png')
+
+plot_with_plotting_script = True
+
+if plot_with_plotting_script:
+	properties = Histogram_properties()
+	properties.name = 'MatplotlibHist'
+	properties.x_axis_title = 'Mass'
+	properties.y_axis_title = 'Events'
+	make_data_mc_comparison_plot( [h3, h1, h2], ['data', 'background', 'signal'], ['black', 'green', 'red'], properties )
+	
+	properties.name += '_with_ratio'
+	make_data_mc_comparison_plot( [h3, h1, h2], ['data', 'background', 'signal'], ['black', 'green', 'red'], properties, show_ratio = True )
+else:
+	fig = plt.figure(figsize=(14, 10), dpi=300)#, facecolor='white')
+	axes = plt.axes()
+	axes.xaxis.set_minor_locator(AutoMinorLocator())
+	axes.yaxis.set_minor_locator(AutoMinorLocator())
+	# axes.yaxis.set_major_locator(MultipleLocator(20))
+	axes.tick_params(which='major', labelsize=15, length=8)
+	axes.tick_params(which='minor', length=4)
+	rplt.errorbar(h3, xerr=False, emptybins=False, axes=axes, zorder = 4)
+	rplt.hist(stack, stacked=True, axes=axes, zorder = 1)
+	plt.xlabel('Mass', position=(1., 0.), ha='right')
+	plt.ylabel('Events', position=(0., 1.), va='bottom', ha='right')
+	plt.legend(numpoints=1)
+	plt.tight_layout()
+	plt.savefig('plots/MatplotlibHist.pdf')
