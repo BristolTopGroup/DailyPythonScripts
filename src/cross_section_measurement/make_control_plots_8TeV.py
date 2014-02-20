@@ -281,7 +281,7 @@ if __name__ == '__main__':
     histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
-#    sys.exit()
+
     #HT
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/HT_' + b_tag_bin
