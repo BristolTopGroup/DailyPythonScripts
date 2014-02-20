@@ -967,11 +967,11 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder)
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
     
     #QCD shape comparison
     b_tag_bin = '0btag'
@@ -1051,11 +1051,11 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder)
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
 
     #QCD conversions btag bin shape comparison
     b_tag_bin_1 = '0btag'
@@ -1902,7 +1902,7 @@ if __name__ == '__main__':
     histogram_properties.legend_location = 'upper right'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder)
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
     
     #QCD non-iso btag bin shape comparison
     b_tag_bin_1 = '0btag'

@@ -142,8 +142,8 @@ def make_data_mc_comparison_plot( histograms = [],
         labels.append( histogram_properties.mc_errors_label )
 
     plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
-               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns )
-
+               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
+    
     set_labels( plt, histogram_properties, show_x_label = not show_ratio )
     
     x_limits = histogram_properties.x_limits
@@ -221,7 +221,8 @@ def make_control_region_comparison( control_region_1, control_region_2,
     labels.insert( 1, name_region_2 + ' (2)' )
 
     plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
-               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns )
+               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
+
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
     if len( x_limits ) == 2:
