@@ -6,7 +6,7 @@ from rootpy.plotting import Hist, HistStack, Legend, Canvas
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
-from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
+from tools.plotting import Histogram_properties, make_data_mc_comparison_plot, make_control_region_comparison
 import ROOT
 
 # Setting this to True (default in rootpy)
@@ -63,6 +63,11 @@ if plot_with_plotting_script:
 	
 	properties.name += '_with_ratio'
 	make_data_mc_comparison_plot( [h3, h1, h2], ['data', 'background', 'signal'], ['black', 'green', 'red'], properties, show_ratio = True )
+
+	properties.name = 'MatplotlibHist_comparison'
+	properties.y_limits = [0, 0.4]
+	make_control_region_comparison( h1, h2, 'background', 'signal', properties )
+
 else:
 	fig = plt.figure(figsize=(14, 10), dpi=300)#, facecolor='white')
 	axes = plt.axes()

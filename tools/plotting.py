@@ -165,9 +165,7 @@ def make_data_mc_comparison_plot( histograms = [],
         ax1.grid( True, 'major', linewidth = 1 )
         ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
         ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
-        plt.tick_params( **CMS.axis_label_major )
-        plt.tick_params( **CMS.axis_label_minor )
-        plt.xlabel( histogram_properties.x_axis_title, CMS.x_axis_title )
+        set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         plt.ylabel( 'data/MC', CMS.y_axis_title )
         rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
         if len( x_limits ) == 2:
@@ -207,7 +205,7 @@ def make_control_region_comparison( control_region_1, control_region_2,
     control_region_2.legendstyle = 'F'
     
     # plot with matplotlib
-    plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
+    plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] ) 
     ax0 = plt.subplot( gs[0] )
     ax0.minorticks_on()
@@ -216,8 +214,14 @@ def make_control_region_comparison( control_region_1, control_region_2,
     rplt.hist( control_region_2, axes = ax0, alpha = 0.5 )
     
     set_labels( plt, histogram_properties, show_x_label = False )
-    
-    plt.legend( [name_region_1 + ' (1)', name_region_2 + ' (2)'], numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
+
+    handles, labels = ax0.get_legend_handles_labels()
+
+    labels.insert( 0, name_region_1 + ' (1)' )
+    labels.insert( 1, name_region_2 + ' (2)' )
+
+    plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
+               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns )
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
     if len( x_limits ) == 2:
@@ -231,7 +235,7 @@ def make_control_region_comparison( control_region_1, control_region_2,
     ax1.grid( True, 'major', linewidth = 1 )
     ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
     ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
-    set_labels( plt, histogram_properties, show_x_label = True )
+    set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
     plt.ylabel( '(1)/(2)', CMS.y_axis_title )
     rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
     if len( x_limits ) == 2:
@@ -338,13 +342,14 @@ def compare_measurements( models = {}, measurements = {},
         plt.savefig( save_folder + histogram_properties.name + '.' + save )
     plt.close()
 
-def set_labels( plt, histogram_properties, show_x_label = True ):
+def set_labels( plt, histogram_properties, show_x_label = True, show_title = True ):
     if show_x_label:
         plt.xlabel( histogram_properties.x_axis_title, CMS.x_axis_title )
     plt.ylabel( histogram_properties.y_axis_title, CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
-    plt.title( histogram_properties.title, CMS.title )
+    if show_title:
+        plt.title( histogram_properties.title, CMS.title )
     
 def adjust_axis_limits( axes, histogram_properties ):
     x_limits = histogram_properties.x_limits
