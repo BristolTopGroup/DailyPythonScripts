@@ -913,7 +913,76 @@ if __name__ == '__main__':
             make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                          histogram_properties, save_folder = output_folder)
 
+    #QCD PFReliso (rho-corrected) for non-isolated region
+    b_tag_bin = '0btag'
+    control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_rhoCorrectedIso_03_' + b_tag_bin
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
+    
+    qcd_from_data = histograms['QCD'][control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_electron_rhoCorrectedIso_non_iso_control_region_' + b_tag_bin
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = 'PF reliso($e$)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 3]
+    histogram_properties.y_limits = [1, 10000000]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = 'MC unc.'
+    histogram_properties.legend_location = 'upper right'
+    histogram_properties.set_log_y = True
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
+
+    #QCD PFReliso (rho-corrected) without iso cut
+    b_tag_bin = '0btag'
+    control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD e+jets PFRelIso/Electron/electron_rhoCorrectedIso_03_' + b_tag_bin
+    
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
+    
+    qcd_from_data = histograms['QCD'][control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_electron_rhoCorrectedIso_' + b_tag_bin
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = 'PF reliso($e$)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 3]
+    histogram_properties.y_limits = [1, 10000000]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = 'MC unc.'
+    histogram_properties.legend_location = 'upper right'
+    histogram_properties.set_log_y = True
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True, draw_vertical_line = 0.2)
+
     #QCD control regions (electron |eta|)
+    #conversion control region
     b_tag_bin = '0btag'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
     
@@ -942,6 +1011,7 @@ if __name__ == '__main__':
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
     
+    #non-iso control region
     b_tag_bin = '0btag'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
     
@@ -1875,6 +1945,7 @@ if __name__ == '__main__':
                                          histogram_properties, save_folder = output_folder)
 
     
+    # QCD muon |eta| in ge3jet, 0btag bin
     b_tag_bin = '0btag'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin
 
@@ -1898,11 +1969,75 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.5]
     histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
+
+    # QCD muon pfReliso for non-iso region in ge3jet, 0btag bin
+    b_tag_bin = '0btag'
+    control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_pfIsolation_04_' + b_tag_bin
+
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
+
+    qcd_from_mc = histograms['QCD'][control_region].Clone()
+
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_muon_pfIsolation_non_iso_control_region_' + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = mu_title.replace('4 jets','3 jets') + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = 'PF reliso($\mu$)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 3.5]
+    histogram_properties.y_limits = [1, 10000000]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = 'MC unc.'
+    histogram_properties.legend_location = 'upper right'
+    histogram_properties.set_log_y = True
+
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True)
+
+    # QCD muon pfReliso without iso cut in ge3jet, 0btag bin
+    b_tag_bin = '0btag'
+    control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD mu+jets PFRelIso/Muon/muon_pfIsolation_04_' + b_tag_bin
+
+    histograms = get_histograms_from_files([control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
+
+    qcd_from_mc = histograms['QCD'][control_region].Clone()
+
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'QCD_muon_pfIsolation_' + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = mu_title.replace('4 jets','3 jets') + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = 'PF reliso($\mu$)'
+    histogram_properties.y_axis_title = 'Events/(0.1)'
+    histogram_properties.x_limits = [0, 3.5]
+    histogram_properties.y_limits = [1, 10000000]
+    histogram_properties.mc_error = 0.0
+    histogram_properties.mc_errors_label = 'MC unc.'
+    histogram_properties.legend_location = 'upper right'
+    histogram_properties.set_log_y = True
+
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_stat_errors_on_mc = True, draw_vertical_line = 0.3)
     
     #QCD non-iso btag bin shape comparison
     b_tag_bin_1 = '0btag'
