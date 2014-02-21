@@ -66,6 +66,7 @@ def make_data_mc_comparison_plot( histograms = [],
                                  normalise = False,
                                  show_ratio = False,
                                  show_stat_errors_on_mc = False,
+                                 draw_vertical_line = 0,
                                  ):
         
     stack = HistStack()
@@ -143,9 +144,9 @@ def make_data_mc_comparison_plot( histograms = [],
 
     plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
                prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
-    
+
     set_labels( plt, histogram_properties, show_x_label = not show_ratio )
-    
+
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
     if len( x_limits ) == 2:
@@ -157,6 +158,10 @@ def make_data_mc_comparison_plot( histograms = [],
     if histogram_properties.set_log_y:
         if not len( y_limits ) == 2:  # if not user set y-limits, set default
             axes.set_ylim( ymin = 1e-1 )
+
+    #draw a red vertical line if needed:
+    if draw_vertical_line != 0:
+        plt.axvline(x = draw_vertical_line, color = 'red', linewidth = 3)
 
     if show_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
