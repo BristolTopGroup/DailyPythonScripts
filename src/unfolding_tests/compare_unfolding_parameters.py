@@ -39,7 +39,7 @@ def get_test_tau_values( h_truth, h_measured, h_response, h_data = None ):
     """
     tau_global = get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data )[0]
     tau_L_shape = get_tau_from_L_shape( h_truth, h_measured, h_response, h_data )[0]
-    tau_values = [0, tau_global, tau_L_shape, 1]
+    tau_values = [0, tau_global, tau_L_shape, 40]
     
     return tau_values
 
@@ -52,7 +52,8 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
         unfolding = Unfolding( h_truth,
                           h_measured,
                           h_response,
-                          method = 'RooUnfoldSvd',
+                        method = 'RooUnfoldSvd',
+#                           method = 'TSVDUnfold',
                           k_value = k_value )
         unfolded_data = unfolding.unfold( h_data )
 
@@ -133,7 +134,7 @@ if __name__ == '__main__':
     # Do not let ROOT handle pointers. That just asks for trouble.
     TH1F.AddDirectory(False)
     tests = ['closure', 'bias', 'data']
-    test = tests[0]
+    test = tests[2]
 #     input_file_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
 #     input_file_bias_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/TTJets-matchingdown_nTuple_53X_mc_merged_001.root'
 #     input_file_bias_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TT_8TeV-mcatnlo/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'

@@ -163,7 +163,7 @@ def draw_l_shape( l_shape, best_tau, x_value, y_value, channel, variable ):
         plt.savefig( 'plots/tau_from_L_shape_%s_channel_%s_MC.png' % ( channel, variable ) )
 
 def get_data_histogram( channel, variable, met_type ):
-    fit_result_input = 'src/cross_section_measurement/data_top_12_042/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_result_input = 'data/data_top_12_042/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )

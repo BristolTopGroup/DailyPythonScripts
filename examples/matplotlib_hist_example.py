@@ -51,12 +51,11 @@ stack.Add(h1)
 stack.Add(h2)
 
 # plot with matplotlib
-
 plot_with_plotting_script = True
 
 if plot_with_plotting_script:
 	properties = Histogram_properties()
-	properties.name = 'MatplotlibHist'
+	properties.name = 'matplotlib_hist'
 	properties.x_axis_title = 'Mass'
 	properties.y_axis_title = 'Events'
 	make_data_mc_comparison_plot( [h3, h1, h2], ['data', 'background', 'signal'], ['black', 'green', 'red'], properties )
@@ -64,7 +63,7 @@ if plot_with_plotting_script:
 	properties.name += '_with_ratio'
 	make_data_mc_comparison_plot( [h3, h1, h2], ['data', 'background', 'signal'], ['black', 'green', 'red'], properties, show_ratio = True )
 
-	properties.name = 'MatplotlibHist_comparison'
+	properties.name = 'matplotlib_hist_comparison'
 	properties.y_limits = [0, 0.4]
 	make_control_region_comparison( h1, h2, 'background', 'signal', properties )
 
@@ -82,4 +81,4 @@ else:
 	plt.ylabel('Events', position=(0., 1.), va='bottom', ha='right')
 	plt.legend(numpoints=1)
 	plt.tight_layout()
-	plt.savefig('plots/MatplotlibHist.pdf')
+	plt.savefig('plots/matplotlib_hist.pdf')
