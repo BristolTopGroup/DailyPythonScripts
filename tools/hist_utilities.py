@@ -74,7 +74,7 @@ def sum_histograms( histogram_dict, sample_list ):
 
 def scale_histogram_errors( histogram, total_error ):
     bins_number = histogram.GetNbinsX()
-    current_total_error = sum( histogram.errors() )
+    current_total_error = sum( histogram.yerravg() )
     scale_factor = total_error / current_total_error
     
     for bin_i in range( bins_number ):

@@ -5,7 +5,7 @@ Created on 30 Oct 2012
 '''
 
 title = {
-         'fontsize':50,
+         'fontsize':40,
          'verticalalignment':'bottom'
          }
 x_axis_title = {
