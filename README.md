@@ -26,11 +26,8 @@ If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not
 # install CMSSW and setup environment:
 cmsenv
 
-# install DailyPythonScripts according to the recipe above, or if done already setup environment:
+# install DailyPythonScripts according to the recipe above, or if done already, setup the vpython environment:
 source environment.sh
-
-# prepend virtual python library path to PYTHONPATH:
-export PYTHONPATH=$vpython/lib/python2.7/site-packages:$PYTHONPATH
 
 # make sure matplotlib is up to date (should return 1.3.1 or above):
 python -c 'import matplotlib; print matplotlib.__version__'

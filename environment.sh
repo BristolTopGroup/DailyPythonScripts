@@ -9,3 +9,7 @@ fi
 
 cd $base
 export PYTHONPATH=$PYTHONPATH:`pwd`
+
+if [ "$HOSTNAME" == "soolin.phy.bris.ac.uk" ]; then
+    export PYTHONPATH=$vpython/lib/python2.7/site-packages:$PYTHONPATH
+fi
