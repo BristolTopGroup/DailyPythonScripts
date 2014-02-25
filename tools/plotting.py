@@ -117,7 +117,7 @@ def make_data_mc_comparison_plot( histograms = [],
         rplt.fill_between( stack_upper, stack_lower, axes, facecolor = '0.75', alpha = 0.5, hatch = '/', zorder = len(histograms) + 1 )
     if not mc_error > 0 and show_stat_errors_on_mc:
         stack_lower = sum( stack.GetHists() )
-        mc_errors = list( stack_lower.errors() )
+        mc_errors = list( stack_lower.yerravg() )
         stack_upper = stack_lower.Clone( 'upper' )
         for bin_i in range( 1, stack_lower.GetNbinsX() ):
             stack_lower.SetBinContent( bin_i, stack_lower.GetBinContent( bin_i ) - mc_errors[bin_i - 1] )
@@ -215,7 +215,7 @@ def make_control_region_comparison( control_region_1, control_region_2,
     ax0 = plt.subplot( gs[0] )
     ax0.minorticks_on()
     
-    rplt.hist( control_region_1, axes = ax0 )
+    rplt.hist( control_region_1, axes = ax0, alpha = 0.5 )
     rplt.hist( control_region_2, axes = ax0, alpha = 0.5 )
     
     set_labels( plt, histogram_properties, show_x_label = False )

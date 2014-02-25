@@ -1,40 +1,52 @@
 from math import sqrt
 from tools.ROOT_utililities import get_histograms_from_files
+import config.cross_section_measurement_8TeV as measurement_config
 
 cuts = None
 cuts_electrons = [
-        "Skim", #
-        "Event cleaning and HLT", #
-        "Electron", #
-        "Muon Veto", #
-        "Electron veto", #
+        "Preselection", #
+        "Event cleaning/HLT", #
+        "One isolated electron", #
+        "Muon veto", #
+        "Dilepton veto", #
         "Conversion veto", #
+        "$\geq 1$ jets", #
+        "$\geq 2$ jets", # 
         "$\geq 3$ jets", #
         "$\geq 4$ jets", #
-        "$\geq 1$ CSV b-tag", #
-        "$\geq 2$ CSV b-tag" #
+        "$\geq 1$ b-tagged jets", #
+        "$\geq 2$ b-tagged jets" #
         ]
 
 cuts_muons = [
-        "Skim", #
-        "Event cleaning and HLT", #
-        "Muon", #
+        "Preselection", #
+        "Event cleaning/HLT", #
+        "One isolated muon", #
+        "Second muon veto", #
         "Electron veto", #
-        "Muon Veto", #
+        "$\geq 1$ jets", #
+        "$\geq 2$ jets", # 
         "$\geq 3$ jets", #
         "$\geq 4$ jets", #
-        "$\geq 1$ CSV b-tag", #
-        "$\geq 2$ CSV b-tag" #
+        "$\geq 1$ b-tagged jets", #
+        "$\geq 2$ b-tagged jets" #
         ]
 
-def printCutFlow(histograms, selection, outputFormat='Latex'):
+def printCutFlow(histograms, selection, luminosity_scale = 1.0, outputFormat='Latex'):
     global cuts
     header = " | Step | TTJet | W+jets | DY + Jets | single top | QCD | Sum MC | Data |"
     row = " | %s  |  %d +- %d |  %d +- %d |  %d +- %d |  %d +- %d |  %d +- %d |  %d +- %d |  %d | "
     if outputFormat == 'Latex':
-        header = "Selection step & \\ttbar & W + Jets & Z + Jets & Single-top & QCD~  & Sum MC & Data\\\\"
-        row = " %s  &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  %d \\\\ "
+        header = "Selection step & \\ttbar + jets & W + jets & Z + jets & Single-Top & QCD & Sum MC & Data \\\\"
+        row = "%s  &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  $%d \pm %d$ &  %d \\\\ "
     print header
+
+    # scale the luminosity
+    if luminosity_scale != 1.0:
+        for sample, histogram in histograms.iteritems():
+            if sample == 'data':
+                continue
+            histogram[selection].Scale(luminosity_scale)
     
     numbers, errors = getEventNumbers(histograms, selection)
     for step in range(len(cuts)):
@@ -61,15 +73,16 @@ def getEventNumbers(hists, selection):
 
 if __name__ == '__main__':
     from config.latex_labels import b_tag_bins_latex, samples_latex
-    
-    path_to_data = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6/central/'
-    path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6/central/'
+
+    path_to_files = measurement_config.path_to_files + '/central/'
     suffix = ''
-    lumi = 19584
+    lumi = measurement_config.luminosity
+    luminosity_scale = measurement_config.luminosity_scale
+    
     data = 'SingleElectron'
     pfmuon = 'PFMuon_'
     histogram_files = {
-            'data' : path_to_data + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
+            'data' : path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
             'TTJet': path_to_files + 'TTJet_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
             'WJets': path_to_files + 'WJets_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
             'ZJets': path_to_files + 'DYJetsToLL_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
@@ -83,16 +96,16 @@ if __name__ == '__main__':
     cuts = cuts_electrons
     histograms = get_histograms_from_files([electron_selection], histogram_files)
     print '='*50
-    printCutFlow(histograms, electron_selection)
+    printCutFlow(histograms, electron_selection, luminosity_scale)
 
     data = 'SingleMu'
-    histogram_files['data'] = path_to_data + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon)
+    histogram_files['data'] = path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon)
     histogram_files['QCD'] = path_to_files + 'QCD_Muon_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix)
     histograms = get_histograms_from_files([muon_selection], histogram_files)
 
     cuts = cuts_muons
     print '='*50
-    printCutFlow(histograms, muon_selection)
+    printCutFlow(histograms, muon_selection, luminosity_scale)
 
 
 

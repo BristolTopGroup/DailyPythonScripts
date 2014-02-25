@@ -71,12 +71,10 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     make_additional_QCD_plots = options.additional_QCD_plots
 
-    CMS.title['fontsize'] = 40
-    CMS.x_axis_title['fontsize'] = 50
-    CMS.y_axis_title['fontsize'] = 50
-    CMS.axis_label_major['labelsize'] = 40
-    CMS.axis_label_minor['labelsize'] = 40
-    CMS.legend_properties['size'] = 40
+    # this is shown as \ttbar (or MC) uncertainty on the plots
+    # in fact, it takes the uncertainty on the whole MC stack
+    # althouh unimportant, this needs revision
+    mc_uncertainty = 0.10
     
     from config.latex_labels import b_tag_bins_latex, samples_latex
     
@@ -135,7 +133,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -179,7 +177,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['MET'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -224,7 +222,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['MET'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.set_log_y = True
     
@@ -271,7 +269,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['MET'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.legend_columns = 2
     #histogram_properties.legend_location = 'upper center'
@@ -318,7 +316,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['HT'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -363,7 +361,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['ST'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -409,7 +407,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['WPT'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -455,7 +453,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_electron['MT'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False)
@@ -484,7 +482,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$M3$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(9 GeV)'
     histogram_properties.x_limits = [100, 600]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False)
@@ -515,7 +513,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$M_{\mathrm{b}\\bar{\mathrm{b}}}$'
     histogram_properties.y_axis_title = 'Normalised events/(10 GeV)'
     histogram_properties.x_limits = [0, 800]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False)
     histogram_properties.name += '_with_ratio'
@@ -545,7 +543,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
     
@@ -571,7 +569,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
 
@@ -598,7 +596,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'Jet multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [3.5, 9.5]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
 
@@ -1265,7 +1263,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -1309,7 +1307,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['MET'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -1355,7 +1353,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['MET'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.set_log_y = True
     
@@ -1402,7 +1400,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['MET'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.legend_columns = 2
     #histogram_properties.legend_location = 'upper center'
@@ -1449,7 +1447,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['HT'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -1494,7 +1492,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['ST'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -1540,7 +1538,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['WPT'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
 
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
@@ -1585,7 +1583,7 @@ if __name__ == '__main__':
         histogram_properties.mc_error = get_normalisation_error(normalisations_muon['MT'])
         histogram_properties.mc_errors_label = 'fit uncertainty'
     else:
-        histogram_properties.mc_error = 0.10
+        histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False)
@@ -1614,7 +1612,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$M3$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(9 GeV)'
     histogram_properties.x_limits = [100, 600]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False)
@@ -1645,7 +1643,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'Jet multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [3.5, 9.5]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
 
@@ -1672,7 +1670,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$M_{\mathrm{b}\\bar{\mathrm{b}}}$'
     histogram_properties.y_axis_title = 'Normalised events/(10 GeV)'
     histogram_properties.x_limits = [0, 800]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False)
     histogram_properties.name += '_with_ratio'
@@ -1702,7 +1700,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
     
@@ -1728,7 +1726,7 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = 0.15
+    histogram_properties.mc_error = mc_uncertainty
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
     

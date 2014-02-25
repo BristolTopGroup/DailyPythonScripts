@@ -8,17 +8,16 @@ from config.latex_labels import b_tag_bins_latex, variables_latex, measurements_
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from math import sqrt
-# rootpy
+# rootpy & matplotlib
 from ROOT import kRed, kGreen, kMagenta, kBlue, kAzure, kYellow, kViolet
+import matplotlib as mpl
+mpl.use('agg')
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from config import CMS
 from matplotlib import rc
+rc('font',**CMS.font)
 rc( 'text', usetex = True )
-# this does not work because of global variables. They need to be parameters
-# make_plots_ROOT = __import__('04_make_plots_ROOT')
-# read_xsection_measurement_results = make_plots_ROOT.read_xsection_measurement_results
-# read_unfolded_xsections = make_plots_ROOT.read_unfolded_xsections
 
 def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, k_value, met_type
@@ -176,7 +175,7 @@ def make_template_plots( histograms, category, channel ):
         axes.minorticks_on()
         
         plt.xlabel( r'lepton $|\eta|$', CMS.x_axis_title )
-        plt.ylabel( 'normalised to unit area/0.2', CMS.y_axis_title )
+        plt.ylabel( 'normalised to unit area/(0.2)', CMS.y_axis_title )
         plt.tick_params( **CMS.axis_label_major )
         plt.tick_params( **CMS.axis_label_minor )
 
@@ -223,7 +222,7 @@ def plot_fit_results( histograms, category, channel ):
         histogram_properties = Histogram_properties()
         histogram_properties.name = plotname
         histogram_properties.x_axis_title = channel + ' $\left|\eta\\right|$'
-        histogram_properties.y_axis_title = 'events/0.2'
+        histogram_properties.y_axis_title = 'Events/(0.2)'
         histogram_properties.title = get_cms_labels( channel )
         
         make_data_mc_comparison_plot( [h_data, h_background, h_signal],
