@@ -141,6 +141,45 @@ if __name__ == '__main__':
     histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
+
+    #electron pt
+    b_tag_bin = '2orMoreBtags'
+    control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Electron/electron_pT_' + b_tag_bin
+    qcd_control_region = control_region.replace('Ref selection', 'QCDConversions')
+    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
+    
+    histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
+    
+    qcd_from_data = histograms['data'][qcd_control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'electron_pT_' + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$p_\mathrm{T}(e)$ [GeV]'t 
+    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.x_limits = [0, 250]
+    histogram_properties.mc_error = mc_uncertainty
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = True)
+
     #MET
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
@@ -597,6 +636,7 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [3.5, 9.5]
     histogram_properties.mc_error = mc_uncertainty
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
 
@@ -1272,8 +1312,44 @@ if __name__ == '__main__':
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True)
 
-    #MET
+    #Muon pt
+    b_tag_bin = '2orMoreBtags'
+    control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Muon/muon_pT_' + b_tag_bin
+    qcd_control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets')
+    qcd_control_region = control_region.replace(b_tag_bin, '0btag')
     
+    histograms = get_histograms_from_files([control_region, qcd_control_region], histogram_files)
+    prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)
+    
+    qcd_from_data = histograms['data'][qcd_control_region].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()*1.2
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale(1.0 / n_qcd_control_region * n_qcd_predicted_mc)
+    histograms_to_draw = [histograms['data'][control_region], qcd_from_data,
+                          histograms['V+Jets'][control_region],
+                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'muon_pT_' + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = mu_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = '$p_\mathrm{T}(\mu)$ [GeV]'
+    histogram_properties.y_axis_title = 'Events/(10 GeV)'
+    histogram_properties.x_limits = [0, 250]
+    histogram_properties.mc_error = mc_uncertainty
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False)
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = True)
+
+    #MET
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
     qcd_control_region = control_region.replace('Ref selection', 'QCD non iso mu+jets')
     qcd_control_region = control_region.replace(b_tag_bin, '0btag')
@@ -1644,6 +1720,7 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [3.5, 9.5]
     histogram_properties.mc_error = mc_uncertainty
+    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot(histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder)
 
