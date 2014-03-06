@@ -31,7 +31,8 @@ class Unfolding:
                  n_toy = unfoldCfg.SVD_n_toy,
                  Bayes_n_repeat = unfoldCfg.Bayes_n_repeat,
                  Hreco = unfoldCfg.Hreco,
-                 measured_truth_without_fakes = None ):
+                 measured_truth_without_fakes = None,
+                 verbose = 0 ):
         if not method in unfoldCfg.availablemethods:
             raise ValueError( 'Unknown unfolding method "%s". Available methods: %s' % ( method, str( unfoldCfg.availablemethods ) ) )
         self.method = method        
@@ -45,7 +46,7 @@ class Unfolding:
         self.unfoldObject = None
         self.unfoldResponse = None
         self.closure_test = None
-        self.verbose = 0
+        self.verbose = verbose
         self.tau = tau
         self.k_value = k_value 
         self.n_toy = n_toy
@@ -77,6 +78,12 @@ class Unfolding:
                 new_measured.Add( self.measured )
                 new_truth = Hist( list( self.truth.xedges() ), type = 'D' )
                 new_truth.Add( self.truth )
+
+                if self.fakes:
+                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D')
+                    new_fakes.Add ( self.fakes )
+                    new_measured = new_measured - new_fakes
+
                 new_response = Hist2D( list( self.response.xedges() ), list( self.response.yedges() ), type = 'D' )
                 new_response.Add( self.response )
                 self.unfoldObject = TSVDUnfold( new_data, new_measured, new_truth, new_response )
@@ -135,6 +142,12 @@ class Unfolding:
                 new_measured.Add( self.measured )
                 new_truth = Hist( list( self.truth.xedges() ), type = 'D' )
                 new_truth.Add( self.truth )
+
+                if self.fakes:
+                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D')
+                    new_fakes.Add ( self.fakes )
+                    new_measured = new_measured - new_fakes
+
                 new_response = Hist2D( list( self.response.xedges() ), list( self.response.yedges() ), type = 'D' )
                 new_response.Add( self.response )
                 self.closure_test = TSVDUnfold( new_measured, new_measured, new_truth, new_response )
@@ -226,8 +239,8 @@ def get_unfold_histogram_tuple(
                 channel,
                 met_type,
                 centre_of_mass = 8,
-                ttbar_xsection = 225.2,
-                luminosity = 5814,
+                ttbar_xsection = 245.8,
+                luminosity = 19712,
                 load_fakes = False ):
     folder = None
     if not 'HT' in variable:
@@ -245,10 +258,11 @@ def get_unfold_histogram_tuple(
     if centre_of_mass == 7:
         h_response = folder.response_withoutFakes_AsymBins.Clone()
     else:
-        if load_fakes:
-            h_response = folder.response_AsymBins.Clone()
-        else:
-            h_response = folder.response_without_fakes_AsymBins.Clone()
+        #response matrix is always without fakes
+        #fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
+        #or manually for TSVDUnfold
+        h_response = folder.response_without_fakes_AsymBins.Clone()
+        #h_response = folder.response_AsymBins.Clone()
         
     h_fakes = None
     if load_fakes:
