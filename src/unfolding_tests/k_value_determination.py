@@ -12,33 +12,36 @@ Note3: make sure all bins have sufficient statistics and their error is
          which depends on these input bins.
 """
 from __future__ import division
+from optparse import OptionParser
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from rootpy.io import File
+import matplotlib
+matplotlib.use('agg')
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-import matplotlib
 from copy import deepcopy
-from tools.file_utilities import read_data_from_JSON
+from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from config.variable_binning_8TeV import bin_edges
+from config import CMS
+from config.latex_labels import variables_latex
+from config.cross_section_measurement_common import translate_options
 from rootpy import asrootpy
 
-font = {'family' : 'normal',
-        'weight' : 'normal',
-        'size'   : 28}
+matplotlib.rc('font',**CMS.font)
+matplotlib.rc('text', usetex = True)
 
-matplotlib.rc( 'font', **font )
-
-
-def get_k_from_d_i( h_truth, h_measured, h_response, h_data = None ):
+def get_k_from_d_i( h_truth, h_measured, h_response, h_fakes = None, h_data = None ):
+    global method
     k_start = h_measured.nbins()
-#     method = 'RooUnfoldSvd'
-    method = 'TSVDUnfold'
     unfolding = Unfolding( h_truth,
-                                  h_measured,
-                                  h_response,
-                                  method = method,
-                                  k_value = k_start )
+                           h_measured,
+                           h_response,
+                           h_fakes,
+                           method = method,
+                           k_value = k_start,
+                           Hreco = 0,
+                           verbose = 1 )
     if h_data:
         unfolding.unfold( h_data )
     else:  # closure test
@@ -51,7 +54,7 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_data = None ):
     best_k = k_start
     for i, d_i in enumerate( hist_d_i.y() ):
         # i count starts at 0
-        if d_i > 1:
+        if d_i >= 1:
             continue
         else:
             # first i when d_i < 0, is k
@@ -62,49 +65,94 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_data = None ):
     return best_k, hist_d_i.clone()
 
 
-
-def get_data_histogram( channel, variable, met_type ):
-    fit_result_input = 'data/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+def get_data_histogram( path_to_JSON, channel, variable, met_type ):
+    fit_result_input = path_to_JSON + '/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
     return h_data
 
 def draw_d_i( d_i ):
-    global variable
-    plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
+    global variable, output_folder, output_formats
+    plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     rplt.hist( d_i )
-    plt.title( r'SVD unfolding $d_i$ for ' + variable )
-    plt.xlabel( r'$i$', fontsize = 40 )
-    plt.ylabel( r'$d_i$', fontsize = 40 )
+    plt.title( r'SVD unfolding $d_i$ for $' + variables_latex[variable] + '$', CMS.title )
+    plt.xlabel( r'$i$', CMS.x_axis_title )
+    plt.ylabel( r'$d_i$', CMS.y_axis_title )
     axes = plt.axes()
     axes.set_ylim( ymin = 0.1 )
+
+    plt.tick_params( **CMS.axis_label_major )
+    plt.tick_params( **CMS.axis_label_minor )
     
     plt.yscale( 'log' )
-    plt.axhline( y = 1, color = 'red' )
-    plt.tight_layout()
+    plt.axhline( y = 1, linewidth = 3, color = 'red' )
+
+    if CMS.tight_layout:
+        plt.tight_layout()
 
     if use_data:
-        plt.savefig( 'plots/k_from_d_i_%s_channel_%s_DATA.png' % ( channel, variable ) )    
+        save_as_name = 'k_from_d_i_%s_channel_%s_DATA' % ( channel, variable )
     else:
-        plt.savefig( 'plots/k_from_d_i_%s_channel_%s_MC.png' % ( channel, variable ) )
+        save_as_name = 'k_from_d_i_%s_channel_%s_MC' % ( channel, variable )
+
+    for output_format in output_formats:
+        plt.savefig(output_folder + save_as_name + '.' + output_format)
 
     
 if __name__ == '__main__':
     from ROOT import gROOT
     gROOT.SetBatch( True )
     gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
-    use_data = False
-    input_file_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
-    met_type = 'patType1CorrectedPFMet'
+
+    parser = OptionParser()
+    parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',
+                      help="set path to JSON files")
+    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_k_values/',
+                      help = "set path to save plots" )
+    parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
+                      help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
+    parser.add_option("-d", "--use-data", dest = "use_data", action="store_true",
+                      help = "use fitted results from data" )
+    parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'TSVDUnfold',
+                      help="Unfolding method: RooUnfoldSvd, TSVDUnfold (default), TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
+    parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
+                      help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
+    parser.add_option("-m", "--metType", dest="metType", default='type1',
+                      help="set MET type used in the analysis of MET-dependent variables")
+
+    ( options, args ) = parser.parse_args()
+
+    output_formats = ['pdf']
+    centre_of_mass = options.CoM
+    use_data = options.use_data
+    path_to_JSON = options.path
+    met_type = translate_options[options.metType]
+    method = options.unfolding_method
+    load_fakes = options.load_fakes
+    output_folder = options.output_folder
+    make_folder_if_not_exists(options.output_folder)
+
+    
+    if options.CoM == 8:
+        from config.variable_binning_8TeV import bin_edges
+        import config.cross_section_measurement_8TeV as measurement_config
+    elif options.CoM == 7:
+        from config.variable_binning_7TeV import bin_edges
+        import config.cross_section_measurement_7TeV as measurement_config
+    else:
+        import sys
+        sys.exit( 'Unknown centre of mass energy' )
+
+    ttbar_xsection = measurement_config.ttbar_xsection
+    luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
+
+    input_file = File( measurement_config.unfolding_madgraph_file )
+
     
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
-    centre_of_mass = 8
-    ttbar_xsection = 225.2
-    luminosity = 19712
-    input_file = File( input_file_8Tev )
     
     taus_from_global_correlaton = {}
     taus_from_L_shape = {}
@@ -112,24 +160,26 @@ if __name__ == '__main__':
         taus_from_global_correlaton[channel] = {}
         taus_from_L_shape[channel] = {}
         for variable in variables:
-            print 'Doing variable"', variable, '" in', channel, '-channel'
+            print 'Doing variable', variable, 'in', channel, 'channel'
         
-            h_truth, h_measured, h_response, _ = get_unfold_histogram_tuple( 
+            h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
                                 inputfile = input_file,
                                 variable = variable,
                                 channel = channel,
                                 met_type = met_type,
                                 centre_of_mass = centre_of_mass,
                                 ttbar_xsection = ttbar_xsection,
-                                luminosity = luminosity )
+                                luminosity = luminosity,
+                                load_fakes = load_fakes)
+            print 'h_fakes = ', h_fakes
             
             h_data = None
             if use_data:
-                h_data = get_data_histogram( channel, variable, met_type )
+                h_data = get_data_histogram( path_to_JSON, channel, variable, met_type )
             else:
                 h_data = deepcopy( h_measured )
-                
             
-            k, hist_di = get_k_from_d_i( h_truth, h_measured, h_response, h_data )
+            
+            k, hist_di = get_k_from_d_i( h_truth, h_measured, h_response, h_fakes, h_data )
             print 'Best k-value for %s = %d' % ( variable, k )
             draw_d_i( hist_di )
