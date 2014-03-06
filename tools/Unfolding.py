@@ -264,12 +264,14 @@ def get_unfold_histogram_tuple(
         h_response = folder.response_without_fakes_AsymBins.Clone()
         #h_response = folder.response_AsymBins.Clone()
         
+    nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+    lumiweight = ttbar_xsection * luminosity / nEvents
+    
     h_fakes = None
     if load_fakes:
         h_fakes = asrootpy( folder.fake_AsymBins ).Clone()
-    
-    nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
-    lumiweight = ttbar_xsection * luminosity / nEvents
+        h_fakes.Scale( lumiweight )
+
     h_truth.Scale( lumiweight )
     h_measured.Scale( lumiweight )
     h_response.Scale( lumiweight )
