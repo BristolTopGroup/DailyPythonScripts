@@ -10,15 +10,16 @@ from rootpy.plotting import Hist2D
 # DailyPythonScripts
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, combine_complex_results
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
-from tools.Unfolding import Unfolding
+from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, make_folder_if_not_exists
+from config.cross_section_measurement_common import translate_options
 import config.RooUnfold as unfoldCfg
 from copy import deepcopy
 
-def unfold_results(results, category, channel, h_truth, h_measured, h_response, method):
+def unfold_results(results, category, channel, h_truth, h_measured, h_response, h_fakes, method):
     global variable, path_to_JSON
     h_data = value_error_tuplelist_to_hist(results, bin_edges[variable])
-    unfolding = Unfolding(h_truth, h_measured, h_response, method=method, k_value=unfoldCfg.SVD_k_value)
+    unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method=method, k_value=unfoldCfg.SVD_k_value)
     
     # turning off the unfolding errors for systematic samples
     if not category == 'central':
@@ -78,34 +79,9 @@ def data_covariance_matrix(data):
         cov_matrix.SetBinContent(bin_i + 1, bin_i + 1, error * error)
     return cov_matrix
 
-def get_unfold_histogram_tuple(inputfile, variable, channel, met_type):
-    folder = None
-    if not 'HT' in variable:
-        if measurement_config.centre_of_mass == 7:
-            folder = inputfile.Get('unfoldingAnalyser%sChannel' % channel.title())
-        else:
-            folder = inputfile.Get('unfolding_%s_analyser_%s_channel_%s' % (variable, channel, met_type))
-    else:
-        folder = inputfile.Get('unfolding_%s_analyser_%s_channel' % (variable, channel))
-        
-    h_truth = asrootpy(folder.truth_AsymBins).Clone()
-    h_measured = asrootpy(folder.measured_AsymBins).Clone()
-    
-    h_response = None
-    if measurement_config.centre_of_mass == 7:
-        h_response = folder.response_withoutFakes_AsymBins.Clone()
-    else:
-        h_response = folder.response_without_fakes_AsymBins.Clone()
-    
-    nEvents = inputfile.EventFilter.EventCounter.GetBinContent(1)  # number of processed events 
-    lumiweight = ttbar_xsection * luminosity / nEvents  # ttbar x-section = 225.2pb, lumi = 5814pb-1
-    h_truth.Scale(lumiweight)
-    h_measured.Scale(lumiweight)
-    h_response.Scale(lumiweight)
-    return h_truth, h_measured, h_response
-
 def get_unfolded_normalisation(TTJet_fit_results, category, channel):
     global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg, file_for_mcatnlo 
+    global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
     global file_for_matchingdown, file_for_matchingup, file_for_scaledown, file_for_scaleup
     global ttbar_generator_systematics
 
@@ -116,31 +92,111 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                              ttbar_theory_systematic_prefix + 'scaleup':file_for_scaleup,
                              }
     
-    h_truth, h_measured, h_response = None, None, None
+    h_truth, h_measured, h_response, h_fakes = None, None, None, None
     if category in ttbar_generator_systematics and not 'ptreweight' in category:
-        h_truth, h_measured, h_response = get_unfold_histogram_tuple(files_for_systematics[category], variable, channel, met_type)
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple(inputfile = files_for_systematics[category],
+                                                                              variable = variable,
+                                                                              channel = channel,
+                                                                              met_type = met_type,
+                                                                              centre_of_mass = centre_of_mass,
+                                                                              ttbar_xsection = ttbar_xsection,
+                                                                              luminosity = luminosity,
+                                                                              load_fakes = load_fakes
+                                                                              )
+
     elif 'mcatnlo_matrix' in category:
-        h_truth, h_measured, h_response = get_unfold_histogram_tuple(file_for_mcatnlo, variable, channel, met_type)
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple(inputfile = file_for_mcatnlo,
+                                                                              variable = variable,
+                                                                              channel = channel,
+                                                                              met_type = met_type,
+                                                                              centre_of_mass = centre_of_mass,
+                                                                              ttbar_xsection = ttbar_xsection,
+                                                                              luminosity = luminosity,
+                                                                              load_fakes = load_fakes
+                                                                              )
     else:
-        h_truth, h_measured, h_response = get_unfold_histogram_tuple(file_for_unfolding, variable, channel, met_type)
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple(inputfile = file_for_unfolding,
+                                                                              variable = variable,
+                                                                              channel = channel,
+                                                                              met_type = met_type,
+                                                                              centre_of_mass = centre_of_mass,
+                                                                              ttbar_xsection = ttbar_xsection,
+                                                                              luminosity = luminosity,
+                                                                              load_fakes = load_fakes
+                                                                              )
+
+    h_truth_POWHEG = get_unfold_histogram_tuple(inputfile = file_for_powheg,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )[0]
+    h_truth_MCATNLO = get_unfold_histogram_tuple(inputfile = file_for_mcatnlo,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )[0]
+    h_truth_matchingdown = get_unfold_histogram_tuple(inputfile = file_for_matchingdown,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )[0]
+    h_truth_matchingup = get_unfold_histogram_tuple(inputfile = file_for_matchingup,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )[0]
+    h_truth_scaledown = get_unfold_histogram_tuple(inputfile = file_for_scaledown,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )[0]
+    h_truth_scaleup = get_unfold_histogram_tuple(inputfile = file_for_scaleup,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )[0]
+
     MADGRAPH_results = hist_to_value_error_tuplelist(h_truth)
-    POWHEG_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_powheg, variable, channel, met_type)[0])
-    MCATNLO_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_mcatnlo, variable, channel, met_type)[0])
+    POWHEG_results = hist_to_value_error_tuplelist(h_truth_POWHEG)
+    MCATNLO_results = hist_to_value_error_tuplelist(h_truth_MCATNLO)
     
-    matchingdown_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingdown, variable, channel, met_type)[0])
-    matchingup_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_matchingup, variable, channel, met_type)[0])
-    scaledown_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaledown, variable, channel, met_type)[0])
-    scaleup_results = hist_to_value_error_tuplelist(get_unfold_histogram_tuple(file_for_scaleup, variable, channel, met_type)[0])
-    
+    matchingdown_results = hist_to_value_error_tuplelist(h_truth_matchingdown)
+    matchingup_results = hist_to_value_error_tuplelist(h_truth_matchingup)
+    scaledown_results = hist_to_value_error_tuplelist(h_truth_scaledown)
+    scaleup_results = hist_to_value_error_tuplelist(h_truth_scaleup)
+
     TTJet_fit_results_unfolded = unfold_results(TTJet_fit_results,
                                                 category,
                                                 channel,
                                                 h_truth,
                                                 h_measured,
                                                 h_response,
-                                                method = 'RooUnfoldSvd',
-#                                                 method = 'TopSVDUnfold',
-#                                                 method = 'TSVDUnfold',
+                                                h_fakes,
+                                                method
                                                 )
         
     normalisation_unfolded = {
@@ -234,26 +290,16 @@ if __name__ == '__main__':
     parser.add_option("-k", "--k_value", type='int',
                       dest="k_value", default=4,
                       help="k-value for SVD unfolding")
+    parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
+                      help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
+    parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'RooUnfoldSvd',
+                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
     parser.add_option("-H", "--hreco", type='int',
                       dest="Hreco", default=2,
                       help="Hreco parameter for error treatment in RooUnfold")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
     
-    translate_options = {
-                        '0':'0btag',
-                        '1':'1btag',
-                        '2':'2btags',
-                        '3':'3btags',
-                        '0m':'0orMoreBtag',
-                        '1m':'1orMoreBtag',
-                        '2m':'2orMoreBtags',
-                        '3m':'3orMoreBtags',
-                        '4m':'4orMoreBtags',
-                        # mettype:
-                        'pf':'PFMET',
-                        'type1':'patType1CorrectedPFMet'
-                        }
     
     (options, args) = parser.parse_args()
     from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
@@ -268,7 +314,8 @@ if __name__ == '__main__':
         import sys
         sys.exit('Unknown centre of mass energy')
     
-    luminosity = measurement_config.luminosity
+    centre_of_mass = options.CoM
+    luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
     ttbar_xsection = measurement_config.ttbar_xsection
     path_to_files = measurement_config.path_to_files
     
@@ -282,7 +329,9 @@ if __name__ == '__main__':
     file_for_matchingup = File(measurement_config.unfolding_matching_up, 'read')
     variable = options.variable
     unfoldCfg.SVD_k_value = options.k_value
+    load_fakes = options.load_fakes
     unfoldCfg.Hreco = options.Hreco
+    method = options.unfolding_method
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/'
