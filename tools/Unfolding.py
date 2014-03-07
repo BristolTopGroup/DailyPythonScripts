@@ -3,14 +3,13 @@ Created on 31 Oct 2012
 
 @author: kreczko
 '''
-
 from ROOT import gSystem, cout, TDecompSVD
 import config.RooUnfold as unfoldCfg
 import config.TopSVDUnfold as top_unfold
 from tools.hist_utilities import hist_to_value_error_tuplelist
 gSystem.Load( unfoldCfg.library )
 gSystem.Load( top_unfold.library )
-from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
+from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from ROOT import TSVDUnfold
 from ROOT import TopSVDUnfold
@@ -18,6 +17,7 @@ from ROOT import TH2D, TH1D
 from rootpy import asrootpy
 from rootpy.plotting import Hist, Hist2D
 from math import sqrt
+
 class Unfolding:
 
     def __init__( self,
@@ -54,26 +54,26 @@ class Unfolding:
         self.Hreco = Hreco
         self.measured_truth_without_fakes = measured_truth_without_fakes
     
-    def unfold( self, data ):
+    def setup_unfolding (self, data):
         self.data = data
         if not self.unfoldObject:
             if not self.unfoldResponse:
                 self.unfoldResponse = self._makeUnfoldResponse()
             if self.method == 'RooUnfoldBayes':
-                self.unfoldObject = RooUnfoldBayes     ( self.unfoldResponse, data, self.Bayes_n_repeat )
+                self.unfoldObject = RooUnfoldBayes     ( self.unfoldResponse, self.data, self.Bayes_n_repeat )
             elif self.method == 'RooUnfoldBinByBin':
-                self.unfoldObject = RooUnfoldBinByBin     ( self.unfoldResponse, data )
+                self.unfoldObject = RooUnfoldBinByBin     ( self.unfoldResponse, self.data )
             elif self.method == 'RooUnfoldInvert':
-                self.unfoldObject = RooUnfoldInvert     ( self.unfoldResponse, data )
+                self.unfoldObject = RooUnfoldInvert     ( self.unfoldResponse, self.data )
             elif self.method == 'RooUnfoldTUnfold':
-                self.unfoldObject = RooUnfoldTUnfold     ( self.unfoldResponse, data )
+                self.unfoldObject = RooUnfoldTUnfold     ( self.unfoldResponse, self.data )
                 if self.tau >= 0:
                     self.unfoldObject.FixTau( self.tau )
             elif self.method == 'RooUnfoldSvd':
-                self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, data, self.k_value, self.n_toy )
+                self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
             elif self.method == 'TSVDUnfold':
-                new_data = Hist( list( data.xedges() ), type = 'D' )
-                new_data.Add( data )
+                new_data = Hist( list( self.data.xedges() ), type = 'D' )
+                new_data.Add( self.data )
                 new_measured = Hist( list( self.measured.xedges() ), type = 'D' )
                 new_measured.Add( self.measured )
                 new_truth = Hist( list( self.truth.xedges() ), type = 'D' )
@@ -113,8 +113,24 @@ class Unfolding:
                 self.unfoldObject = TopSVDUnfold( data, measured, truth, response )
                 if self.k_value == -1 and self.tau >= 0:
                     self.unfoldObject.SetTau( self.tau )
-                    
-                
+
+    def test_regularisation (self, data, k_max):
+        self.setup_unfolding( data )
+        if self.method == 'RooUnfoldSvd':
+            findingK = RooUnfoldParms( self.unfoldObject, self.Hreco, self.truth )
+            findingK.SetMinParm(1)
+            findingK.SetMaxParm(k_max)
+            findingK.SetStepSizeParm(1)
+            RMSerror = asrootpy(findingK.GetRMSError().Clone())
+            MeanResiduals = asrootpy(findingK.GetMeanResiduals().Clone())
+            RMSresiduals = asrootpy(findingK.GetRMSResiduals().Clone())
+            Chi2 = asrootpy(findingK.GetChi2().Clone())
+            return RMSerror, MeanResiduals, RMSresiduals, Chi2
+        else:
+            raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( method ) )
+
+    def unfold( self, data ):
+        self.setup_unfolding( data )
         if self.method == 'TSVDUnfold' or self.method == 'TopSVDUnfold':
             self.unfolded_data = asrootpy( self.unfoldObject.Unfold( self.k_value ) )
         else:
@@ -266,7 +282,7 @@ def get_unfold_histogram_tuple(
         
     nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
     lumiweight = ttbar_xsection * luminosity / nEvents
-    
+
     h_fakes = None
     if load_fakes:
         h_fakes = asrootpy( folder.fake_AsymBins ).Clone()
