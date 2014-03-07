@@ -258,7 +258,8 @@ def make_control_region_comparison( control_region_1, control_region_2,
 def make_plot( histogram, histogram_label, histogram_properties = Histogram_properties(),
                                  save_folder = 'plots/',
                                  save_as = ['pdf', 'png'],
-                                 normalise = False
+                                 normalise = False,
+                                 draw_legend = True
                                  ):
     
     histogram.SetTitle( histogram_label )
@@ -277,7 +278,8 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
     
     set_labels( plt, histogram_properties )
     
-    plt.legend( numpoints = 1, loc = histogram_properties.legend_location, prop = CMS.legend_properties )
+    if draw_legend:
+        plt.legend( numpoints = 1, loc = histogram_properties.legend_location, prop = CMS.legend_properties )
     
     adjust_axis_limits( axes, histogram_properties )
 
