@@ -141,7 +141,16 @@ def spread_x( histograms, bin_edges ):
         graphs.append(g)
         
     return graphs
-    
+
+def limit_range_y( histogram ):
+    """
+        Calculates the minimum and maximum values of the histogram y values
+        Can be useful for setting limits of log plots
+    """
+    tuple_list = hist_to_value_error_tuplelist( histogram )
+    min_value = map( min, zip(*tuple_list) )[0]
+    max_value = map( max, zip(*tuple_list) )[0]
+    return min_value, max_value
             
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),

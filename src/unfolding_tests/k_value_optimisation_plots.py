@@ -53,8 +53,10 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
     histogram_properties.title = '$\chi^2$ for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = '$\chi^2$'
+    histogram_properties.set_log_y = True
     make_plot(Chi2, 'chi2', histogram_properties, output_folder, output_formats, draw_legend = False)
 
+    histogram_properties = Histogram_properties()
     histogram_properties.name = 'RMS_error_%s_channel_%s' % ( channel, variable )
     if use_data:
         histogram_properties.name += '_DATA'
@@ -64,7 +66,8 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = 'RMS error'
     make_plot(RMSerror, 'RMS', histogram_properties, output_folder, output_formats, draw_legend = False)
-    
+
+    histogram_properties = Histogram_properties()
     histogram_properties.name = 'RMS_residuals_%s_channel_%s' % ( channel, variable )
     if use_data:
         histogram_properties.name += '_DATA'
@@ -73,8 +76,10 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
     histogram_properties.title = 'RMS residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = 'RMS residuals'
+    histogram_properties.set_log_y = True
     make_plot(RMSresiduals, 'RMSresiduals', histogram_properties, output_folder, output_formats, draw_legend = False)
 
+    histogram_properties = Histogram_properties()
     histogram_properties.name = 'mean_residuals_%s_channel_%s' % ( channel, variable )
     if use_data:
         histogram_properties.name += '_DATA'
@@ -102,7 +107,7 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',
                       help="set path to JSON files")
-    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_k_tests/',
+    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_k_optimisation/',
                       help = "set path to save plots" )
     parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
@@ -143,7 +148,7 @@ if __name__ == '__main__':
 
     input_file = File( measurement_config.unfolding_madgraph_file )
     
-    variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']    
+    variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
 
     for channel in ['electron', 'muon']:
         for variable in variables:
