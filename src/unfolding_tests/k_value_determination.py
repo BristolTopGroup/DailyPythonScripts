@@ -80,12 +80,19 @@ def draw_d_i( d_i ):
     plt.xlabel( r'$i$', CMS.x_axis_title )
     plt.ylabel( r'$d_i$', CMS.y_axis_title )
     axes = plt.axes()
-    axes.set_ylim( ymin = 0.1 )
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
+
+    axes.set_yscale( 'log', nonposy = "clip" )
+
+    #adjust the y limits so all d_i are visible on log scale
+    value_range = sorted( list( d_i.y() ) )
+    for i, value in enumerate(value_range):
+        if value == 0:
+            del value_range[i]
+    axes.set_ylim( ymin = min(value_range)/10 )
     
-    plt.yscale( 'log' )
     plt.axhline( y = 1, linewidth = 3, color = 'red' )
 
     if CMS.tight_layout:
@@ -148,7 +155,6 @@ if __name__ == '__main__':
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
 
     input_file = File( measurement_config.unfolding_madgraph_file )
-
     
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)

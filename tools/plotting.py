@@ -260,6 +260,7 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
                                  save_folder = 'plots/',
                                  save_as = ['pdf', 'png'],
                                  normalise = False,
+                                 draw_errorbar = False,
                                  draw_legend = True
                                  ):
     
@@ -275,7 +276,10 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     axes = plt.axes()
     
-    rplt.hist( histogram )
+    if draw_errorbar:
+        rplt.errorbar( histogram, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2 )
+    else:
+        rplt.hist( histogram )
     
 
     if draw_legend:

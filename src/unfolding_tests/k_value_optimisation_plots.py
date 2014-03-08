@@ -54,7 +54,7 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = '$\chi^2$'
     histogram_properties.set_log_y = True
-    make_plot(Chi2, 'chi2', histogram_properties, output_folder, output_formats, draw_legend = False)
+    make_plot(Chi2, 'chi2', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'RMS_error_%s_channel_%s' % ( channel, variable )
@@ -62,10 +62,10 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
         histogram_properties.name += '_DATA'
     else:
         histogram_properties.name += '_MC'
-    histogram_properties.title = 'RMS error for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = 'Mean error for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
     histogram_properties.x_axis_title = '$i$'
-    histogram_properties.y_axis_title = 'RMS error'
-    make_plot(RMSerror, 'RMS', histogram_properties, output_folder, output_formats, draw_legend = False)
+    histogram_properties.y_axis_title = 'Mean error'
+    make_plot(RMSerror, 'RMS', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'RMS_residuals_%s_channel_%s' % ( channel, variable )
@@ -73,11 +73,12 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
         histogram_properties.name += '_DATA'
     else:
         histogram_properties.name += '_MC'
-    histogram_properties.title = 'RMS residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = 'RMS of residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
     histogram_properties.x_axis_title = '$i$'
-    histogram_properties.y_axis_title = 'RMS residuals'
-    histogram_properties.set_log_y = True
-    make_plot(RMSresiduals, 'RMSresiduals', histogram_properties, output_folder, output_formats, draw_legend = False)
+    histogram_properties.y_axis_title = 'RMS of residuals'
+    if not use_data:
+        histogram_properties.set_log_y = True
+    make_plot(RMSresiduals, 'RMSresiduals', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'mean_residuals_%s_channel_%s' % ( channel, variable )
@@ -85,10 +86,10 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
         histogram_properties.name += '_DATA'
     else:
         histogram_properties.name += '_MC'
-    histogram_properties.title = 'Mean residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = 'Mean of residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
     histogram_properties.x_axis_title = '$i$'
-    histogram_properties.y_axis_title = 'Mean residuals'
-    make_plot(MeanResiduals, 'MeanRes', histogram_properties, output_folder, output_formats, draw_legend = False)
+    histogram_properties.y_axis_title = 'Mean of residuals'
+    make_plot(MeanResiduals, 'MeanRes', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
 
 def get_data_histogram( path_to_JSON, channel, variable, met_type ):
@@ -129,8 +130,7 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     method = options.unfolding_method
     load_fakes = options.load_fakes
-    output_folder = options.output_folder
-    make_folder_if_not_exists(options.output_folder)
+    output_folder_base = options.output_folder
 
     
     if options.CoM == 8:
@@ -168,7 +168,10 @@ if __name__ == '__main__':
             h_data = None
             if use_data:
                 h_data = get_data_histogram( path_to_JSON, channel, variable, met_type )
+                output_folder = output_folder_base + '/' + variable + '_data/'
             else:
                 h_data = deepcopy( h_measured )
+                output_folder = output_folder_base + '/' + variable + '_MC/'
+            make_folder_if_not_exists(output_folder)
             
             draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes, h_data )
