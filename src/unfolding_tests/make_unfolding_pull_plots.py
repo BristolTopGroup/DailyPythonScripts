@@ -148,8 +148,8 @@ def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
         color='black', fontsize=40, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
     plt.tight_layout()  
     
-    save_folder = 'plots/'
-    save_as = ['png', 'pdf']
+    save_folder = 'plots_toy_mc/'
+    save_as = ['pdf']
     for save in save_as:
         plt.savefig(save_folder + name + '.' + save)        
 
@@ -181,8 +181,8 @@ def plot_difference(difference):
     plt.title('SVD unfolding performance', CMS.title)
     plt.tight_layout()  
     
-    save_folder = 'plots/'
-    save_as = ['png', 'pdf']
+    save_folder = 'plots_toy_mc/'
+    save_as = ['pdf']
     for save in save_as:
         plt.savefig(save_folder + 'difference_stats_' + str(stats) + '.' + save)   
         
@@ -204,7 +204,7 @@ def plot_difference(difference):
     plt.title('SVD unfolding performance', CMS.title)
     plt.tight_layout()  
     
-    save_folder = 'plots/'
+    save_folder = 'plots_toy_mc/'
     save_as = ['png', 'pdf']
     for save in save_as:
         plt.savefig(save_folder + 'difference_errors_stats_' + str(stats) + '.' + save)  
@@ -233,11 +233,12 @@ if __name__ == "__main__":
     files = glob(options.input_folder + '/*_' + options.channel + '*_*.txt')
     
     pulls = get_data(files, subset='pull')
-    plot_pull(pulls, bin_index = 0, n_bins = 5)
-    plot_pull(pulls, bin_index = 1, n_bins = 5)
-    plot_pull(pulls, bin_index = 2, n_bins = 5)
-    plot_pull(pulls, bin_index = 3, n_bins = 5)
-    plot_pull(pulls, bin_index = 4, n_bins = 5)
+    plot_pull(pulls, bin_index = 0, n_bins = 6)
+    plot_pull(pulls, bin_index = 1, n_bins = 6)
+    plot_pull(pulls, bin_index = 2, n_bins = 6)
+    plot_pull(pulls, bin_index = 3, n_bins = 6)
+    plot_pull(pulls, bin_index = 4, n_bins = 6)
+    plot_pull(pulls, bin_index = 5, n_bins = 6)
     plot_pull(pulls)
     del pulls #deleting to make space in memory
 #    plot_pull_from_list()

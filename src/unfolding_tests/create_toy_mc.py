@@ -88,8 +88,7 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     make_folder_if_not_exists(options.output_folder)
 
-    #input_file = File( measurement_config.path_to_unfolding_histograms + 'unfolding_merged.root' )
-    input_file = File('/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_merged.root')
+    input_file = File( measurement_config.path_to_unfolding_histograms + 'unfolding_merged.root' )
 
     variable = options.variable
 
