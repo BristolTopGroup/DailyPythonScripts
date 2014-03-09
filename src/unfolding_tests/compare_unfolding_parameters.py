@@ -47,9 +47,10 @@ def get_test_tau_values( h_truth, h_measured, h_response, h_data = None ):
     return tau_values
 
 def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable = 'MET' ):
-    global method, load_fakes
+    global method, load_fakes, do_taus
     k_values = get_test_k_values( h_truth, h_measured, h_response, h_data )
-    tau_values = get_test_tau_values( h_truth, h_measured, h_response, h_data )
+    if do_taus:
+        tau_values = get_test_tau_values( h_truth, h_measured, h_response, h_data )
     
     k_value_results = {}
     for k_value in k_values:
@@ -69,37 +70,43 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
         k_value_results[k_value] = deepcopy( h_result )
     
     tau_value_results = {}
-    for tau_value in tau_values:
-        unfolding = Unfolding( h_truth,
-                          h_measured,
-                          h_response,
-                          fakes = h_fakes,
-                          method = 'TopSVDUnfold',
-                          k_value = -1,
-                          tau = tau_value )
-        unfolded_data = unfolding.unfold( h_data )
+    if do_taus:
+        for tau_value in tau_values:
+            unfolding = Unfolding( h_truth,
+                              h_measured,
+                              h_response,
+                              fakes = h_fakes,
+                              method = 'TopSVDUnfold',
+                              k_value = -1,
+                              tau = tau_value )
+            unfolded_data = unfolding.unfold( h_data )
 
-        result = calculate_normalised_xsection( 
-                        hist_to_value_error_tuplelist( unfolded_data ),
-                        bin_widths[variable],
-                        normalise_to_one = True )
-        h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
-        tau_value_results[tau_value] = deepcopy( h_result )
+            result = calculate_normalised_xsection( 
+                            hist_to_value_error_tuplelist( unfolded_data ),
+                            bin_widths[variable],
+                            normalise_to_one = True )
+            h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
+            tau_value_results[tau_value] = deepcopy( h_result )
         
     return {'k_value_results':k_value_results, 'tau_value_results' :tau_value_results}
 
 def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
              channel = 'electron', bin_edges = [] ):
-    global plot_location, luminosity, centre_of_mass, method, test
-    
-    title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+    global plot_location, luminosity, centre_of_mass, method, test, do_taus
+
     channel_label = ''
     if channel == 'electron':
         channel_label = 'e+jets, $\geq$4 jets'
     else:
         channel_label = '$\mu$+jets, $\geq$4 jets'
-    title = title_template % ( luminosity / 1000., centre_of_mass, channel_label )
-    
+
+    if test == 'data':
+        title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+        title = title_template % ( luminosity / 1000., centre_of_mass, channel_label )
+    else:
+        title_template = 'CMS Simulation at $\sqrt{s}$ = %d TeV \n %s'
+        title = title_template % ( centre_of_mass, channel_label )
+
     models = {'central' : central_mc}
     if expected_result:
         models['expected'] = expected_result 
@@ -108,8 +115,9 @@ def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
     for key, value in results['k_value_results'].iteritems():
         measurements['k = ' + str( key )] = value
     
-    for key, value in results['tau_value_results'].iteritems():
-        measurements['$\\tau$ = %.2g' % key] = value
+    if do_taus:
+        for key, value in results['tau_value_results'].iteritems():
+            measurements['$\\tau$ = %.2g' % key] = value
     
     # get some spread in x    
     graphs = spread_x( measurements.values(), bin_edges )
@@ -150,6 +158,8 @@ if __name__ == '__main__':
                       help="set MET type used in the analysis of MET-dependent variables")
     parser.add_option("-t", "--test", dest="test", default='bias',
                       help="set the test type for comparison: bias (default), closure or data")    
+    parser.add_option("-a", "--plot_tau_values", dest="do_taus", action="store_true",
+                      help="include results for tau values")
 
     ( options, args ) = parser.parse_args()
 
@@ -172,14 +182,16 @@ if __name__ == '__main__':
     method = options.unfolding_method
     plot_location = options.output_folder
     met_type = translate_options[options.metType]
+    do_taus = options.do_taus
     make_folder_if_not_exists(plot_location)
 
     test = options.test
 
     input_filename_central = measurement_config.unfolding_madgraph_file
     input_filename_bias = measurement_config.unfolding_mcatnlo
-    
+
     variables = ['MET', 'WPT', 'MT', 'ST', 'HT']
+
     input_file = File( input_filename_central, 'read' )
     input_file_bias = File( input_filename_bias, 'read' )
     

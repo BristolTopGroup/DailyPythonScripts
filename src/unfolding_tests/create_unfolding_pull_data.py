@@ -68,6 +68,7 @@ def save_pulls(pulls, test, method, channel):
     file_template = 'Pulls_%s_%s_%s_toy_MC_%d_to_%d_MC_%d_to_%d_data.txt'
     output_file = output_folder + file_template % (test, method, channel, offset_toy_mc + 1, use_N_toy + offset_toy_mc, offset_toy_data + 1, use_N_toy + offset_toy_data)
     write_data_to_JSON(pulls, output_file)
+    print 'Pulls saved in file: ', output_file
     
     
 def get_histograms(folder):
@@ -84,8 +85,8 @@ if __name__ == "__main__":
 
     parser = OptionParser()
     parser.add_option("-o", "--output",
-                      dest="output_folder", default='../data/toy_mc/',
-                      help="output folder for toy MC plots")
+                      dest="output_folder", default='../data/pull_data/',
+                      help="output folder for pull data files")
     parser.add_option("-n", "--n_input_mc", type='int',
                       dest="n_input_mc", default=100,
                       help="number of toy MC used for the tests")
@@ -93,7 +94,7 @@ if __name__ == "__main__":
                       dest="error_toy_MC", default=1000,
                       help="number of toy MC used for the error calculation in SVD unfolding")
     parser.add_option("-k", "--k_value", type='int',
-                      dest="k_value", default=6,
+                      dest="k_value", default=3,
                       help="k-value for SVD unfolding")
     parser.add_option("-m", "--method", type='string',
                       dest="method", default='RooUnfoldSvd',
@@ -103,9 +104,12 @@ if __name__ == "__main__":
                       help="input folder with file with toy MC")
 
     parser.add_option("-v", "--variable", dest="variable", default='MET',
-                      help="set the variable to analyse (MET, HT, ST, MT)")
-    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8,
+                      help="set the variable to analyse (MET, HT, ST, MT, WPT)")
+    parser.add_option("-s", "--centre-of-mass-energy", dest="CoM", default=8,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
+    parser.add_option("-c", "--channel", type='string',
+                      dest="channel", default='both',
+                      help="channel to be analysed: electron|muon|both")
     
     parser.add_option("--offset_toy_mc", type='int',
                       dest="offset_toy_mc", default=0,
@@ -145,13 +149,19 @@ if __name__ == "__main__":
     output_folder = options.output_folder + '/' + variable + '/%d_input_toy_mc/k_value_%d/%d_error_toy_MC/' % (use_N_toy, RooUnfold.SVD_k_value, RooUnfold.SVD_n_toy)
     make_folder_if_not_exists(output_folder)
 
+    print 'Producing unfolding pull data for %s variable, k-value %s. \nOutput folder: %s' % (variable, options.k_value, output_folder)
+
     input_file_name = options.input_folder + '/' + 'toy_mc_' + variable + '_N_' + str(use_N_toy) + '.root'
     input_file = File(input_file_name, 'read')
     
     start1, start2 = clock(), time()
-    channels = ['electron', 'muon']
-    for channel in channels:
-        check_multiple_data_multiple_unfolding(input_file, method, channel)
+    if options.channel == 'electron':
+        check_multiple_data_multiple_unfolding(input_file, method, 'electron')
+    elif options.channel == 'muon':
+        check_multiple_data_multiple_unfolding(input_file, method, 'muon')
+    else:
+        check_multiple_data_multiple_unfolding(input_file, method, 'electron')
+        check_multiple_data_multiple_unfolding(input_file, method, 'muon')
 
     end1, end2 = clock(), time()
     

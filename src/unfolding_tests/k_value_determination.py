@@ -155,7 +155,7 @@ if __name__ == '__main__':
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
 
     input_file = File( measurement_config.unfolding_madgraph_file )
-    
+        
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']

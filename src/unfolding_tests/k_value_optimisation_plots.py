@@ -31,7 +31,7 @@ matplotlib.rc('font',**CMS.font)
 matplotlib.rc('text', usetex = True)
 
 def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = None, h_data = None ):
-    global method, variable, output_folder, output_formats, use_data
+    global method, variable, output_folder, output_formats, test
     k_max = h_measured.nbins()
     unfolding = Unfolding( h_truth,
                            h_measured,
@@ -46,11 +46,7 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'chi2_%s_channel_%s' % ( channel, variable )
-    if use_data:
-        histogram_properties.name += '_DATA'
-    else:
-        histogram_properties.name += '_MC'
-    histogram_properties.title = '$\chi^2$ for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = '$\chi^2$ for $%s$ in %s channel, %s test' % ( variables_latex[variable], channel, test )
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = '$\chi^2$'
     histogram_properties.set_log_y = True
@@ -58,35 +54,23 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'RMS_error_%s_channel_%s' % ( channel, variable )
-    if use_data:
-        histogram_properties.name += '_DATA'
-    else:
-        histogram_properties.name += '_MC'
-    histogram_properties.title = 'Mean error for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = 'Mean error for $%s$ in %s channel, %s test' % ( variables_latex[variable], channel, test )
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = 'Mean error'
     make_plot(RMSerror, 'RMS', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'RMS_residuals_%s_channel_%s' % ( channel, variable )
-    if use_data:
-        histogram_properties.name += '_DATA'
-    else:
-        histogram_properties.name += '_MC'
-    histogram_properties.title = 'RMS of residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = 'RMS of residuals for $%s$ in %s channel, %s test' % ( variables_latex[variable], channel, test )
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = 'RMS of residuals'
-    if not use_data:
+    if test == 'closure':
         histogram_properties.set_log_y = True
     make_plot(RMSresiduals, 'RMSresiduals', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'mean_residuals_%s_channel_%s' % ( channel, variable )
-    if use_data:
-        histogram_properties.name += '_DATA'
-    else:
-        histogram_properties.name += '_MC'
-    histogram_properties.title = 'Mean of residuals for $' + variables_latex[variable] + '$' + ' in ' + channel + ' channel'
+    histogram_properties.title = 'Mean of residuals for $%s$ in %s channel, %s test' % ( variables_latex[variable], channel, test )
     histogram_properties.x_axis_title = '$i$'
     histogram_properties.y_axis_title = 'Mean of residuals'
     make_plot(MeanResiduals, 'MeanRes', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
@@ -112,25 +96,25 @@ if __name__ == '__main__':
                       help = "set path to save plots" )
     parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
-    parser.add_option("-d", "--use-data", dest = "use_data", action="store_true",
-                      help = "use fitted results from data" )
     parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'RooUnfoldSvd',
                       help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
     parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
                       help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
                       help="set MET type used in the analysis of MET-dependent variables")
+    parser.add_option("-t", "--test", dest="test", default='bias',
+                      help="set the test type for comparison: bias (default), closure or data")    
 
     ( options, args ) = parser.parse_args()
 
     output_formats = ['pdf']
     centre_of_mass = options.CoM
-    use_data = options.use_data
     path_to_JSON = options.path
     met_type = translate_options[options.metType]
     method = options.unfolding_method
     load_fakes = options.load_fakes
     output_folder_base = options.output_folder
+    test = options.test
 
     
     if options.CoM == 8:
@@ -146,9 +130,13 @@ if __name__ == '__main__':
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
 
-    input_file = File( measurement_config.unfolding_madgraph_file )
+    input_filename_central = measurement_config.unfolding_madgraph_file
+    input_filename_bias = measurement_config.unfolding_mcatnlo
     
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
+
+    input_file = File( input_filename_central, 'read' )
+    input_file_bias = File( input_filename_bias, 'read' )
 
     for channel in ['electron', 'muon']:
         for variable in variables:
@@ -166,12 +154,25 @@ if __name__ == '__main__':
             print 'h_fakes = ', h_fakes
             
             h_data = None
-            if use_data:
+            if test == 'data':
                 h_data = get_data_histogram( path_to_JSON, channel, variable, met_type )
                 output_folder = output_folder_base + '/' + variable + '_data/'
+            elif test == 'bias':
+                h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 
+                                inputfile = input_file_bias,
+                                variable = variable,
+                                channel = channel,
+                                met_type = met_type,
+                                centre_of_mass = centre_of_mass,
+                                ttbar_xsection = ttbar_xsection,
+                                luminosity = luminosity,
+                                load_fakes = load_fakes )
+                h_data = deepcopy( h_measured_bias )
+                h_expected = h_truth_bias
+                output_folder = output_folder_base + '/' + variable + '_bias/'
             else:
                 h_data = deepcopy( h_measured )
-                output_folder = output_folder_base + '/' + variable + '_MC/'
+                output_folder = output_folder_base + '/' + variable + '_closure/'
             make_folder_if_not_exists(output_folder)
             
             draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes, h_data )

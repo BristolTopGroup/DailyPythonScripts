@@ -74,10 +74,13 @@ class Unfolding:
             elif self.method == 'TSVDUnfold':
                 new_data = Hist( list( self.data.xedges() ), type = 'D' )
                 new_data.Add( self.data )
+                
                 new_measured = Hist( list( self.measured.xedges() ), type = 'D' )
                 new_measured.Add( self.measured )
+                
                 new_truth = Hist( list( self.truth.xedges() ), type = 'D' )
                 new_truth.Add( self.truth )
+
 
                 if self.fakes:
                     new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D')
@@ -86,7 +89,14 @@ class Unfolding:
 
                 new_response = Hist2D( list( self.response.xedges() ), list( self.response.yedges() ), type = 'D' )
                 new_response.Add( self.response )
-                self.unfoldObject = TSVDUnfold( new_data, new_measured, new_truth, new_response )
+
+                #replace global objects with new ones
+                self.data = new_data
+                self.measured = new_measured
+                self.truth = new_truth
+                self.response = new_response
+
+                self.unfoldObject = TSVDUnfold( self.data, self.measured, self.truth, self.response )
             elif self.method == 'TopSVDUnfold':
                 ''' constructors are
                  TopSVDUnfold(const TH1D* bdat, const TH1D* bini, const TH1D* xini, const TH2D* Adet);
@@ -97,20 +107,26 @@ class Unfolding:
                  bini: reconstructed spectrum (TH1D, n bins)
                  Adet: response matrix (TH2D, nxn bins)'''
                 # first convert all TH1F to TH2D
-                data = TH1D()
-                measured = TH1D()
-                truth = TH1D()
-                fakes = TH1D()
-                response = TH2D()
-                self.data.Copy( data )
-                self.measured.Copy( measured )
-                self.truth.Copy( truth )
+                new_data = TH1D()
+                new_measured = TH1D()
+                new_truth = TH1D()
+                new_fakes = TH1D()
+                new_response = TH2D()
+                self.data.Copy( new_data )
+                self.measured.Copy( new_measured )
+                self.truth.Copy( new_truth )
                 if self.fakes:
-                    self.fakes.Copy( fakes )
-                    measured = measured - fakes
-                self.response.Copy( response )
+                    self.fakes.Copy( new_fakes )
+                    new_measured = new_measured - new_fakes
+                self.response.Copy( new_response )
+
+                #replace global objects with new ones
+                self.data = new_data
+                self.measured = new_measured
+                self.truth = new_truth
+                self.response = new_response
                 
-                self.unfoldObject = TopSVDUnfold( data, measured, truth, response )
+                self.unfoldObject = TopSVDUnfold( self.data, self.measured, self.truth, self.response )
                 if self.k_value == -1 and self.tau >= 0:
                     self.unfoldObject.SetTau( self.tau )
 
