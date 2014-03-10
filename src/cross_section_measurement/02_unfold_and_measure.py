@@ -125,7 +125,7 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                                               load_fakes = load_fakes
                                                                               )
 
-    h_truth_POWHEG = get_unfold_histogram_tuple(inputfile = file_for_powheg,
+    h_truth_POWHEG, _, _, _ = get_unfold_histogram_tuple(inputfile = file_for_powheg,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -133,8 +133,8 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
-                                                )[0]
-    h_truth_MCATNLO = get_unfold_histogram_tuple(inputfile = file_for_mcatnlo,
+                                                )
+    h_truth_MCATNLO, _, _, _ = get_unfold_histogram_tuple(inputfile = file_for_mcatnlo,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -142,8 +142,8 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
-                                                )[0]
-    h_truth_matchingdown = get_unfold_histogram_tuple(inputfile = file_for_matchingdown,
+                                                )
+    h_truth_matchingdown, _, _, _ = get_unfold_histogram_tuple(inputfile = file_for_matchingdown,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -151,8 +151,8 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
-                                                )[0]
-    h_truth_matchingup = get_unfold_histogram_tuple(inputfile = file_for_matchingup,
+                                                )
+    h_truth_matchingup, _, _, _ = get_unfold_histogram_tuple(inputfile = file_for_matchingup,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -160,8 +160,8 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
-                                                )[0]
-    h_truth_scaledown = get_unfold_histogram_tuple(inputfile = file_for_scaledown,
+                                                )
+    h_truth_scaledown, _, _, _ = get_unfold_histogram_tuple(inputfile = file_for_scaledown,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -169,8 +169,8 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
-                                                )[0]
-    h_truth_scaleup = get_unfold_histogram_tuple(inputfile = file_for_scaleup,
+                                                )
+    h_truth_scaleup, _, _, _ = get_unfold_histogram_tuple(inputfile = file_for_scaleup,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -178,7 +178,7 @@ def get_unfolded_normalisation(TTJet_fit_results, category, channel):
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
-                                                )[0]
+                                                )
 
     MADGRAPH_results = hist_to_value_error_tuplelist(h_truth)
     POWHEG_results = hist_to_value_error_tuplelist(h_truth_POWHEG)
