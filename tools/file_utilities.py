@@ -12,7 +12,10 @@ import subprocess
 
 def make_folder_if_not_exists(folder):
     if not os.path.exists(folder):
-        os.makedirs(folder)
+        try:
+            os.makedirs(folder)
+        except:
+            print "Could not create a folder ", folder
         
 def write_string_to_file(string, filename):
     path = get_path(filename)

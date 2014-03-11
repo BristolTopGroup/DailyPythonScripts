@@ -13,6 +13,9 @@ from optparse import OptionParser
 from glob import glob
 import sys
 
+import matplotlib as mpl
+mpl.use('agg')
+
 import numpy
 from numpy import frompyfunc
 from pylab import plot
@@ -26,7 +29,7 @@ import matplotlib.pyplot as plt
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.hist_utilities import value_error_tuplelist_to_hist
-from config import CMS
+from config import CMS, latex_labels
 
 from matplotlib import rc
 rc('font',**CMS.font)
@@ -61,9 +64,9 @@ def plot_pull(pulls, bin_index = None, n_bins = 1):
 #    print n_x_bins, -abs_max, abs_max
     h_pull = Hist(n_x_bins, -abs_max, abs_max)
     filling = h_pull.Fill
+    stats = 0
     
     for pull_index, pull in enumerate(pulls):
-            
         if not bin_index is None:
             matches_bin = (pull_index - bin_index) %(n_bins) == 0
             if pull_index < n_bins:#first set correction
@@ -71,8 +74,8 @@ def plot_pull(pulls, bin_index = None, n_bins = 1):
             if not matches_bin:
                 continue
         filling(pull)
+        stats += 1
     
-    stats = len(pulls)
 #    print stats
 #    h_list = hist_to_value_error_tuplelist(h_pull)
 #    print h_list
@@ -93,7 +96,7 @@ def plot_pull_from_list():
     plot_h_pull(h_pull, stats = stats, name = 'pull_from_list' )    
 
 def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
-    global output_folder, output_formats
+    global output_folder, output_formats, channel, centre_of_mass, k_value, variable
     h_pull.Fit('gaus', 'WWSQ')
     fit_pull = h_pull.GetFunction('gaus')
     mean = (fit_pull.GetParameter(1), fit_pull.GetParError(1))
@@ -113,12 +116,20 @@ def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
     plot(x, function_data(x), axes=axes, color='red', linewidth=2)
     
     
-    plt.xlabel('$\\frac{\mathrm{unfolded} - \mathrm{true}}{\sigma}$', CMS.x_axis_title)
+    plt.xlabel('$\\frac{N^{\mathrm{unfolded}} - N^{\mathrm{true}}}{\sigma}$', CMS.x_axis_title)
     plt.ylabel('number of toy experiments', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    plt.title('Pull distribution for SVD unfolding', CMS.title)
-    text = 'entries = %d \n mean = $%.2f \pm %.2f$ \n $\sigma = %.2f \pm %.2f$' % (stats, mean[0], mean[1], sigma[0], sigma[1])
+
+    channel_label = ''
+    if channel == 'electron':
+        channel_label = 'e+jets'
+    else:
+        channel_label = '$\mu$+jets'
+    title_template = 'Pull distribution for unfolding of $%s$ \n $\sqrt{s}$ = %d TeV, %s, k value = %d' % ( latex_labels.variables_latex[variable], centre_of_mass, channel_label, k_value )
+    plt.title(title_template, CMS.title)
+    
+    text = 'entries = %d \n mean = $%.3f \pm %.3f$ \n $\sigma = %.3f \pm %.3f$' % (stats, mean[0], mean[1], sigma[0], sigma[1])
     axes.text(0.6, 0.8, text,
         verticalalignment='bottom', horizontalalignment='left',
         transform=axes.transAxes,
@@ -149,12 +160,19 @@ def plot_difference(difference):
     axes = plt.axes()
     h_values.SetMarkerSize(CMS.data_marker_size)
     rplt.errorbar(h_values, xerr=True, emptybins=True, axes=axes)
+
+    channel_label = ''
+    if channel == 'electron':
+        channel_label = 'e+jets'
+    else:
+        channel_label = '$\mu$+jets'
+    title_template = 'SVD unfolding performance for $%s$ \n $\sqrt{s}$ = %d TeV, %s, k value = %d' % ( latex_labels.variables_latex[variable], centre_of_mass, channel_label, k_value )
     
     plt.xlabel('$\mathrm{unfolded} - \mathrm{true}$', CMS.x_axis_title)
     plt.ylabel('number of toy experiments', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    plt.title('SVD unfolding performance', CMS.title)
+    plt.title(title_template, CMS.title)
     plt.tight_layout()  
     
     for save in output_formats:
@@ -175,7 +193,8 @@ def plot_difference(difference):
     plt.ylabel('number of toy experiments', CMS.y_axis_title)
     plt.tick_params(**CMS.axis_label_major)
     plt.tick_params(**CMS.axis_label_minor)
-    plt.title('SVD unfolding performance', CMS.title)
+    plt.title(title_template, CMS.title)
+
     plt.tight_layout()  
     
     for save in output_formats:
@@ -197,6 +216,9 @@ if __name__ == "__main__":
     parser.add_option("-c", "--channel", type='string',
                       dest="channel", default='electron',
                       help="channel to be analysed: electron|muon|both")
+    parser.add_option("-k", "--k_value", type='int',
+                      dest="k_value", default=3,
+                      help="k-value used in SVD unfolding, only for categorisation purpose at this stage")
 
     (options, args) = parser.parse_args()
     
@@ -214,27 +236,29 @@ if __name__ == "__main__":
 
     centre_of_mass = options.CoM
     variable = options.variable
-    output_folder = options.output_folder + '/' + variable + '/' + options.channel + '/'
+    channel = options.channel
+    k_value = options.k_value
+    output_folder = options.output_folder + '/' + variable + '/' + channel + '/kv' + str(k_value) + '/'
     make_folder_if_not_exists(output_folder)
     output_formats = ['pdf']
 
     bins = array('d', bin_edges[variable])
     nbins = len(bins) - 1
 
-    print 'Producing unfolding pull plots for %s variable, channel: %s. \nOutput folder: %s' % (variable, options.channel, output_folder)
+    print 'Producing unfolding pull plots for %s variable, k-value of %d, channel: %s. \nOutput folder: %s' % (variable, k_value, channel, output_folder)
     
-    files = glob(options.input_folder + '/*_' + options.channel + '*_*.txt')
+    files = glob(options.input_folder + '/*_' + channel + '*_*.txt')
     if not files:
         sys.exit('No *.txt files found in input directory.')
     
     pulls = get_data(files, subset='pull')
 
-    for bin_i, bin in enumerate(bins):
+    for bin_i in range (0, nbins):
         plot_pull(pulls, bin_index = bin_i, n_bins = nbins)
 
+    #plot all bins
     plot_pull(pulls)
     del pulls #deleting to make space in memory
-#    plot_pull_from_list()
 
     difference = get_data(files, subset='difference')
     plot_difference(difference)

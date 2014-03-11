@@ -14,7 +14,7 @@ from tools.file_utilities import write_data_to_JSON, make_folder_if_not_exists
 from time import clock, time
     
 def check_multiple_data_multiple_unfolding(input_file, method, channel):
-    global nbins, use_N_toy, output_folder, offset_toy_mc, offset_toy_data
+    global nbins, use_N_toy, output_folder, offset_toy_mc, offset_toy_data, k_value
     # same unfolding input, different data
     get_folder = input_file.Get
     pulls = []
@@ -37,7 +37,7 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel):
     for nth_toy_mc in range(offset_toy_mc + 1, offset_toy_mc + use_N_toy + 1):
         print 'Doing MC no', nth_toy_mc
         h_truth, h_measured, h_response = histograms[nth_toy_mc - 1]
-        unfolding_obj = Unfolding(h_truth, h_measured, h_response, method=method)
+        unfolding_obj = Unfolding(h_truth, h_measured, h_response, method=method, k_value=k_value)
         unfold, get_pull, reset = unfolding_obj.unfold, unfolding_obj.pull, unfolding_obj.Reset
         
         for nth_toy_data in range(offset_toy_data + 1, offset_toy_data + use_N_toy + 1):
@@ -90,18 +90,15 @@ if __name__ == "__main__":
     parser.add_option("-n", "--n_input_mc", type='int',
                       dest="n_input_mc", default=100,
                       help="number of toy MC used for the tests")
-    parser.add_option("-e", "--error_toy_MC", type='int',
-                      dest="error_toy_MC", default=1000,
-                      help="number of toy MC used for the error calculation in SVD unfolding")
     parser.add_option("-k", "--k_value", type='int',
                       dest="k_value", default=3,
                       help="k-value for SVD unfolding")
     parser.add_option("-m", "--method", type='string',
                       dest="method", default='RooUnfoldSvd',
                       help="unfolding method")
-    parser.add_option("-i", "--input-folder", type='string',
-                      dest="input_folder", default='../data/toy_mc/',
-                      help="input folder with file with toy MC")
+    parser.add_option("-f", "--file", type='string',
+                      dest="file", default='../data/toy_mc/unfolding_toy_mc.root',
+                      help="file with toy MC")
 
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT, WPT)")
@@ -134,8 +131,7 @@ if __name__ == "__main__":
     make_folder_if_not_exists(options.output_folder)
     
     # set the number of toy MC for error calculation
-    RooUnfold.SVD_n_toy = options.error_toy_MC
-    RooUnfold.SVD_k_value = options.k_value
+    k_value = options.k_value
     use_N_toy = options.n_input_mc
     offset_toy_mc = options.offset_toy_mc
     offset_toy_data = options.offset_toy_data
@@ -146,13 +142,12 @@ if __name__ == "__main__":
     bins = array('d', bin_edges[variable])
     nbins = len(bins) - 1
     
-    output_folder = options.output_folder + '/' + variable + '/%d_input_toy_mc/k_value_%d/%d_error_toy_MC/' % (use_N_toy, RooUnfold.SVD_k_value, RooUnfold.SVD_n_toy)
+    output_folder = options.output_folder + '/' + variable + '/%d_input_toy_mc/k_value_%d/' % (use_N_toy, k_value)
     make_folder_if_not_exists(output_folder)
 
-    print 'Producing unfolding pull data for %s variable, k-value %s. \nOutput folder: %s' % (variable, options.k_value, output_folder)
+    print 'Producing unfolding pull data for %s variable, k-value %s. \nOutput folder: %s' % (variable, k_value, output_folder)
 
-    input_file_name = options.input_folder + '/' + 'toy_mc_' + variable + '_N_' + str(use_N_toy) + '.root'
-    input_file = File(input_file_name, 'read')
+    input_file = File(options.file, 'read')
     
     start1, start2 = clock(), time()
     if options.channel == 'electron':
