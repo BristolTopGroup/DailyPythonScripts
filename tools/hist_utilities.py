@@ -9,6 +9,9 @@ from rootpy import asrootpy
 from ROOT import TGraphAsymmErrors
 from array import array
 from itertools import izip
+from rootpy.plotting.hist import Hist2D
+import random
+import string
 
 def hist_to_value_error_tuplelist( hist ):
     values = list( hist.y() )
@@ -151,7 +154,25 @@ def limit_range_y( histogram ):
     min_value = map( min, zip(*tuple_list) )[0]
     max_value = map( max, zip(*tuple_list) )[0]
     return min_value, max_value
-            
+    
+def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
+    # since there is no easy way to rebin a 2D histogram, lets make it from 
+    # scratch
+    random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+    hist = Hist2D( bin_edges_x, bin_edges_y, name = hist_2D.GetName() + '_rebinned_' + random_string)  
+    n_bins_x = hist_2D.nbins()
+    n_bins_y = hist_2D.nbins( axis = 1 )
+    
+    fill = hist.Fill
+    get = hist_2D.GetBinContent
+    x_axis_centre = hist_2D.GetXaxis().GetBinCenter
+    y_axis_centre = hist_2D.GetYaxis().GetBinCenter
+    for i in range(1, n_bins_x + 1):
+        for j in range(1, n_bins_y + 1):
+            fill(x_axis_centre(i), y_axis_centre(j), get(i,j))
+    
+    return hist
+
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
                              ( 0.012830288388947605, 0.0010071677178938234 ),
