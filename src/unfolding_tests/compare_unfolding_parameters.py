@@ -13,6 +13,7 @@ different unfolding parameters k or tau. Three kinds of tests are envisioned:
 3) data test:
     - test if the unfolded result is biased towards a certain shape 
 """
+from optparse import OptionParser
 from copy import deepcopy
 import collections
 from rootpy.io import File
@@ -23,7 +24,9 @@ from config import latex_labels
 from tools.Calculation import calculate_normalised_xsection
 from tools.hist_utilities import hist_to_value_error_tuplelist, \
     value_error_tuplelist_to_hist, spread_x
+from tools.file_utilities import make_folder_if_not_exists
 from config.variable_binning_8TeV import bin_widths, bin_edges
+from config.cross_section_measurement_common import translate_options
 
 def get_test_k_values( h_truth, h_measured, h_response, h_data = None ):
     """
@@ -44,16 +47,18 @@ def get_test_tau_values( h_truth, h_measured, h_response, h_data = None ):
     return tau_values
 
 def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable = 'MET' ):
+    global method, load_fakes, do_taus
     k_values = get_test_k_values( h_truth, h_measured, h_response, h_data )
-    tau_values = get_test_tau_values( h_truth, h_measured, h_response, h_data )
+    if do_taus:
+        tau_values = get_test_tau_values( h_truth, h_measured, h_response, h_data )
     
     k_value_results = {}
     for k_value in k_values:
         unfolding = Unfolding( h_truth,
                           h_measured,
                           h_response,
-                        method = 'RooUnfoldSvd',
-#                           method = 'TSVDUnfold',
+                          fakes = h_fakes,
+                          method = method,
                           k_value = k_value )
         unfolded_data = unfolding.unfold( h_data )
 
@@ -65,38 +70,43 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
         k_value_results[k_value] = deepcopy( h_result )
     
     tau_value_results = {}
-    for tau_value in tau_values:
-        unfolding = Unfolding( h_truth,
-                          h_measured,
-                          h_response,
-                          fakes = h_fakes,
-#                           method = 'RooUnfoldTUnfold',
-                          method = 'TopSVDUnfold',
-                          k_value = -1,
-                          tau = tau_value )
-        unfolded_data = unfolding.unfold( h_data )
+    if do_taus:
+        for tau_value in tau_values:
+            unfolding = Unfolding( h_truth,
+                              h_measured,
+                              h_response,
+                              fakes = h_fakes,
+                              method = 'TopSVDUnfold',
+                              k_value = -1,
+                              tau = tau_value )
+            unfolded_data = unfolding.unfold( h_data )
 
-        result = calculate_normalised_xsection( 
-                        hist_to_value_error_tuplelist( unfolded_data ),
-                        bin_widths[variable],
-                        normalise_to_one = True )
-        h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
-        tau_value_results[tau_value] = deepcopy( h_result )
+            result = calculate_normalised_xsection( 
+                            hist_to_value_error_tuplelist( unfolded_data ),
+                            bin_widths[variable],
+                            normalise_to_one = True )
+            h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
+            tau_value_results[tau_value] = deepcopy( h_result )
         
     return {'k_value_results':k_value_results, 'tau_value_results' :tau_value_results}
 
 def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
              channel = 'electron', bin_edges = [] ):
-    global plot_location, luminosity, centre_of_mass, test
-    
-    title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+    global plot_location, luminosity, centre_of_mass, method, test, do_taus
+
     channel_label = ''
     if channel == 'electron':
         channel_label = 'e+jets, $\geq$4 jets'
     else:
         channel_label = '$\mu$+jets, $\geq$4 jets'
-    title = title_template % ( luminosity / 1000., centre_of_mass, channel_label )
-    
+
+    if test == 'data':
+        title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+        title = title_template % ( luminosity / 1000., centre_of_mass, channel_label )
+    else:
+        title_template = 'CMS Simulation at $\sqrt{s}$ = %d TeV \n %s'
+        title = title_template % ( centre_of_mass, channel_label )
+
     models = {'central' : central_mc}
     if expected_result:
         models['expected'] = expected_result 
@@ -105,8 +115,9 @@ def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
     for key, value in results['k_value_results'].iteritems():
         measurements['k = ' + str( key )] = value
     
-    for key, value in results['tau_value_results'].iteritems():
-        measurements['$\\tau$ = %.2g' % key] = value
+    if do_taus:
+        for key, value in results['tau_value_results'].iteritems():
+            measurements['$\\tau$ = %.2g' % key] = value
     
     # get some spread in x    
     graphs = spread_x( measurements.values(), bin_edges )
@@ -114,7 +125,7 @@ def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
         measurements[key] = graph
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = channel + '_' + variable + '_' + test
+    histogram_properties.name = channel + '_' + variable + '_' + method + '_' + test
     histogram_properties.title = title + ', ' + latex_labels.b_tag_bins_latex['2orMoreBtags']
     histogram_properties.x_axis_title = '$' + latex_labels.variables_latex[variable] + '$'
     histogram_properties.y_axis_title = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + latex_labels.variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$'
@@ -123,7 +134,7 @@ def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
 
     compare_measurements( models, measurements, show_measurement_errors = True,
                           histogram_properties = histogram_properties,
-                          save_folder = plot_location )
+                          save_folder = plot_location, save_as = ['pdf'] )
     
     
     
@@ -133,23 +144,56 @@ if __name__ == '__main__':
     gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
     # Do not let ROOT handle pointers. That just asks for trouble.
     TH1F.AddDirectory(False)
-    tests = ['closure', 'bias', 'data']
-    test = tests[2]
-#     input_file_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
-#     input_file_bias_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/TTJets-matchingdown_nTuple_53X_mc_merged_001.root'
-#     input_file_bias_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TT_8TeV-mcatnlo/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
-    input_file_8Tev = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables_ARC_review/unfolding_merged.root'
-    input_file_bias_8Tev = '/storage/TopQuarkGroup/results/histogramfiles/AN-13-015_V6_fixed_unfolding_new_variables_ARC_review/unfolding_TTJets_8TeV_mcatnlo.root'
+
+    parser = OptionParser()
+    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_unfolding_tests/',
+                      help = "set path to save plots" )
+    parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
+                      help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
+    parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
+                      help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
+    parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'RooUnfoldSvd',
+                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
+    parser.add_option("-m", "--metType", dest="metType", default='type1',
+                      help="set MET type used in the analysis of MET-dependent variables")
+    parser.add_option("-t", "--test", dest="test", default='bias',
+                      help="set the test type for comparison: bias (default), closure or data")    
+    parser.add_option("-a", "--plot_tau_values", dest="do_taus", action="store_true",
+                      help="include results for tau values")
+
+    ( options, args ) = parser.parse_args()
+
+    from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
     
-    met_type = 'patType1CorrectedPFMet'
-    plot_location = 'plots/unfolding_tests/'
+    if options.CoM == 8:
+        from config.variable_binning_8TeV import bin_widths, bin_edges
+        import config.cross_section_measurement_8TeV as measurement_config
+    elif options.CoM == 7:
+        from config.variable_binning_7TeV import bin_widths, bin_edges
+        import config.cross_section_measurement_7TeV as measurement_config
+    else:
+        import sys
+        sys.exit('Unknown centre of mass energy')
     
+    centre_of_mass = options.CoM
+    luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
+    ttbar_xsection = measurement_config.ttbar_xsection
+    load_fakes = options.load_fakes
+    method = options.unfolding_method
+    plot_location = options.output_folder
+    met_type = translate_options[options.metType]
+    do_taus = options.do_taus
+    make_folder_if_not_exists(plot_location)
+
+    test = options.test
+
+    input_filename_central = measurement_config.unfolding_madgraph_file
+    input_filename_bias = measurement_config.unfolding_mcatnlo
+
     variables = ['MET', 'WPT', 'MT', 'ST', 'HT']
-    centre_of_mass = 8
-    ttbar_xsection = 225.2
-    luminosity = 19712
-    input_file = File( input_file_8Tev )
-    input_file_bias = File( input_file_bias_8Tev )
+
+    input_file = File( input_filename_central, 'read' )
+    input_file_bias = File( input_filename_bias, 'read' )
     
     for channel in ['electron', 'muon']:
         for variable in variables:
@@ -162,7 +206,7 @@ if __name__ == '__main__':
                                 centre_of_mass = centre_of_mass,
                                 ttbar_xsection = ttbar_xsection,
                                 luminosity = luminosity,
-                                load_fakes = True )
+                                load_fakes = load_fakes )
             h_data = None
             h_expected = None
             
@@ -177,10 +221,10 @@ if __name__ == '__main__':
                                 centre_of_mass = centre_of_mass,
                                 ttbar_xsection = ttbar_xsection,
                                 luminosity = luminosity,
-                                load_fakes = True )
+                                load_fakes = load_fakes )
                 h_data = deepcopy( h_measured_bias )
                 h_expected = h_truth_bias
-                h_fakes = None
+                #h_fakes = None
             else:
                 h_data = deepcopy( h_measured )
             results = run_test( h_truth, h_measured, h_response, h_data, h_fakes, variable )

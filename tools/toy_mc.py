@@ -8,7 +8,7 @@ from math import sqrt
 from hist_utilities import value_error_tuplelist_to_hist
 
 def generate_toy_MC_from_distribution(distribution):
-    initial_values = list(distribution)
+    initial_values = list( distribution.y() )
     new_values = [rnd.poisson(value) for value in initial_values]
     #statistical errors
     new_errors = [sqrt(value) for value in new_values]
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     plt.ylabel('Events', position=(0., 1.), va='top')
     plt.legend(numpoints=1)
     plt.savefig('toy_MC_test.png')
-    print (list(h_data))
-    print (list(h_new))
+    print  list( h_data.y() )
+    print list( h_new.y() )

@@ -14,6 +14,7 @@ from copy import deepcopy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, MaxNLocator
 from itertools import cycle
+from tools.hist_utilities import limit_range_y
 
 from matplotlib import rc
 rc('font',**CMS.font)
@@ -258,7 +259,9 @@ def make_control_region_comparison( control_region_1, control_region_2,
 def make_plot( histogram, histogram_label, histogram_properties = Histogram_properties(),
                                  save_folder = 'plots/',
                                  save_as = ['pdf', 'png'],
-                                 normalise = False
+                                 normalise = False,
+                                 draw_errorbar = False,
+                                 draw_legend = True
                                  ):
     
     histogram.SetTitle( histogram_label )
@@ -273,13 +276,33 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     axes = plt.axes()
     
-    rplt.hist( histogram )
+    if draw_errorbar:
+        rplt.errorbar( histogram, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2 )
+    else:
+        rplt.hist( histogram )
     
-    set_labels( plt, histogram_properties )
-    
-    plt.legend( numpoints = 1, loc = histogram_properties.legend_location, prop = CMS.legend_properties )
+
+    if draw_legend:
+        plt.legend( numpoints = 1, loc = histogram_properties.legend_location, prop = CMS.legend_properties )
     
     adjust_axis_limits( axes, histogram_properties )
+
+    x_limits = histogram_properties.x_limits
+    y_limits = histogram_properties.y_limits
+    if len( x_limits ) == 2:
+        axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
+    if len( y_limits ) == 2:
+        axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
+    
+    if histogram_properties.set_log_y:
+        axes.set_yscale( 'log', nonposy = "clip" )
+        if not len( histogram_properties.y_limits ) == 2:  # if not user set y-limits, calculate the limits from the tuple values
+            y_min, y_max = limit_range_y( histogram )
+            if y_min == 0:
+                y_min = 1
+            axes.set_ylim( ymin = y_min/10, ymax = y_max*10 )
+
+    set_labels( plt, histogram_properties )
 
     if CMS.tight_layout:
         plt.tight_layout()

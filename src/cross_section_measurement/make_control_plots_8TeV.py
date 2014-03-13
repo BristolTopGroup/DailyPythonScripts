@@ -168,7 +168,7 @@ if __name__ == '__main__':
     if category != 'central':
         histogram_properties.name += '_' + category
     histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
-    histogram_properties.x_axis_title = '$p_\mathrm{T}(e)$ [GeV]'t 
+    histogram_properties.x_axis_title = '$p_\mathrm{T}(e)$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [0, 250]
     histogram_properties.mc_error = mc_uncertainty
