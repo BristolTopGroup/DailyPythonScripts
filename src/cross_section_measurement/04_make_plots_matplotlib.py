@@ -20,15 +20,19 @@ rc('font',**CMS.font)
 rc( 'text', usetex = True )
 
 def read_xsection_measurement_results( category, channel ):
-    global path_to_JSON, variable, k_value, met_type
+    global path_to_JSON, variable, k_values, met_type
     
     normalised_xsection_unfolded = None
+    filename = ''
     if category in met_uncertainties and variable == 'HT':
-        normalised_xsection_unfolded = read_data_from_JSON( path_to_JSON + '/xsection_measurement_results' + '/kv' + str( k_value ) + '/' 
-                                                       + 'central' + '/normalised_xsection_' + channel + '_' + met_type + '.txt' )
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '.txt' 
     else:
-        normalised_xsection_unfolded = read_data_from_JSON( path_to_JSON + '/xsection_measurement_results' + '/kv' + str( k_value ) + '/' 
-                                                       + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt' )
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+
+    if channel == 'combined':
+        filename = filename.replace('kv' + str(k_values[channel]), '')
+
+    normalised_xsection_unfolded = read_data_from_JSON( filename )
         
     h_normalised_xsection = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable] )
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable] )
@@ -60,7 +64,9 @@ def read_xsection_measurement_results( category, channel ):
                                                                   'scaledown': h_normalised_xsection_scaledown,
                                                                   'scaleup': h_normalised_xsection_scaleup} )
         
-        file_template = path_to_JSON + '/xsection_measurement_results' + '/kv' + str( k_value ) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type
+        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type
+        if channel == 'combined':
+            file_template = file_template.replace('kv' + str(k_values[channel]), '')
 #         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
@@ -90,10 +96,14 @@ def read_xsection_measurement_results( category, channel ):
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
 def read_unfolded_xsections( channel ):
-    global path_to_JSON, variable, k_value, met_type, b_tag_bin
+    global path_to_JSON, variable, k_values, met_type, b_tag_bin
     TTJet_xsection_unfolded = {}
+    filename = ''
     for category in categories:
-        normalised_xsections = read_data_from_JSON( path_to_JSON + '/xsection_measurement_results' + '/kv' + str( k_value ) + '/' + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt' )
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+        if channel == 'combined':
+            filename = filename.replace('kv' + str(k_values[channel]), '')
+        normalised_xsections = read_data_from_JSON( filename )
         TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
     return TTJet_xsection_unfolded
 
@@ -246,7 +256,7 @@ def get_cms_labels( channel ):
     
     
 def make_plots( histograms, category, output_folder, histname, show_before_unfolding = False ):
-    global variable, k_value
+    global variable, k_values
     
     channel = 'electron'
     if 'electron' in histname:
@@ -335,14 +345,17 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
     path = output_folder + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/' + category
     make_folder_if_not_exists( path )
     for output_format in output_formats:
-        plt.savefig( path + '/' + histname + '_kv' + str( k_value ) + '.' + output_format )
+        filename = path + '/' + histname + '_kv' + str(k_values[channel]) + '.' + output_format
+        if channel == 'combined':
+            filename = filename.replace('_kv' + str(k_values[channel]), '')
+        plt.savefig( filename )
 
     del hist_data, hist_measured
     plt.close()
     gc.collect()
 
 def plot_central_and_systematics( channel, systematics, exclude = [], suffix = 'altogether' ):
-    global variable, k_value, b_tag_bin, met_type
+    global variable, k_values, b_tag_bin, met_type
 
     plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
     axes = plt.axes()
@@ -386,7 +399,10 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     path = output_folder + str( measurement_config.centre_of_mass ) + 'TeV/' + variable
     make_folder_if_not_exists( path )
     for output_format in output_formats:
-        plt.savefig( path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str( k_value ) + '.' + output_format ) 
+        filename = path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_values[channel]) + '.' + output_format
+        if channel == 'combined':
+            filename = filename.replace('_kv' + str(k_values[channel]), '')
+        plt.savefig( filename ) 
 
     plt.close()
     gc.collect()
@@ -406,9 +422,6 @@ if __name__ == '__main__':
                       help = "set MET type used in the analysis of MET, ST or MT" )
     parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
                   help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
-    parser.add_option( "-k", "--k_value", type = 'int',
-                      dest = "k_value", default = 4,
-                      help = "k-value for SVD unfolding, used in histogram names" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
     parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
@@ -437,7 +450,10 @@ if __name__ == '__main__':
     output_folder = options.output_folder
     if not output_folder.endswith( '/' ):
         output_folder += '/'
-    k_value = options.k_value
+    k_values = {'electron' : measurement_config.k_values_electron[variable],
+                'muon' : measurement_config.k_values_muon[variable],
+                'combined' : 'None'
+                }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/'

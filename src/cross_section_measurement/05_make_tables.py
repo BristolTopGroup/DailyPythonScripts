@@ -10,33 +10,38 @@ from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from math import sqrt
 
 def read_xsection_measurement_results_with_errors(channel):
-    global path_to_JSON, variable, k_value, met_type
+    global path_to_JSON, variable, k_values, met_type
     category = 'central'
+    file_template = ''
+    file_name = ''
 
-    normalised_xsection_unfolded = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + str(k_value) + '/' 
-                                                       + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt')
+    file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+    if channel == 'combined':
+        file_template = file_template.replace('kv' + str(k_values[channel]), '')
+
+    file_name = file_template
+    normalised_xsection_unfolded = read_data_from_JSON( file_name )
     
     normalised_xsection_measured_unfolded = {'measured':normalised_xsection_unfolded['TTJet_measured'],
                                             'unfolded':normalised_xsection_unfolded['TTJet_unfolded']}
     
-    normalised_xsection_unfolded_with_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
-                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
-                                                                channel + '_' + met_type + '_with_errors.txt')
-    normalised_xsection_ttbar_theory_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
-                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
-                                                                channel + '_' + met_type + '_ttbar_theory_errors.txt')
-    normalised_xsection_MET_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
-                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
-                                                                channel + '_' + met_type + '_MET_errors.txt')
-    normalised_xsection_PDF_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
-                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
-                                                                channel + '_' + met_type + '_PDF_errors.txt')
-    normalised_xsection_other_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
-                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
-                                                                channel + '_' + met_type + '_other_errors.txt')
-    normalised_xsection_new_errors = read_data_from_JSON(path_to_JSON + '/xsection_measurement_results' + '/kv' + 
-                                                                str(k_value) + '/' + category + '/normalised_xsection_' + 
-                                                                channel + '_' + met_type + '_new_errors.txt')
+    file_name = file_template.replace('.txt', '_with_errors.txt')
+    normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_ttbar_theory_errors.txt')
+    normalised_xsection_ttbar_theory_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_MET_errors.txt')
+    normalised_xsection_MET_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_PDF_errors.txt')
+    normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_other_errors.txt')
+    normalised_xsection_other_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_new_errors.txt')
+    normalised_xsection_new_errors = read_data_from_JSON( file_name )
     
     normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
                                                 'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded']})
@@ -196,10 +201,10 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         print printout
 
 def print_xsections(xsections, channel, toFile = True, print_before_unfolding = False):
-    global output_folder, variable, k_value, met_type, b_tag_bin
+    global output_folder, variable, k_values, met_type, b_tag_bin
     printout = '=' * 60
     printout += '\n'
-    printout += 'Results for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, k_value, met_type, b_tag_bin)
+    printout += 'Results for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
     if print_before_unfolding:
         printout += 'BEFORE UNFOLDING\n'
     printout += '=' * 60
@@ -231,20 +236,26 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
-        if print_before_unfolding:
-            output_file = open(path + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_value) + '_measured.tex', 'w')
+        if channel == 'combined':
+            file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type
         else:
-            output_file = open(path + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_value) + '_unfolded.tex', 'w')
+            file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
+
+        if print_before_unfolding:
+            file_template += '_measured.tex'
+        else:
+            file_template += '_unfolded.tex'
+        output_file = open(file_template, 'w')
         output_file.write(printout)
         output_file.close()
     else:
         print printout
 
 def print_error_table(central_values, errors, channel, toFile = True, print_before_unfolding = False):
-    global output_folder, variable, k_value, met_type, b_tag_bin, all_measurements
+    global output_folder, variable, k_values, met_type, b_tag_bin, all_measurements
     printout = '=' * 60
     printout += '\n'
-    printout += 'Errors for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, k_value, met_type, b_tag_bin)
+    printout += 'Errors for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
     if print_before_unfolding:
         printout += 'BEFORE UNFOLDING\n'
     printout += '=' * 60
@@ -297,10 +308,16 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
-        if print_before_unfolding:
-            output_file = open(path + '/error_table_' + channel + '_' + met_type + '_kv' + str(k_value) + '_measured.tex', 'w')
+        if channel == 'combined':
+            file_template = path + '/error_table_' + channel + '_' + met_type
         else:
-            output_file = open(path + '/error_table_' + channel + '_' + met_type + '_kv' + str(k_value) + '_unfolded.tex', 'w')
+            file_template = path + '/error_table_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
+
+        if print_before_unfolding:
+            file_template += '_measured.tex'
+        else:
+            file_template += '_unfolded.tex'
+        output_file = open(file_template, 'w')
         output_file.write(printout)
         output_file.close()
     else:
@@ -318,9 +335,6 @@ if __name__ == '__main__':
                       help="set MET type used in the analysis of MET-dependent variables")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                   help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
-    parser.add_option("-k", "--k_value", type='int',
-                      dest="k_value", default=4,
-                      help="k-value for SVD unfolding, used in histogram names")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
     parser.add_option("-a", "--additional-tables", action="store_true", dest="additional_tables",
@@ -341,7 +355,10 @@ if __name__ == '__main__':
     output_folder = options.output_folder
     if not output_folder.endswith('/'):
         output_folder += '/'
-    k_value = options.k_value
+    k_values = {'electron' : measurement_config.k_values_electron[variable],
+                'muon' : measurement_config.k_values_muon[variable],
+                'combined' : 'None'
+                }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/'

@@ -23,13 +23,19 @@ from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
     calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 
 def read_normalised_xsection_measurement( category, channel ):
-    global path_to_JSON, met_type, met_uncertainties
+    global path_to_JSON, met_type, met_uncertainties, k_values
     normalised_xsection = None
+    filename = ''
     
     if category in met_uncertainties and variable == 'HT':
-        normalised_xsection = read_data_from_JSON( path_to_JSON + 'central' + '/normalised_xsection_' + channel + '_' + met_type + '.txt' )
+        filename = path_to_JSON + '/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '.txt' 
     else:
-        normalised_xsection = read_data_from_JSON( path_to_JSON + category + '/normalised_xsection_' + channel + '_' + met_type + '.txt' )
+        filename = path_to_JSON + '/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+    
+    if channel == 'combined':
+        filename = filename.replace('kv' + str(k_values[channel]), '')
+
+    normalised_xsection = read_data_from_JSON( filename )
     
     measurement = normalised_xsection['TTJet_measured']
     measurement_unfolded = normalised_xsection['TTJet_unfolded']
@@ -37,8 +43,10 @@ def read_normalised_xsection_measurement( category, channel ):
     return measurement, measurement_unfolded
 
 def write_normalised_xsection_measurement( measurement, measurement_unfolded, channel, summary = '' ):
-    global path_to_JSON, met_type
-    output_file = path_to_JSON + 'central/normalised_xsection_' + channel + '_' + met_type + '_with_errors.txt'
+    global path_to_JSON, met_type, k_values
+    output_file = path_to_JSON + '/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '_with_errors.txt'
+    if channel == 'combined':
+        output_file = output_file.replace('kv' + str(k_values[channel]), '')
     
     if not summary == '':
         output_file = output_file.replace( 'with_errors', summary + '_errors' )
@@ -139,23 +147,12 @@ if __name__ == "__main__":
                       help = "set MET type used in the analysis of MET, ST or MT" )
     parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
                   help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
-    parser.add_option( "-k", "--k_value", type = 'int',
-                      dest = "k_value", default = 4,
-                      help = "k-value for SVD unfolding, used in histogram names" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
-    
     parser.add_option( "-s", "--symmetrise_errors", action = "store_true", dest = "symmetrise_errors",
                       help = "Makes the errors symmetric" )
     
     ( options, args ) = parser.parse_args()
-    variable = options.variable
-    met_type = translate_options[options.metType]
-    b_tag_bin = translate_options[options.bjetbin]
-    k_value = options.k_value
-    path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results' + '/kv' + str( k_value ) + '/'
-    symmetrise_errors = options.symmetrise_errors
-    
     if options.CoM == 8:
         from config.variable_binning_8TeV import bin_widths, bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
@@ -165,6 +162,17 @@ if __name__ == "__main__":
     else:
         import sys
         sys.exit( 'Unknown centre of mass energy' )
+
+    variable = options.variable
+    k_values = {'electron' : measurement_config.k_values_electron[variable],
+                'muon' : measurement_config.k_values_muon[variable],
+                'combined' : 'None'
+                }
+    met_type = translate_options[options.metType]
+    b_tag_bin = translate_options[options.bjetbin]
+    path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results/'
+    symmetrise_errors = options.symmetrise_errors
+    
     
     
     # set up lists for systematics

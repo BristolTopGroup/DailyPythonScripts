@@ -76,6 +76,23 @@ histogram_path_templates = {
 #                   'MT': 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
+#optimal regularisation parameters (needs study!)
+k_values_electron = {
+                   'MET' : 3,
+                   'HT' : 7,
+                   'ST' : 6,
+                   'MT' : 5,
+                   'WPT' : 3
+}
+
+k_values_muon = {
+                   'MET' : 3,
+                   'HT' : 6,
+                   'ST' : 6,
+                   'MT' : 2,
+                   'WPT' : 6
+}
+
 electron_control_region = 'QCDConversions'
 electron_control_region_systematic = 'QCD non iso e+jets'
 
