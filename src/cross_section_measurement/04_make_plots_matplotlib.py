@@ -295,12 +295,12 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
     hist_data.visible = True
     if category == 'central':
         hist_data_with_systematics.visible = True
-        rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2 )
-    rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2 )
-    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False )  # this makes a nicer legend entry
+        rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len(histograms) + 1 )
+    rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len(histograms) + 2 )
+    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False, zorder = len(histograms) + 3 )  # this makes a nicer legend entry
 
     if show_before_unfolding:
-        rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None )
+        rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len(histograms) )
     
     for key, hist in sorted( histograms.iteritems() ):
         if not 'unfolded' in key and not 'measured' in key:
@@ -321,7 +321,7 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
             elif 'scaledown' in key:
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kGreen )
-            rplt.hist( hist, axes = axes, label = measurements_latex[key] )
+            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted(histograms, reverse=True).index(key) )
             
     handles, labels = axes.get_legend_handles_labels()
     # making data first in the list
