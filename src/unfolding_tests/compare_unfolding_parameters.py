@@ -97,8 +97,10 @@ def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
     channel_label = ''
     if channel == 'electron':
         channel_label = 'e+jets, $\geq$4 jets'
-    else:
+    elif channel == 'muon':
         channel_label = '$\mu$+jets, $\geq$4 jets'
+    else:
+        channel_label = '$e, \mu$ + jets combined, $\geq$4 jets'
 
     if test == 'data':
         title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
@@ -196,13 +198,13 @@ if __name__ == '__main__':
 
     input_filename_central = measurement_config.unfolding_madgraph_file
     input_filename_bias = measurement_config.unfolding_mcatnlo
-
+    
     variables = ['MET', 'WPT', 'MT', 'ST', 'HT']
 
     input_file = File( input_filename_central, 'read' )
     input_file_bias = File( input_filename_bias, 'read' )
     
-    for channel in ['electron', 'muon']:
+    for channel in ['electron', 'muon', 'combined']:
         for variable in variables:
             print 'Doing variable"', variable, '" in', channel, 'channel'
             h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 

@@ -155,10 +155,10 @@ if __name__ == '__main__':
     input_file_bias = File( input_filename_bias, 'read' )
 
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
-    
+
     taus_from_global_correlaton = {}
     taus_from_L_shape = {}
-    for channel in ['electron', 'muon']:
+    for channel in ['electron', 'muon', 'combined']:
         taus_from_global_correlaton[channel] = {}
         taus_from_L_shape[channel] = {}
         for variable in variables:

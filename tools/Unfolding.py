@@ -273,45 +273,108 @@ def get_unfold_histogram_tuple(
                 centre_of_mass = 8,
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
-                load_fakes = False ):
+                load_fakes = False,
+                scale_to_lumi = True ):
     folder = None
-    if not 'HT' in variable:
-        if centre_of_mass == 7:
-            folder = inputfile.Get( 'unfoldingAnalyser%sChannel' % channel.title() )
-        else:
-            folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel_%s' % ( variable, channel, met_type ) )
-    else:
-        folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
-        
-    h_truth = asrootpy( folder.truth_AsymBins ).Clone()
-    h_measured = asrootpy( folder.measured_AsymBins ).Clone()
-    
+    h_truth = None
+    h_measured = None
     h_response = None
-    if centre_of_mass == 7:
-        h_response = folder.response_withoutFakes_AsymBins.Clone()
-    else:
-        #response matrix is always without fakes
-        #fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
-        #or manually for TSVDUnfold
-        h_response = folder.response_without_fakes_AsymBins.Clone()
-        #h_response = folder.response_AsymBins.Clone()
-        
-    nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
-    lumiweight = ttbar_xsection * luminosity / nEvents
-
     h_fakes = None
-    if load_fakes:
-        h_fakes = asrootpy( folder.fake_AsymBins ).Clone()
-        h_fakes.Scale( lumiweight )
+    if not channel == 'combined':
+        if not 'HT' in variable:
+            if centre_of_mass == 7:
+                folder = inputfile.Get( 'unfoldingAnalyser%sChannel' % channel.title() )
+            else:
+                folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel_%s' % ( variable, channel, met_type ) )
+        else:
+            folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
+        
+        h_truth = asrootpy( folder.truth_AsymBins ).Clone()
+        h_measured = asrootpy( folder.measured_AsymBins ).Clone()
 
-    h_truth.Scale( lumiweight )
-    h_measured.Scale( lumiweight )
-    h_response.Scale( lumiweight )
+        if centre_of_mass == 7:
+            h_response = folder.response_withoutFakes_AsymBins.Clone()
+        else:
+            #response matrix is always without fakes
+            #fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
+            #or manually for TSVDUnfold
+            h_response = asrootpy( folder.response_without_fakes_AsymBins ).Clone()
+            #h_response = folder.response_AsymBins.Clone()
+
+        if load_fakes:
+            h_fakes = asrootpy( folder.fake_AsymBins ).Clone()
+    else:
+        return get_combined_unfold_histogram_tuple(inputfile = inputfile,
+                                                   variable = variable,
+                                                   met_type = met_type,
+                                                   centre_of_mass = centre_of_mass,
+                                                   ttbar_xsection = ttbar_xsection,
+                                                   luminosity = luminosity,
+                                                   load_fakes = load_fakes
+                                                   )
+
+    if scale_to_lumi:
+        nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+        lumiweight = ttbar_xsection * luminosity / nEvents
+        if load_fakes:
+            h_fakes.Scale( lumiweight )
+        h_truth.Scale( lumiweight )
+        h_measured.Scale( lumiweight )
+        h_response.Scale( lumiweight )
     
     if load_fakes:
         return fix_overflow( h_truth, h_measured, h_response, h_fakes )
     else:
         return fix_overflow( h_truth, h_measured, h_response )
+
+
+def get_combined_unfold_histogram_tuple( 
+                inputfile,
+                variable,
+                met_type,
+                centre_of_mass = 8,
+                ttbar_xsection = 245.8,
+                luminosity = 19712,
+                load_fakes = False ):
+    
+    h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple(inputfile = inputfile,
+                                                                                  variable = variable,
+                                                                                  channel = 'electron',
+                                                                                  met_type = met_type,
+                                                                                  centre_of_mass = centre_of_mass,
+                                                                                  ttbar_xsection = ttbar_xsection,
+                                                                                  luminosity = luminosity,
+                                                                                  load_fakes = load_fakes,
+                                                                                  scale_to_lumi = False
+                                                                                  )
+    h_truth_mu, h_measured_mu, h_response_mu, h_fakes_mu = get_unfold_histogram_tuple(inputfile = inputfile,
+                                                                                  variable = variable,
+                                                                                  channel = 'muon',
+                                                                                  met_type = met_type,
+                                                                                  centre_of_mass = centre_of_mass,
+                                                                                  ttbar_xsection = ttbar_xsection,
+                                                                                  luminosity = luminosity,
+                                                                                  load_fakes = load_fakes,
+                                                                                  scale_to_lumi = False
+                                                                                  )
+    #summing histograms, the errors are added in quadrature
+    h_truth = h_truth_e + h_truth_mu
+    h_measured = h_measured_e + h_measured_mu
+    h_response = h_response_e + h_response_mu
+    h_fakes = None
+    if load_fakes:
+        h_fakes = h_fakes_e + h_fakes_mu
+    
+    nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+    lumiweight = ttbar_xsection * luminosity / nEvents
+
+    h_truth.Scale( lumiweight )
+    h_measured.Scale( lumiweight )
+    h_response.Scale( lumiweight )
+    if load_fakes:
+        h_fakes.Scale( lumiweight )
+    
+    return h_truth, h_measured, h_response, h_fakes
 
 def fix_overflow( h_truth, h_measured, h_response, h_fakes = None ):
     ''' Moves entries from the overflow bin into the last bin as we treat the last bin as everything > last_bin.lower_edge.

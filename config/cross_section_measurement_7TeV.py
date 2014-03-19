@@ -93,6 +93,14 @@ k_values_muon = {
                    'WPT' : 6
 }
 
+k_values_combined = {
+                   'MET' : 6,
+                   'HT' : 7,
+                   'ST' : 3,
+                   'MT' : 2,
+                   'WPT' : 6
+}
+
 electron_control_region = 'QCDConversions'
 electron_control_region_systematic = 'QCD non iso e+jets'
 

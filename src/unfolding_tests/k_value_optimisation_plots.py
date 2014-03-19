@@ -138,7 +138,7 @@ if __name__ == '__main__':
     input_file = File( input_filename_central, 'read' )
     input_file_bias = File( input_filename_bias, 'read' )
 
-    for channel in ['electron', 'muon']:
+    for channel in ['electron', 'muon', 'combined']:
         for variable in variables:
             print 'Doing variable', variable, 'in', channel, 'channel'
         

@@ -294,7 +294,7 @@ if __name__ == '__main__':
     # setup
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data/',
-                  help="set path to JSON files")
+                      help="set path to JSON files")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT)")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
@@ -310,6 +310,8 @@ if __name__ == '__main__':
                       help="Hreco parameter for error treatment in RooUnfold")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
+    parser.add_option("-C", "--combine-before-unfolding", dest="combine_before_unfolding", action="store_true",
+                      help="Perform combination of channels before unfolding")
     
     
     (options, args) = parser.parse_args()
@@ -341,9 +343,11 @@ if __name__ == '__main__':
     variable = options.variable
     k_value_electron = measurement_config.k_values_electron[variable]
     k_value_muon = measurement_config.k_values_muon[variable]
+    k_value_combined = measurement_config.k_values_combined[variable]
     load_fakes = options.load_fakes
     unfoldCfg.Hreco = options.Hreco
     method = options.unfolding_method
+    combine_before_unfolding = options.combine_before_unfolding
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/'
@@ -381,16 +385,22 @@ if __name__ == '__main__':
         # read fit results from JSON
         electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
         muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
+        combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
         if category == ttbar_theory_systematic_prefix + 'mcatnlo_matrix':
             electron_file = path_to_JSON + '/fit_results/' + ttbar_theory_systematic_prefix + 'mcatnlo' + '/fit_results_electron_' + met_type + '.txt'
             muon_file = path_to_JSON + '/fit_results/' + ttbar_theory_systematic_prefix + 'mcatnlo' + '/fit_results_muon_' + met_type + '.txt'
+            combined_file = path_to_JSON + '/fit_results/' + ttbar_theory_systematic_prefix + 'mcatnlo' + '/fit_results_combined_' + met_type + '.txt'
         
         fit_results_electron = read_data_from_JSON(electron_file)
         fit_results_muon = read_data_from_JSON(muon_file)
+        fit_results_combined = read_data_from_JSON(combined_file)
         TTJet_fit_results_electron = fit_results_electron['TTJet']
         TTJet_fit_results_muon = fit_results_muon['TTJet']
+        TTJet_fit_results_combined = fit_results_combined['TTJet']
+
         Higgs_fit_results_electron = fit_results_electron['Higgs']
         Higgs_fit_results_muon = fit_results_muon['Higgs']
+        Higgs_fit_results_combined = fit_results_combined['Higgs']
         
         # change back to original MET type for the unfolding
         met_type = translate_options[options.metType]
@@ -403,7 +413,10 @@ if __name__ == '__main__':
         # get unfolded normalisation
         unfolded_normalisation_electron = get_unfolded_normalisation(TTJet_fit_results_electron, category, 'electron', k_value_electron)
         unfolded_normalisation_muon = get_unfolded_normalisation(TTJet_fit_results_muon, category, 'muon', k_value_muon)
-        unfolded_normalisation_combined = combine_complex_results(unfolded_normalisation_electron, unfolded_normalisation_muon)
+        if combine_before_unfolding:
+            unfolded_normalisation_combined = get_unfolded_normalisation(TTJet_fit_results_combined, category, 'combined', k_value_combined)
+        else:
+            unfolded_normalisation_combined = combine_complex_results(unfolded_normalisation_electron, unfolded_normalisation_muon)
 
         filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s.txt' % (k_value_electron, category, met_type)
         write_data_to_JSON(unfolded_normalisation_electron, filename)
@@ -415,7 +428,10 @@ if __name__ == '__main__':
         # now the same for the Higgs
         unfolded_normalisation_electron_higgs = get_unfolded_normalisation(Higgs_fit_results_electron, category, 'electron', k_value_electron)
         unfolded_normalisation_muon_higgs = get_unfolded_normalisation(Higgs_fit_results_muon, category, 'muon', k_value_muon)
-        unfolded_normalisation_combined_higgs = combine_complex_results(unfolded_normalisation_electron_higgs, unfolded_normalisation_muon_higgs)
+        if combine_before_unfolding:
+            unfolded_normalisation_combined_higgs = get_unfolded_normalisation(Higgs_fit_results_combined, category, 'combined', k_value_combined)
+        else:
+            unfolded_normalisation_combined_higgs = combine_complex_results(unfolded_normalisation_electron_higgs, unfolded_normalisation_muon_higgs)
 
         filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % (k_value_electron, category, met_type)
         write_data_to_JSON(unfolded_normalisation_electron_higgs, filename)

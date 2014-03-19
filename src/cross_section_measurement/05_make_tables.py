@@ -291,6 +291,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             else:
                 rows[source] = [measurements_latex[source] + ' (\%)', text]
 
+
     header += ' \\\\'
     printout += header
     printout += '\n\hline\n'
@@ -303,6 +304,18 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         printout = printout.rstrip('& ')
         printout += '\\\\ \n'
 
+    #append the total error to the table
+    printout += '\hline \n'
+    total_line = 'Total (\%)'
+    for bin_i, variable_bin in enumerate(bins):
+        if print_before_unfolding:
+            value, error_up, error_down = central_values['measured_with_systematics'][bin_i]
+        else:
+            value, error_up, error_down = central_values['unfolded_with_systematics'][bin_i]
+        error = max(error_up, error_down)
+        relativeError = getRelativeError(value, error)
+        total_line += ' & %.2f ' % (relativeError * 100)
+    printout += total_line + '\\\\ \n'
     printout += '\hline \n\n'
     
     if toFile:

@@ -10,7 +10,7 @@ import ROOT
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 # DailyPythonScripts
-from tools.Calculation import decombine_result
+from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import TMinuitFit, RooFitFit
 from tools.file_utilities import write_data_to_JSON
 
@@ -143,7 +143,7 @@ def get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type)
     pass
 
 def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin):
-    global use_fitter, measurement_config
+    global use_fitter, measurement_config, verbose
     results = {}
     initial_values = {}
     templates = {}
@@ -180,15 +180,18 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                                       }
         fitter = None
         if use_fitter == 'TMinuit':
-            fitter = TMinuitFit(histograms=fit_histograms)
+            fitter = TMinuitFit( histograms = fit_histograms, verbose = verbose )
         elif use_fitter == 'RooFit':
-            fitter = RooFitFit(histograms=fit_histograms, fit_boundries=(0., 2.4))
+            fitter = RooFitFit( histograms = fit_histograms, fit_boundries = (0., 2.4) )
         else: #not recognised
             sys.stderr.write('Do not recognise fitter "%s". Using default (TMinuit).\n' % fitter)
-            fitter = TMinuitFit(histograms=fit_histograms)
+            fitter = TMinuitFit ( histograms=fit_histograms, verbose = verbose )
         
         fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
-        print "FITTING: " + channel + '_' + variable + '_' + variable_bin + '_' + met_type + '_' + b_tag_bin
+
+        if verbose:
+            print "FITTING: " + channel + '_' + variable + '_' + variable_bin + '_' + met_type + '_' + b_tag_bin
+
         fitter.fit()
         fit_results = fitter.readResults()
         normalisation = fitter.normalisation
@@ -255,7 +258,13 @@ def write_fit_results_and_initial_values(channel, category, fit_results, initial
     
     write_data_to_JSON(fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt')
     write_data_to_JSON(initial_values, output_folder + 'initial_values_' + channel + '_' + met_type + '.txt')
-    write_data_to_JSON(templates, output_folder + 'templates_' + channel + '_' + met_type + '.txt') 
+    write_data_to_JSON(templates, output_folder + 'templates_' + channel + '_' + met_type + '.txt')
+
+def write_fit_results(channel, category, fit_results):
+    global variable, met_type, output_path
+    output_folder = output_path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
+    
+    write_data_to_JSON(fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt')
     
     
 if __name__ == '__main__':
@@ -278,6 +287,8 @@ if __name__ == '__main__':
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
     parser.add_option('--fitter', dest = "use_fitter", default='TMinuit', 
                       help = 'Fitter to be used: TMinuit|RooFit. Default = TMinuit.')
+    parser.add_option('-V', dest = "verbose", action="store_true",
+                      help="Print the fit info and correlation matrix")
 
     translate_options = {
                         '0':'0btag',
@@ -321,6 +332,7 @@ if __name__ == '__main__':
     output_path = options.path
     
     use_fitter = options.use_fitter
+    verbose = options.verbose
     
     # possible options:
     # --continue : continue from saved - skips ROOT files, reads from JSON?
@@ -344,7 +356,8 @@ if __name__ == '__main__':
     # matching/scale up/down systematics for ttbar + jets
     for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
         TTJet_file = File(filename)
-        print "\n" + systematic + "\n"
+        if verbose:
+            print "\n" + systematic + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -373,13 +386,15 @@ if __name__ == '__main__':
         
         write_fit_results_and_initial_values('electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+        write_fit_results( 'combined', ttbar_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
         TTJet_file.Close()
     
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])    
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
         VJets_file = File(measurement_config.generator_systematic_vjets_templates[systematic])
-        print "\n" + systematic + "\n"
+        if verbose:
+            print "\n" + systematic + "\n"
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -408,6 +423,7 @@ if __name__ == '__main__':
         
         write_fit_results_and_initial_values('electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon)
+        write_fit_results( 'combined', vjets_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
         VJets_file.Close()
     
     VJets_file = File(measurement_config.VJets_category_templates['central'])    
@@ -441,8 +457,10 @@ if __name__ == '__main__':
             met_type += 'JetEnDown'
             if met_type == 'PFMETJetEnDown':
                 met_type = 'patPFMetJetEnDown'
-        
-        print "\n" + category + "\n"
+
+        if verbose:
+            print "\n" + category + "\n"
+
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -470,6 +488,7 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
+        write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
         last_systematic = category
         
         TTJet_file.Close()
@@ -495,7 +514,10 @@ if __name__ == '__main__':
     for index in range(1, 45):
         category = 'PDFWeights_%d' % index
         TTJet_file = File(measurement_config.pdf_uncertainty_template % index)
-        print "\nPDF_" + str(index) + "\n"
+
+        if verbose:
+            print "\nPDF_" + str(index) + "\n"
+
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -523,6 +545,7 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
+        write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
         TTJet_file.Close()
 
     TTJet_file = File(measurement_config.ttbar_category_templates['central'])
@@ -535,7 +558,9 @@ if __name__ == '__main__':
         if 'PFMET' in met_type:
             category = category.replace('PFMET', 'patPFMet')
         
-        print "\n" + met_systematic + "\n"
+        if verbose:
+            print "\n" + met_systematic + "\n"
+
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -563,11 +588,15 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values('electron', category, fit_results_electron, initial_values_electron, templates_electron)
         write_fit_results_and_initial_values('muon', category, fit_results_muon, initial_values_muon, templates_muon)
+        write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
     
     #QCD systematic
     
     electron_control_region = measurement_config.electron_control_region_systematic
-    print "\nQCD shape systematic\n"
+
+    if verbose:
+        print "\nQCD shape systematic\n"
+
     fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
                       input_files={
                                    'TTJet': TTJet_file,
@@ -598,5 +627,7 @@ if __name__ == '__main__':
     systematic = 'QCD_shape'
     write_fit_results_and_initial_values('electron', systematic, fit_results_electron, initial_values_electron, templates_electron)
     write_fit_results_and_initial_values('muon', systematic, fit_results_muon, initial_values_muon, templates_muon)
+    write_fit_results( 'combined', systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
+    
     electron_control_region = measurement_config.electron_control_region
     muon_control_region = measurement_config.muon_control_region
