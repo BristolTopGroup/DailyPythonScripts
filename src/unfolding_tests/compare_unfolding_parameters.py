@@ -90,7 +90,7 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
         
     return {'k_value_results':k_value_results, 'tau_value_results' :tau_value_results}
 
-def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
+def compare( central_mc, expected_result = None, measured_result = None, results = {}, variable = 'MET',
              channel = 'electron', bin_edges = [] ):
     global plot_location, luminosity, centre_of_mass, method, test, do_taus, log_plots
 
@@ -111,7 +111,9 @@ def compare( central_mc, expected_result = None, results = {}, variable = 'MET',
 
     models = {'central' : central_mc}
     if expected_result:
-        models['expected'] = expected_result 
+        models['expected'] = expected_result
+    if measured_result:
+        models['measured'] = measured_result
     
     measurements = collections.OrderedDict()
     for key, value in results['k_value_results'].iteritems():
@@ -198,7 +200,9 @@ if __name__ == '__main__':
 
     input_filename_central = measurement_config.unfolding_madgraph_file
     input_filename_bias = measurement_config.unfolding_mcatnlo
-    
+    input_filename_central = '/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_merged.root'
+    input_filename_bias = '/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_TTJets_8TeV_mcatnlo.root'
+
     variables = ['MET', 'WPT', 'MT', 'ST', 'HT']
 
     input_file = File( input_filename_central, 'read' )
@@ -249,8 +253,14 @@ if __name__ == '__main__':
                             bin_widths[variable],
                             normalise_to_one = True )
                 h_expected = value_error_tuplelist_to_hist( expected_result, bin_edges[variable] )
+
+            data_result = calculate_normalised_xsection( 
+                            hist_to_value_error_tuplelist( h_data ),
+                            bin_widths[variable],
+                            normalise_to_one = True )
+            h_data = value_error_tuplelist_to_hist( data_result, bin_edges[variable] )
                 
-            compare( central_mc = central_mc, expected_result = h_expected,
+            compare( central_mc = central_mc, expected_result = h_expected, measured_result = h_data,
                      results = results, variable = variable, channel = channel,
                      bin_edges = bin_edges[variable] )
     # done

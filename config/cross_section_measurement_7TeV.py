@@ -94,11 +94,11 @@ k_values_muon = {
 }
 
 k_values_combined = {
-                   'MET' : 6,
-                   'HT' : 7,
+                   'MET' : 3,
+                   'HT' : 3,
                    'ST' : 3,
                    'MT' : 2,
-                   'WPT' : 6
+                   'WPT' : 4
 }
 
 electron_control_region = 'QCDConversions'

@@ -17,6 +17,14 @@ from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from rootpy.io import File
 import matplotlib
 matplotlib.use('agg')
+
+from uncertainties import ufloat
+import math
+import numpy
+from numpy import frompyfunc
+from pylab import plot
+from ROOT import TF1
+
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from copy import deepcopy
@@ -27,6 +35,7 @@ from config import CMS
 from config.latex_labels import variables_latex
 from config.cross_section_measurement_common import translate_options
 from rootpy import asrootpy
+
 
 matplotlib.rc('font',**CMS.font)
 matplotlib.rc('text', usetex = True)
@@ -72,11 +81,26 @@ def get_data_histogram( path_to_JSON, channel, variable, met_type ):
 def draw_d_i( d_i ):
     global variable, output_folder, output_formats, test
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    fit = TF1("fit", 'expo', 1, d_i.nbins(0)) #change the range here to exclude bins
+    d_i.Fit(fit, 'WWSQR')
+    p0 = ufloat(fit.GetParameter(0), fit.GetParError(0))
+    p1 = ufloat(fit.GetParameter(1), fit.GetParError(1))
+    k_value = -p0 / p1 # other way of estimation: crossing the d = 1 line by exponential
+
+    print 'Fitted f = $e^{%.2f \\times i + %.2f }$' % ( p1.nominal_value, p0.nominal_value )
+    print 'Best k-value for %s using exponential crossing d=1 method: %.2f +- %.2f' % (variable, k_value.nominal_value, k_value.std_dev)
+    print 'p1: %f +- %f ' % ( p1.nominal_value, p1.std_dev )
+    print 'p0: %f +- %f ' % ( p0.nominal_value, p0.std_dev )
+
     rplt.hist( d_i )
     plt.title( r'SVD unfolding $d_i$ for $' + variables_latex[variable] + '$', CMS.title )
     plt.xlabel( r'$i$', CMS.x_axis_title )
     plt.ylabel( r'$d_i$', CMS.y_axis_title )
     axes = plt.axes()
+
+    x = numpy.linspace(fit.GetXmin(), fit.GetXmax(), fit.GetNpx()*4)#*4 for a very smooth curve
+    function_data = frompyfunc(fit.Eval, 1, 1)
+    plot(x, function_data(x), axes=axes, color='red', linewidth=2)
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
@@ -89,8 +113,15 @@ def draw_d_i( d_i ):
         if value == 0:
             del value_range[i]
     axes.set_ylim( ymin = min(value_range)/10 )
+
+    text = 'Fitted f = $e^{%.2f \\times i + %.2f }$' % ( p1.nominal_value, p0.nominal_value )
+    #text += '\nBest k-value = $%.2f \pm %.2f$' % (k_value.nominal_value, k_value.std_dev)
+    axes.text(0.5, 0.8, text,
+        verticalalignment='bottom', horizontalalignment='left',
+        transform=axes.transAxes,
+        color='black', fontsize=40, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
     
-    plt.axhline( y = 1, linewidth = 3, color = 'red' )
+    plt.axhline( y = 1, linewidth = 2, color = 'red', linestyle = 'dashed' )
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -194,5 +225,5 @@ if __name__ == '__main__':
             
             
             k, hist_di = get_k_from_d_i( h_truth, h_measured, h_response, h_fakes, h_data )
-            print 'Best k-value for %s = %d' % ( variable, k )
+            print 'Best k-value for %s using d_i >= 1 method: %d' % ( variable, k )
             draw_d_i( hist_di )
