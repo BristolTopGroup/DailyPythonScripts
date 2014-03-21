@@ -390,10 +390,13 @@ if __name__ == '__main__':
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
+    rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
+    rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
     all_measurements.extend(new_uncertainties)
+    all_measurements.extend(rate_changing_systematics)
 
     for channel in ['electron', 'muon', 'combined']:                        
         normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors = read_xsection_measurement_results_with_errors(channel)
