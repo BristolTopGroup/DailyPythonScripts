@@ -71,6 +71,7 @@ def decombine_result(combined_result, original_ratio):
 def combine_results(result1, result2):
     '''
     Combines results of the form {measurement: (value, error)
+    The errors are added in quadrature
     '''
     samples = result1.keys()
     if not samples == result2.keys():
@@ -80,12 +81,13 @@ def combine_results(result1, result2):
     for sample in result1.keys():
         value1, error1 = result1[sample]
         value2, error2 = result2[sample]
-        combined_result[sample] = (value1 + value2, error1 + error2)
+        combined_result[sample] = ( value1 + value2, sqrt( error1**2 + error2**2 ) )
     return combined_result
 
 def combine_complex_results(result1, result2):
     '''
     Combines results of the form {measurement: [(value, error), ....]
+    The errors are added in quadrature
     '''
     
     samples = result1.keys()
@@ -100,7 +102,7 @@ def combine_complex_results(result1, result2):
         for entry1, entry2 in zip(result1[sample], result2[sample]):
             value1, error1 = entry1
             value2, error2 = entry2
-            results.append((value1 + value2, error1 + error2))
+            results.append( ( value1 + value2, sqrt( error1**2 + error2**2 ) ) )
         combined_result[sample] = results
     return combined_result
 

@@ -89,12 +89,13 @@ class TMinuitFit(TemplateFit):
     
     fitfunction = None
     
-    def __init__(self, histograms={}, dataLabel='data', method='logLikelihood'):
+    def __init__(self, histograms={}, dataLabel='data', method='logLikelihood', verbose = False):
         TemplateFit.__init__(self, histograms, dataLabel)
         self.method = method
         self.logger = logging.getLogger('TMinuitFit')
         self.constraints = {}
         self.constraint_type = ''
+        self.verbose = verbose #prints the correlation matrix, fit info
         
     def fit(self):
         numberOfParameters = len(self.samples)
@@ -108,7 +109,10 @@ class TMinuitFit(TemplateFit):
         #            =  1  verbose
         #            =  2  additional output giving intermediate results. 
         #            =  3  maximum output, showing progress of minimizations. 
-        gMinuit.SetPrintLevel(-1)
+        if self.verbose:
+            gMinuit.SetPrintLevel(1)
+        else:
+            gMinuit.SetPrintLevel(-1)
         
         # Error definition: 1 for chi-squared, 0.5 for negative log likelihood
         #SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
@@ -156,7 +160,10 @@ class TMinuitFit(TemplateFit):
         gMinuit.mnexcm("SET STR", arglist, 1, errorFlag)
         
         gMinuit.Migrad()
-        gMinuit.mnmatu(1)
+
+        if self.verbose:
+            gMinuit.mnmatu(1) #prints correlation matrix
+
         self.module = gMinuit
         self.performedFit = True
         

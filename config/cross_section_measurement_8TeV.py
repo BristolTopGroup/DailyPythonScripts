@@ -92,6 +92,31 @@ histogram_path_templates = {
                    'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
+#optimal regularisation parameters
+k_values_electron = {
+                   'MET' : 3,
+                   'HT' : 7,
+                   'ST' : 6,
+                   'MT' : 5,
+                   'WPT' : 3
+}
+
+k_values_muon = {
+                   'MET' : 3,
+                   'HT' : 6,
+                   'ST' : 6,
+                   'MT' : 2,
+                   'WPT' : 6
+}
+
+k_values_combined = {
+                   'MET' : 3,
+                   'HT' : 3,
+                   'ST' : 3,
+                   'MT' : 2,
+                   'WPT' : 4
+}
+
 electron_control_region = 'QCDConversions'
 electron_control_region_systematic = 'QCD non iso e+jets'
 

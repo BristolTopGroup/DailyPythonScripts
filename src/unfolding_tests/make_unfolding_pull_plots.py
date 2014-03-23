@@ -129,7 +129,7 @@ def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
     title_template = 'Pull distribution for unfolding of $%s$ \n $\sqrt{s}$ = %d TeV, %s, k value = %d' % ( latex_labels.variables_latex[variable], centre_of_mass, channel_label, k_value )
     plt.title(title_template, CMS.title)
     
-    text = 'entries = %d \n mean = $%.3f \pm %.3f$ \n $\sigma = %.3f \pm %.3f$' % (stats, mean[0], mean[1], sigma[0], sigma[1])
+    text = 'entries = %d \n mean = $%.2f \pm %.2f$ \n $\sigma = %.2f \pm %.2f$' % (stats, mean[0], mean[1], sigma[0], sigma[1])
     axes.text(0.6, 0.8, text,
         verticalalignment='bottom', horizontalalignment='left',
         transform=axes.transAxes,

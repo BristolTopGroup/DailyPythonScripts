@@ -17,6 +17,14 @@ from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from rootpy.io import File
 import matplotlib
 matplotlib.use('agg')
+
+from uncertainties import ufloat
+import math
+import numpy
+from numpy import frompyfunc
+from pylab import plot
+from ROOT import TF1
+
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from copy import deepcopy
@@ -27,6 +35,7 @@ from config import CMS
 from config.latex_labels import variables_latex
 from config.cross_section_measurement_common import translate_options
 from rootpy import asrootpy
+
 
 matplotlib.rc('font',**CMS.font)
 matplotlib.rc('text', usetex = True)
@@ -42,10 +51,7 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_fakes = None, h_data = No
                            k_value = k_start,
                            Hreco = 0,
                            verbose = 1 )
-    if h_data:
-        unfolding.unfold( h_data )
-    else:  # closure test
-        unfolding.unfold( h_measured )
+    unfolding.unfold( h_data )
     hist_d_i = None
     if method == 'RooUnfoldSvd':
         hist_d_i = asrootpy( unfolding.unfoldObject.Impl().GetD() )
@@ -73,13 +79,28 @@ def get_data_histogram( path_to_JSON, channel, variable, met_type ):
     return h_data
 
 def draw_d_i( d_i ):
-    global variable, output_folder, output_formats
+    global variable, output_folder, output_formats, test
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    fit = TF1("fit", 'expo', 1, d_i.nbins(0)) #change the range here to exclude bins
+    d_i.Fit(fit, 'WWSQR')
+    p0 = ufloat(fit.GetParameter(0), fit.GetParError(0))
+    p1 = ufloat(fit.GetParameter(1), fit.GetParError(1))
+    k_value = -p0 / p1 # other way of estimation: crossing the d = 1 line by exponential
+
+    print 'Fitted f = $e^{%.2f \\times i + %.2f }$' % ( p1.nominal_value, p0.nominal_value )
+    print 'Best k-value for %s using exponential crossing d=1 method: %.2f +- %.2f' % (variable, k_value.nominal_value, k_value.std_dev)
+    print 'p1: %f +- %f ' % ( p1.nominal_value, p1.std_dev )
+    print 'p0: %f +- %f ' % ( p0.nominal_value, p0.std_dev )
+
     rplt.hist( d_i )
     plt.title( r'SVD unfolding $d_i$ for $' + variables_latex[variable] + '$', CMS.title )
     plt.xlabel( r'$i$', CMS.x_axis_title )
     plt.ylabel( r'$d_i$', CMS.y_axis_title )
     axes = plt.axes()
+
+    x = numpy.linspace(fit.GetXmin(), fit.GetXmax(), fit.GetNpx()*4)#*4 for a very smooth curve
+    function_data = frompyfunc(fit.Eval, 1, 1)
+    plot(x, function_data(x), axes=axes, color='red', linewidth=2)
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
@@ -92,16 +113,20 @@ def draw_d_i( d_i ):
         if value == 0:
             del value_range[i]
     axes.set_ylim( ymin = min(value_range)/10 )
+
+    text = 'Fitted f = $e^{%.2f \\times i + %.2f }$' % ( p1.nominal_value, p0.nominal_value )
+    #text += '\nBest k-value = $%.2f \pm %.2f$' % (k_value.nominal_value, k_value.std_dev)
+    axes.text(0.5, 0.8, text,
+        verticalalignment='bottom', horizontalalignment='left',
+        transform=axes.transAxes,
+        color='black', fontsize=40, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
     
-    plt.axhline( y = 1, linewidth = 3, color = 'red' )
+    plt.axhline( y = 1, linewidth = 2, color = 'red', linestyle = 'dashed' )
 
     if CMS.tight_layout:
         plt.tight_layout()
 
-    if use_data:
-        save_as_name = 'k_from_d_i_%s_channel_%s_DATA' % ( channel, variable )
-    else:
-        save_as_name = 'k_from_d_i_%s_channel_%s_MC' % ( channel, variable )
+    save_as_name = 'k_from_d_i_%s_channel_%s_%s' % ( channel, variable, test )
 
     for output_format in output_formats:
         plt.savefig(output_folder + save_as_name + '.' + output_format)
@@ -119,10 +144,10 @@ if __name__ == '__main__':
                       help = "set path to save plots" )
     parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
-    parser.add_option("-d", "--use-data", dest = "use_data", action="store_true",
-                      help = "use fitted results from data" )
-    parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'TSVDUnfold',
-                      help="Unfolding method: RooUnfoldSvd, TSVDUnfold (default), TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
+    parser.add_option("-t", "--test", dest="test", default='data',
+                      help="set the test type for k-value determination: bias, closure or data (data)")  
+    parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'RooUnfoldSvd',
+                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
     parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
                       help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
@@ -132,13 +157,13 @@ if __name__ == '__main__':
 
     output_formats = ['pdf']
     centre_of_mass = options.CoM
-    use_data = options.use_data
     path_to_JSON = options.path
     met_type = translate_options[options.metType]
     method = options.unfolding_method
     load_fakes = options.load_fakes
     output_folder = options.output_folder
     make_folder_if_not_exists(options.output_folder)
+    test = options.test
 
     
     if options.CoM == 8:
@@ -154,15 +179,17 @@ if __name__ == '__main__':
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
 
-    input_file = File( measurement_config.unfolding_madgraph_file )
-        
-    # ST and HT have the problem of the overflow bin in the truth/response matrix
-    # 7 input bins and 8 output bins (includes 1 overflow bin)
+    input_filename_central = measurement_config.unfolding_madgraph_file
+    input_filename_bias = measurement_config.unfolding_mcatnlo
+
+    input_file = File( input_filename_central, 'read' )
+    input_file_bias = File( input_filename_bias, 'read' )
+
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
-    
+
     taus_from_global_correlaton = {}
     taus_from_L_shape = {}
-    for channel in ['electron', 'muon']:
+    for channel in ['electron', 'muon', 'combined']:
         taus_from_global_correlaton[channel] = {}
         taus_from_L_shape[channel] = {}
         for variable in variables:
@@ -180,12 +207,23 @@ if __name__ == '__main__':
             print 'h_fakes = ', h_fakes
             
             h_data = None
-            if use_data:
+            if test == 'data':
                 h_data = get_data_histogram( path_to_JSON, channel, variable, met_type )
+            elif test == 'bias':
+                h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 
+                                inputfile = input_file_bias,
+                                variable = variable,
+                                channel = channel,
+                                met_type = met_type,
+                                centre_of_mass = centre_of_mass,
+                                ttbar_xsection = ttbar_xsection,
+                                luminosity = luminosity,
+                                load_fakes = load_fakes )
+                h_data = deepcopy( h_measured_bias )
             else:
                 h_data = deepcopy( h_measured )
             
             
             k, hist_di = get_k_from_d_i( h_truth, h_measured, h_response, h_fakes, h_data )
-            print 'Best k-value for %s = %d' % ( variable, k )
+            print 'Best k-value for %s using d_i >= 1 method: %d' % ( variable, k )
             draw_d_i( hist_di )

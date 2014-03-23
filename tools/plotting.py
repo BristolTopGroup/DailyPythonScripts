@@ -297,10 +297,11 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
     if histogram_properties.set_log_y:
         axes.set_yscale( 'log', nonposy = "clip" )
         if not len( histogram_properties.y_limits ) == 2:  # if not user set y-limits, calculate the limits from the tuple values
-            y_min, y_max = limit_range_y( histogram )
-            if y_min == 0:
-                y_min = 1
-            axes.set_ylim( ymin = y_min/10, ymax = y_max*10 )
+            value_range = sorted( list( histogram.y() ) )
+            for i, value in enumerate(value_range):
+                if value == 0:
+                    del value_range[i]
+            axes.set_ylim( ymin = min(value_range)/10, ymax = max(value_range)*10 )
 
     set_labels( plt, histogram_properties )
 
@@ -363,6 +364,22 @@ def compare_measurements( models = {}, measurements = {},
     plt.legend( numpoints = 1, loc = histogram_properties.legend_location,
                 prop = CMS.legend_properties )
     adjust_axis_limits( axes, histogram_properties )
+
+    x_limits = histogram_properties.x_limits
+    y_limits = histogram_properties.y_limits
+    if len( x_limits ) == 2:
+        axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
+    if len( y_limits ) == 2:
+        axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
+    
+    if histogram_properties.set_log_y:
+        axes.set_yscale( 'log', nonposy = "clip" )
+        if not len( histogram_properties.y_limits ) == 2:  # if not user set y-limits, calculate the limits from the tuple values
+            value_range = sorted( list( histogram.y() ) )
+            for i, value in enumerate(value_range):
+                if value == 0:
+                    del value_range[i]
+            axes.set_ylim( ymin = min(value_range)/10, ymax = max(value_range)*10 )
     
     if CMS.tight_layout:
         plt.tight_layout()
