@@ -27,6 +27,11 @@ muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
 electron_QCD_MC_file =  path_to_files + 'central/QCD' + middle + '.root'
 higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
+rate_changing_systematics = {'luminosity': 0.026, #https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
+                             'SingleTop_cross_section': 0.034, #https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
+                             'TTJet_cross_section': 0.043
+                             }
+
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown']
 ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo', 'ptreweight']
 central_general_template = path_to_files + 'central/%s' + middle + '.root'

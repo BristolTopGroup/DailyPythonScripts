@@ -184,10 +184,14 @@ if __name__ == "__main__":
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     # all MET uncertainties except JES and JER as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    # rate changing systematics (luminosity, ttbar/single top cross section uncertainties)
+    rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
+    rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     # all other uncertainties (including JES and JER)
     other_uncertainties = deepcopy( measurement_config.categories_and_prefixes.keys() )
     other_uncertainties.extend( vjets_generator_systematics )
     other_uncertainties.append( 'QCD_shape' )
+    other_uncertainties.extend( rate_changing_systematics )
     new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo', ttbar_theory_systematic_prefix + 'mcatnlo_matrix']
     
     for channel in ['electron', 'muon', 'combined']:
@@ -217,7 +221,7 @@ if __name__ == "__main__":
         ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']} )
         mcatnlo_min, mcatnlo_max = summarise_systematics( central_measurement, {'mcatnlo_matrix':new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']} )
         mcatnlo_min_unfolded, mcatnlo_max_unfolded = summarise_systematics( central_measurement_unfolded, {'mcatnlo_matrix':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']} )
-        
+
         # get the central measurement with fit, unfolding and systematic errors combined
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [ttbar_theory_min, pdf_min, met_min, other_min,

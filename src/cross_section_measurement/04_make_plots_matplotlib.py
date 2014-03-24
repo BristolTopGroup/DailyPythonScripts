@@ -472,10 +472,14 @@ if __name__ == '__main__':
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
+    rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
+    rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
+
     all_measurements = deepcopy( categories )
     all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( new_uncertainties )
+    all_measurements.extend( rate_changing_systematics )
     for channel in ['electron', 'muon', 'combined']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:
@@ -528,3 +532,4 @@ if __name__ == '__main__':
         
         plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
         plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
+        plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )

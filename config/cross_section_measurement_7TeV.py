@@ -22,6 +22,12 @@ muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Pt-20_MuEnrichedPt-15' + middle + '.root'
 electron_QCD_MC_file = path_to_files + 'central/QCD_5050pb' + middle + '.root'
+
+rate_changing_systematics = {'luminosity': 0.022, #https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupSystematicErrors
+                             'SingleTop_cross_section': 0.3,
+                             'TTJet_cross_section': 0.15
+                             }
+
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
 generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}

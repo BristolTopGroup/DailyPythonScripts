@@ -133,16 +133,16 @@ def get_histogram(input_file, histogram_path, b_tag_bin=''):
             histogram = input_file.Get(histogram_path + '_' + b_tag_bin)
     return histogram.Clone()
 
-def get_fitted_normalisation(channel, input_files, variable, met_type, b_tag_bin, JSON=False):
+def get_fitted_normalisation(channel, input_files, variable, met_type, b_tag_bin, JSON=False, scale_factors = None):
     if JSON:
         return get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type)  # no b_tag_bin as files are specific
     else:
-        return get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin)
+        return get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin, scale_factors)
 
 def get_fitted_normalisation_from_JSON(channel, input_files, variable, met_type):
     pass
 
-def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin):
+def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type, b_tag_bin, scale_factors):
     global use_fitter, measurement_config, verbose
     results = {}
     initial_values = {}
@@ -164,7 +164,19 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                 if sample == 'data':
                     continue
                 histogram.Scale(measurement_config.luminosity_scale)
-            
+        
+        # apply normalisation scale factors for rate-changing systematics
+        if scale_factors:
+            for source, factor in scale_factors.iteritems():
+                if 'luminosity' in source:
+                    for sample, histogram in histograms.iteritems():
+                        if sample == 'data':
+                            continue
+                        histogram.Scale(factor)
+                for sample, histogram in histograms.iteritems():
+                    if sample in source:
+                        histogram.Scale(factor)
+        
         # create signal histograms
         h_eta_signal = None
         if measurement_config.include_higgs:
@@ -318,7 +330,7 @@ if __name__ == '__main__':
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         sys.exit('Unknown centre of mass energy')
-        
+    
     generator_systematics = measurement_config.generator_systematics
     categories_and_prefixes = measurement_config.categories_and_prefixes
     met_systematics_suffixes = met_systematics_suffixes
@@ -628,6 +640,55 @@ if __name__ == '__main__':
     write_fit_results_and_initial_values('electron', systematic, fit_results_electron, initial_values_electron, templates_electron)
     write_fit_results_and_initial_values('muon', systematic, fit_results_muon, initial_values_muon, templates_muon)
     write_fit_results( 'combined', systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
-    
+
     electron_control_region = measurement_config.electron_control_region
     muon_control_region = measurement_config.muon_control_region
+
+    #rate-changing systematics
+    for systematic, shift in measurement_config.rate_changing_systematics.iteritems():
+        factor = 1.0
+        for variation in ['+', '-']:
+            if variation == '+':
+                factor = 1.0 + shift
+            else:
+                factor = 1.0 - shift
+
+            if verbose:
+                print "\n" + systematic + variation + "\n"
+
+            scale_factors = {}
+            scale_factors[systematic + variation] = factor
+            fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation('electron',
+                              input_files={
+                                           'TTJet': TTJet_file,
+                                           'SingleTop': SingleTop_file,
+                                           'V+Jets': VJets_file,
+                                           'data': data_file_electron,
+                                           'Higgs' : Higgs_file,
+                                           },
+                              variable=variable,
+                              met_type=met_type,
+                              b_tag_bin=b_tag_bin,
+                              scale_factors = scale_factors
+                              )
+            
+            fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation('muon',
+                          input_files={
+                                       'TTJet': TTJet_file,
+                                       'SingleTop': SingleTop_file,
+                                       'V+Jets': VJets_file,
+                                       'data': data_file_muon,
+                                       'Higgs' : Higgs_file,
+                                       },
+                          variable=variable,
+                          met_type=met_type,
+                          b_tag_bin=b_tag_bin,
+                          scale_factors = scale_factors
+                          )
+
+            write_fit_results_and_initial_values('electron', systematic + variation, fit_results_electron, initial_values_electron, templates_electron)
+            write_fit_results_and_initial_values('muon', systematic + variation, fit_results_muon, initial_values_muon, templates_muon)
+            write_fit_results( 'combined', systematic + variation, combine_complex_results( fit_results_electron, fit_results_muon ) )
+
+
+
