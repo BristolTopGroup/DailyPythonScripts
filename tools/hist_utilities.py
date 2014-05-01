@@ -3,7 +3,7 @@ Created on 20 Nov 2012
 
 @author: kreczko
 '''
-
+from __future__ import division
 from rootpy.plotting import Hist, Graph
 from rootpy import asrootpy
 from ROOT import TGraphAsymmErrors
@@ -12,6 +12,7 @@ from itertools import izip
 from rootpy.plotting.hist import Hist2D
 import random
 import string
+from cmath import sqrt
 
 def hist_to_value_error_tuplelist( hist ):
     values = list( hist.y() )
@@ -43,9 +44,16 @@ def value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges ):
         
     return rootpy_graph
 
+def graph_to_value_errors_tuplelist( graph ):
+    values = list( graph.y() )
+    errors_high = list( graph.yerrh() )
+    errors_low = list( graph.yerrl() )
+    value_error_tuplelist = zip( values, errors_low, errors_high )
+    return value_error_tuplelist
+
 def value_error_tuplelist_to_hist( value_error_tuplelist, bin_edges ):
     assert( len( bin_edges ) == len( value_error_tuplelist ) + 1 )
-    rootpy_hist = Hist( bin_edges, type='D')
+    rootpy_hist = Hist( bin_edges, type = 'D' )
     set_bin_value = rootpy_hist.SetBinContent
     set_bin_error = rootpy_hist.SetBinError
     for bin_i, ( value, error ) in enumerate( value_error_tuplelist ):
@@ -55,7 +63,7 @@ def value_error_tuplelist_to_hist( value_error_tuplelist, bin_edges ):
 
 def value_tuplelist_to_hist( value_tuplelist, bin_edges ):
     assert( len( bin_edges ) == len( value_tuplelist ) + 1 )
-    rootpy_hist = Hist( bin_edges, type='D')
+    rootpy_hist = Hist( bin_edges, type = 'D' )
     set_bin_value = rootpy_hist.SetBinContent
     for bin_i, value in enumerate( value_tuplelist ):
         set_bin_value( bin_i + 1, value )
@@ -130,18 +138,18 @@ def spread_x( histograms, bin_edges ):
     add_locations = x_locations.append
     for bin_lower, width in izip( bin_edges, bin_widths ):
         x_step = width / ( 1.0 * number_of_hists + 1 )  # +1 due to spacing to bin edge
-        add_locations([bin_lower + n * x_step for n in range( 1, number_of_hists +1)])
+        add_locations( [bin_lower + n * x_step for n in range( 1, number_of_hists + 1 )] )
     
     # transpose
-    x_locations = map(list, zip(*x_locations))
+    x_locations = map( list, zip( *x_locations ) )
     
     graphs = []
-    for histogram, x_coordinates in zip(histograms, x_locations):
-        g = Graph(histogram)
-        for i, (x,y) in enumerate(zip(x_coordinates, histogram.y())):
-            g.SetPoint(i, x, y)
+    for histogram, x_coordinates in zip( histograms, x_locations ):
+        g = Graph( histogram )
+        for i, ( x, y ) in enumerate( zip( x_coordinates, histogram.y() ) ):
+            g.SetPoint( i, x, y )
         
-        graphs.append(g)
+        graphs.append( g )
         
     return graphs
 
@@ -151,15 +159,15 @@ def limit_range_y( histogram ):
         Can be useful for setting limits of log plots
     """
     tuple_list = hist_to_value_error_tuplelist( histogram )
-    min_value = map( min, zip(*tuple_list) )[0]
-    max_value = map( max, zip(*tuple_list) )[0]
+    min_value = map( min, zip( *tuple_list ) )[0]
+    max_value = map( max, zip( *tuple_list ) )[0]
     return min_value, max_value
     
 def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
     # since there is no easy way to rebin a 2D histogram, lets make it from 
     # scratch
-    random_string = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
-    hist = Hist2D( bin_edges_x, bin_edges_y, name = hist_2D.GetName() + '_rebinned_' + random_string)  
+    random_string = ''.join( random.choice( string.ascii_uppercase + string.digits ) for _ in range( 6 ) )
+    hist = Hist2D( bin_edges_x, bin_edges_y, name = hist_2D.GetName() + '_rebinned_' + random_string )  
     n_bins_x = hist_2D.nbins()
     n_bins_y = hist_2D.nbins( axis = 1 )
     
@@ -167,9 +175,9 @@ def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
     get = hist_2D.GetBinContent
     x_axis_centre = hist_2D.GetXaxis().GetBinCenter
     y_axis_centre = hist_2D.GetYaxis().GetBinCenter
-    for i in range(1, n_bins_x + 1):
-        for j in range(1, n_bins_y + 1):
-            fill(x_axis_centre(i), y_axis_centre(j), get(i,j))
+    for i in range( 1, n_bins_x + 1 ):
+        for j in range( 1, n_bins_y + 1 ):
+            fill( x_axis_centre( i ), y_axis_centre( j ), get( i, j ) )
     
     return hist
 
@@ -198,6 +206,8 @@ if __name__ == '__main__':
                              ( 0.005677185565453722, 0.00019082371879446718 * 2, 0.00019082371879446718 ),
                              ( 0.0008666767325985203, 5.0315979327182054e-05, 5.0315979327182054e-05 )]
     hist = value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges = [0, 25, 45, 70, 100, 300] )
+    tuplelist = graph_to_value_errors_tuplelist( hist )
+    assert tuplelist == value_errors_tuplelist
   
     plt.figure( figsize = ( 16, 10 ), dpi = 100 )
     plt.figure( 1 )
