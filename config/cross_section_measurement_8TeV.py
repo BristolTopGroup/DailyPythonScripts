@@ -11,7 +11,7 @@ The path is expected to contain a folder for each systematic (there are some exc
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_first_draft/8TeV/'
 path_to_unfolding_histograms = path_to_files + '/unfolding/'
 
-path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging
+path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging to create files to put in path_to_unfolding_histograms above
 new_luminosity = 19712  # pb-1
 luminosity = 19584  # pb-1
 luminosity_scale = float(new_luminosity)/float(luminosity)
@@ -42,6 +42,10 @@ pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWe
 
 categories_and_prefixes = {
                  'central':'',
+                 'Electron_down':'_minusElectron',
+                 'Electron_up':'_plusElectron',
+                 'Muon_down':'_minusMuon',
+                 'Muon_up':'_plusMuon',
                  'BJet_down':'_minusBJet',
                  'BJet_up':'_plusBjet',
                  'JES_down':'_minusJES',
