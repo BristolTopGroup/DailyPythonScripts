@@ -31,6 +31,7 @@ rate_changing_systematics = {'luminosity': 0.022, #https://twiki.cern.ch/twiki/b
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
 ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo']
+central_general_template = path_to_files + 'central/%s' + middle + '.root'
 generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in ttbar_generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 

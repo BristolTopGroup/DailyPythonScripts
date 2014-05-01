@@ -11,7 +11,6 @@ The path is expected to contain a folder for each systematic (there are some exc
 path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_first_draft/8TeV/'
 path_to_unfolding_histograms = path_to_files + '/unfolding/'
 
-path_to_unfolding_ntuples = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/' #for merging to create files to put in path_to_unfolding_histograms above
 new_luminosity = 19712  # pb-1
 luminosity = 19584  # pb-1
 luminosity_scale = float(new_luminosity)/float(luminosity)
@@ -74,16 +73,6 @@ data_muon_category_templates = {'central': data_file_muon,
                                     'JES_down': path_to_files + 'JES_down/SingleMu' + middle + categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-unfolding_input_templates = {'unfolding_merged': path_to_unfolding_ntuples + 'TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/%s*.root',
-                            'unfolding_TTJets_8TeV_mcatnlo': path_to_unfolding_ntuples + 'TT_8TeV-mcatnlo/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
-                            'unfolding_TTJets_8TeV_powheg': path_to_unfolding_ntuples + 'TT_CT10_TuneZ2star_8TeV-powheg-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
-                            'unfolding_TTJets_8TeV_matchingup': path_to_unfolding_ntuples + 'TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
-                            'unfolding_TTJets_8TeV_matchingdown': path_to_unfolding_ntuples + 'TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
-                            'unfolding_TTJets_8TeV_scaleup': path_to_unfolding_ntuples + 'TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root',
-                            'unfolding_TTJets_8TeV_scaledown': path_to_unfolding_ntuples + 'TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7A-v1_NoSkim/%s*.root'
-			    }
-
-unfolding_output_general_template = path_to_unfolding_histograms + '%s.root'
 unfolding_madgraph_file = path_to_unfolding_histograms + 'unfolding_merged.root'
 unfolding_powheg = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_powheg.root'
 unfolding_mcatnlo = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_mcatnlo.root'

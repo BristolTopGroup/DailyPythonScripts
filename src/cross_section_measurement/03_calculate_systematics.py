@@ -217,20 +217,20 @@ if __name__ == "__main__":
         other_min, other_max = summarise_systematics( central_measurement, other_systematics )
         other_min_unfolded, other_max_unfolded = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
         # new ones
-        ptreweight_min, ptreweight_max = summarise_systematics( central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']} )
-        ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']} )
+        ptreweight_min, ptreweight_max = summarise_systematics( central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']} ) #add back in later
+        ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']} ) #add back in later
         mcatnlo_min, mcatnlo_max = summarise_systematics( central_measurement, {'mcatnlo_matrix':new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']} )
         mcatnlo_min_unfolded, mcatnlo_max_unfolded = summarise_systematics( central_measurement_unfolded, {'mcatnlo_matrix':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']} )
 
         # get the central measurement with fit, unfolding and systematic errors combined
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [ttbar_theory_min, pdf_min, met_min, other_min,
-                                                                                                 ptreweight_min, mcatnlo_min],
+                                                                                                ptreweight_min, mcatnlo_min],
                                                                                                 [ttbar_theory_max, pdf_max, met_max, other_max,
                                                                                                  ptreweight_max, mcatnlo_max] )
         central_measurement_with_systematics_but_without_ttbar_theory = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [pdf_min, met_min, other_min,
-                                                                                                 ptreweight_min, mcatnlo_min],
+                                                                                                 ptreweight_min, mcatnlo_min], 
                                                                                                 [pdf_max, met_max, other_max,
                                                                                                  ptreweight_max, mcatnlo_max] )
         central_measurement_with_systematics_but_without_generator = get_measurement_with_lower_and_upper_errors( central_measurement,
@@ -290,8 +290,8 @@ if __name__ == "__main__":
         other_systematics_unfolded['total_lower'], other_systematics_unfolded['total_upper'] = other_min_unfolded, other_max_unfolded
         new_systematics['mcatnlo_min'], new_systematics['mcatnlo_max'] = mcatnlo_min, mcatnlo_max
         new_systematics_unfolded['mcatnlo_min'], new_systematics_unfolded['mcatnlo_max'] = mcatnlo_min_unfolded, mcatnlo_max_unfolded
-        new_systematics['ptreweight_min'], new_systematics['ptreweight_max'] = ptreweight_min, ptreweight_max
-        new_systematics_unfolded['ptreweight_min'], new_systematics_unfolded['ptreweight_max'] = ptreweight_min_unfolded, ptreweight_max_unfolded
+        new_systematics['ptreweight_min'], new_systematics['ptreweight_max'] = ptreweight_min, ptreweight_max #add back in later
+        new_systematics_unfolded['ptreweight_min'], new_systematics_unfolded['ptreweight_max'] = ptreweight_min_unfolded, ptreweight_max_unfolded #add back in later
         
         write_normalised_xsection_measurement( ttbar_theory_systematics, ttbar_theory_systematics_unfolded, channel, summary = 'ttbar_theory' )
         write_normalised_xsection_measurement( pdf_systematics, pdf_systematics_unfolded, channel, summary = 'PDF' )
