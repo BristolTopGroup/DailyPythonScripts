@@ -112,12 +112,12 @@ def make_correlation_plot_from_file(channel, variable, normalisation, title, x_t
         fig.colorbar(im, cax=cbar_ax)
 
         for xpoint in range(len(parameters)):
-           for ypoint in range(len(parameters)):
+            for ypoint in range(len(parameters)):
         #for xpoint, ypoint in zip(x, y):
-               ax.annotate('{:.2f}'.format(float(weights["%s_%s" %(parameters[xpoint], parameters[ypoint])])), (xpoint+0.5,ypoint+0.5), ha='center', va='center', bbox=dict(fc='white', ec='none'))
+                ax.annotate('{:.2f}'.format(float(weights["%s_%s" %(parameters[xpoint], parameters[ypoint])])), (xpoint+0.5,ypoint+0.5), ha='center', va='center', bbox=dict(fc='white', ec='none'))
       
         for save in save_as:
-           plt.savefig(save_folder + histogram_properties.name + '.' + save)
+            plt.savefig(save_folder + histogram_properties.name + '.' + save)
         plt.close()
 
 if __name__ == '__main__':
