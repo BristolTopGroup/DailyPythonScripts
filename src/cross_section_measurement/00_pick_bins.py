@@ -44,6 +44,7 @@ from rootpy import asrootpy
 from rootpy.io import File
 from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
+from config.variable_binning_8TeV import bin_edges as old_binning
 
 def main():
     '''
@@ -60,7 +61,7 @@ def main():
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     
-    for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
+    for variable in ['MET']:#, 'HT', 'ST', 'MT', 'WPT']:
         histogram_information = get_histograms( variable )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
@@ -71,9 +72,14 @@ def main():
         print '-' * 120
         print 'The corresponding purities and stabilities are:'
         for info in histogram_information:
+            old_hist = rebin_2d( info['hist'], old_binning[variable], old_binning[variable] )
+            old_purities = calculate_purities( old_hist )
+            old_stabilities = calculate_stabilities( old_hist ) 
             print 'CoM =', info['CoM'], 'channel =', info['channel']
             print 'p_i =', info['p_i']
+            print 'p_i (old) =', old_purities
             print 's_i =', info['s_i']
+            print 's_i (old) =', old_stabilities
             print 'N   =', info['N']
             print '*' * 120
         print '=' * 120  
