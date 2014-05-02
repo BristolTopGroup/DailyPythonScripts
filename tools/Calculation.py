@@ -3,10 +3,12 @@ Created on 20 Nov 2012
 
 @author: kreczko
 '''
+from __future__ import division
 from uncertainties import ufloat
 import numpy
 from math import sqrt
 from config.met_systematics import metsystematics_sources
+from rootpy import asrootpy
 
 def calculate_xsection(inputs, luminosity, efficiency=1.):
     '''
@@ -226,3 +228,60 @@ def calculateTotalUncertainty(results, bin_i, omitTTJetsSystematics=False):
     uncertainty['PDFWeights-'] = [pdf_min, 0]
     
     return uncertainty
+
+def calculate_purities( gen_vs_reco_histogram ):
+    '''
+    Takes a 2D histogram of generated versus reconstructed events and returns
+    a list of *purity* values  for each bin.
+    
+    *purity* is defined as the number reconstructed & generated events in one 
+    bin divided by the number of reconstructed events:
+    p_i = \frac{N^{\text{rec\&gen}}}{N^{\text{rec}}}
+    '''
+    # assume reco = x axis and gen = y axis
+    reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
+    reco_i = list( reco.y() )
+    n_bins = len( reco_i )
+    
+    purities = []
+    add_purity = purities.append
+    
+    for i in range( 1, n_bins + 1 ):
+        n_gen_and_reco = gen_vs_reco_histogram.GetBinContent( i, i )
+        n_reco = reco_i[i - 1]
+        p = 0
+        if n_reco > 0:
+            p = round( n_gen_and_reco / n_reco, 3 )
+        add_purity( p )
+        
+    return purities
+
+def calculate_stabilities( gen_vs_reco_histogram ):
+    '''
+    Takes a 2D histogram of generated versus reconstructed events and returns
+    a list of *stability* values  for each bin.
+    
+    *stability* is defined as the number reconstructed & generated events in
+    one bin divided by the number of generated events: 
+    s_i = \frac{N^{\text{rec\&gen}}}{N^{\text{rec}}}
+    '''
+    # assume reco = x axis and gen = y axis
+    gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
+    gen_i = list( gen.y() )
+    n_bins = len( gen_i )
+    
+    stabilities = []
+    add_stability = stabilities.append
+    
+    for i in range( 1, n_bins + 1 ):
+        n_gen_and_reco = gen_vs_reco_histogram.GetBinContent( i, i )
+        n_gen = gen_i[i - 1]
+        s = 0
+        if n_gen > 0:
+            s = round( n_gen_and_reco / n_gen, 3 )
+        add_stability( s )
+        
+    return stabilities
+    
+    
+    

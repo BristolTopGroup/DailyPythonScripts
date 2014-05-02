@@ -282,23 +282,17 @@ def get_unfold_histogram_tuple(
     h_fakes = None
     if not channel == 'combined':
         if not 'HT' in variable:
-            if centre_of_mass == 7:
-                folder = inputfile.Get( 'unfoldingAnalyser%sChannel' % channel.title() )
-            else:
-                folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel_%s' % ( variable, channel, met_type ) )
+            folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel_%s' % ( variable, channel, met_type ) )
         else:
             folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
         
         h_truth = asrootpy( folder.truth_AsymBins ).Clone()
         h_measured = asrootpy( folder.measured_AsymBins ).Clone()
 
-        if centre_of_mass == 7:
-            h_response = folder.response_withoutFakes_AsymBins.Clone()
-        else:
-            #response matrix is always without fakes
-            #fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
-            #or manually for TSVDUnfold
-            h_response = asrootpy( folder.response_without_fakes_AsymBins ).Clone()
+        #response matrix is always without fakes
+        #fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
+        #or manually for TSVDUnfold
+        h_response = asrootpy( folder.response_without_fakes_AsymBins ).Clone()
             #h_response = folder.response_AsymBins.Clone()
 
         if load_fakes:

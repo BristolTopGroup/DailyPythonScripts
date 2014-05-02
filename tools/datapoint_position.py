@@ -5,6 +5,7 @@ Created on 12 Nov 2012
 '''
 
 from rootpy import asrootpy
+from tools.hist_utilities import rebin_asymmetric
 
 def get_bin_centers(bin_edges):
     centers = []
@@ -15,7 +16,7 @@ def get_bin_centers(bin_edges):
     return centers
 
 def barycenters(finedbinnedhist, coarsebinnedhist):
-    distribution = list(finedbinnedhist)
+    distribution = list(finedbinnedhist.y())
     distribution_binEdges = list(finedbinnedhist.xedges())
     data_binEdges = list(coarsebinnedhist.xedges())
     centers = []
@@ -44,8 +45,7 @@ def calculate_bin_widths(data_binEdges):
     return widths
 
 def calculate_correct_x_coordinates(mc_truth, bins):
-    n_bins = len(bins)
-    mc_temp = asrootpy(mc_truth.Rebin(n_bins, 'truth_new', bins))
+    mc_temp = rebin_asymmetric(mc_truth, bins)
     widths = calculate_bin_widths(bins)
     
     x_positions = []
@@ -62,7 +62,7 @@ def calculate_correct_x_coordinates(mc_truth, bins):
     return x_positions
         
 def find_x_of_closest_approach(hist, x_low, x_high, y_search):
-    y_values = list(hist)
+    y_values = list(hist.y())
     x_edges = list(hist.xedges())
     closest_x = 0
     closest_distance = 99999999

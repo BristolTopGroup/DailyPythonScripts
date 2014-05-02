@@ -30,11 +30,8 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         abs_eta = abs_eta_template % (analysis_type[channel], variable_bin, channel)
         abs_eta_data = abs_eta
     else:
-        if measurement_config.centre_of_mass == 8:
-            abs_eta = abs_eta_template % (analysis_type[channel], met_type, variable_bin, channel)
-        else:  # hot fix for 2011 data. Needs reprocessing for nicer paths
-            lepton = channel.title()
-            abs_eta = abs_eta_template % (analysis_type[channel], lepton, met_type, variable_bin, channel)
+        abs_eta = abs_eta_template % (analysis_type[channel], met_type, variable_bin, channel)
+
         if 'JetRes' in met_type:
             abs_eta_data = abs_eta.replace('JetResDown', '')
             abs_eta_data = abs_eta_data.replace('JetResUp', '')
@@ -90,7 +87,7 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         
     if channel == 'muon':
         # data-driven QCD template extracted from all-inclusive eta distributions
-        global muon_QCD_file, muon_QCD_MC_file
+        global muon_QCD_MC_file
         h_abs_eta_mc = get_histogram(muon_QCD_MC_file, abs_eta, b_tag_bin)
         h_abs_eta_mc.Rebin(rebin)
         abs_eta = 'TTbar_plus_X_analysis/%s/Ref selection/Muon/muon_AbsEta' % (analysis_type[channel])
@@ -321,12 +318,11 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
     from config.summations_common import b_tag_summations
-
+    
+    from config.variable_binning import variable_bins_ROOT
     if options.CoM == 8:
-        from config.variable_binning_8TeV import variable_bins_ROOT
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import variable_bins_ROOT
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         sys.exit('Unknown centre of mass energy')
@@ -353,7 +349,6 @@ if __name__ == '__main__':
     # data and muon_QCD file with SFs are the same for central measurement and all systematics 
     data_file_electron = File(measurement_config.data_file_electron)
     data_file_muon = File(measurement_config.data_file_muon)
-    muon_QCD_file = File(measurement_config.muon_QCD_file)
     
     SingleTop_file = File(measurement_config.SingleTop_file)
     muon_QCD_MC_file = File(measurement_config.muon_QCD_MC_file)

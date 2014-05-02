@@ -9,9 +9,10 @@ centre_of_mass = 7  # TeV
 '''
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
-path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-12-241_V4/'
-luminosity = 5051  # pb-1 (if you add 1 pb-1 the rounding works as it should....)
-new_luminosity = 5051  # pb-1
+path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_first_draft/7TeV/'
+path_to_unfolding_histograms = path_to_files + '/unfolding/'
+luminosity = 5050  # pb-1 (if you add 1 pb-1 the rounding works as it should....)
+new_luminosity = 5050  # pb-1
 luminosity_scale = float(new_luminosity)/float(luminosity)
 ttbar_xsection = 164  # pb
 middle = '_' + str(luminosity) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
@@ -21,7 +22,7 @@ data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
 muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Pt-20_MuEnrichedPt-15' + middle + '.root'
-electron_QCD_MC_file = path_to_files + 'central/QCD_5050pb' + middle + '.root'
+electron_QCD_MC_file = path_to_files + 'central/QCD_Electron' + middle + '.root'
 
 rate_changing_systematics = {'luminosity': 0.022, #https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupSystematicErrors
                              'SingleTop_cross_section': 0.3,
@@ -29,7 +30,8 @@ rate_changing_systematics = {'luminosity': 0.022, #https://twiki.cern.ch/twiki/b
                              }
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
-generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
+ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo']
+generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in ttbar_generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 
 pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWeights_%d.root'
@@ -66,20 +68,37 @@ data_muon_category_templates = {'central': data_file_muon,
                                     'JES_down': path_to_files + 'JES_down/SingleMu' + middle + categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-unfolding_madgraph_file = path_to_files + 'unfolding_TTJets_7TeV_madgraph.root'
-unfolding_powheg = path_to_files + 'unfolding_TTJets_7TeV_powheg.root'
-unfolding_mcatnlo = path_to_files + 'unfolding_TTJets_7TeV_pythia.root'
+# unfolding_madgraph_file = path_to_files + 'unfolding_TTJets_7TeV_madgraph.root'
+# unfolding_powheg = path_to_files + 'unfolding_TTJets_7TeV_powheg.root'
+# unfolding_mcatnlo = path_to_files + 'unfolding_TTJets_7TeV_pythia.root'
+# 
+# unfolding_scale_down = path_to_files + 'unfolding_TTJets_7TeV_scaledown.root'
+# unfolding_scale_up = path_to_files + 'unfolding_TTJets_7TeV_scaleup.root'
+# unfolding_matching_down = path_to_files + 'unfolding_TTJets_7TeV_matchingdown.root'
+# unfolding_matching_up = path_to_files + 'unfolding_TTJets_7TeV_matchingup.root'
 
-unfolding_scale_down = path_to_files + 'unfolding_TTJets_7TeV_scaledown.root'
-unfolding_scale_up = path_to_files + 'unfolding_TTJets_7TeV_scaleup.root'
-unfolding_matching_down = path_to_files + 'unfolding_TTJets_7TeV_matchingdown.root'
-unfolding_matching_up = path_to_files + 'unfolding_TTJets_7TeV_matchingup.root'
+unfolding_output_general_template = path_to_unfolding_histograms + '%s.root'
+unfolding_madgraph_file = path_to_unfolding_histograms + 'unfolding_merged.root'
+unfolding_powheg = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_powheg.root'
+unfolding_mcatnlo = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_mcatnlo.root'
 
-histogram_path_templates = {
-                   'MET' : 'TTbarPlusMetAnalysis/%s/Ref selection/BinnedMETAnalysis/%s_%s_bin_%s/%s_AbsEta',
+unfolding_scale_down = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_scaledown.root'
+unfolding_scale_up = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_scaleup.root'
+unfolding_matching_down = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_matchingdown.root'
+unfolding_matching_up = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_matchingup.root'
+
+# histogram_path_templates = {
+#                    'MET' : 'TTbarPlusMetAnalysis/%s/Ref selection/BinnedMETAnalysis/%s_%s_bin_%s/%s_AbsEta',
 #                   'HT' : 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_absolute_eta',
 #                   'ST': 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s_absolute_eta',
 #                   'MT': 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_absolute_eta'
+#                    }
+histogram_path_templates = {
+                   'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_absolute_eta',
+                   'HT' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_absolute_eta',
+                   'ST': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s_absolute_eta',
+                   'MT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_absolute_eta',
+                   'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
 #optimal regularisation parameters (needs study!)
@@ -114,6 +133,6 @@ muon_control_region = 'QCD non iso mu+jets ge3j'
 muon_control_region_systematic = 'QCD non iso mu+jets ge3j' #no systematic yet
 special_muon_histogram = 'etaAbs_ge2j_data'
 
-rebin = 20
+rebin = 2
 
 include_higgs = False

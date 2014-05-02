@@ -16,7 +16,7 @@ if __name__ == '__main__':
     bins = array('d', [0, 25, 45, 70, 100, 1000])
     nbins = len(bins) - 1
     
-    inputFile = File('../data/unfolding_merged_sub1.root', 'read')
+    inputFile = File('data/unfolding_merged_sub1.root', 'read')
     h_truth_finebinned = inputFile.unfoldingAnalyserElectronChannel.truth
     h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth_new', bins))
     print 'old:', get_bin_centers(bins)
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     print 'centre of mass:', new_centers
     new_centers = calculate_correct_x_coordinates(h_truth_finebinned, bins)
     print 'correct:', new_centers
-    data = list(h_truth)
+    data = list(h_truth.y())
     h_truth_new = Hist(new_centers)
     bin_widths = [25,20,25,30,1000]
     g_truth_new = Graph(len(new_centers))
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     
     h_truth_finebinned.SetFillStyle(0)
     h_truth_finebinned.Smooth(500)
-    g_truth = Graph(len(h_truth), h_truth)
+    g_truth = Graph(h_truth)
 #    g_truth_new = Graph(len(h_truth), h_truth_new)
     g_truth_new.SetLineColor('red')
     g_truth_new.SetMarkerColor('red')
