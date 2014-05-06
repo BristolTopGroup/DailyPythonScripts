@@ -354,11 +354,10 @@ if __name__ == '__main__':
                       help="creates a set of tables for each systematic (in addition to central result).")
 
     (options, args) = parser.parse_args()
+    from config.variable_binning import variable_bins_latex, variable_bins_ROOT
     if options.CoM == 8:
-        from config.variable_binning_8TeV import variable_bins_latex, variable_bins_ROOT
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import variable_bins_latex, variable_bins_ROOT
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
