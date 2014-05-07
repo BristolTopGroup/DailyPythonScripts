@@ -12,9 +12,8 @@ from config import CMS
 from matplotlib.patches import Rectangle
 from copy import deepcopy
 import matplotlib.gridspec as gridspec
-from matplotlib.ticker import MultipleLocator, MaxNLocator
+from matplotlib.ticker import MultipleLocator
 from itertools import cycle
-from tools.hist_utilities import limit_range_y
 
 from matplotlib import rc
 rc('font',**CMS.font)
@@ -69,10 +68,11 @@ def make_data_mc_comparison_plot( histograms = [],
                                  show_stat_errors_on_mc = False,
                                  draw_vertical_line = 0,
                                  ):
-        
+    # make copies in order not to mess with existing histograms
+    histograms_ = deepcopy(histograms)     
     stack = HistStack()
     add_mc = stack.Add
-    for index, histogram in enumerate( histograms ):
+    for index, histogram in enumerate( histograms_ ):
         label = histogram_lables[index]
         color = histogram_colors[index]
         
@@ -86,7 +86,7 @@ def make_data_mc_comparison_plot( histograms = [],
             histogram.legendstyle = 'F'
             add_mc( histogram )
             
-    data = histograms[data_index]
+    data = histograms_[data_index]
     data.SetMarkerSize( CMS.data_marker_size )
     if normalise:
         n_events_data = data.Integral()
@@ -115,7 +115,10 @@ def make_data_mc_comparison_plot( histograms = [],
         stack_upper = stack_lower.Clone( 'upper' )
         stack_lower.Scale( 1 - mc_error )
         stack_upper.Scale( 1 + mc_error )
-        rplt.fill_between( stack_upper, stack_lower, axes, facecolor = '0.75', alpha = 0.5, hatch = '/', zorder = len(histograms) + 1 )
+        rplt.fill_between( stack_upper, 
+                           stack_lower, axes, facecolor = '0.75', 
+                           alpha = 0.5, hatch = '/', 
+                           zorder = len(histograms_) + 1 )
     if not mc_error > 0 and show_stat_errors_on_mc:
         stack_lower = sum( stack.GetHists() )
         mc_errors = list( stack_lower.yerravg() )
@@ -123,12 +126,17 @@ def make_data_mc_comparison_plot( histograms = [],
         for bin_i in range( 1, stack_lower.GetNbinsX() ):
             stack_lower.SetBinContent( bin_i, stack_lower.GetBinContent( bin_i ) - mc_errors[bin_i - 1] )
             stack_upper.SetBinContent( bin_i, stack_upper.GetBinContent( bin_i ) + mc_errors[bin_i - 1] )
-        rplt.fill_between( stack_upper, stack_lower, axes, facecolor = '0.75', alpha = 0.5, hatch = '/', zorder = len(histograms) + 1 )
+        rplt.fill_between( stack_upper, stack_lower, axes, facecolor = '0.75', 
+                           alpha = 0.5, hatch = '/', 
+                           zorder = len(histograms_) + 1 )
 
     # a comment on zorder: the MC stack should be always at the very back (z = 1), 
-    # then the MC error (z = len(histograms) + 1) and finally the data (z = len(histograms) + 2)
+    # then the MC error (z = len(histograms_) + 1) and finally the data 
+    # (z = len(histograms_) + 2)
     rplt.hist( stack, stacked = True, axes = axes, zorder = 1 )
-    rplt.errorbar( data, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2, zorder = len(histograms) + 2 )
+    rplt.errorbar( data, xerr = False, emptybins = False, axes = axes, 
+                   elinewidth = 2, capsize = 10, capthick = 2, 
+                   zorder = len(histograms_) + 2 )
     
     # put legend into the correct order (data is always first!)
     handles, labels = axes.get_legend_handles_labels()
@@ -248,6 +256,78 @@ def make_control_region_comparison( control_region_1, control_region_2,
     if len( x_limits ) == 2:
         ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
     ax1.set_ylim( ymin = -0.5, ymax = 4 )
+    
+    if CMS.tight_layout:
+        plt.tight_layout()
+    
+    for save in save_as:
+        plt.savefig( save_folder + histogram_properties.name + '.' + save ) 
+    plt.close()
+    
+def make_shape_comparison_plot( shapes = [],
+                                   names = [],
+                                   colours = [],
+                                   histogram_properties = Histogram_properties(),
+                                   fill_area = True,
+                                   make_ratio = False,
+                                   alpha = 0.5,
+                                   save_folder = 'plots/',
+                                   save_as = ['pdf', 'png'] ):
+    # make copies in order not to mess with existing histograms
+    shapes_ = deepcopy(shapes)
+    # normalise as we are comparing shapes
+    for shape, colour in zip(shapes_, colours):
+        if shape.Integral() > 0:
+            shape.Scale( 1 / shape.Integral() )
+        if fill_area:
+            shape.fillcolor = colour
+            shape.legendstyle = 'F'
+        else:
+            shape.linecolor = colour
+            shape.legendstyle = 'F'
+            shape.linewidth = 5
+            
+    
+    # plot with matplotlib
+    plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
+    axes = None
+    if make_ratio: 
+        axes = plt.subplot( gs[0] )
+    else:
+        axes = plt.axes()
+    axes.minorticks_on()
+    
+    for shape in shapes_:
+        rplt.hist( shape, axes = axes, alpha = alpha )
+    
+    set_labels( plt, histogram_properties, show_x_label = not make_ratio )
+    handles, labels = axes.get_legend_handles_labels()
+    for i,name in enumerate(names):
+        labels.insert(i, name)
+
+    plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
+               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
+    adjust_axis_limits(axes, histogram_properties)
+    if make_ratio:
+        plt.setp( axes.get_xticklabels(), visible = False )
+
+        ratio = shapes[0].Clone( 'ratio' )
+        ratio.Divide( shapes[1] )
+        ratio.SetMarkerSize( 3 )
+    
+        ax1 = plt.subplot( gs[1] )
+        ax1.minorticks_on()
+        ax1.grid( True, 'major', linewidth = 1 )
+        ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
+        ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
+        set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
+        plt.ylabel( '(1)/(2)', CMS.y_axis_title )
+        rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+        if len( histogram_properties.x_limits ) == 2:
+            ax1.set_xlim( xmin = histogram_properties.x_limits[0], 
+                          xmax = histogram_properties.x_limits[1] )
+        ax1.set_ylim( ymin = -0.5, ymax = 4 )
     
     if CMS.tight_layout:
         plt.tight_layout()
