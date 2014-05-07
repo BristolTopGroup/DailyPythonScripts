@@ -3,7 +3,6 @@ Created on 4 Apr 2013
 
 @author: kreczko
 '''
-
 centre_of_mass = 7  # TeV
 
 '''
@@ -15,6 +14,7 @@ luminosity = 5050  # pb-1 (if you add 1 pb-1 the rounding works as it should....
 new_luminosity = 5050  # pb-1
 luminosity_scale = float(new_luminosity)/float(luminosity)
 ttbar_xsection = 164  # pb
+
 middle = '_' + str(luminosity) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
 
 data_file_electron = path_to_files + 'central/ElectronHad' + middle + '.root'
@@ -31,6 +31,7 @@ rate_changing_systematics = {'luminosity': 0.022, #https://twiki.cern.ch/twiki/b
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
 ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo']
+central_general_template = path_to_files + 'central/%s' + middle + '.root'
 generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in ttbar_generator_systematics}
 generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
 
@@ -38,19 +39,21 @@ pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWe
 
 categories_and_prefixes = {
                  'central':'',
+                 'Electron_down':'_minusElectron',
+                 'Electron_up':'_plusElectron',
+                 'Muon_down':'_minusMuon',
+                 'Muon_up':'_plusMuon',
                  'BJet_down':'_minusBJet',
                  'BJet_up':'_plusBjet',
                  'JES_down':'_minusJES',
                  'JES_up':'_plusJES',
-                 #placeholders
-#                 'JER_down':'_minusJER',
-#                 'JER_up':'_plusJER',
+                 'JER_down':'_minusJER',
+                 'JER_up':'_plusJER',
                  'LightJet_down':'_minusLightJet',
                  'LightJet_up':'_plusLightJet',
                  'PU_down':'_PU_64600mb',
                  'PU_up':'_PU_71400mb'
                  }
-
 
 general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
 ttbar_category_templates = {category: path_to_files + category + '/TTJet' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
@@ -68,15 +71,6 @@ data_muon_category_templates = {'central': data_file_muon,
                                     'JES_down': path_to_files + 'JES_down/SingleMu' + middle + categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-# unfolding_madgraph_file = path_to_files + 'unfolding_TTJets_7TeV_madgraph.root'
-# unfolding_powheg = path_to_files + 'unfolding_TTJets_7TeV_powheg.root'
-# unfolding_mcatnlo = path_to_files + 'unfolding_TTJets_7TeV_pythia.root'
-# 
-# unfolding_scale_down = path_to_files + 'unfolding_TTJets_7TeV_scaledown.root'
-# unfolding_scale_up = path_to_files + 'unfolding_TTJets_7TeV_scaleup.root'
-# unfolding_matching_down = path_to_files + 'unfolding_TTJets_7TeV_matchingdown.root'
-# unfolding_matching_up = path_to_files + 'unfolding_TTJets_7TeV_matchingup.root'
-
 unfolding_output_general_template = path_to_unfolding_histograms + '%s.root'
 unfolding_madgraph_file = path_to_unfolding_histograms + 'unfolding_merged.root'
 unfolding_powheg = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_powheg.root'
@@ -87,12 +81,6 @@ unfolding_scale_up = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_scale
 unfolding_matching_down = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_matchingdown.root'
 unfolding_matching_up = path_to_unfolding_histograms + 'unfolding_TTJets_7TeV_matchingup.root'
 
-# histogram_path_templates = {
-#                    'MET' : 'TTbarPlusMetAnalysis/%s/Ref selection/BinnedMETAnalysis/%s_%s_bin_%s/%s_AbsEta',
-#                   'HT' : 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_absolute_eta',
-#                   'ST': 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s_absolute_eta',
-#                   'MT': 'TTbarPlusMetAnalysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_absolute_eta'
-#                    }
 histogram_path_templates = {
                    'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_absolute_eta',
                    'HT' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_absolute_eta',

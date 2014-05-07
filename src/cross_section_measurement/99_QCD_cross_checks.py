@@ -1,9 +1,7 @@
 from config import CMS
 from optparse import OptionParser
-import config.cross_section_measurement_8TeV as measurement_config
 from config.latex_labels import b_tag_bins_latex
 from config.cross_section_measurement_common import translate_options
-from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import Histogram_properties, make_control_region_comparison
@@ -125,9 +123,25 @@ if __name__ == '__main__':
                   help="normalise the MC to fit results")
     parser.add_option("-i", "--use_inputs", dest="use_inputs", action="store_true",
                   help="use fit inputs instead of fit results")
+    parser.add_option("-e", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
+                  help="set the centre of mass energy for analysis. Default = 8 [TeV]")
     
     (options, args) = parser.parse_args()
-    path_to_JSON = options.path + '/' + '8TeV/'
+    if options.CoM == 8:
+        from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT
+        import config.cross_section_measurement_8TeV as measurement_config
+        electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
+        muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
+    elif options.CoM == 7:
+        from config.variable_binning_7TeV import bin_edges, variable_bins_ROOT
+        import config.cross_section_measurement_7TeV as measurement_config
+        electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets'
+        muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n $\mu$+jets, $\geq$4 jets'
+    else:
+        import sys
+        sys.exit('Unknown centre of mass energy')
+
+    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/'
     output_folder = options.output_folder
     normalise_to_fit = options.normalise_to_fit
     category = options.category
@@ -184,7 +198,8 @@ if __name__ == '__main__':
                            'WPT': get_fit_inputs('TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_%s/muon_absolute_eta_0btag', 'WPT', 'muon'),
                            }
         normalisations_electron, normalisations_muon = inputs_electron, inputs_muon
-    
+
+    # electrons
     histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
     b_tag_bin = '0btag'
     name_region_1, name_region_2, name_region_3 = 'conversions', 'non-isolated electrons', 'fit results'
@@ -195,7 +210,7 @@ if __name__ == '__main__':
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                    variable='MET',
                    normalisation=normalisations_electron,
-                   title=histogram_title,
+                   title=electron_histogram_title,
                    x_title='$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
@@ -210,7 +225,7 @@ if __name__ == '__main__':
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/HT_' + b_tag_bin,
                    variable='HT',
                    normalisation=normalisations_electron,
-                   title=histogram_title,
+                   title=electron_histogram_title,
                    x_title='$H_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[80, 1000],
@@ -219,13 +234,13 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=4)
-    
+      
     do_shape_check(channel='electron',
                    control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                    variable='ST',
                    normalisation=normalisations_electron,
-                   title=histogram_title,
+                   title=electron_histogram_title,
                    x_title='$S_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[106, 1000],
@@ -234,13 +249,13 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=4)
-    
+     
     do_shape_check(channel='electron',
                    control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                    variable='MT',
                    normalisation=normalisations_electron,
-                   title=histogram_title,
+                   title=electron_histogram_title,
                    x_title='$M^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(10 GeV)',
                    x_limits=[0, 200],
@@ -249,13 +264,13 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=10)
-    
+     
     do_shape_check(channel='electron',
                    control_region_1='TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                    variable='WPT',
                    normalisation=normalisations_electron,
-                   title=histogram_title,
+                   title=electron_histogram_title,
                    x_title='$p^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
@@ -264,9 +279,8 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=5)
-    
+
     # muons
-    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
     b_tag_bin = '0btag'
     name_region_1, name_region_2, name_region_3 = 'non-isolated muons', 'non-isolated muons', 'fit results'
     if options.use_inputs:
@@ -277,7 +291,7 @@ if __name__ == '__main__':
                    control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                    variable='MET',
                    normalisation=normalisations_muon,
-                   title=histogram_title,
+                   title=muon_histogram_title,
                    x_title='$E_{\mathrm{T}}^{\mathrm{miss}}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],
@@ -292,7 +306,7 @@ if __name__ == '__main__':
                    control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/HT_' + b_tag_bin,
                    variable='HT',
                    normalisation=normalisations_muon,
-                   title=histogram_title,
+                   title=muon_histogram_title,
                    x_title='$H_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[80, 1000],
@@ -301,13 +315,13 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=4)
-    
+     
     do_shape_check(channel='muon',
                    control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                    variable='ST',
                    normalisation=normalisations_muon,
-                   title=histogram_title,
+                   title=muon_histogram_title,
                    x_title='$S_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(20 GeV)',
                    x_limits=[106, 1000],
@@ -316,13 +330,13 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=4)
-    
+     
     do_shape_check(channel='muon',
                    control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                    variable='MT',
                    normalisation=normalisations_muon,
-                   title=histogram_title,
+                   title=muon_histogram_title,
                    x_title='$M^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(10 GeV)',
                    x_limits=[0, 200],
@@ -331,13 +345,13 @@ if __name__ == '__main__':
                    name_region_2=name_region_2,
                    name_region_3=name_region_3,
                    rebin=10)
-    
+     
     do_shape_check(channel='muon',
                    control_region_1='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                    control_region_2='TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                    variable='WPT',
                    normalisation=normalisations_muon,
-                   title=histogram_title,
+                   title=muon_histogram_title,
                    x_title='$p^\mathrm{W}_\mathrm{T}$ [GeV]',
                    y_title='arbitrary units/(5 GeV)',
                    x_limits=[0, 250],

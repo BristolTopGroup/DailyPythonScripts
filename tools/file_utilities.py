@@ -90,7 +90,8 @@ def find_duplicate_CRAB_output_files(job_files):
 
 def merge_ROOT_files(file_list, output_file, compression = 7):
     input_files = ' '.join(file_list)
-    command = 'hadd -f%d %s %s' %(compression, output_file, input_files)
+    output_log_file = output_file.replace(".root", ".log")
+    command = 'nice -n 19 hadd -f%d %s %s >& %s &' %(compression, output_file, input_files, output_log_file)
     subprocess.Popen(command, shell=True)
 
 def get_process_from_file(file_in_path):

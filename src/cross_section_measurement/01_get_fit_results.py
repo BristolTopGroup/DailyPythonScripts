@@ -13,6 +13,7 @@ from rootpy.io import File
 from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import TMinuitFit, RooFitFit
 from tools.file_utilities import write_data_to_JSON
+from tools.hist_utilities import hist_to_value_error_tuplelist
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
     global b_tag_bin_VJets

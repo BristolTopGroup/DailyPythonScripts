@@ -1,9 +1,7 @@
 from config import CMS
 from optparse import OptionParser
-import config.cross_section_measurement_8TeV as measurement_config
 from config.latex_labels import b_tag_bins_latex
 from config.cross_section_measurement_common import translate_options
-from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import Histogram_properties, make_control_region_comparison
@@ -134,11 +132,27 @@ if __name__ == '__main__':
                       help="set the category to take the fit results from (default: central)")
     parser.add_option("-n", "--normalise_to_fit", dest="normalise_to_fit", action="store_true",
                   help="normalise the MC to fit results")
+    parser.add_option("-e", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
+                  help="set the centre of mass energy for analysis. Default = 8 [TeV]")
 #    parser.add_option("-i", "--use_inputs", dest="use_inputs", action="store_true",
 #                  help="use fit inputs instead of fit results")
     
     (options, args) = parser.parse_args()
-    path_to_JSON = options.path + '/' + '8TeV/'
+    if options.CoM == 8:
+        from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT
+        import config.cross_section_measurement_8TeV as measurement_config
+        electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
+        muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
+    elif options.CoM == 7:
+        from config.variable_binning_7TeV import bin_edges, variable_bins_ROOT
+        import config.cross_section_measurement_7TeV as measurement_config
+        electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets'
+        muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n $\mu$+jets, $\geq$4 jets'
+    else:
+        import sys
+        sys.exit('Unknown centre of mass energy')
+        
+    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/'
     output_folder = options.output_folder
     normalise_to_fit = options.normalise_to_fit
     category = options.category
@@ -177,7 +191,5 @@ if __name__ == '__main__':
     normalisations_electron, normalisations_muon = fit_results_electron, fit_results_muon
     
     #make correlation plots for electron and muon channel
-    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
-    make_correlation_plot_from_file(channel='electron', variable=options.variable, normalisation=normalisations_electron, title=histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='plots/fitchecks/', save_as=['pdf', 'png'])
-    histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
-    make_correlation_plot_from_file(channel='muon', variable=options.variable, normalisation=normalisations_electron, title=histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='plots/fitchecks/', save_as=['pdf', 'png'])
+    make_correlation_plot_from_file(channel='electron', variable=options.variable, normalisation=normalisations_electron, title=electron_histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='plots/fitchecks/', save_as=['pdf', 'png'])
+    make_correlation_plot_from_file(channel='muon', variable=options.variable, normalisation=normalisations_electron, title=muon_histogram_title, x_title='', y_title='', x_limits=[0,3], y_limits=[0,3], rebin=1, save_folder='plots/fitchecks/', save_as=['pdf', 'png'])

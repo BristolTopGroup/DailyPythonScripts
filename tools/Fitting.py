@@ -33,7 +33,7 @@ class TemplateFit():
         self.vectors, self.errors = TemplateFit.vectorise(self.templates)
         self.param_indices = {}
         # check for consistency
-        # vectos and templates all same size!!
+        # vectors and templates all same size!!
         data_length = len(self.vectors[data_label])
         error = False
         for sample in self.vectors.keys():
