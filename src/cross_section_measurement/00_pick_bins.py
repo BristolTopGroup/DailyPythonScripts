@@ -57,7 +57,7 @@ def main():
     s_min = 0.5
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 400
+    n_min = 200
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     
@@ -73,8 +73,8 @@ def main():
         print 'The corresponding purities and stabilities are:'
         for info in histogram_information:
             old_hist = rebin_2d( info['hist'], old_binning[variable], old_binning[variable] )
-            old_purities = calculate_purities( old_hist )
-            old_stabilities = calculate_stabilities( old_hist ) 
+            old_purities = calculate_purities( old_hist.Clone() )
+            old_stabilities = calculate_stabilities( old_hist.Clone() ) 
             print 'CoM =', info['CoM'], 'channel =', info['channel']
             print 'p_i =', info['p_i']
             print 'p_i (old) =', old_purities
@@ -142,37 +142,36 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
     purities = {}
     stabilities = {}
     
-    current_bin_start = 1
-    current_bin_end = 1
+    current_bin_start = 0
+    current_bin_end = 0
 
     first_hist = histograms[0]
     n_bins = first_hist.GetNbinsX()
     
     while current_bin_end < n_bins:
-        current_bin_end = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min )
+        current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min )
         if not bin_edges:
             # if empty
-            bin_edges.append( first_hist.GetBinLowEdge( current_bin_start ) )
+            bin_edges.append( first_hist.GetBinLowEdge( current_bin_start + 1 ) )
         bin_edges.append( first_hist.GetBinLowEdge( current_bin_end ) + first_hist.GetBinWidth( current_bin_end ) )
         current_bin_start = current_bin_end
     
     # add the purity and stability values for the final binning
     for info in histogram_information:
         new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )  
-        get_bin_content = new_hist.GetBinContent       
-        purities = calculate_purities( new_hist )
-        stabilities = calculate_stabilities( new_hist )
+        get_bin_content = new_hist.GetBinContent
+        purities = calculate_purities( new_hist.Clone() )
+        stabilities = calculate_stabilities( new_hist.Clone() )
         n_events = [int( get_bin_content( i, i ) ) for i in range( 1, len( bin_edges ) )]
         # Now check if the last bin also fulfils the requirements
         if purities[-1] < p_min or stabilities[-1] < s_min or n_events[-1] < n_min:
             # if not, merge last two bins 
             bin_edges[-2] = bin_edges[-1]
             bin_edges = bin_edges[:-1]
-            # This is causing a memory leak since the rebin function
-            # creates a histogram with the same name
-            new_hist = rebin_2d( info['hist'], bin_edges, bin_edges )
-            purities = calculate_purities( new_hist )
-            stabilities = calculate_stabilities( new_hist )
+            new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone()
+            get_bin_content = new_hist.GetBinContent
+            purities = calculate_purities( new_hist.Clone() )
+            stabilities = calculate_stabilities( new_hist.Clone() )
             n_events = [int( get_bin_content( i, i ) ) for i in range( 1, len( bin_edges ) )]
             
         info['p_i'] = purities
@@ -185,6 +184,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ): 
     current_bin_start = bin_start
     current_bin_end = bin_end 
+
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
         gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
@@ -192,30 +192,29 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
         gen_i = list( gen.y() )
         # keep the start bin the same but roll the end bin
         for bin_i in range ( current_bin_end, len( reco_i ) + 1 ):
-            n_reco = sum( reco_i[current_bin_start - 1:bin_i] )
-            n_gen = sum( gen_i[current_bin_start - 1:bin_i] )
-            
+            n_reco = sum( reco_i[current_bin_start:bin_i] )
+            n_gen = sum( gen_i[current_bin_start:bin_i] )
             n_gen_and_reco = 0
-            if bin_i == current_bin_start:
-                n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start, bin_i, current_bin_start, bin_i )
+            if bin_i < current_bin_start + 1:
+                n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start + 1, bin_i + 1, current_bin_start + 1, bin_i + 1 )
             else:
                 # this is necessary to synchronise the integral with the rebin method
                 # only if the bin before is taken is is equivalent to rebinning
                 # the histogram and taking the diagonal elements (which is what we want)
-                n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start, bin_i - 1, current_bin_start, bin_i - 1 )
+                n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start + 1, bin_i , current_bin_start + 1, bin_i )
 
             p, s = 0, 0
             if n_reco > 0:            
-                p = n_gen_and_reco / n_reco
+                p = round( n_gen_and_reco / n_reco, 3 )
             if n_gen > 0:
-                s = n_gen_and_reco / n_gen
+                s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
             if p >= p_min and s >= s_min and n_gen_and_reco >= n_min:
                 current_bin_end = bin_i
                 break
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
-    return current_bin_end
+    return current_bin_end, p, s, n_gen_and_reco
 
 
 if __name__ == '__main__':

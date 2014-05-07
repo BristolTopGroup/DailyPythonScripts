@@ -5,7 +5,7 @@ Created on 31 Oct 2012
 '''
 import unittest
 from rootpy.plotting import Hist, Hist2D
-from tools.Unfolding import fix_overflow
+from tools.hist_utilities import fix_overflow
 
 import numpy as np
 N_bkg1 = 9000
@@ -50,7 +50,7 @@ class Test( unittest.TestCase ):
         last_bin_content = self.h1.GetBinContent( last_bin )
         
         self.assertGreater( overflow, 0, '1D hist: No overflow present, wrong setup.' )
-        h1, _, _, _ = fix_overflow( self.h1, None, None, None )
+        h1 = fix_overflow( self.h1 )
         
         self.assertEqual( h1.GetBinContent( overflow_bin ), 0., '1D hist: Overflow bin is not 0.' )
         self.assertEqual( h1.GetBinContent( last_bin ), last_bin_content + overflow, '1D hist: last bin is not correct.' )
@@ -63,7 +63,7 @@ class Test( unittest.TestCase ):
         self.assertGreater(has_overflow_in_x, 0, '2D hist: No overflow in x present, wrong setup.')
         self.assertGreater(has_overflow_in_y, 0, '2D hist: No overflow in y present, wrong setup.')
         
-        _, _, h2, _ = fix_overflow( None, None, self.h2, None )
+        h2 = fix_overflow( self.h2 )
         
         after_fix = check_overflow_in_2DHist(h2)
         has_overflow_in_x = after_fix['has_overflow_in_x']
