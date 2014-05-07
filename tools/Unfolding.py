@@ -6,7 +6,7 @@ Created on 31 Oct 2012
 from ROOT import gSystem, cout, TDecompSVD
 import config.RooUnfold as unfoldCfg
 import config.TopSVDUnfold as top_unfold
-from tools.hist_utilities import hist_to_value_error_tuplelist
+from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
 gSystem.Load( unfoldCfg.library )
 gSystem.Load( top_unfold.library )
 from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
@@ -316,11 +316,11 @@ def get_unfold_histogram_tuple(
         h_measured.Scale( lumiweight )
         h_response.Scale( lumiweight )
     
+    h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
     if load_fakes:
-        return fix_overflow( h_truth, h_measured, h_response, h_fakes )
-    else:
-        return fix_overflow( h_truth, h_measured, h_response )
-
+        h_fakes = fix_overflow( h_fakes )
+    
+    return h_truth, h_measured, h_response, h_fakes
 
 def get_combined_unfold_histogram_tuple( 
                 inputfile,
@@ -370,87 +370,3 @@ def get_combined_unfold_histogram_tuple(
     
     return h_truth, h_measured, h_response, h_fakes
 
-def fix_overflow( h_truth, h_measured, h_response, h_fakes = None ):
-    ''' Moves entries from the overflow bin into the last bin as we treat the last bin as everything > last_bin.lower_edge.
-    This is to fix a bug in the unfolding workflow where we neglect this treatment.'''
-    
-    # first the 1D histograms
-    for hist in [h_truth, h_measured, h_fakes]:
-        if not hist:
-            continue
-        last_bin = hist.nbins()
-        overflow_bin = last_bin + 1
-        overflow = hist.GetBinContent( overflow_bin )
-        overflow_error= hist.GetBinError( overflow_bin )
-        
-        new_last_bin_content = hist.GetBinContent( last_bin ) + overflow
-        new_last_bin_error = hist.GetBinError( last_bin ) + overflow_error
-        
-        hist.SetBinContent( last_bin, new_last_bin_content )
-        hist.SetBinError( last_bin, new_last_bin_error )
-        hist.SetBinContent( overflow_bin, 0. )
-    # then the 2D histogram
-    if h_response:
-        last_bin_x = h_response.nbins()
-        last_bin_y = h_response.nbins( axis = 1 )
-        overflow_bin_x = last_bin_x + 1
-        overflow_bin_y = last_bin_y + 1
-        # first all y-overflow
-        for x in range( 1, overflow_bin_x +1):
-            overflow_y = h_response.GetBinContent( x, overflow_bin_y )
-            overflow_error_y = h_response.GetBinError( x, overflow_bin_y )
-            
-            last_bin_content_y = h_response.GetBinContent( x, last_bin_y )
-            last_bin_error_y = h_response.GetBinError( x, last_bin_y )
-            
-            h_response.SetBinContent( x, overflow_bin_y, 0. )
-            h_response.SetBinContent( x, last_bin_y, overflow_y + last_bin_content_y )
-            h_response.SetBinError( x, last_bin_y, overflow_error_y + last_bin_error_y )
-        # now all x-overflow
-        for y in range( 1, overflow_bin_y +1):
-            overflow_x = h_response.GetBinContent( overflow_bin_x, y )
-            overflow_error_x = h_response.GetBinError( overflow_bin_x, y )
-            
-            last_bin_content_x = h_response.GetBinContent( last_bin_x, y )
-            last_bin_error_x = h_response.GetBinError( last_bin_x, y )
-            
-            h_response.SetBinContent( overflow_bin_x, y, 0. )
-            h_response.SetBinContent( last_bin_x, y, overflow_x + last_bin_content_x )
-            h_response.SetBinError( last_bin_x, y, overflow_error_x + last_bin_error_x )
-        # and now the final bin (both x and y overflow)
-        overflow_x_y = h_response.GetBinContent( overflow_bin_x, overflow_bin_y )
-        last_bin_content_x_y = h_response.GetBinContent( last_bin_x, last_bin_y )
-        h_response.SetBinContent( overflow_bin_x, overflow_bin_y, 0. )
-        h_response.SetBinContent( last_bin_x, last_bin_y, overflow_x_y + last_bin_content_x_y )
-        
-    # now the fun part. Since the above histograms still have an entry in overflow, that needs to be rectified.
-    h_truth = transfer_values_without_overflow(h_truth)
-    h_measured = transfer_values_without_overflow(h_measured)
-    h_response = transfer_values_without_overflow(h_response)
-    h_fakes = transfer_values_without_overflow(h_fakes)
-
-    return h_truth, h_measured, h_response, h_fakes
-
-def transfer_values_without_overflow( histogram ):
-    if histogram == None:
-        return histogram
-    
-    dimension = 1
-    histogram_new= None
-    if str( type( histogram ) ) == str( Hist2D.dynamic_cls( 'D' ) ):
-        dimension = 2
-    if dimension == 1:
-        histogram_new = Hist( list( histogram.xedges() ), type = 'D' ) 
-        n_bins = histogram_new.nbins()
-        for i in range(1, n_bins + 1):
-            histogram_new.SetBinContent(i, histogram.GetBinContent(i))
-            histogram_new.SetBinError(i, histogram.GetBinError(i))
-    else:
-        histogram_new = Hist2D( list( histogram.xedges() ), list( histogram.yedges() ), type = 'D' )
-        n_bins_x = histogram_new.nbins()
-        n_bins_y = histogram_new.nbins(axis=1)
-        for i in range(1, n_bins_x + 1):
-            for j in range(1, n_bins_y + 1):
-                histogram_new.SetBinContent(i,j, histogram.GetBinContent(i, j))
-                histogram_new.SetBinError(i,j, histogram.GetBinError(i, j))
-    return histogram_new

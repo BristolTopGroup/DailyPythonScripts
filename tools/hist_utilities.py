@@ -162,6 +162,84 @@ def limit_range_y( histogram ):
     min_value = map( min, zip( *tuple_list ) )[0]
     max_value = map( max, zip( *tuple_list ) )[0]
     return min_value, max_value
+
+def fix_overflow( hist ):
+    ''' Moves entries from the overflow bin into the last bin as we treat the last bin as everything > last_bin.lower_edge.
+    This is to fix a bug in the unfolding workflow where we neglect this treatment.'''
+    
+    if 'TH1' in hist.class_name():
+        last_bin = hist.nbins()
+        overflow_bin = last_bin + 1
+        overflow = hist.GetBinContent( overflow_bin )
+        overflow_error= hist.GetBinError( overflow_bin )
+        
+        new_last_bin_content = hist.GetBinContent( last_bin ) + overflow
+        new_last_bin_error = hist.GetBinError( last_bin ) + overflow_error
+        
+        hist.SetBinContent( last_bin, new_last_bin_content )
+        hist.SetBinError( last_bin, new_last_bin_error )
+        hist.SetBinContent( overflow_bin, 0. )
+    elif 'TH2' in hist.class_name():
+        last_bin_x = hist.nbins()
+        last_bin_y = hist.nbins( axis = 1 )
+        overflow_bin_x = last_bin_x + 1
+        overflow_bin_y = last_bin_y + 1
+        # first all y-overflow
+        for x in range( 1, overflow_bin_x +1):
+            overflow_y = hist.GetBinContent( x, overflow_bin_y )
+            overflow_error_y = hist.GetBinError( x, overflow_bin_y )
+            
+            last_bin_content_y = hist.GetBinContent( x, last_bin_y )
+            last_bin_error_y = hist.GetBinError( x, last_bin_y )
+            
+            hist.SetBinContent( x, overflow_bin_y, 0. )
+            hist.SetBinContent( x, last_bin_y, overflow_y + last_bin_content_y )
+            hist.SetBinError( x, last_bin_y, overflow_error_y + last_bin_error_y )
+        # now all x-overflow
+        for y in range( 1, overflow_bin_y +1):
+            overflow_x = hist.GetBinContent( overflow_bin_x, y )
+            overflow_error_x = hist.GetBinError( overflow_bin_x, y )
+            
+            last_bin_content_x = hist.GetBinContent( last_bin_x, y )
+            last_bin_error_x = hist.GetBinError( last_bin_x, y )
+            
+            hist.SetBinContent( overflow_bin_x, y, 0. )
+            hist.SetBinContent( last_bin_x, y, overflow_x + last_bin_content_x )
+            hist.SetBinError( last_bin_x, y, overflow_error_x + last_bin_error_x )
+        # and now the final bin (both x and y overflow)
+        overflow_x_y = hist.GetBinContent( overflow_bin_x, overflow_bin_y )
+        last_bin_content_x_y = hist.GetBinContent( last_bin_x, last_bin_y )
+        hist.SetBinContent( overflow_bin_x, overflow_bin_y, 0. )
+        hist.SetBinContent( last_bin_x, last_bin_y, overflow_x_y + last_bin_content_x_y )
+    else:
+        raise Exception("Unknown type of histogram in fix_overflow")
+
+    hist = transfer_values_without_overflow(hist)
+    return hist
+
+def transfer_values_without_overflow( histogram ):
+    if histogram == None:
+        return histogram
+    
+    histogram_new = None
+    if 'TH1' in histogram.class_name():
+        histogram_new = Hist( list( histogram.xedges() ), type = 'D' ) 
+        n_bins = histogram_new.nbins()
+        for i in range(1, n_bins + 1):
+            histogram_new.SetBinContent(i, histogram.GetBinContent(i))
+            histogram_new.SetBinError(i, histogram.GetBinError(i))
+    elif 'TH2' in histogram.class_name():
+        histogram_new = Hist2D( list( histogram.xedges() ), list( histogram.yedges() ), type = 'D' )
+        n_bins_x = histogram_new.nbins()
+        n_bins_y = histogram_new.nbins(axis=1)
+        for i in range(1, n_bins_x + 1):
+            for j in range(1, n_bins_y + 1):
+                histogram_new.SetBinContent(i,j, histogram.GetBinContent(i, j))
+                histogram_new.SetBinError(i,j, histogram.GetBinError(i, j))
+    else:
+        raise Exception("Unknown type of histogram in transfer_values_without_overflow")
+    
+    return histogram_new
     
 def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
     # since there is no easy way to rebin a 2D histogram, lets make it from 

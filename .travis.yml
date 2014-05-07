@@ -59,9 +59,10 @@ script:
   - ls -la /dev/shm
 
   # Now run the actual tests (from the installed version, not the local build dir)
-  - time python test/cross_section_measuremen_00_pick_bins.py
+  - time python test/cross_section_measurement_00_pick_bins.py
   - time python test/fix_overflow.py
   - time python test/RooFitFit.py
   - time python test/TMinuitFit.py
   - time python test/tools_Calculation.py
   - time python test/tools_hist_utilities.py
+  - time python test/Integral_GetBinContent_consistency.py
