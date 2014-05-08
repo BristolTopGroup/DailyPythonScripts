@@ -1,0 +1,13 @@
+#!/bin/bash
+mkdir -p plots
+python src/cross_section_measurement/04_make_plots_matplotlib.py &> logs/met_plot_8TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -v HT &> logs/ht_plot_8TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -v ST &> logs/st_plot_8TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -v MT &> logs/mt_plot_8TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -v WPT &> logs/wpt_plot_8TeV.log &
+# 7 TeV
+python src/cross_section_measurement/04_make_plots_matplotlib.py -c 7 &> logs/met_plot_7TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -c 7 -v HT &> logs/ht_plot_7TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -c 7 -v ST &> logs/st_plot_7TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -c 7 -v MT &> logs/mt_plot_7TeV.log &
+python src/cross_section_measurement/04_make_plots_matplotlib.py -c 7 -v WPT &> logs/wpt_plot_7TeV.log &
