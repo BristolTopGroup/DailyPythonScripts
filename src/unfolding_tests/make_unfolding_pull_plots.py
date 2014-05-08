@@ -124,8 +124,10 @@ def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
     channel_label = ''
     if channel == 'electron':
         channel_label = 'e+jets'
-    else:
+    elif channel == 'muon':
         channel_label = '$\mu$+jets'
+    else:
+        channel_label = '$e/\mu$+jets combined'
     title_template = 'Pull distribution for unfolding of $%s$ \n $\sqrt{s}$ = %d TeV, %s, k value = %d' % ( latex_labels.variables_latex[variable], centre_of_mass, channel_label, k_value )
     plt.title(title_template, CMS.title)
     
@@ -214,8 +216,8 @@ if __name__ == "__main__":
                       dest="output_folder", default='plots_unfolding_pull',
                       help="output folder for unfolding pull plots")
     parser.add_option("-c", "--channel", type='string',
-                      dest="channel", default='electron',
-                      help="channel to be analysed: electron|muon|both")
+                      dest="channel", default='combined',
+                      help="channel to be analysed: electron|muon|combined")
     parser.add_option("-k", "--k_value", type='int',
                       dest="k_value", default=3,
                       help="k-value used in SVD unfolding, only for categorisation purpose at this stage")

@@ -57,7 +57,7 @@ if __name__ == '__main__':
     ROOT.TH1F.AddDirectory(False)
     parser = OptionParser()
     parser.add_option("-n", "--n_toy_mc",
-                      dest="n_toy_mc", default=100,
+                      dest="n_toy_mc", default=300,
                       help="number of toy MC to create", type=int)
     parser.add_option("-o", "--output",
                       dest="output_folder", default='../data/toy_mc/',
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     # define output file
     output = File(options.output_folder + '/toy_mc_' + variable + '_N_' + str(options.n_toy_mc) + '.root', 'recreate')
-    for channel in ['electron', 'muon']:
+    for channel in ['combined']:
         # get histograms
         h_truth, h_measured, h_response_AsymBins, h_fakes = get_unfold_histogram_tuple(input_file,
                                                                                        variable,

@@ -105,8 +105,8 @@ if __name__ == "__main__":
     parser.add_option("-s", "--centre-of-mass-energy", dest="CoM", default=8,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
     parser.add_option("-c", "--channel", type='string',
-                      dest="channel", default='both',
-                      help="channel to be analysed: electron|muon|both")
+                      dest="channel", default='combined',
+                      help="channel to be analysed: electron|muon|combined")
     
     parser.add_option("--offset_toy_mc", type='int',
                       dest="offset_toy_mc", default=0,
@@ -155,8 +155,7 @@ if __name__ == "__main__":
     elif options.channel == 'muon':
         check_multiple_data_multiple_unfolding(input_file, method, 'muon')
     else:
-        check_multiple_data_multiple_unfolding(input_file, method, 'electron')
-        check_multiple_data_multiple_unfolding(input_file, method, 'muon')
+        check_multiple_data_multiple_unfolding(input_file, method, 'combined')
 
     end1, end2 = clock(), time()
     
