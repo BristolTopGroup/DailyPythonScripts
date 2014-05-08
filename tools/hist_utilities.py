@@ -13,6 +13,7 @@ from rootpy.plotting.hist import Hist2D
 import random
 import string
 from cmath import sqrt
+from copy import deepcopy
 
 def hist_to_value_error_tuplelist( hist ):
     values = list( hist.y() )
@@ -91,13 +92,16 @@ def scale_histogram_errors( histogram, total_error ):
     for bin_i in range( bins_number ):
         histogram.SetBinError( bin_i + 1, scale_factor * histogram.GetBinError( bin_i + 1 ) )
 
-def prepare_histograms( histograms, rebin = 1, scale_factor = 1., normalisation = {}, exclude_from_scaling = ['data'] ):
+def prepare_histograms( histograms, rebin = 1, scale_factor = 1.,
+                        normalisation = {}, exclude_from_scaling = ['data'] ):
     for sample, histogram_dict in histograms.iteritems():
         for _, histogram in histogram_dict.iteritems():
             histogram.Rebin( rebin )
             if not sample in exclude_from_scaling:
                 histogram.Scale( scale_factor )
             if normalisation != {} and histogram.Integral() != 0:
+                # TODO: this can be simplyfied and generalised 
+                # by using normalisation.keys() + for loop
                 if sample == 'TTJet':
                     histogram.Scale( normalisation['TTJet'][0] / histogram.Integral() )
                     scale_histogram_errors( histogram, normalisation['TTJet'][1] )
@@ -258,6 +262,19 @@ def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
             fill( x_axis_centre( i ), y_axis_centre( j ), get( i, j ) )
     
     return hist
+
+def conditional_rebin( histogram, bin_edges ):
+    histogram_ = deepcopy(histogram)
+    current_nbins = histogram.nbins()
+    new_nbins = len( bin_edges ) - 1
+    # check if already have the correct number of bins
+    if not current_nbins == new_nbins:
+        # check if re-binning is possible (simple way)
+        if current_nbins > new_nbins:
+            histogram_ = histogram_.rebinned( bin_edges, axis = 0 )
+            if 'TH2' in histogram_.class_name():
+                histogram_ = histogram_.rebinned( bin_edges, axis = 1 )
+    return histogram_
 
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
