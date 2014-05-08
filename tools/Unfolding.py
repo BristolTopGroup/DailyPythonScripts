@@ -54,7 +54,7 @@ class Unfolding:
         self.Hreco = Hreco
         self.measured_truth_without_fakes = measured_truth_without_fakes
     
-    def setup_unfolding (self, data):
+    def setup_unfolding ( self, data ):
         self.data = data
         if not self.unfoldObject:
             if not self.unfoldResponse:
@@ -83,14 +83,14 @@ class Unfolding:
 
 
                 if self.fakes:
-                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D')
+                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D' )
                     new_fakes.Add ( self.fakes )
                     new_measured = new_measured - new_fakes
 
                 new_response = Hist2D( list( self.response.xedges() ), list( self.response.yedges() ), type = 'D' )
                 new_response.Add( self.response )
 
-                #replace global objects with new ones
+                # replace global objects with new ones
                 self.data = new_data
                 self.measured = new_measured
                 self.truth = new_truth
@@ -120,7 +120,7 @@ class Unfolding:
                     new_measured = new_measured - new_fakes
                 self.response.Copy( new_response )
 
-                #replace global objects with new ones
+                # replace global objects with new ones
                 self.data = new_data
                 self.measured = new_measured
                 self.truth = new_truth
@@ -130,20 +130,20 @@ class Unfolding:
                 if self.k_value == -1 and self.tau >= 0:
                     self.unfoldObject.SetTau( self.tau )
 
-    def test_regularisation (self, data, k_max):
+    def test_regularisation ( self, data, k_max ):
         self.setup_unfolding( data )
         if self.method == 'RooUnfoldSvd':
             findingK = RooUnfoldParms( self.unfoldObject, self.Hreco, self.truth )
-            findingK.SetMinParm(1)
-            findingK.SetMaxParm(k_max)
-            findingK.SetStepSizeParm(1)
-            RMSerror = asrootpy(findingK.GetRMSError().Clone())
-            MeanResiduals = asrootpy(findingK.GetMeanResiduals().Clone())
-            RMSresiduals = asrootpy(findingK.GetRMSResiduals().Clone())
-            Chi2 = asrootpy(findingK.GetChi2().Clone())
+            findingK.SetMinParm( 1 )
+            findingK.SetMaxParm( k_max )
+            findingK.SetStepSizeParm( 1 )
+            RMSerror = asrootpy( findingK.GetRMSError().Clone() )
+            MeanResiduals = asrootpy( findingK.GetMeanResiduals().Clone() )
+            RMSresiduals = asrootpy( findingK.GetRMSResiduals().Clone() )
+            Chi2 = asrootpy( findingK.GetChi2().Clone() )
             return RMSerror, MeanResiduals, RMSresiduals, Chi2
         else:
-            raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( method ) )
+            raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( self.method ) )
 
     def unfold( self, data ):
         self.setup_unfolding( data )
@@ -176,7 +176,7 @@ class Unfolding:
                 new_truth.Add( self.truth )
 
                 if self.fakes:
-                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D')
+                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D' )
                     new_fakes.Add ( self.fakes )
                     new_measured = new_measured - new_fakes
 
@@ -274,7 +274,8 @@ def get_unfold_histogram_tuple(
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
                 load_fakes = False,
-                scale_to_lumi = True ):
+                scale_to_lumi = True,
+                ):
     folder = None
     h_truth = None
     h_measured = None
@@ -286,25 +287,25 @@ def get_unfold_histogram_tuple(
         else:
             folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
         
-        h_truth = asrootpy( folder.truth_AsymBins ).Clone()
-        h_measured = asrootpy( folder.measured_AsymBins ).Clone()
+        h_truth = asrootpy( folder.truth.Clone() )
+        h_measured = asrootpy( folder.measured.Clone() )
 
-        #response matrix is always without fakes
-        #fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
-        #or manually for TSVDUnfold
-        h_response = asrootpy( folder.response_without_fakes_AsymBins ).Clone()
-            #h_response = folder.response_AsymBins.Clone()
+        # response matrix is always without fakes
+        # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
+        # or manually for TSVDUnfold
+        # fix for a bug/typo in NTupleTools
+        h_response = asrootpy( folder.response_without_fakes.Clone() )
 
         if load_fakes:
-            h_fakes = asrootpy( folder.fake_AsymBins ).Clone()
+            h_fakes = asrootpy( folder.fake.Clone() )
     else:
-        return get_combined_unfold_histogram_tuple(inputfile = inputfile,
+        return get_combined_unfold_histogram_tuple( inputfile = inputfile,
                                                    variable = variable,
                                                    met_type = met_type,
                                                    centre_of_mass = centre_of_mass,
                                                    ttbar_xsection = ttbar_xsection,
                                                    luminosity = luminosity,
-                                                   load_fakes = load_fakes
+                                                   load_fakes = load_fakes,
                                                    )
 
     if scale_to_lumi:
@@ -329,9 +330,10 @@ def get_combined_unfold_histogram_tuple(
                 centre_of_mass = 8,
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
-                load_fakes = False ):
+                load_fakes = False,
+                ):
     
-    h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple(inputfile = inputfile,
+    h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple( inputfile = inputfile,
                                                                                   variable = variable,
                                                                                   channel = 'electron',
                                                                                   met_type = met_type,
@@ -339,9 +341,8 @@ def get_combined_unfold_histogram_tuple(
                                                                                   ttbar_xsection = ttbar_xsection,
                                                                                   luminosity = luminosity,
                                                                                   load_fakes = load_fakes,
-                                                                                  scale_to_lumi = False
                                                                                   )
-    h_truth_mu, h_measured_mu, h_response_mu, h_fakes_mu = get_unfold_histogram_tuple(inputfile = inputfile,
+    h_truth_mu, h_measured_mu, h_response_mu, h_fakes_mu = get_unfold_histogram_tuple( inputfile = inputfile,
                                                                                   variable = variable,
                                                                                   channel = 'muon',
                                                                                   met_type = met_type,
@@ -349,9 +350,8 @@ def get_combined_unfold_histogram_tuple(
                                                                                   ttbar_xsection = ttbar_xsection,
                                                                                   luminosity = luminosity,
                                                                                   load_fakes = load_fakes,
-                                                                                  scale_to_lumi = False
                                                                                   )
-    #summing histograms, the errors are added in quadrature
+    # summing histograms, the errors are added in quadrature
     h_truth = h_truth_e + h_truth_mu
     h_measured = h_measured_e + h_measured_mu
     h_response = h_response_e + h_response_mu
@@ -359,14 +359,4 @@ def get_combined_unfold_histogram_tuple(
     if load_fakes:
         h_fakes = h_fakes_e + h_fakes_mu
     
-    nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
-    lumiweight = ttbar_xsection * luminosity / nEvents
-
-    h_truth.Scale( lumiweight )
-    h_measured.Scale( lumiweight )
-    h_response.Scale( lumiweight )
-    if load_fakes:
-        h_fakes.Scale( lumiweight )
-    
     return h_truth, h_measured, h_response, h_fakes
-
