@@ -108,7 +108,7 @@ k_values_electron = {
                    'MET' : 3,
                    'HT' : 7,
                    'ST' : 6,
-                   'MT' : 5,
+                   'MT' : 2,
                    'WPT' : 3
 }
 

@@ -306,6 +306,7 @@ def get_unfold_histogram_tuple(
                                                    ttbar_xsection = ttbar_xsection,
                                                    luminosity = luminosity,
                                                    load_fakes = load_fakes,
+                                                   scale_to_lumi = scale_to_lumi,
                                                    )
 
     if scale_to_lumi:
@@ -331,6 +332,7 @@ def get_combined_unfold_histogram_tuple(
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
                 load_fakes = False,
+                scale_to_lumi = True,
                 ):
     
     h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple( inputfile = inputfile,
@@ -341,6 +343,7 @@ def get_combined_unfold_histogram_tuple(
                                                                                   ttbar_xsection = ttbar_xsection,
                                                                                   luminosity = luminosity,
                                                                                   load_fakes = load_fakes,
+                                                                                  scale_to_lumi = scale_to_lumi,
                                                                                   )
     h_truth_mu, h_measured_mu, h_response_mu, h_fakes_mu = get_unfold_histogram_tuple( inputfile = inputfile,
                                                                                   variable = variable,
@@ -350,6 +353,7 @@ def get_combined_unfold_histogram_tuple(
                                                                                   ttbar_xsection = ttbar_xsection,
                                                                                   luminosity = luminosity,
                                                                                   load_fakes = load_fakes,
+                                                                                  scale_to_lumi = scale_to_lumi,
                                                                                   )
     # summing histograms, the errors are added in quadrature
     h_truth = h_truth_e + h_truth_mu
