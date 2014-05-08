@@ -30,8 +30,8 @@ files_to_load = [config_7TeV.unfolding_madgraph_raw,
 
 overall_timer = Timer()
 number_of_files = len( files_to_load )
-# each pool takes around 1.2 GB, be careful!
-# 5 pools = 6 GB
+# each pool takes around 1.2 GB and twice when writing to disk, be careful!
+# 5 pools = 6-12 GB
 p = Pool(5)
 p.map(convert_unfolding_histograms, files_to_load)
 # if you want more information but doing all sequentially

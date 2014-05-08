@@ -87,8 +87,8 @@ def read_xsection_measurement_results( path_to_JSON, variable, bin_edges,
 
 def convert_unfolding_histograms( file_name,
     histograms_to_load = ['truth',
-                        'fake', 'measured', 'response',
-                        'response_withoutFakes', 'response_without_fakes',
+                          'fake', 'measured', 'response',
+                          'response_withoutFakes', 'response_without_fakes',
                           'EventCounter',
                       ] ):
     
@@ -113,11 +113,13 @@ def convert_unfolding_histograms( file_name,
         if not path == 'EventFilter': 
             variable = path.split( '_' )[1]
         for name, hist in hists.iteritems():
-            if not name == 'EventCounter': 
+            if name == 'EventCounter':
+                new_histograms[path][name] = hist.Clone()
+            else:
                 new_hist = hist.rebinned( bin_edges[variable] )
                 if 'TH2' in new_hist.class_name():
                     new_hist = new_hist.rebinned( bin_edges[variable], axis = 1 )
-            new_histograms[path][name] = new_hist
+                new_histograms[path][name] = new_hist
     
     # save_to_file
     output = File( file_name.replace( '.root', '_asymmetric.root' ), 'recreate' )     
