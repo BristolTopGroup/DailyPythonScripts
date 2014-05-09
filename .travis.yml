@@ -8,6 +8,7 @@ python:
 env:
   matrix:
     - ROOT=5.34.14
+    - ROOT=5.34.18
 
 install:
   # Check if we are running Python 2 or 3. This is needed for the apt-get package names
