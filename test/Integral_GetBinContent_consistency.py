@@ -56,8 +56,8 @@ class Test( unittest.TestCase ):
             current_bin_end, p, s, n_gen_and_reco = pick_bins.get_next_end( self.histograms, current_bin_start, current_bin_end, self.p_min, self.s_min, self.n_min )
             if not self.bin_edges:
                 # if empty
-                self.bin_edges.append( first_hist.GetBinLowEdge( current_bin_start + 1 ) )
-            self.bin_edges.append( first_hist.GetBinLowEdge( current_bin_end ) + first_hist.GetBinWidth( current_bin_end ) )
+                self.bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
+            self.bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_end ) + first_hist.GetXaxis().GetBinWidth( current_bin_end ) )
             self.purities_Integral.append(p)
             self.stabilities_Integral.append(s)
             self.n_events_Integral.append(n_gen_and_reco)

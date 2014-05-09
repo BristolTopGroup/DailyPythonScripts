@@ -152,8 +152,8 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
         current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min )
         if not bin_edges:
             # if empty
-            bin_edges.append( first_hist.GetBinLowEdge( current_bin_start + 1 ) )
-        bin_edges.append( first_hist.GetBinLowEdge( current_bin_end ) + first_hist.GetBinWidth( current_bin_end ) )
+            bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
+        bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_end ) + first_hist.GetXaxis().GetBinWidth( current_bin_end ) )
         current_bin_start = current_bin_end
     
     # add the purity and stability values for the final binning
