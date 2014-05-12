@@ -24,7 +24,6 @@ from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
 
 def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties, k_values
-    normalised_xsection = None
     filename = ''
     
     if category in met_uncertainties and variable == 'HT':
@@ -153,7 +152,6 @@ if __name__ == "__main__":
                       help = "Makes the errors symmetric" )
     
     ( options, args ) = parser.parse_args()
-    from config.variable_binning import bin_widths, bin_edges
     if options.CoM == 8:
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:

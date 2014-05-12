@@ -4,15 +4,17 @@ Created on 9 Dec 2012
 @author: kreczko
 '''
 from optparse import OptionParser
-import os
 from rootpy.io import File
 from array import array
+from config.variable_binning import bin_edges
 from tools.Unfolding import Unfolding
-from config import RooUnfold
 from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.file_utilities import write_data_to_JSON, make_folder_if_not_exists
+from tools.Timer import Timer
+
 from time import clock, time
-    
+from ROOT import gROOT
+
 def check_multiple_data_multiple_unfolding(input_file, method, channel):
     global nbins, use_N_toy, output_folder, offset_toy_mc, offset_toy_data, k_value
     # same unfolding input, different data
@@ -79,7 +81,6 @@ def get_histograms(folder):
     return h_truth, h_measured, h_response
 
 if __name__ == "__main__":
-    from ROOT import gROOT
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 3001;");
 
@@ -117,10 +118,9 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_edges
+        
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     input_file = File(options.file, 'read')
     
-    start1, start2 = clock(), time()
+    timer = Timer()
     if options.channel == 'electron':
         check_multiple_data_multiple_unfolding(input_file, method, 'electron')
     elif options.channel == 'muon':
@@ -159,6 +159,4 @@ if __name__ == "__main__":
 
     end1, end2 = clock(), time()
     
-    print 'Runtime', end1 - start1
-    print 'Runtime', end2 - start2
-    
+    print 'Runtime', timer.elapsed_time()

@@ -8,7 +8,7 @@ from tools.ROOT_utililities import get_histograms_from_files
 from copy import copy
 from tools.hist_utilities import prepare_histograms
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_shape_comparison_plot
-from config.cross_section_measurement import b_tag_bins_latex
+from config.latex_labels import b_tag_bins_latex
 from config.latex_labels import samples_latex
 common_fit_variables = ['M3', 'M_bl', 'angle_bl']
 electron_fit_variables = copy( common_fit_variables )

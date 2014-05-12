@@ -5,17 +5,15 @@ Created on 4 May 2013
 '''
 
 
-from config import CMS
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_control_region_comparison
 from tools.plotting import make_plot
 from tools.hist_utilities import prepare_histograms
 import config.cross_section_measurement_7TeV as measurement_config
+from tools.ROOT import set_root_defaults
 
 if __name__ == '__main__':
-    from ROOT import gROOT
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     
     from config.latex_labels import b_tag_bins_latex, samples_latex
     
@@ -52,7 +50,7 @@ if __name__ == '__main__':
                        }
     
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s, '
-    e_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$4 jets')
+    electron_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$4 jets')
 
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin

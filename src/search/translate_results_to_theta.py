@@ -22,10 +22,13 @@ Steps:
 2. sort them into the new scheme
 '''
 
-from tools.file_utilities import read_data_from_JSON
-from tools.hist_utilities import value_error_tuplelist_to_hist
 from uncertainties import ufloat
 from math import sqrt
+from rootpy.io import root_open
+
+from config.cross_section_measurement_8TeV import categories_and_prefixes, generator_systematics
+from tools.file_utilities import read_data_from_JSON
+from tools.hist_utilities import value_error_tuplelist_to_hist
 
 def get_variable_from(variable='MET', path_to_JSON='data/8TeV', category='central', signal='Higgs', measurement_type='unfolded'):
     global met_type
@@ -194,9 +197,6 @@ if __name__ == '__main__':
     met_type = 'patType1CorrectedPFMet'
     measurement_type = 'unfolded'
     signal = 'Higgs'
-    from config.variable_binning_8TeV import bin_edges
-    from config.cross_section_measurement_8TeV import categories_and_prefixes, generator_systematics
-    from rootpy.io import root_open
     variables = bin_edges.keys()
     variables = ['MET']
     category = 'central'

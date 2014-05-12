@@ -4,7 +4,6 @@ from optparse import OptionParser
 import os
 # from array import array
 # rootpy
-from rootpy import asrootpy
 from rootpy.io import File
 from rootpy.plotting import Hist2D
 # DailyPythonScripts
@@ -12,9 +11,9 @@ from tools.Calculation import calculate_xsection, calculate_normalised_xsection,
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, make_folder_if_not_exists
-from config.cross_section_measurement_common import translate_options
 import config.RooUnfold as unfoldCfg
 from copy import deepcopy
+from tools.ROOT import set_root_defaults
 
 def unfold_results(results, category, channel, k_value, h_truth, h_measured, h_response, h_fakes, method):
     global variable, path_to_JSON, options
@@ -289,9 +288,7 @@ def calculate_normalised_xsections(normalisation, category, channel, k_value = N
     write_data_to_JSON(normalised_xsection, filename)
 
 if __name__ == '__main__':
-    from ROOT import gROOT
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 3001;' )
+    set_root_defaults()
     # setup
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data/',

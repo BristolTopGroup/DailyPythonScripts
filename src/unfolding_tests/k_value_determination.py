@@ -13,30 +13,29 @@ Note3: make sure all bins have sufficient statistics and their error is
 """
 from __future__ import division
 from optparse import OptionParser
-from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from rootpy.io import File
 import matplotlib
-matplotlib.use('agg')
 
 from uncertainties import ufloat
-import math
 import numpy
-from numpy import frompyfunc
 from pylab import plot
-from ROOT import TF1
+from ROOT import TF1, gROOT
 
 import rootpy.plotting.root2matplotlib as rplt
+from rootpy import asrootpy
 import matplotlib.pyplot as plt
 from copy import deepcopy
+
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
-from config.variable_binning_8TeV import bin_edges
+from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
+from config.variable_binning import bin_edges
 from config import CMS
 from config.latex_labels import variables_latex
 from config.cross_section_measurement_common import translate_options
-from rootpy import asrootpy
 
 
+matplotlib.use('agg')
 matplotlib.rc('font',**CMS.font)
 matplotlib.rc('text', usetex = True)
 
@@ -99,7 +98,7 @@ def draw_d_i( d_i ):
     axes = plt.axes()
 
     x = numpy.linspace(fit.GetXmin(), fit.GetXmax(), fit.GetNpx()*4)#*4 for a very smooth curve
-    function_data = frompyfunc(fit.Eval, 1, 1)
+    function_data = numpy.frompyfunc(fit.Eval, 1, 1)
     plot(x, function_data(x), axes=axes, color='red', linewidth=2)
 
     plt.tick_params( **CMS.axis_label_major )
@@ -133,7 +132,6 @@ def draw_d_i( d_i ):
 
     
 if __name__ == '__main__':
-    from ROOT import gROOT
     gROOT.SetBatch( True )
     gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
 
@@ -167,10 +165,8 @@ if __name__ == '__main__':
 
     
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
@@ -179,7 +175,7 @@ if __name__ == '__main__':
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
 
-    input_filename_central = measurement_config.unfolding_madgraph_file
+    input_filename_central = measurement_config.unfolding_madgraph
     input_filename_bias = measurement_config.unfolding_mcatnlo
 
     input_file = File( input_filename_central, 'read' )
