@@ -2,63 +2,35 @@
 eta_bin_edges = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]
 
 bin_edges = {
-             'MET':[0, 25, 45, 70, 100, 150, 250],
-             'HT':[80, 240, 280, 330, 380, 450, 600, 1000],
-             'ST':[106, 350, 400, 450, 500, 580, 700, 1000],
-             'MT':[0, 30, 50, 80, 100, 200],
-             'WPT':[0, 40, 70, 100, 130, 170, 250]
+             'MET':[0.0, 31.0, 58.0, 96.0, 142.0, 191.0, 300],
+             'HT':[0.0, 190.0, 225.0, 262.0, 302.0, 345.0, 392.0, 445.0, 501.0, 562.0, 623.0, 689.0, 766.0, 1000],
+             'ST':[0.0, 285.0, 329.0, 376.0, 428.0, 484.0, 544.0, 609.0, 678.0, 751.0, 830.0, 911.0, 1028.0, 1200],
+             'MT':[0.0, 28.0, 66.0, 100],
+             'WPT':[0.0, 31.0, 59.0, 88.0, 118.0, 151.0, 187.0, 227.0, 267.0, 300]
              }
 
-bin_widths = {
-              'MET':[25, 20, 25, 30, 50, 100],
-              'HT':[240-80, 40, 50, 50, 70, 150, 400],
-              'ST':[350-106, 50, 50, 50, 80, 120, 300],
-              'MT':[30, 20, 30, 20, 100],
-              'WPT':[40, 30, 30, 30, 40, 80]
-              }
+# should we want separate binning for different centre of mass energies
+# we can put the logic here, maybe as a function:
+# get_variable_binning(centre_of_mass_energy, combined = False)
+# where combined gives you the best bins across the different
+# centre of mass energies
 
-variable_bins_ROOT = {
-                      'MET':['0-25', '25-45', '45-70', '70-100', '100-150', '150-inf'],
-                      'HT':['0-240', '240-280', '280-330', '330-380', '380-450', '450-600', '600-inf'],
-                      'ST':['0-350', '350-400', '400-450', '450-500', '500-580', '580-700', '700-inf'],
-                      'MT':['0-30', '30-50', '50-80', '80-100', '100-inf'],
-                      'WPT':['0-40', '40-70', '70-100', '100-130', '130-170', '170-inf']
-                      }
-
-variable_bins_latex = {#MET
-                       '0-25':'0--25~\GeV',
-                       '25-45':'25--45~\GeV',
-                       '45-70':'45--70~\GeV',
-                       '70-100':'70--100~\GeV',
-                       '100-150':'100--150~\GeV',
-                       '150-inf':'$\\geq 150$~\GeV',
-                       #HT
-                       '0-240':'80--240~\GeV',
-                       '240-280':'240--280~\GeV',
-                       '280-330':'280--330~\GeV',
-                       '330-380':'330--380~\GeV',
-                       '380-450':'380--450~\GeV',
-                       '450-600':'450--600~\GeV',
-                       '600-inf':'$\\geq 600$~\GeV',
-                       #ST
-                       '0-350':'106--350~\GeV',
-                       '350-400':'350--400~\GeV',
-                       '400-450':'400--450~\GeV',
-                       '450-500':'450--500~\GeV',
-                       '500-580':'500--580~\GeV',
-                       '580-700':'580--700~\GeV',
-                       '700-inf':'$\\geq 700$~\GeV',
-                       #MT
-                       '0-30':'0--30~\GeV',
-                       '30-50':'30--50~\GeV',
-                       '50-80':'50--80~\GeV',
-                       '80-100':'80--100~\GeV',
-                       '100-inf':'$\\geq 100$~\GeV',
-                       #WPT
-                       '0-40':'0--40~\GeV',
-                       '40-70':'40--70~\GeV',
-                       '70-100':'70--100~\GeV',
-                       '100-130':'100--130~\GeV',
-                       '130-170':'130--170~\GeV',
-                       '170-inf':'$\\geq 170$~\GeV'
-                       }
+bin_widths = {}
+variable_bins_ROOT = {}
+variable_bins_latex = {}
+# calculate all the other variables
+for variable in bin_edges.keys():
+    bin_widths[variable] = []
+    variable_bins_ROOT[variable] = []
+    number_of_edges = len( bin_edges[variable] )
+    for i in range( number_of_edges - 1 ):
+        lower_edge = bin_edges[variable][i]
+        upper_edge = bin_edges[variable][i + 1]
+        bin_widths[variable].append( upper_edge - lower_edge )
+        bin_name = '%d-%d' % ( int( lower_edge ), int( upper_edge ) )
+        bin_name_latex = '%d--%d~\GeV' % ( int( lower_edge ), int( upper_edge ) )
+        if ( i + 1 ) == number_of_edges - 1:
+            bin_name = '%d-inf' % int( lower_edge )
+            bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
+        variable_bins_ROOT[variable].append( bin_name )
+        variable_bins_latex[bin_name] = bin_name_latex

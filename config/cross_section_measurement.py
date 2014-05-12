@@ -87,7 +87,7 @@ met_bin_latex = {
                '25-45':'25 #leq %s < 45 GeV' % MET_LATEX,
                '45-70':'45 #leq %s < 70 GeV' % MET_LATEX,
                '70-100':'70 #leq %s < 100 GeV' % MET_LATEX,
-               '100-inf':'%s #geq 100 GeV' % MET_LATEX,
+               '100-inf':'%s $\geq$ 100 GeV' % MET_LATEX,
                }  
 
 met_bin_latex_tables = {
@@ -136,11 +136,11 @@ met_systematics_sources_latex = {
         "UnclusteredEnDown":'Unclustered energy $-1\sigma$'
                       }
 
-b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'#geq 0 b-tags', '1btag':'1 b-tags',
-                    '1orMoreBtag':'#geq 1 b-tags',
-                    '2btags':'2 b-tags', '2orMoreBtags':'#geq 2 b-tags',
-                    '3btags':'3 b-tags', '3orMoreBtags':'#geq 3 b-tags',
-                    '4orMoreBtags':'#geq 4 b-tags'}
+b_tag_bins_latex = {'0btag':'0 b-tags', '0orMoreBtag':'$\geq$ 0 b-tags', '1btag':'1 b-tags',
+                    '1orMoreBtag':'$\geq$ 1 b-tags',
+                    '2btags':'2 b-tags', '2orMoreBtags':'$\geq$ 2 b-tags',
+                    '3btags':'3 b-tags', '3orMoreBtags':'$\geq$ 3 b-tags',
+                    '4orMoreBtags':'$\geq$ 4 b-tags'}
 
 def get_histograms_of_interest_7TeV():
     histograms_of_interest = []

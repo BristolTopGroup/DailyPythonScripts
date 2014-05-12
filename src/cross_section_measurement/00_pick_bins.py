@@ -44,7 +44,7 @@ from rootpy import asrootpy
 from rootpy.io import File
 from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
-from config.variable_binning_8TeV import bin_edges as old_binning
+from config.variable_binning import bin_edges as old_binning
 
 def main():
     '''

@@ -17,7 +17,7 @@ import config.RooUnfold as unfoldCfg
 from copy import deepcopy
 
 def unfold_results(results, category, channel, k_value, h_truth, h_measured, h_response, h_fakes, method):
-    global variable, path_to_JSON
+    global variable, path_to_JSON, options
     h_data = value_error_tuplelist_to_hist(results, bin_edges[variable])
     unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method=method, k_value=k_value)
     
@@ -29,43 +29,44 @@ def unfold_results(results, category, channel, k_value, h_truth, h_measured, h_r
         
     h_unfolded_data = unfolding.unfold(h_data)
     
-    # export the D and SV distributions
-    SVD_path = path_to_JSON + '/unfolding_objects/' + channel + '/kv_' + str(k_value) + '/'
-    make_folder_if_not_exists(SVD_path)
-    if method == 'TSVDUnfold':
-        SVDdist = File(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
-        directory = SVDdist.mkdir('SVDdist')
-        directory.cd()
-        unfolding.unfoldObject.GetD().Write()
-        unfolding.unfoldObject.GetSV().Write()
-        #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
-        SVDdist.Close()
-    else:
-        SVDdist = File(SVD_path + method + '_SVDdistributions_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root', 'recreate')
-        directory = SVDdist.mkdir('SVDdist')
-        directory.cd()
-        unfolding.unfoldObject.Impl().GetD().Write()
-        unfolding.unfoldObject.Impl().GetSV().Write()
-        h_truth.Write()
-        h_measured.Write()
-        h_response.Write()
-        #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
-        SVDdist.Close()
-
-    # export the whole unfolding object if it doesn't exist
-    if method == 'TSVDUnfold':
-        unfolding_object_file_name = SVD_path + method + '_unfoldingObject_' + category + '.root'
-    else:
-        unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root'
-    if not os.path.isfile(unfolding_object_file_name):
-        unfoldingObjectFile = File(unfolding_object_file_name, 'recreate')
-        directory = unfoldingObjectFile.mkdir('unfoldingObject')
-        directory.cd()
+    if options.write_unfolding_objects:
+        # export the D and SV distributions
+        SVD_path = path_to_JSON + '/unfolding_objects/' + channel + '/kv_' + str(k_value) + '/'
+        make_folder_if_not_exists(SVD_path)
         if method == 'TSVDUnfold':
-            unfolding.unfoldObject.Write()
+            SVDdist = File(SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate')
+            directory = SVDdist.mkdir('SVDdist')
+            directory.cd()
+            unfolding.unfoldObject.GetD().Write()
+            unfolding.unfoldObject.GetSV().Write()
+            #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
+            SVDdist.Close()
         else:
-            unfolding.unfoldObject.Impl().Write()
-        unfoldingObjectFile.Close()
+            SVDdist = File(SVD_path + method + '_SVDdistributions_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root', 'recreate')
+            directory = SVDdist.mkdir('SVDdist')
+            directory.cd()
+            unfolding.unfoldObject.Impl().GetD().Write()
+            unfolding.unfoldObject.Impl().GetSV().Write()
+            h_truth.Write()
+            h_measured.Write()
+            h_response.Write()
+            #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
+            SVDdist.Close()
+    
+        # export the whole unfolding object if it doesn't exist
+        if method == 'TSVDUnfold':
+            unfolding_object_file_name = SVD_path + method + '_unfoldingObject_' + category + '.root'
+        else:
+            unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str(unfoldCfg.Hreco) + '_' + category + '.root'
+        if not os.path.isfile(unfolding_object_file_name):
+            unfoldingObjectFile = File(unfolding_object_file_name, 'recreate')
+            directory = unfoldingObjectFile.mkdir('unfoldingObject')
+            directory.cd()
+            if method == 'TSVDUnfold':
+                unfolding.unfoldObject.Write()
+            else:
+                unfolding.unfoldObject.Impl().Write()
+            unfoldingObjectFile.Close()
     
     del unfolding
     return hist_to_value_error_tuplelist(h_unfolded_data)
@@ -312,16 +313,17 @@ if __name__ == '__main__':
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
     parser.add_option("-C", "--combine-before-unfolding", dest="combine_before_unfolding", action="store_true",
                       help="Perform combination of channels before unfolding")
+    parser.add_option("-w", "--write-unfolding-objects", dest="write_unfolding_objects", action="store_true",
+                      help="Write out the unfolding objects (D, SV)")
     
     
     (options, args) = parser.parse_args()
     from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
     
+    from config.variable_binning import bin_widths, bin_edges
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_widths, bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_widths, bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
@@ -332,7 +334,7 @@ if __name__ == '__main__':
     ttbar_xsection = measurement_config.ttbar_xsection
     path_to_files = measurement_config.path_to_files
     
-    file_for_unfolding = File(measurement_config.unfolding_madgraph_file, 'read')
+    file_for_unfolding = File(measurement_config.unfolding_madgraph, 'read')
     file_for_powheg = File(measurement_config.unfolding_powheg, 'read')
     file_for_mcatnlo = File(measurement_config.unfolding_mcatnlo, 'read')
         

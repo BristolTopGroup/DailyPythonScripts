@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+# The goal of the script is to convert fine-binned unfolding histograms
+# into asymmetric bins of the correct size.
+# This is needed to speed up the unfolding process, as the difference
+# in read speed between fine-binned and asymmetric is a factor of 200!
+# TODO: create the combined histograms as well.
+from src.cross_section_measurement.lib import convert_unfolding_histograms
+import config.cross_section_measurement_7TeV as config_7TeV
+import config.cross_section_measurement_8TeV as config_8TeV
+from tools.Timer import Timer
+from multiprocessing import Pool
+
+# it takes ~ 20 min to do all files
+files_to_load = [config_7TeV.unfolding_madgraph_raw,
+                 config_7TeV.unfolding_matching_down_raw,
+                 config_7TeV.unfolding_matching_up_raw,
+                 config_7TeV.unfolding_mcatnlo_raw,
+                 config_7TeV.unfolding_powheg_raw,
+                config_7TeV.unfolding_scale_down_raw,
+                config_7TeV.unfolding_scale_up_raw,
+                # 8 TeV
+                config_8TeV.unfolding_madgraph_raw,
+                config_8TeV.unfolding_matching_down_raw,
+                config_8TeV.unfolding_matching_up_raw,
+                config_8TeV.unfolding_mcatnlo_raw,
+                config_8TeV.unfolding_powheg_raw,
+                config_8TeV.unfolding_scale_down_raw,
+                config_8TeV.unfolding_scale_up_raw,
+                 ]
+
+overall_timer = Timer()
+number_of_files = len( files_to_load )
+# each pool takes around 1.2 GB and twice when writing to disk, be careful!
+# 5 pools = 6-12 GB
+p = Pool(5)
+p.map(convert_unfolding_histograms, files_to_load)
+# if you want more information but doing all sequentially
+# sequentially = ~100 min
+# but useful for debuggin
+# for i, file_name in enumerate( files_to_load ):
+#     file_start = Timer()
+#     convert_unfolding_histograms( file_name )
+#     secs = file_start.elapsed_time()
+#     files_to_go = number_of_files - i - 1
+#     if files_to_go > 0:
+#         print '%d more files to go ...' % ( number_of_files - i - 1 )
+#         print 'Estimated time: %d seconds' % ( secs * files_to_go )
+print 'Finished %d files in %d seconds' % ( number_of_files, overall_timer.elapsed_time() )

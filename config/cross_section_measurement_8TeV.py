@@ -8,7 +8,10 @@ centre_of_mass = 8  # TeV
 '''
 The path is expected to contain a folder for each systematic (there are some exceptions)
 '''
-path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_first_draft/8TeV/'
+# old binning
+# path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_first_draft/8TeV/'
+# new binning + lepton scale factors
+path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_2nd_draft/8TeV/'
 path_to_unfolding_histograms = path_to_files + '/unfolding/'
 
 new_luminosity = 19712  # pb-1
@@ -23,7 +26,7 @@ data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
 muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
-electron_QCD_MC_file =  path_to_files + 'central/QCD' + middle + '.root'
+electron_QCD_MC_file =  path_to_files + 'central/QCD_Electron' + middle + '.root'
 higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
 rate_changing_systematics = {'luminosity': 0.026, #https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
@@ -73,14 +76,24 @@ data_muon_category_templates = {'central': data_file_muon,
                                     'JES_down': path_to_files + 'JES_down/SingleMu' + middle + categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-unfolding_madgraph_file = path_to_unfolding_histograms + 'unfolding_merged.root'
-unfolding_powheg = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_powheg.root'
-unfolding_mcatnlo = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_mcatnlo.root'
+unfolding_output_general_template = path_to_unfolding_histograms + '%s.root'
+unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_merged.root'
+unfolding_powheg_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_powheg.root'
+unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_mcatnlo.root'
 
-unfolding_scale_down = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaledown.root'
-unfolding_scale_up = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaleup.root'
-unfolding_matching_down = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingdown.root'
-unfolding_matching_up = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingup.root'
+unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaledown.root'
+unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaleup.root'
+unfolding_matching_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingdown.root'
+unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingup.root'
+
+unfolding_madgraph = unfolding_madgraph_raw.replace( '.root', '_asymmetric.root' )
+unfolding_powheg = unfolding_powheg_raw.replace( '.root', '_asymmetric.root' )
+unfolding_mcatnlo = unfolding_mcatnlo_raw.replace( '.root', '_asymmetric.root' )
+
+unfolding_scale_down = unfolding_scale_down_raw.replace( '.root', '_asymmetric.root' )
+unfolding_scale_up = unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )
+unfolding_matching_down = unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
+unfolding_matching_up = unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
 
 histogram_path_templates = {
                    'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_absolute_eta',
@@ -95,7 +108,7 @@ k_values_electron = {
                    'MET' : 3,
                    'HT' : 7,
                    'ST' : 6,
-                   'MT' : 5,
+                   'MT' : 2,
                    'WPT' : 3
 }
 

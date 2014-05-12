@@ -1,13 +1,13 @@
 
-from time import clock
+from time import time
 
 class Timer():
 
     def __init__(self):
-        self.start_time =  clock()
+        self.start_time =  time()
     
-    def elapsedTime(self):
-        return clock() - self.start_time
+    def elapsed_time(self):
+        return time() - self.start_time
     
     def restart(self):
-        self.start_time =  clock()
+        self.start_time =  time()

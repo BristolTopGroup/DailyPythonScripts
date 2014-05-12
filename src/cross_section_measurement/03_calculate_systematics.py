@@ -153,11 +153,10 @@ if __name__ == "__main__":
                       help = "Makes the errors symmetric" )
     
     ( options, args ) = parser.parse_args()
+    from config.variable_binning import bin_widths, bin_edges
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_widths, bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_widths, bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
