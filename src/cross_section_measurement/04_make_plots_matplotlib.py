@@ -10,7 +10,7 @@ from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_
 from math import sqrt
 # rootpy & matplotlib
 from ROOT import kRed, kGreen, kMagenta, kBlue
-from tools.ROOT import set_root_defaults
+from tools.ROOT_utililities import set_root_defaults
 import matplotlib as mpl
 mpl.use('agg')
 import rootpy.plotting.root2matplotlib as rplt

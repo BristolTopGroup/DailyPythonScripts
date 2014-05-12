@@ -121,3 +121,6 @@ def get_histogram_info_tuple(histogram_in_path):
     
     return directory, histogram_name, b_tag_bin    
         
+def set_root_defaults():
+    gROOT.SetBatch( True )
+    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )

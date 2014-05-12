@@ -12,7 +12,7 @@ from rootpy.io import File
 from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import TMinuitFit, RooFitFit
 from tools.file_utilities import write_data_to_JSON
-from tools.ROOT import set_root_defaults
+from tools.ROOT_utililities import set_root_defaults
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
     global b_tag_bin_VJets

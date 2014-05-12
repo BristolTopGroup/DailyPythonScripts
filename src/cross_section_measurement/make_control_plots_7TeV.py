@@ -10,7 +10,7 @@ from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, m
 from tools.plotting import make_plot
 from tools.hist_utilities import prepare_histograms
 import config.cross_section_measurement_7TeV as measurement_config
-from tools.ROOT import set_root_defaults
+from tools.ROOT_utililities import set_root_defaults
 
 if __name__ == '__main__':
     set_root_defaults()

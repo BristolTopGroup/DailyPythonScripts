@@ -6,7 +6,7 @@ from tools.hist_utilities import prepare_histograms
 from config.variable_binning import variable_bins_ROOT
 from config.cross_section_measurement_common import translate_options
 import config.cross_section_measurement_8TeV as measurement_config
-from tools.ROOT import set_root_defaults
+from tools.ROOT_utililities import set_root_defaults
 
 def get_fitted_normalisation(variable, channel):
     global path_to_JSON, category, met_type

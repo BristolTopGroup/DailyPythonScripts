@@ -1,16 +1,12 @@
 import os
-import re
-import time
-import urllib
-import urllib2
-import httplib
+import sys
 from optparse import OptionParser
-import subprocess as subprocess
 import commands
 
+@DeprecationWarning
 def main():
 	"Main function."
-        parser = OptionParser("Script to create CRAB configuration files. This file is used by make_ntuples_CRAB_configurations.sh and make_unfolding_CRAB_configurations.sh")
+	parser = OptionParser("Script to create CRAB configuration files. This file is used by make_ntuples_CRAB_configurations.sh and make_unfolding_CRAB_configurations.sh")
 
 	parser.add_option("-j", "--jobtype", dest="jobtype", default='cmssw',
                 	  help="specify jobtype")
@@ -54,12 +50,12 @@ def main():
 	parser.add_option("-b", "--blackList", dest="blackList", default=None,
                 	  help="specify sites to which you do not wish to submit jobs (if desired) separated by commas; default is None.")
 
-	(options, args) = parser.parse_args()
+	(options, _) = parser.parse_args()
 
 	#make sure that a datasetpath has been entered.
 	if options.datasetpath == "None":
-	    print 'Please enter a datasetPath.'
-	    sys.exit()
+		print 'Please enter a datasetPath.'
+		sys.exit()
 
 	#Use das_client.py to get nFiles and nEvents for the dataset in question by making a DAS query.
 	dasData = commands.getstatusoutput("../tools/das_client.py --query=dataset=\"" + options.datasetpath + " | grep dataset.name, dataset.nfiles, dataset.nevents \" --verbose=1")
@@ -99,7 +95,7 @@ def main():
 	if int(options.useData) == 1:
 		directory = datasetPath[1:] + "_nTuple_" + options.version + "_GoldenJSON_" + options.skim + "_final"
 	elif int(options.useData) == 0:
-	        directory = datasetPath[1:] + "_nTuple_" + options.version + "_" + options.skim + "_final"
+		directory = datasetPath[1:] + "_nTuple_" + options.version + "_" + options.skim + "_final"
 	else:
 		print "useData value entered is not 0 (monte carlo) or 1 (data). Current value: ", options.useData
 		sys.exit()
@@ -144,13 +140,13 @@ def main():
 	configFile.write("storage_element = T2_UK_SGrid_Bristol\n")
 	configFile.write("user_remote_dir = " + directory + "\n")
 	configFile.write("check_user_remote_dir = 0\n")
-        configFile.write("ui_working_dir = " + directory + "\n")
+	configFile.write("ui_working_dir = " + directory + "\n")
 	if options.email and options.email != "None":
 		configFile.write("email = " + options.email + "\n\n")
 	else:
 		configFile.write("\n")
 
-        configFile.write("[GRID]\n")
+	configFile.write("[GRID]\n")
 	if options.whiteList and options.whiteList != "None":
 		configFile.write("se_white_list=")
 		for i in range(len(sites)):
@@ -178,4 +174,4 @@ def main():
 # main
 #
 if __name__ == '__main__':
-    main()
+	main()
