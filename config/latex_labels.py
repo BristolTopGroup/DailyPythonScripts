@@ -53,7 +53,11 @@ measurements_latex = {'unfolded': 'unfolded',
                         'TTJet_cross_section+' : '$t\\bar{t}$ cross section $+1\sigma$',
                         'TTJet_cross_section-' : '$t\\bar{t}$ cross section $-1\sigma$',
                         'SingleTop_cross_section+' : 'Single top cross section $+1\sigma$',
-                        'SingleTop_cross_section-' : 'Single top cross section $-1\sigma$'
+                        'SingleTop_cross_section-' : 'Single top cross section $-1\sigma$',
+                        'Electron_down' : 'Electron efficiency $-1\sigma$',
+                        'Electron_up' : 'Electron efficiency $+1\sigma$',
+                        'Muon_down' : 'Muon efficiency $-1\sigma$',
+                        'Muon_up' : 'Muon efficiency $+1\sigma$',
                           }
 
 met_systematics_latex = {
