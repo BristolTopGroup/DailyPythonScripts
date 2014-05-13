@@ -8,7 +8,7 @@ Created on 3 Mar 2013
 # but the fit is not saved :(
 # I could save the fit using EVAL ...
 from __future__ import division
-from ROOT import gROOT
+from tools.ROOT_utililities import set_root_defaults
 from optparse import OptionParser
 from glob import glob
 import sys
@@ -85,8 +85,7 @@ def plot_pull(pulls, bin_index = None, n_bins = 1):
     else:
         plot_h_pull(h_pull, stats = stats, name = 'pull_from_files_bin_%d_stats_%d' % (bin_index, stats))
     
-def plot_pull_from_list():
-    # @ ERROR!
+def plot_pull_from_list(hist_data, hist_min_x,hist_max_x, hist_n_bins):
     stats = 19596500
     bin_width = (2.0 * hist_max_x) / hist_n_bins
     print hist_n_bins, bin_width
@@ -204,8 +203,7 @@ def plot_difference(difference):
         plt.savefig(output_folder + 'difference_errors_stats_' + str(stats) + '.' + save)  
         
 if __name__ == "__main__":
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     parser = OptionParser()
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT, WPT)")

@@ -7,14 +7,9 @@ from matplotlib.ticker import MultipleLocator
 import matplotlib.pyplot as plt
 
 from config import CMS
-from config import summations
-from tools.ROOT_utililities import get_histograms_from_files
-from tools.hist_utilities import sum_histograms
+from tools.ROOT_utililities import get_histograms_from_files, set_root_defaults
 
 from copy import deepcopy
-
-from ROOT import gROOT
-
 
 def make_control_region_comparison(control_region_1, control_region_2,
                                    name_region_1, name_region_2, variable='mttbar',
@@ -133,8 +128,7 @@ def get_title(variable):
         
     
 if __name__ == '__main__':
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     CMS.title['fontsize'] = 40
     CMS.x_axis_title['fontsize'] = 50
     CMS.y_axis_title['fontsize'] = 50

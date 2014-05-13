@@ -1,7 +1,7 @@
 import os as os
 import sys as sys
 import re as re
-from config.ROOT_imports import SetBatch
+from tools.ROOT_utililities import set_root_defaults
 from optparse import OptionParser
 import glob as glob
 from rootpy.io import File
@@ -9,7 +9,7 @@ from rootpy.io import File
 "Main function."
 def main():
 	"Main Function"
-	SetBatch(True)
+	set_root_defaults()
 
 	parser = OptionParser("Script to check progress of CRAB jobs in creating nTuples. Run as: python check_CRAB_jobs.py -p projectFolder -n numberOfJobs >&check.log &")
 	parser.add_option("-p", "--projectFolder", dest="projectFolder", help="specify project")

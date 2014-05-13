@@ -1,8 +1,3 @@
-from ROOT import gSystem, gROOT, cout, TH1F
-gROOT.SetBatch(True)
-#gSystem.Load('/software/RooUnfold-1.1.1/libRooUnfold.so')
-#from ROOT import RooUnfoldResponse, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
-#from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from rootpy.io import File
 from rootpy.plotting import Hist, Canvas
 import rootpy.plotting.root2matplotlib as rplt
@@ -12,6 +7,8 @@ from array import array
 from tools.Unfolding import Unfolding
 import config.RooUnfold as unfoldCfg
 from config import CMS, RooUnfold
+from tools.ROOT_utililities import set_root_defaults
+
 def saveClosureTest(unfolding, outputfile, **kwargs):
     
     if not unfolding.unfolded_closure:
@@ -153,7 +150,7 @@ def doUnfoldingSequence(unfolding, h_data, method, outputfile_suffix = '', doClo
         plt.savefig('plots/Fakes' + outputfile_suffix + '.png')
     
 if __name__ == "__main__":
-
+    set_root_defaults()
     method = 'RooUnfoldSvd' # = 'RooUnfoldBayes | RooUnfoldSvd | RooUnfoldBinByBin | RooUnfoldInvert | RooUnfoldTUnfold
     
     bins = array('d', [0, 25, 45, 70, 100, 1000])

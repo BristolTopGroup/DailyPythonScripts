@@ -14,7 +14,7 @@ from optparse import OptionParser
 from rootpy.io import File
 import matplotlib
 from copy import deepcopy
-from ROOT import gROOT
+from tools.ROOT_utililities import set_root_defaults
 
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
@@ -84,8 +84,7 @@ def get_data_histogram( path_to_JSON, channel, variable, met_type ):
 
    
 if __name__ == '__main__':
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
 
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',

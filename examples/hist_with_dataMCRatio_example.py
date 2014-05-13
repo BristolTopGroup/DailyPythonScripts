@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
-from rootpy.plotting import Hist, HistStack, Legend, Canvas
+from rootpy.plotting import Hist, HistStack
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 import ROOT

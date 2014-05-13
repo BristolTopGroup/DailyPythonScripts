@@ -4,7 +4,7 @@ import os, gc
 from copy import deepcopy
 
 from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex
+from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex, b_tag_bins_latex
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from math import sqrt
@@ -241,7 +241,7 @@ def plot_fit_results( histograms, category, channel ):
                                      save_folder = path, save_as = output_formats )    
 
 def get_cms_labels( channel ):
-    global b_tag_bin, b_tag_bins_latex
+    global b_tag_bin
     lepton = 'e'
     if channel == 'electron':
         lepton = 'e + jets'

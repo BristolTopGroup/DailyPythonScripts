@@ -1,24 +1,14 @@
-from rootpy import asrootpy
-import rootpy.plotting.root2matplotlib as rplt
-from rootpy.plotting import HistStack
-
-import matplotlib.gridspec as gridspec
-from matplotlib.ticker import MultipleLocator
-import matplotlib.pyplot as plt
-
 from config import CMS
-from config import summations
 from tools.ROOT_utililities import get_histograms_from_files
-from tools.hist_utilities import sum_histograms
 
-from copy import deepcopy
-from ROOT import gROOT
+from tools.ROOT_utililities import set_root_defaults
 
-from make_control_region_plots import make_control_region_comparison, make_control_region_data_mc_comparision, prepare_histograms
-    
+from make_control_region_plots import make_control_region_comparison
+from make_control_region_plots import make_control_region_data_mc_comparision
+from make_control_region_plots import prepare_histograms
+
 if __name__ == '__main__':
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     CMS.title['fontsize'] = 40
     CMS.x_axis_title['fontsize'] = 50
     CMS.y_axis_title['fontsize'] = 50

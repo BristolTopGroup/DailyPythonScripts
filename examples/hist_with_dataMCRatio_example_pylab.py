@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 import numpy as np
-from rootpy.plotting import Hist, HistStack, Legend, Canvas
+from rootpy.plotting import Hist, HistStack
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
 import ROOT
-import matplotlib.gridspec as gridspec
 from config import CMS
-from pylab import *
+from pylab import subplot
 # Setting this to True (default in rootpy)
 # changes how the histograms look in ROOT...
 ROOT.TH1.SetDefaultSumw2(False)

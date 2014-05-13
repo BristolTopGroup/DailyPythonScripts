@@ -15,7 +15,8 @@ different unfolding parameters k or tau. Three kinds of tests are envisioned:
 """
 from optparse import OptionParser
 from copy import deepcopy
-from ROOT import gROOT, TH1F
+from ROOT import TH1F
+from tools.ROOT_utililities import set_root_defaults
 import collections
 from rootpy.io import File
 
@@ -150,8 +151,7 @@ def compare( central_mc, expected_result = None, measured_result = None, results
     
     
 if __name__ == '__main__':
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
     # Do not let ROOT handle pointers. That just asks for trouble.
     TH1F.AddDirectory( False )
 

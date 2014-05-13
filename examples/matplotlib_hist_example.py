@@ -2,10 +2,10 @@
 import numpy as np
 import matplotlib as mpl
 mpl.use('agg')
-from rootpy.plotting import Hist, HistStack, Legend, Canvas
+from rootpy.plotting import Hist, HistStack
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+from matplotlib.ticker import AutoMinorLocator
 from tools.plotting import Histogram_properties, make_data_mc_comparison_plot, make_control_region_comparison
 import ROOT
 

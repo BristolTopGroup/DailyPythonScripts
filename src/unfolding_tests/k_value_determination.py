@@ -19,7 +19,7 @@ import matplotlib
 from uncertainties import ufloat
 import numpy
 from pylab import plot
-from ROOT import TF1, gROOT
+from ROOT import TF1
 
 import rootpy.plotting.root2matplotlib as rplt
 from rootpy import asrootpy
@@ -28,6 +28,7 @@ from copy import deepcopy
 
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
+from tools.ROOT_utililities import set_root_defaults
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from config.variable_binning import bin_edges
 from config import CMS
@@ -132,8 +133,7 @@ def draw_d_i( d_i ):
 
     
 if __name__ == '__main__':
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
 
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',
