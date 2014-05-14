@@ -110,10 +110,7 @@ class TMinuitFit( TemplateFit ):
         #            =  1  verbose
         #            =  2  additional output giving intermediate results. 
         #            =  3  maximum output, showing progress of minimizations. 
-        if self.verbose:
-            gMinuit.SetPrintLevel( 1 )
-        else:
-            gMinuit.SetPrintLevel( -1 )
+        gMinuit.SetPrintLevel( -1 )
         
         # Error definition: 1 for chi-squared, 0.5 for negative log likelihood
         # SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
