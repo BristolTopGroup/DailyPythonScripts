@@ -51,7 +51,7 @@ ttjets_scaleup_unfolding_samples = ['TTJets-scaleup']
 ttjets_scaledown_unfolding_samples = ['TTJets-scaledown']
 
 sample_summations = {
-                  'QCD-Electron':electron_qcd_samples,
+                  'QCD_Electron':electron_qcd_samples,
                   'SingleTop' : singleTop_samples,
                   'WJets' : wplusjets_samples,
                   'VJets' : vplusjets_samples,
@@ -61,11 +61,11 @@ sample_summations = {
                   'VJets-matchingdown' : vplusjets_matchingdown_samples,
                   'VJets-scaledown' : vplusjets_scaledown_samples,
                   'VJets-scaleup' : vplusjets_scaleup_samples,
-                  'unfolding-merged' : ttjets_unfolding_samples,
-                  'unfolding-TTJets-7TeV-mcatnlo' : ttjets_mcatnlo_unfolding_samples,
-                  'unfolding-TTJets-7TeV-powheg' : ttjets_powheg_unfolding_samples,
-                  'unfolding-TTJets-7TeV-matchingup' : ttjets_matchingup_unfolding_samples,
-                  'unfolding-TTJets-7TeV-matchingdown' : ttjets_matchingdown_unfolding_samples,
-                  'unfolding-TTJets-7TeV-scaleup' : ttjets_scaleup_unfolding_samples,
-                  'unfolding-TTJets-7TeV-scaledown' : ttjets_scaledown_unfolding_samples,
+                  'unfolding_merged' : ttjets_unfolding_samples,
+                  'unfolding_TTJets_7TeV_mcatnlo' : ttjets_mcatnlo_unfolding_samples,
+                  'unfolding_TTJets_7TeV_powheg' : ttjets_powheg_unfolding_samples,
+                  'unfolding_TTJets_7TeV_matchingup' : ttjets_matchingup_unfolding_samples,
+                  'unfolding_TTJets_7TeV_matchingdown' : ttjets_matchingdown_unfolding_samples,
+                  'unfolding_TTJets_7TeV_scaleup' : ttjets_scaleup_unfolding_samples,
+                  'unfolding_TTJets_7TeV_scaledown' : ttjets_scaledown_unfolding_samples,
                   }

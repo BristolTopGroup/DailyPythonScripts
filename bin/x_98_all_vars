@@ -1,0 +1,16 @@
+#!/bin/bash
+mkdir -p plots
+
+# 8 TeV
+python src/cross_section_measurement/98_fit_cross_checks.py >& logs/MET_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -v HT >& logs/HT_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -v ST >& logs/ST_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -v MT >& logs/MT_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -v WPT >& logs/WPT_fit_cross_checks_8TeV.log &
+wait
+# 7 TeV
+python src/cross_section_measurement/98_fit_cross_checks.py -e 7 >& logs/MET_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v HT >& logs/HT_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v ST >& logs/ST_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v MT >& logs/MT_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v WPT >& logs/WPT_fit_cross_checks_7TeV.log &

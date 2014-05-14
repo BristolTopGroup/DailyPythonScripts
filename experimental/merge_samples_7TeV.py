@@ -33,7 +33,7 @@ for sample, input_samples in sample_summations.iteritems():
 #merge all other histogram files
 for category in measurement_config.categories_and_prefixes.keys():
     for sample, input_samples in sample_summations.iteritems():
-        if not sample in ['VJets', 'SingleTop', 'QCD-Electron']: # No QCD_Muon because there is only one MuEnriched QCD dataset
+        if not sample in ['VJets', 'SingleTop', 'QCD_Electron']: # No QCD_Muon because there is only one MuEnriched QCD dataset
             continue
         print "Merging"
         output_file = measurement_config.general_category_templates[category] % sample

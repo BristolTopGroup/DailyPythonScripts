@@ -35,7 +35,7 @@ for sample, input_samples in sample_summations.iteritems():
 # merge all other histogram files
 for category in measurement_config.categories_and_prefixes.keys():
     for sample, input_samples in sample_summations.iteritems():
-        if not sample in ['QCD-Electron', 'QCD-Muon', 'SingleTop', 'VJets']:  # 
+        if not sample in ['QCD_Electron', 'QCD_Muon', 'SingleTop', 'VJets']:  # 
             continue
         print "Merging"
         output_file = measurement_config.general_category_templates[category] % sample
