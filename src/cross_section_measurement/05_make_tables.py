@@ -1,19 +1,14 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
-import os
 from copy import deepcopy
-import ROOT
 from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-from config.latex_labels import b_tag_bins_latex, variables_latex, measurements_latex, met_systematics_latex
+from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from math import sqrt
 
 def read_xsection_measurement_results_with_errors(channel):
     global path_to_JSON, variable, k_values, met_type
     category = 'central'
-    file_template = ''
-    file_name = ''
 
     file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
     if channel == 'combined':
@@ -262,7 +257,6 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     printout += '\n\hline\n'
     
     header = 'Systematic'
-    scale = 100
     rows = {}
     
     bins = variable_bins_ROOT[variable]

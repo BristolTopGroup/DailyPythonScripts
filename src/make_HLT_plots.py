@@ -6,9 +6,10 @@ import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 # from matplotlib.ticker import AutoMinorLocator
 # import config.summations as summations
-from ROOT import gROOT, TEfficiency, TGraphAsymmErrors, TF1, TLegend, TLatex
+from ROOT import TEfficiency, TGraphAsymmErrors, TF1, TLegend, TLatex
 from array import array
 from config import CMS
+from tools.ROOT_utililities import set_root_defaults
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
@@ -280,8 +281,7 @@ def get_input_plots(data_file, mc_file, trigger_under_study):
     return plot_data_passed, plot_data_total, plot_ttbar_passed, plot_ttbar_total
 
 if __name__ == '__main__':
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     
     CMS.title['fontsize'] = 40
     CMS.x_axis_title['fontsize'] = 50

@@ -8,7 +8,7 @@ Created on 3 Mar 2013
 # but the fit is not saved :(
 # I could save the fit using EVAL ...
 from __future__ import division
-from ROOT import gROOT
+from tools.ROOT_utililities import set_root_defaults
 from optparse import OptionParser
 from glob import glob
 import sys
@@ -26,10 +26,10 @@ import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 
 
-from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import hist_to_value_error_tuplelist
-from tools.hist_utilities import value_error_tuplelist_to_hist
+from config.variable_binning import bin_edges
 from config import CMS, latex_labels
+from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from tools.hist_utilities import value_error_tuplelist_to_hist
 
 from matplotlib import rc
 rc('font',**CMS.font)
@@ -85,7 +85,7 @@ def plot_pull(pulls, bin_index = None, n_bins = 1):
     else:
         plot_h_pull(h_pull, stats = stats, name = 'pull_from_files_bin_%d_stats_%d' % (bin_index, stats))
     
-def plot_pull_from_list():
+def plot_pull_from_list(hist_data, hist_min_x,hist_max_x, hist_n_bins):
     stats = 19596500
     bin_width = (2.0 * hist_max_x) / hist_n_bins
     print hist_n_bins, bin_width
@@ -203,8 +203,7 @@ def plot_difference(difference):
         plt.savefig(output_folder + 'difference_errors_stats_' + str(stats) + '.' + save)  
         
 if __name__ == "__main__":
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     parser = OptionParser()
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT, WPT)")
@@ -228,10 +227,8 @@ if __name__ == "__main__":
         sys.exit('No input folder specified. Please do so manually using -i option.')
 
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         sys.exit( 'Unknown centre of mass energy' )

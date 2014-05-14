@@ -1,24 +1,22 @@
 from rootpy.io import File
 from rootpy import asrootpy
-import decimal
 # Most verbose log level
 
 # import matplotlib
 # matplotlib.use('AGG')
 
 import rootpy.plotting.root2matplotlib as rplt
-from rootpy.plotting import Graph
 from rootpy import ROOTError
 
 import matplotlib.pyplot as plt
 # from matplotlib.ticker import AutoMinorLocator
 # import config.summations as summations
-from ROOT import gROOT, TEfficiency, TGraphAsymmErrors, TF1, TLegend, TLatex
+from ROOT import TGraphAsymmErrors, TF1
 from array import array
 from config import CMS
-import matplotlib.gridspec as gridspec
+from tools.ROOT_utililities import set_root_defaults
 import matplotlib.cm as cm
-from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+from matplotlib.ticker import FormatStrFormatter
 
 import numpy
 from numpy import frompyfunc
@@ -349,8 +347,7 @@ def get_input_efficiency(file, efficiency_instance):
 
 
 if __name__ == '__main__':
-    gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = 1001;')
+    set_root_defaults()
     
     CMS.title['fontsize'] = 40
     CMS.x_axis_title['fontsize'] = 50

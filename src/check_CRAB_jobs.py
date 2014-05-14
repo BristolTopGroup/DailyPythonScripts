@@ -1,24 +1,22 @@
 import os as os
 import sys as sys
 import re as re
-import ROOT as ROOT
+from tools.ROOT_utililities import set_root_defaults
 from optparse import OptionParser
-import commands as commands
-import fnmatch as fnmatch
 import glob as glob
+from rootpy.io import File
 
 "Main function."
 def main():
 	"Main Function"
-	ROOT.gROOT.SetBatch(True)
+	set_root_defaults()
 
 	parser = OptionParser("Script to check progress of CRAB jobs in creating nTuples. Run as: python check_CRAB_jobs.py -p projectFolder -n numberOfJobs >&check.log &")
-        parser.add_option("-p", "--projectFolder", dest="projectFolder",
-                help="specify project")
+	parser.add_option("-p", "--projectFolder", dest="projectFolder", help="specify project")
 	parser.add_option("-n", "--numberOfJobs", dest="numberOfJobs",
 		help="specify project")
 
-        (options, args) = parser.parse_args()
+	(options, _) = parser.parse_args()
 
 	#make sure the project option has been specified
 	if not options.projectFolder:
@@ -62,14 +60,14 @@ def main():
 	jobList = range(1,int(options.numberOfJobs)+1)
 
 	#try opening all files in Bristol Storage Element folder and add to missing list if they cannot be opened.
-	for file in storageElementList:
+	for f in storageElementList:
 		#make list of all jobs numbers in the Bristol Storage Element folder
-		jobNumber = int((re.split('[\W+,_]',file))[-4])
+		jobNumber = int((re.split('[\W+,_]',f))[-4])
 		presentJobList.append(jobNumber)
 
 		#check if files are corrupt or not
 		try:
-			rootFile = ROOT.TFile.Open(file)
+			rootFile = File(f)
 			rootFile.Close()
 		except:
 			print "Adding Job Number", jobNumber, "to missingOrBroken list because file is corrupted."
@@ -98,11 +96,11 @@ def main():
 			duplicatesToDelete.append(job)
 
 	print "\n The following", len(goodFiles), "good output files were found in the Bristol Storage Element folder:"
-        print str(goodFiles).replace(" ", "")  
-        print "\n The following", len(duplicatesToDelete), "job numbers have multiple good files on the Bristol Storage Element folder which can be deleted:"
-        print str(duplicatesToDelete).replace(" ", "")
-        print "\n The following", len(missingOrBroken), "job numbers could not be found in the Bristol Storage Element folder:"
-        print str(missingOrBroken).replace(" ", "")
+	print str(goodFiles).replace(" ", "")  
+	print "\n The following", len(duplicatesToDelete), "job numbers have multiple good files on the Bristol Storage Element folder which can be deleted:"
+	print str(duplicatesToDelete).replace(" ", "")
+	print "\n The following", len(missingOrBroken), "job numbers could not be found in the Bristol Storage Element folder:"
+	print str(missingOrBroken).replace(" ", "")
 
 if __name__ == '__main__':
 	main()

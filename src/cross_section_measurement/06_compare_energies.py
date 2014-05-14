@@ -13,23 +13,19 @@ import rootpy.plotting.root2matplotlib as rplt
 from src.cross_section_measurement.lib import read_xsection_measurement_results
 import config.cross_section_measurement_7TeV as config_7TeV
 import config.cross_section_measurement_8TeV as config_8TeV
-# for now, lets use 8 TeV binning. In the end it will be renamed
-# to config.variable_binning_common
-from config.variable_binning import bin_edges, variable_bins_ROOT, eta_bin_edges
+from config.variable_binning import bin_edges
 from config.latex_labels import variables_latex
 from config import CMS
-from rootpy import asrootpy
 from rootpy.plotting import Graph
 from ROOT import kRed, kMagenta, kBlue
 from matplotlib.ticker import MultipleLocator
+from tools.ROOT_utililities import set_root_defaults
 
 output_formats = ['pdf', 'png']
 
 def main():
-    from ROOT import gROOT
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
-    options, args = parse_arguments()
+    set_root_defaults()
+    options, _ = parse_arguments()
     variable = 'ST'
     path_to_JSON_7TeV = options.path + '/7TeV/' + variable + '/'
     path_to_JSON_8TeV = options.path + '/8TeV/' + variable + '/'

@@ -15,18 +15,22 @@ different unfolding parameters k or tau. Three kinds of tests are envisioned:
 """
 from optparse import OptionParser
 from copy import deepcopy
+from ROOT import TH1F
+from tools.ROOT_utililities import set_root_defaults
 import collections
 from rootpy.io import File
-from tau_value_determination import get_tau_from_global_correlation, get_tau_from_L_shape, get_data_histogram
+
+from config import latex_labels
+from config.cross_section_measurement_common import translate_options
+from config.variable_binning import bin_widths, bin_edges
+from tau_value_determination import get_tau_from_global_correlation
+from tau_value_determination import get_tau_from_L_shape, get_data_histogram
 from tools.Unfolding import get_unfold_histogram_tuple, Unfolding
 from tools.plotting import Histogram_properties, compare_measurements
-from config import latex_labels
 from tools.Calculation import calculate_normalised_xsection
-from tools.hist_utilities import hist_to_value_error_tuplelist, \
-    value_error_tuplelist_to_hist, spread_x
+from tools.hist_utilities import hist_to_value_error_tuplelist
+from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x
 from tools.file_utilities import make_folder_if_not_exists
-from config.variable_binning_8TeV import bin_widths, bin_edges
-from config.cross_section_measurement_common import translate_options
 
 def get_test_k_values( h_truth, h_measured, h_response, h_data = None ):
     """
@@ -147,43 +151,37 @@ def compare( central_mc, expected_result = None, measured_result = None, results
     
     
 if __name__ == '__main__':
-    from ROOT import gROOT, TH1F
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
     # Do not let ROOT handle pointers. That just asks for trouble.
-    TH1F.AddDirectory(False)
+    TH1F.AddDirectory( False )
 
     parser = OptionParser()
-    parser.add_option("-o", "--output-folder", dest = "output_folder", default = 'plots_unfolding_tests/',
+    parser.add_option( "-o", "--output-folder", dest = "output_folder", default = 'plots_unfolding_tests/',
                       help = "set path to save plots" )
-    parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
+    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
-    parser.add_option("-f", "--load-fakes", dest="load_fakes", action="store_true",
-                      help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
-    parser.add_option("-u", "--unfolding-method", dest="unfolding_method", default = 'RooUnfoldSvd',
-                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
-    parser.add_option("-m", "--metType", dest="metType", default='type1',
-                      help="set MET type used in the analysis of MET-dependent variables")
-    parser.add_option("-t", "--test", dest="test", default='bias',
-                      help="set the test type for comparison: bias (default), closure or data")    
-    parser.add_option("-a", "--plot-tau-values", dest="do_taus", action="store_true",
-                      help="include results for tau values")
-    parser.add_option("-l", "--log-plots", dest="log_plots", action="store_true",
-                      help="plots the y axis in log scale")
+    parser.add_option( "-f", "--load-fakes", dest = "load_fakes", action = "store_true",
+                      help = "Load fakes histogram and perform manual fake subtraction in TSVDUnfold" )
+    parser.add_option( "-u", "--unfolding-method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
+    parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
+                      help = "set MET type used in the analysis of MET-dependent variables" )
+    parser.add_option( "-t", "--test", dest = "test", default = 'bias',
+                      help = "set the test type for comparison: bias (default), closure or data" )    
+    parser.add_option( "-a", "--plot-tau-values", dest = "do_taus", action = "store_true",
+                      help = "include results for tau values" )
+    parser.add_option( "-l", "--log-plots", dest = "log_plots", action = "store_true",
+                      help = "plots the y axis in log scale" )
 
     ( options, args ) = parser.parse_args()
 
-    from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-    
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_widths, bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_widths, bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
-        sys.exit('Unknown centre of mass energy')
+        sys.exit( 'Unknown centre of mass energy' )
     
     centre_of_mass = options.CoM
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
@@ -194,11 +192,11 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     do_taus = options.do_taus
     log_plots = options.log_plots
-    make_folder_if_not_exists(plot_location)
+    make_folder_if_not_exists( plot_location )
 
     test = options.test
 
-    input_filename_central = measurement_config.unfolding_madgraph_file
+    input_filename_central = measurement_config.unfolding_madgraph
     input_filename_bias = measurement_config.unfolding_mcatnlo
     input_filename_central = '/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_merged.root'
     input_filename_bias = '/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_TTJets_8TeV_mcatnlo.root'
@@ -237,7 +235,7 @@ if __name__ == '__main__':
                                 load_fakes = load_fakes )
                 h_data = deepcopy( h_measured_bias )
                 h_expected = h_truth_bias
-                #h_fakes = None
+                # h_fakes = None
             else:
                 h_data = deepcopy( h_measured )
             results = run_test( h_truth, h_measured, h_response, h_data, h_fakes, variable )

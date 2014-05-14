@@ -2,12 +2,11 @@ from config import CMS
 from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex
 from config.cross_section_measurement_common import translate_options
+from config.variable_binning import bin_edges, variable_bins_ROOT
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import Histogram_properties, make_control_region_comparison
-from tools.hist_utilities import prepare_histograms, \
-    value_error_tuplelist_to_hist, rebin_asymmetric
-from rootpy.plotting import Hist
+from tools.hist_utilities import value_error_tuplelist_to_hist, rebin_asymmetric
 from ROOT import Double
 from uncertainties import ufloat
 
@@ -128,12 +127,10 @@ if __name__ == '__main__':
     
     (options, args) = parser.parse_args()
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_edges, variable_bins_ROOT
         import config.cross_section_measurement_8TeV as measurement_config
         electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
         muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.6 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_edges, variable_bins_ROOT
         import config.cross_section_measurement_7TeV as measurement_config
         electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets'
         muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n $\mu$+jets, $\geq$4 jets'

@@ -6,14 +6,13 @@
 from __future__ import division
 from optparse import OptionParser
 import sys
-import ROOT
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 # DailyPythonScripts
 from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import TMinuitFit, RooFitFit
 from tools.file_utilities import write_data_to_JSON
-from tools.hist_utilities import hist_to_value_error_tuplelist
+from tools.ROOT_utililities import set_root_defaults
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
     global b_tag_bin_VJets
@@ -278,9 +277,7 @@ def write_fit_results(channel, category, fit_results):
     
     
 if __name__ == '__main__':
-    from ROOT import gROOT
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
     # setup
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='data',

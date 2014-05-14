@@ -13,17 +13,17 @@ Note3: make sure all bins have sufficient statistics and their error is
 """
 from __future__ import division
 from math import log10, pow
-from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from rootpy.io import File
-from rootpy.plotting import Graph
-import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 import matplotlib
 from copy import deepcopy
 from ROOT import Double, TH1F, TGraph
+
+from config.variable_binning import bin_edges
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist
-from config.variable_binning_8TeV import bin_edges
+from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
+from tools.ROOT_utililities import set_root_defaults
 
 font = {'family' : 'normal',
         'weight' : 'normal',
@@ -186,9 +186,7 @@ def get_tau_range( tau_min, tau_max, number_of_points ):
     return result;
     
 if __name__ == '__main__':
-    from ROOT import gROOT
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
     use_data = True
     input_file_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
     met_type = 'patType1CorrectedPFMet'

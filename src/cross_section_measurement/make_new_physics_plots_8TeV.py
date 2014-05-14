@@ -2,10 +2,9 @@ from config import CMS
 from optparse import OptionParser
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
-from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_control_region_comparison
-from tools.plotting import make_plot
+from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 from tools.hist_utilities import prepare_histograms
-from config.variable_binning_8TeV import variable_bins_ROOT
+from config.variable_binning import variable_bins_ROOT
 from config.cross_section_measurement_common import translate_options
 import config.cross_section_measurement_8TeV as measurement_config
 
@@ -19,7 +18,7 @@ def get_fitted_normalisation(variable, channel):
     N_fit_qcd = [0, 0]
 
     bins = variable_bins_ROOT[variable]
-    for bin_i, variable_bin in enumerate(bins):
+    for bin_i, _ in enumerate(bins):
         #central values
         N_fit_ttjet[0] += fit_results['TTJet'][bin_i][0]
         N_fit_singletop[0] += fit_results['SingleTop'][bin_i][0]
@@ -43,7 +42,7 @@ def get_fitted_normalisation(variable, channel):
 def get_normalisation_error(normalisation):
     total_normalisation = 0.
     total_error = 0.
-    for sample, number in normalisation.iteritems():
+    for _, number in normalisation.iteritems():
         total_normalisation += number[0]
         total_error += number[1]
     return total_error/total_normalisation

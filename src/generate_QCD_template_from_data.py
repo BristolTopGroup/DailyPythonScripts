@@ -17,8 +17,7 @@ with the content
 from __future__ import division
 from rootpy.io import File
 from tools.QCD_rate_estimation import estimate_with_fit_to_relative_isolation
-from math import sqrt
-
+from tools.ROOT_utililities import set_root_defaults
 # one template function per variable
 def get_electron_absolute_eta_templates(b_tag):
     global electron_data_file, met_bins
@@ -98,11 +97,7 @@ def save_to_root_file(histograms, file_name):
             
 
 if __name__ == "__main__":
-    from ROOT import gROOT
-    # set to batch mode
-    gROOT.SetBatch(True)
-    # ignore warnings
-#    gROOT.ProcessLine("gErrorIgnoreLevel = 3001;");
+    set_root_defaults()
     met_bins = ['0-25', '25-45', '45-70', '70-100', '100-inf']
     b_tag = '0btag'  # for normalisation
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-12-241_V4/'

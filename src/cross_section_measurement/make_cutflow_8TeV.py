@@ -72,8 +72,6 @@ def getEventNumbers(hists, selection):
     return eventNumbers, errorValues
 
 if __name__ == '__main__':
-    from config.latex_labels import b_tag_bins_latex, samples_latex
-
     path_to_files = measurement_config.path_to_files + '/central/'
     suffix = ''
     lumi = measurement_config.luminosity

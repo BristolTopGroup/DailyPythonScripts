@@ -16,29 +16,29 @@ path_to_unfolding_histograms = path_to_files + '/unfolding/'
 
 new_luminosity = 19712  # pb-1
 luminosity = 19584  # pb-1
-luminosity_scale = float(new_luminosity)/float(luminosity)
+luminosity_scale = float( new_luminosity ) / float( luminosity )
 ttbar_xsection = 245.8  # pb
 
-middle = '_' + str(luminosity) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
+middle = '_' + str( luminosity ) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
 
 data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
 data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
 muon_QCD_file = path_to_files + 'QCD_data_mu.root'
 SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
 muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
-electron_QCD_MC_file =  path_to_files + 'central/QCD_Electron' + middle + '.root'
+electron_QCD_MC_file = path_to_files + 'central/QCD_Electron' + middle + '.root'
 higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
-rate_changing_systematics = {'luminosity': 0.026, #https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
-                             'SingleTop_cross_section': 0.034, #https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
+rate_changing_systematics = {'luminosity': 0.026,  # https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
+                             'SingleTop_cross_section': 0.034,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
                              'TTJet_cross_section': 0.043
                              }
 
 generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown']
 ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo', 'ptreweight']
 central_general_template = path_to_files + 'central/%s' + middle + '.root'
-generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in ttbar_generator_systematics}
-generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets_%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % (systematic, luminosity) for systematic in generator_systematics}
+generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, luminosity ) for systematic in ttbar_generator_systematics}
+generator_systematic_vjets_templates = { systematic:path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, luminosity ) for systematic in generator_systematics}
 
 pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWeights_%d.root'
 
@@ -62,10 +62,10 @@ categories_and_prefixes = {
 
 general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
 ttbar_category_templates = {category: path_to_files + category + '/TTJet' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
-SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
-VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
-muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Muon' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
-higgs_category_templates = {category: path_to_files + category + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for (category, prefix) in categories_and_prefixes.iteritems()}
+SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Muon' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+higgs_category_templates = {category: path_to_files + category + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
 
 data_electron_category_templates = {'central': data_file_electron,
                                     'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + categories_and_prefixes['JES_up'] + '.root',
@@ -103,7 +103,7 @@ histogram_path_templates = {
                    'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s_absolute_eta'
                    }
 
-#optimal regularisation parameters
+# optimal regularisation parameters
 k_values_electron = {
                    'MET' : 3,
                    'HT' : 7,
@@ -132,7 +132,7 @@ electron_control_region = 'QCDConversions'
 electron_control_region_systematic = 'QCD non iso e+jets'
 
 muon_control_region = 'QCD non iso mu+jets ge3j'
-muon_control_region_systematic = 'QCD non iso mu+jets ge3j' #no systematic yet
+muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
 special_muon_histogram = 'muon_AbsEta_0btag'
 rebin = 2
 

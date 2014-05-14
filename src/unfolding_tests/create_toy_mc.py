@@ -9,12 +9,12 @@ from optparse import OptionParser
 from tools.toy_mc import generate_toy_MC_from_distribution
 from tools.Unfolding import get_unfold_histogram_tuple
 from tools.file_utilities import make_folder_if_not_exists
-from tools.hist_utilities import hist_to_value_error_tuplelist
 from config.cross_section_measurement_common import translate_options
 from rootpy.io import File
 from rootpy import asrootpy
 from array import array
 import ROOT
+from config.variable_binning import bin_edges
 
 def get_new_set_of_histograms(h_truth, h_measured, h_response_AsymBins, h_fakes):
     global nbins
@@ -72,10 +72,9 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_edges
+        
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys

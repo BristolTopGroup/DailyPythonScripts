@@ -4,12 +4,13 @@ import os, gc
 from copy import deepcopy
 
 from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-from config.latex_labels import b_tag_bins_latex, variables_latex, measurements_latex, met_systematics_latex
+from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex, b_tag_bins_latex
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from math import sqrt
 # rootpy & matplotlib
-from ROOT import kRed, kGreen, kMagenta, kBlue, kAzure, kYellow, kViolet
+from ROOT import kRed, kGreen, kMagenta, kBlue
+from tools.ROOT_utililities import set_root_defaults
 import matplotlib as mpl
 mpl.use('agg')
 import rootpy.plotting.root2matplotlib as rplt
@@ -22,7 +23,6 @@ rc( 'text', usetex = True )
 def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, k_values, met_type
     
-    normalised_xsection_unfolded = None
     filename = ''
     if category in met_uncertainties and variable == 'HT':
         filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '.txt' 
@@ -241,7 +241,7 @@ def plot_fit_results( histograms, category, channel ):
                                      save_folder = path, save_as = output_formats )    
 
 def get_cms_labels( channel ):
-    global b_tag_bin, b_tag_bins_latex
+    global b_tag_bin
     lepton = 'e'
     if channel == 'electron':
         lepton = 'e + jets'
@@ -408,9 +408,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     gc.collect()
 
 if __name__ == '__main__':
-    from ROOT import gROOT
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
     parser = OptionParser()
     parser.add_option( "-p", "--path", dest = "path", default = 'data/',
                   help = "set path to JSON files" )

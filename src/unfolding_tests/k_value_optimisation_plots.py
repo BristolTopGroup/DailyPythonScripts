@@ -11,22 +11,21 @@ Plots produced:
 """
 from __future__ import division
 from optparse import OptionParser
-from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from rootpy.io import File
 import matplotlib
-matplotlib.use('agg')
-import rootpy.plotting.root2matplotlib as rplt
-import matplotlib.pyplot as plt
 from copy import deepcopy
+from tools.ROOT_utililities import set_root_defaults
+
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from tools.plotting import make_plot, Histogram_properties
-from config.variable_binning_8TeV import bin_edges
+from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
+from config.variable_binning import bin_edges
 from config import CMS
 from config.latex_labels import variables_latex
 from config.cross_section_measurement_common import translate_options
-from rootpy import asrootpy
 
+matplotlib.use('agg')
 matplotlib.rc('font',**CMS.font)
 matplotlib.rc('text', usetex = True)
 
@@ -85,9 +84,7 @@ def get_data_histogram( path_to_JSON, channel, variable, met_type ):
 
    
 if __name__ == '__main__':
-    from ROOT import gROOT
-    gROOT.SetBatch( True )
-    gROOT.ProcessLine( 'gErrorIgnoreLevel = 1001;' )
+    set_root_defaults()
 
     parser = OptionParser()
     parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',
@@ -118,10 +115,8 @@ if __name__ == '__main__':
 
     
     if options.CoM == 8:
-        from config.variable_binning_8TeV import bin_edges
         import config.cross_section_measurement_8TeV as measurement_config
     elif options.CoM == 7:
-        from config.variable_binning_7TeV import bin_edges
         import config.cross_section_measurement_7TeV as measurement_config
     else:
         import sys
@@ -130,7 +125,7 @@ if __name__ == '__main__':
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
 
-    input_filename_central = measurement_config.unfolding_madgraph_file
+    input_filename_central = measurement_config.unfolding_madgraph
     input_filename_bias = measurement_config.unfolding_mcatnlo
     
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
