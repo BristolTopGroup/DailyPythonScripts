@@ -8,11 +8,11 @@ import time
 
 new_files = []
 
-# merge generator systematics histogram files and unfolding ntuples
+# merge generator systematics histogram files
 for sample, input_samples in sample_summations.iteritems():
-    if not sample in ['WJets', 'DYJets', 'VJets_matchingup',
-                      'VJets_matchingdown', 'VJets_scaleup',
-                      'VJets_scaledown']:  #
+    if not sample in ['WJets', 'DYJets', 'VJets-matchingup',
+                      'VJets-matchingdown', 'VJets-scaleup',
+                      'VJets-scaledown']:  #
         continue
     print "Merging"
     output_file = measurement_config.central_general_template % sample
@@ -35,7 +35,7 @@ for sample, input_samples in sample_summations.iteritems():
 # merge all other histogram files
 for category in measurement_config.categories_and_prefixes.keys():
     for sample, input_samples in sample_summations.iteritems():
-        if not sample in ['QCD_Electron', 'QCD_Muon', 'SingleTop', 'VJets']:  # 
+        if not sample in ['QCD-Electron', 'QCD-Muon', 'SingleTop', 'VJets']:  # 
             continue
         print "Merging"
         output_file = measurement_config.general_category_templates[category] % sample
