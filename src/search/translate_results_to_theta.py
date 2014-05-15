@@ -26,9 +26,9 @@ from uncertainties import ufloat
 from math import sqrt
 from rootpy.io import root_open
 
-from config.cross_section_measurement_8TeV import categories_and_prefixes, generator_systematics
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist
+from config import XSectionConfig
 
 def get_variable_from(variable='MET', path_to_JSON='data/8TeV', category='central', signal='Higgs', measurement_type='unfolded'):
     global met_type
@@ -194,6 +194,9 @@ def morph_systematic(central, systematic, to_be_morphed):
     return to_be_morphed
                 
 if __name__ == '__main__':
+    measurement_config = XSectionConfig(8)
+    generator_systematics = measurement_config.generator_systematics
+    categories_and_prefixes = measurement_config.categories_and_prefixes
     met_type = 'patType1CorrectedPFMet'
     measurement_type = 'unfolded'
     signal = 'Higgs'

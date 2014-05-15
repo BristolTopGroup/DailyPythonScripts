@@ -31,9 +31,8 @@ from tools.hist_utilities import value_error_tuplelist_to_hist
 from tools.ROOT_utililities import set_root_defaults
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from config.variable_binning import bin_edges
-from config import CMS
+from config import CMS, XSectionConfig
 from config.latex_labels import variables_latex
-from config.cross_section_measurement_common import translate_options
 
 
 matplotlib.use('agg')
@@ -152,25 +151,17 @@ if __name__ == '__main__':
                       help="set MET type used in the analysis of MET-dependent variables")
 
     ( options, args ) = parser.parse_args()
-
+    measurement_config = XSectionConfig(options.CoM)
     output_formats = ['pdf']
     centre_of_mass = options.CoM
     path_to_JSON = options.path
-    met_type = translate_options[options.metType]
+    met_type = measurement_config.translate_options[options.metType]
     method = options.unfolding_method
     load_fakes = options.load_fakes
     output_folder = options.output_folder
     make_folder_if_not_exists(options.output_folder)
     test = options.test
 
-    
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
 
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale

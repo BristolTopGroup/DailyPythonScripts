@@ -13,6 +13,8 @@ from config import CMS
 import matplotlib.cm as cm
 # from itertools import cycle
 from config.latex_labels import b_tag_bins_latex, variables_latex
+from config.variable_binning import bin_edges
+from config import XSectionConfig
 from tools.ROOT_utililities import get_histogram_from_file
 from tools.file_utilities import make_folder_if_not_exists
 
@@ -80,18 +82,11 @@ if __name__ == '__main__':
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
 
     ( options, args ) = parser.parse_args()
+    measurement_config = XSectionConfig(options.CoM)
 
     output_formats = ['png', 'pdf']
     output_folder = options.output_folder
     make_folder_if_not_exists( options.output_folder )
-    from config.variable_binning import bin_edges
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
 
     hist_file = measurement_config.central_general_template % ( 'TTJet' )
 #     hist_file = '/storage/Workspace/Analysis/AnalysisSoftware/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET_TEST.root'
@@ -107,7 +102,7 @@ if __name__ == '__main__':
     title_template = 'CMS Simulation, $\sqrt{s}$ = %d TeV, %s, %s, %s'
 
     for channel in channels:
-        title = title_template % ( measurement_config.centre_of_mass, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
+        title = title_template % ( measurement_config.centre_of_mass_energy, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
         for histogram in histograms:
             histogram_path = 'Binning/' + channel + '/' + histogram# + '_' + b_tag_bin
             variable = variables_translation[histogram]

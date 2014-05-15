@@ -9,12 +9,12 @@ from optparse import OptionParser
 from tools.toy_mc import generate_toy_MC_from_distribution
 from tools.Unfolding import get_unfold_histogram_tuple
 from tools.file_utilities import make_folder_if_not_exists
-from config.cross_section_measurement_common import translate_options
 from rootpy.io import File
 from rootpy import asrootpy
 from array import array
 import ROOT
 from config.variable_binning import bin_edges
+from config import XSectionConfig
 
 def get_new_set_of_histograms(h_truth, h_measured, h_response_AsymBins, h_fakes):
     global nbins
@@ -70,21 +70,13 @@ if __name__ == '__main__':
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
 
     (options, args) = parser.parse_args()
-
-    if options.CoM == 8:
-        
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
+    measurement_config = XSectionConfig(options.CoM)
 
     centre_of_mass = options.CoM
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
     variable = options.variable
-    met_type = translate_options[options.metType]
+    met_type = measurement_config.translate_options[options.metType]
     make_folder_if_not_exists(options.output_folder)
 
     input_file = File( measurement_config.path_to_unfolding_histograms + 'unfolding_merged.root' )

@@ -1,0 +1,41 @@
+'''
+Created on 14 May 2014
+
+@author: kreczko
+'''
+import unittest
+from config import XSectionConfig
+
+class Test(unittest.TestCase):
+
+    def setUp(self):
+        self.config_7TeV = XSectionConfig(centre_of_mass_energy=7)
+        self.config_8TeV = XSectionConfig(centre_of_mass_energy=8)
+        
+    def test_current_analysis_path(self):
+        self.assertTrue(XSectionConfig.current_analysis_path.endswith('/'))
+    
+    def test_paths(self):
+        self.assertTrue(XSectionConfig.current_analysis_path.endswith('/'))
+        self.assertTrue(self.config_7TeV.path_to_files.endswith('/'))
+        self.assertTrue(self.config_7TeV.path_to_unfolding_histograms.endswith('/'))
+        self.assertTrue(self.config_8TeV.path_to_files.endswith('/'))
+        
+        self.assertTrue('7TeV' in self.config_7TeV.path_to_files)
+        self.assertTrue('8TeV' in self.config_8TeV.path_to_files)
+        
+        
+    def test_invalid_centre_of_mass_energy(self):
+        self.assertRaises(AttributeError, XSectionConfig, (1232))
+        
+    def test_luminosity(self):
+        self.assertEqual(self.config_7TeV.luminosity, 5050)
+        self.assertEqual(self.config_8TeV.luminosity, 19584)
+        
+    def test_parameters(self):
+        for param in XSectionConfig.parameters:
+            self.assertTrue(hasattr(self.config_7TeV, param), 'Parameter ' + param + ' not found.')
+
+
+if __name__ == "__main__":
+    unittest.main()

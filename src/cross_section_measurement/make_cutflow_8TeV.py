@@ -1,6 +1,6 @@
 from math import sqrt
 from tools.ROOT_utililities import get_histograms_from_files
-import config.cross_section_measurement_8TeV as measurement_config
+from config import XSectionConfig
 
 cuts = None
 cuts_electrons = [
@@ -72,6 +72,7 @@ def getEventNumbers(hists, selection):
     return eventNumbers, errorValues
 
 if __name__ == '__main__':
+    measurement_config = XSectionConfig(8)
     path_to_files = measurement_config.path_to_files + '/central/'
     suffix = ''
     lumi = measurement_config.luminosity

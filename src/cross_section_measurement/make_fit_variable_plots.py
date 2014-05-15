@@ -3,13 +3,13 @@ Created on 1 May 2014
 
 @author: kreczko
 '''
-import config.cross_section_measurement_8TeV as measurement_config
 from tools.ROOT_utililities import get_histograms_from_files
 from copy import copy
 from tools.hist_utilities import prepare_histograms
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_shape_comparison_plot
 from config.latex_labels import b_tag_bins_latex
 from config.latex_labels import samples_latex
+from config import XSectionConfig
 common_fit_variables = ['M3', 'M_bl', 'angle_bl']
 electron_fit_variables = copy( common_fit_variables )
 electron_fit_variables.append( 'electron_absolute_eta' )
@@ -26,6 +26,7 @@ fit_variable_properties = {
 
 b_tag_bin = '2orMoreBtags'
 category = 'central'
+measurement_config = XSectionConfig(8)
 histogram_files = {
         'data' : measurement_config.data_file_electron,
         'TTJet': measurement_config.ttbar_category_templates[category],
@@ -44,7 +45,7 @@ def main():
     global electron_fit_variables, muon_fit_variables, fit_variable_properties, b_tag_bin, category, histogram_files, variables, variable_bins_ROOT
     
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
-    e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$ 4 jets' )
+    e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, 'e+jets, $\geq$ 4 jets' )
     met_type = 'patType1CorrectedPFMet'
     for variable in variables:
         variable_bins = variable_bins_ROOT[variable]

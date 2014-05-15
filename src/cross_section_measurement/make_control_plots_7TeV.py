@@ -9,13 +9,14 @@ from tools.ROOT_utililities import get_histograms_from_files
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_control_region_comparison
 from tools.plotting import make_plot
 from tools.hist_utilities import prepare_histograms
-import config.cross_section_measurement_7TeV as measurement_config
+from config.latex_labels import b_tag_bins_latex, samples_latex
+from config import XSectionConfig
 from tools.ROOT_utililities import set_root_defaults
 
 if __name__ == '__main__':
     set_root_defaults()
+    measurement_config = XSectionConfig(7)
     
-    from config.latex_labels import b_tag_bins_latex, samples_latex
     
     path_to_files = '/storage/TopQuarkGroup/results/histogramfiles/AN-12-241_V4/central/'
     lumi = 5050
@@ -50,7 +51,7 @@ if __name__ == '__main__':
                        }
     
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s, '
-    electron_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$4 jets')
+    electron_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass_energy, 'e+jets, $\geq$4 jets')
 
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbarPlusMetAnalysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin
@@ -591,7 +592,7 @@ if __name__ == '__main__':
     histogram_files_PU_down['QCD'] = path_to_files_PU_down + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET_PU_64600mb.root' % (str(lumi), pfmuon)
     histogram_files_PU_up['QCD'] = path_to_files_PU_up + 'QCD_Pt-20_MuEnrichedPt-15_%spb_PFElectron_%sPF2PATJets_PFMET_PU_71400mb.root' % (str(lumi), pfmuon)
     
-    mu_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, '$\mu$+jets, $\geq$4 jets')
+    mu_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass_energy, '$\mu$+jets, $\geq$4 jets')
     
     #Muon |eta|
     b_tag_bin = '2orMoreBtags'

@@ -3,21 +3,24 @@ from optparse import OptionParser
 import os, gc
 from copy import deepcopy
 
-from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex, b_tag_bins_latex
+from config.latex_labels import variables_latex, measurements_latex, \
+met_systematics_latex, b_tag_bins_latex
+from config.variable_binning import bin_edges, variable_bins_ROOT, eta_bin_edges
+from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, value_errors_tuplelist_to_graph
+from tools.hist_utilities import value_error_tuplelist_to_hist, \
+value_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from math import sqrt
 # rootpy & matplotlib
 from ROOT import kRed, kGreen, kMagenta, kBlue
 from tools.ROOT_utililities import set_root_defaults
 import matplotlib as mpl
-mpl.use('agg')
+mpl.use( 'agg' )
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from config import CMS
 from matplotlib import rc
-rc('font',**CMS.font)
+rc( 'font', **CMS.font )
 rc( 'text', usetex = True )
 
 def read_xsection_measurement_results( category, channel ):
@@ -25,12 +28,12 @@ def read_xsection_measurement_results( category, channel ):
     
     filename = ''
     if category in met_uncertainties and variable == 'HT':
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
     else:
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     if channel == 'combined':
-        filename = filename.replace('kv' + str(k_values[channel]), '')
+        filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
         
@@ -64,26 +67,26 @@ def read_xsection_measurement_results( category, channel ):
                                                                   'scaledown': h_normalised_xsection_scaledown,
                                                                   'scaleup': h_normalised_xsection_scaleup} )
         
-        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type
+        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type
         if channel == 'combined':
-            file_template = file_template.replace('kv' + str(k_values[channel]), '')
+            file_template = file_template.replace( 'kv' + str( k_values[channel] ), '' )
 #         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
 
         # a rootpy.Graph with asymmetric errors!
         h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_measured'], 
+                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_measured'],
                                                                 bin_edges[variable] )
         h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'], 
+                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'],
                                                                 bin_edges[variable] )
         
         h_normalised_xsection_with_systematics_but_without_generator = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_measured'], 
+                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_measured'],
                                                                 bin_edges[variable] )
         h_normalised_xsection_with_systematics_but_without_generator_unfolded = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_unfolded'], 
+                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_unfolded'],
                                                                 bin_edges[variable] )
         
         
@@ -100,9 +103,9 @@ def read_unfolded_xsections( channel ):
     TTJet_xsection_unfolded = {}
     filename = ''
     for category in categories:
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
         if channel == 'combined':
-            filename = filename.replace('kv' + str(k_values[channel]), '')
+            filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
         normalised_xsections = read_data_from_JSON( filename )
         TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
     return TTJet_xsection_unfolded
@@ -155,7 +158,7 @@ def make_template_plots( histograms, category, channel ):
     global variable, output_folder
     
     for variable_bin in variable_bins_ROOT[variable]:
-        path = output_folder + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/' + category + '/fit_templates/'
+        path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_templates/'
         make_folder_if_not_exists( path )
         plotname = path + channel + '_templates_bin_' + variable_bin 
         
@@ -216,7 +219,7 @@ def plot_fit_results( histograms, category, channel ):
     from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
     
     for variable_bin in variable_bins_ROOT[variable]:
-        path = output_folder + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/' + category + '/fit_results/'
+        path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_results/'
         make_folder_if_not_exists( path )
         plotname = channel + '_bin_' + variable_bin
         # check if template plots exist already
@@ -251,7 +254,7 @@ def get_cms_labels( channel ):
         lepton = 'e, $\mu$ + jets combined'
     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
     template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
-    label = template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass, channel_label )
+    label = template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, channel_label )
     return label
     
     
@@ -295,12 +298,12 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
     hist_data.visible = True
     if category == 'central':
         hist_data_with_systematics.visible = True
-        rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len(histograms) + 1 )
-    rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len(histograms) + 2 )
-    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False, zorder = len(histograms) + 3 )  # this makes a nicer legend entry
+        rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
+    rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )
+    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
 
     if show_before_unfolding:
-        rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len(histograms) )
+        rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
     
     for key, hist in sorted( histograms.iteritems() ):
         if not 'unfolded' in key and not 'measured' in key:
@@ -321,7 +324,7 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
             elif 'scaledown' in key:
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kGreen )
-            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted(histograms, reverse=True).index(key) )
+            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
             
     handles, labels = axes.get_legend_handles_labels()
     # making data first in the list
@@ -342,12 +345,12 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
     plt.title( get_cms_labels( channel ), CMS.title )
     plt.tight_layout()
 
-    path = output_folder + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/' + category
+    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category
     make_folder_if_not_exists( path )
     for output_format in output_formats:
-        filename = path + '/' + histname + '_kv' + str(k_values[channel]) + '.' + output_format
+        filename = path + '/' + histname + '_kv' + str( k_values[channel] ) + '.' + output_format
         if channel == 'combined':
-            filename = filename.replace('_kv' + str(k_values[channel]), '')
+            filename = filename.replace( '_kv' + str( k_values[channel] ), '' )
         plt.savefig( filename )
 
     del hist_data, hist_measured
@@ -396,12 +399,12 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     plt.tight_layout()
 
     
-    path = output_folder + str( measurement_config.centre_of_mass ) + 'TeV/' + variable
+    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable
     make_folder_if_not_exists( path )
     for output_format in output_formats:
-        filename = path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str(k_values[channel]) + '.' + output_format
+        filename = path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str( k_values[channel] ) + '.' + output_format
         if channel == 'combined':
-            filename = filename.replace('_kv' + str(k_values[channel]), '')
+            filename = filename.replace( '_kv' + str( k_values[channel] ), '' )
         plt.savefig( filename ) 
 
     plt.close()
@@ -434,14 +437,13 @@ if __name__ == '__main__':
 
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()
-    from config.variable_binning import bin_edges, variable_bins_ROOT, eta_bin_edges
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
+    
+    measurement_config = XSectionConfig( options.CoM )
+    # caching of variables for shorter access
+    translate_options = measurement_config.translate_options
+    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
+    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
     
     variable = options.variable
     output_folder = options.output_folder
@@ -453,7 +455,7 @@ if __name__ == '__main__':
                 }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/'
+    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
     
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
@@ -470,7 +472,7 @@ if __name__ == '__main__':
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
-    rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
+    rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 
     all_measurements = deepcopy( categories )
     all_measurements.extend( pdf_uncertainties )

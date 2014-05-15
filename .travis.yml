@@ -60,6 +60,7 @@ script:
   - ls -la /dev/shm
 
   # Now run the actual tests (from the installed version, not the local build dir)
+  - time python test/config_XSectionConfig.py
   - time python test/cross_section_measurement_00_pick_bins.py
   - time python test/fix_overflow.py
   - time python test/RooFitFit.py
