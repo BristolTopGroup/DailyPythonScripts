@@ -139,7 +139,7 @@ class Test( unittest.TestCase ):
         
         N_total_prime = N_total * 2
         N_signal_plus_bkg_2_prime, N_background_1_prime = decombine_result((N_total_prime, 0), ratio_signal_bkg_1)
-        N_signal_prime, N_background_2_prime = decombine_result((N_signal_plus_bkg_2_prime, 0), ratio_signal_bkg_2)
+        N_signal_prime, N_background_2_prime = decombine_result(N_signal_plus_bkg_2_prime, ratio_signal_bkg_2)
         
         self.assertEqual(N_signal_prime[0], N_signal * 2)
         self.assertEqual(N_background_1_prime[0], N_background_1 * 2)

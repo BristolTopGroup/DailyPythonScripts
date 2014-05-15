@@ -32,8 +32,6 @@ echo "Installing argparse"
 pip install -U argparse
 echo "Installing pudb <-- interactive debugging"
 pip install -U pudb
-echo "Installing pypm"
-pip install -U pypm
 echo "Installing numpy"
 pip install -U numpy
 echo "Installing dateutil"
