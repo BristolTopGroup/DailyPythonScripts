@@ -154,13 +154,13 @@ class XSectionConfig():
                                     }
         
         self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_merged.root'
-        self.unfolding_powheg_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_powheg.root'
-        self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_mcatnlo.root'
+        self.unfolding_powheg_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg.root' % self.centre_of_mass_energy
+        self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_mcatnlo.root' % self.centre_of_mass_energy
         
-        self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaledown.root'
-        self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_scaleup.root'
-        self.unfolding_matching_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingdown.root'
-        self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_matchingup.root'
+        self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaledown.root' % self.centre_of_mass_energy
+        self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleup.root' % self.centre_of_mass_energy
+        self.unfolding_matching_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingdown.root' % self.centre_of_mass_energy
+        self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
         
         self.unfolding_madgraph = self.unfolding_madgraph_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_powheg = self.unfolding_powheg_raw.replace( '.root', '_asymmetric.root' )
@@ -232,6 +232,11 @@ class XSectionConfig():
         self.categories_and_prefixes['PU_up'] = '_PU_71400mb'
         
         self.special_muon_histogram = 'etaAbs_ge2j_data'
+        
+        self.data_electron_category_templates = {'central': self.data_file_electron,
+                                    'JES_up': path_to_files + 'JES_up/ElectronHad' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    'JES_down': path_to_files + 'JES_down/ElectronHad' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    }
 
     def __fill_defaults_8TeV__( self ):
         middle = self.middle
@@ -254,8 +259,4 @@ class XSectionConfig():
         self.data_electron_category_templates = {'central': self.data_file_electron,
                                     'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
                                     'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
-                                    }
-        self.data_muon_category_templates = {'central': self.data_file_muon,
-                                    'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
