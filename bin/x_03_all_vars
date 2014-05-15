@@ -1,12 +1,12 @@
 #!/bin/bash
-python src/cross_section_measurement/03_calculate_systematics.py -s &> logs/met_calculate_8TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -s -v HT &> logs/ht_calculate_8TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -s -v ST &> logs/st_calculate_8TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -s -v MT &> logs/mt_calculate_8TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -s -v WPT &> logs/wpt_calculate_8TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -s &> logs/MET_calculate_8TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -s -v HT &> logs/HT_calculate_8TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -s -v ST &> logs/ST_calculate_8TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -s -v MT &> logs/MT_calculate_8TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -s -v WPT &> logs/WPT_calculate_8TeV.log &
 # 7 TeV
-python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s &> logs/met_calculate_7TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v HT &> logs/ht_calculate_7TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v ST &> logs/st_calculate_7TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v MT &> logs/mt_calculate_7TeV.log &
-python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v WPT &> logs/wpt_calculate_7TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s &> logs/MET_calculate_7TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v HT &> logs/HT_calculate_7TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v ST &> logs/ST_calculate_7TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v MT &> logs/MT_calculate_7TeV.log &
+python src/cross_section_measurement/03_calculate_systematics.py -c 7 -s -v WPT &> logs/WPT_calculate_7TeV.log &

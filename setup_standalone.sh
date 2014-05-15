@@ -77,3 +77,5 @@ if [ ! -d "$base/external/lib" ]; then
 fi
 
 cd $base
+export PATH=$PATH:$base/bin
+

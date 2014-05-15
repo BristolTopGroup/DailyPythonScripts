@@ -8,9 +8,9 @@ import time
 
 new_files = []
 
-#merge generator systematics histogram files and unfolding ntuples
+#merge generator systematics histogram files
 for sample, input_samples in sample_summations.iteritems():
-    if not sample in ['WJets', 'VJets_matchingup', 'VJets_matchingdown', 'VJets_scaleup', 'VJets_scaledown']: # No 'DYJets' because there is only one inclusive DYJets dataset
+    if not sample in ['WJets', 'VJets-matchingup', 'VJets-matchingdown', 'VJets-scaleup', 'VJets-scaledown']: # No 'DYJets' because there is only one inclusive DYJets dataset
         continue
     print "Merging"
     output_file = measurement_config.central_general_template % sample

@@ -2084,7 +2084,7 @@ if __name__ == '__main__':
 
     # QCD muon pfReliso without iso cut in ge3jet, 0btag bin
     b_tag_bin = '0btag'
-    control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD mu+jets PFRelIso/Muon/muon_pfIsolation_04_' + b_tag_bin
+    control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD mu+jets PFRelIso ge3j/Muon/muon_pfIsolation_04_' + b_tag_bin
 
     histograms = get_histograms_from_files([control_region], histogram_files)
     prepare_histograms(histograms, rebin=10, scale_factor = measurement_config.luminosity_scale)

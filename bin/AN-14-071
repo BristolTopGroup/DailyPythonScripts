@@ -1,0 +1,22 @@
+mkdir -p logs
+mkdir -p plots/fitchecks
+
+x_01_all_vars
+wait
+
+x_02_all_vars
+wait
+
+x_03_all_vars
+wait
+
+x_04_all_vars
+wait
+
+x_05_all_vars
+wait
+
+nohup python src/cross_section_measurement/99_QCD_cross_checks.py >& logs/99_QCD_cross_checks.log &
+
+x_98_all_vars
+wait

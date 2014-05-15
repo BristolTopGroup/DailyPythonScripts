@@ -1,13 +1,13 @@
 #!/bin/bash
 mkdir -p logs
-python src/cross_section_measurement/01_get_fit_results.py &> logs/met_fit_8TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -v HT &> logs/ht_fit_8TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -v ST &> logs/st_fit_8TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -v MT &> logs/mt_fit_8TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -v WPT &> logs/wpt_fit_8TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V &> logs/MET_fit_8TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -v HT &> logs/HT_fit_8TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -v ST &> logs/ST_fit_8TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -v MT &> logs/MT_fit_8TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -v WPT &> logs/WPT_fit_8TeV.log &
 # 7 TeV
-python src/cross_section_measurement/01_get_fit_results.py -c 7&> logs/met_fit_7TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -c 7 -v HT &> logs/ht_fit_7TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -c 7 -v ST &> logs/st_fit_7TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -c 7 -v MT &> logs/mt_fit_7TeV.log &
-python src/cross_section_measurement/01_get_fit_results.py -c 7 -v WPT &> logs/wpt_fit_7TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -c 7&> logs/MET_fit_7TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -c 7 -v HT &> logs/HT_fit_7TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -c 7 -v ST &> logs/ST_fit_7TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -c 7 -v MT &> logs/MT_fit_7TeV.log &
+python src/cross_section_measurement/01_get_fit_results.py -V -c 7 -v WPT &> logs/WPT_fit_7TeV.log &
