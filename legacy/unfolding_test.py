@@ -1,5 +1,7 @@
 from rootpy.io import File
 from rootpy.plotting import Hist, Canvas
+import matplotlib
+matplotlib.use('agg')
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from rootpy import asrootpy
@@ -67,7 +69,7 @@ def checkOnMC(unfolding, method):
     global bins, nbins
     RooUnfold.SVD_n_toy = 1000
     pulls = []
-    for sub in range(2,9):
+    for sub in range(1,9):
         inputFile2 = File('../data/unfolding_merged_sub%d.root' % sub, 'read')
         h_data = asrootpy(inputFile2.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
         nEvents = inputFile2.EventFilter.EventCounter.GetBinContent(1)
@@ -87,7 +89,7 @@ def checkOnMC(unfolding, method):
     filling = h_allpulls.Fill
     for entry in allpulls:
         filling(entry)
-    fit = h_allpulls.Fit('gaus', 'WW')
+    fit = h_allpulls.Fit('gaus', 'WWS')
     h_fit = asrootpy(h_allpulls.GetFunction("gaus").GetHistogram())
     canvas = Canvas(width=1600, height=1000)
     canvas.SetLeftMargin(0.15)
@@ -160,7 +162,7 @@ if __name__ == "__main__":
     h_measured = asrootpy(inputFile.unfoldingAnalyserElectronChannel.measured.Rebin(nbins, 'measured', bins))
     h_fakes = asrootpy(inputFile.unfoldingAnalyserElectronChannel.fake.Rebin(nbins, 'fake', bins))
     h_response = inputFile.unfoldingAnalyserElectronChannel.response_withoutFakes_AsymBins #response_AsymBins
-    h_measured_new = h_measured - h_fakes
+    # h_measured_new = h_measured - h_fakes
     
 #    h_response = inputFile.unfoldingAnalyserElectronChannel.response_AsymBins #response_AsymBins
     nEvents = inputFile.EventFilter.EventCounter.GetBinContent(1)
@@ -169,7 +171,7 @@ if __name__ == "__main__":
     h_measured.Scale(lumiweight)
     h_fakes.Scale(lumiweight)
     h_response.Scale(lumiweight)
-    unfolding = Unfolding(h_truth, h_measured_new, h_response, method = method)
+    unfolding = Unfolding(h_truth, h_measured, h_response, method = method)
     #should be identical to
 #    unfolding = Unfolding(h_truth, h_measured, h_response, h_fakes, method = method)
     
