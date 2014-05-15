@@ -146,6 +146,9 @@ class Unfolding:
             raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( self.method ) )
 
     def unfold( self, data ):
+        have_zeros = [value == 0 for value,_ in hist_to_value_error_tuplelist( data )]
+        if not False in have_zeros:
+            raise ValueError('Data histograms contains only zeros')
         self.setup_unfolding( data )
         if self.method == 'TSVDUnfold' or self.method == 'TopSVDUnfold':
             self.unfolded_data = asrootpy( self.unfoldObject.Unfold( self.k_value ) )
@@ -235,7 +238,7 @@ class Unfolding:
         if self.unfolded_data and self.truth:
             # set unfolded_data errors to stat errors from data
             temp = self.unfolded_data.Clone()
-            temp_list = list( temp )
+            temp_list = list( temp.y() )
 #            data_list = list(self.data)
             unfolded_errors = self.get_unfolded_data_errors()
             for bin_i in range( len( temp_list ) ):
@@ -247,7 +250,7 @@ class Unfolding:
                 
             diff = temp - temp_truth
             errors = []
-            values = list( diff )
+            values = list( diff.y() )
             for bin_i in range( len( values ) ):
                 errors.append( diff.GetBinError( bin_i + 1 ) )
             result = [value / error for value, error in zip( values, errors )]
@@ -269,7 +272,7 @@ def get_unfold_histogram_tuple(
                 inputfile,
                 variable,
                 channel,
-                met_type,
+                met_type = 'patType1CorrectedPFMet',
                 centre_of_mass = 8,
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
