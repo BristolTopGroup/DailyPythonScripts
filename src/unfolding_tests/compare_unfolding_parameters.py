@@ -23,10 +23,10 @@ from rootpy.io import File
 from config import latex_labels
 from config.cross_section_measurement_common import translate_options
 from config.variable_binning import bin_widths, bin_edges
+from tools.plotting import Histogram_properties, compare_measurements
 from tau_value_determination import get_tau_from_global_correlation
 from tau_value_determination import get_tau_from_L_shape, get_data_histogram
 from tools.Unfolding import get_unfold_histogram_tuple, Unfolding
-from tools.plotting import Histogram_properties, compare_measurements
 from tools.Calculation import calculate_normalised_xsection
 from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x
@@ -198,8 +198,6 @@ if __name__ == '__main__':
 
     input_filename_central = measurement_config.unfolding_madgraph
     input_filename_bias = measurement_config.unfolding_mcatnlo
-    input_filename_central = '/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_merged.root'
-    input_filename_bias = '/Users/phzss/work/workspace_juno/git/DailyPythonScripts/unfolding_TTJets_8TeV_mcatnlo.root'
 
     variables = ['MET', 'WPT', 'MT', 'ST', 'HT']
 

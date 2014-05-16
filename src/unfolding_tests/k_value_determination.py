@@ -15,6 +15,7 @@ from __future__ import division
 from optparse import OptionParser
 from rootpy.io import File
 import matplotlib
+matplotlib.use('agg')
 
 from uncertainties import ufloat
 import numpy
@@ -36,7 +37,6 @@ from config.latex_labels import variables_latex
 from config.cross_section_measurement_common import translate_options
 
 
-matplotlib.use('agg')
 matplotlib.rc('font',**CMS.font)
 matplotlib.rc('text', usetex = True)
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     set_root_defaults()
 
     parser = OptionParser()
-    parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',
+    parser.add_option("-p", "--path", dest="path", default='../../data/',
                       help="set path to JSON files")
     parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_k_values/',
                       help = "set path to save plots" )
