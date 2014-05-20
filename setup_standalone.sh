@@ -36,6 +36,8 @@ echo "Installing numpy"
 pip install -U numpy
 echo "Installing dateutil"
 pip install python-dateutil
+echo "Installing PrettyTable"
+pip install PrettyTable
 
 echo "Installing matplotlib"
 #Adding freetype and libpng library and include paths from CMSSW, specific to the version but should be ok for now.

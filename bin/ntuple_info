@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+from __future__ import division
+from optparse import OptionParser
+from prettytable import PrettyTable
+
+from rootpy.io import root_open
+
+from tools.NTuple import FileInfo
+
+def main():
+    options, args = get_parameters()
+    input_file = root_open( args[0] )
+    file_info = FileInfo( input_file )
+    
+    if options.output_format == 'plain':
+        print_plain( file_info, options.print_all )
+    elif options.output_format == 'twiki':
+        print_twiki( file_info, options.print_all )
+    elif options.output_format == 'latex':
+        print_latex( file_info, options.print_all )
+    else:
+        print 'Unknown print option %s. Aborting.' % options.print_all
+        
+def get_parameters():
+    parser = OptionParser()
+    parser.add_option( "-o", "--output-format", dest = "output_format", default = 'plain',
+                      help = "set the output format (plain|twiki|latex)" )
+    parser.add_option( "-a", "--print-all", dest = "print_all", action = "store_true",
+                      help = "Print information for all trees. Default is for first tree only" )
+    options, args = parser.parse_args()
+    return options, args
+
+def print_plain( file_info, print_all ):
+    # total file size
+    # number of trees
+    total_info = ''
+    total_info += 'Total file size: %.2f MB\n' % ( file_info.size / 1024 / 1024 )
+    total_info += 'Number of trees: %d\n' % len( file_info.trees )
+    total_info += 'Fraction of space used by trees: {0:.2f} %\n'.format( file_info.tree_zipped_bytes / file_info.size * 100 )
+    total_info += '=' * 120 + '\n'
+    trees_to_print = file_info.trees
+    if not print_all:
+        trees_to_print = [file_info.trees[0]]
+    print total_info
+    for tree in trees_to_print:
+        size_per_event = tree.zipped_bytes / tree.n_events
+        print 'Information for tree "%s"\n' % tree.url
+        print 'Average size per event: %.2f KB' % ( size_per_event / 1024 )
+        tree_size = tree.zipped_bytes
+        pretty_table = PrettyTable( ['Branch name', 'Size', 'Relative size (to tree)' ] )
+        pretty_table.align['Branch name'] = "l"  # Left align branch names
+        biggest_groups = []
+
+        n_events = tree.n_events
+        for group in sorted( tree.grouped_branches.keys() ):
+            group_size = tree.grouped_branches[group].zipped_bytes()
+            biggest_groups.append( {group_size: group} )
+            for branch in tree.grouped_branches[group].branches:
+                branch_size = branch.zipped_bytes
+                pretty_table.add_row( [branch.name, '%.2f MB' % ( branch_size / 1024 / 1024 ), '{0:.2f} %'.format( branch_size / tree_size * 100 )] )
+            pretty_table.add_row( ['-' * 60, '-' * 4, '-' * 4] )
+            pretty_table.add_row( [group + ' total', '%.2f MB' % ( group_size / 1024 / 1024 ), '{0:.2f} %'.format( group_size / tree_size * 100 )] )
+            pretty_table.add_row( [group + ' per event', '%.2f KB' % ( group_size / 1024 / n_events ), '-' * 10] )
+            pretty_table.add_row( ['-' * 60, '-' * 4, '-' * 4] )
+        print pretty_table
+        print '=' * 120 + '\n'
+        top = 10
+        current = 1
+        print 'Top %d biggest branch groups' % top
+        pretty_table = PrettyTable( ['Group name', 'Size', 'Size per event', 'Relative size (to tree)' ] )
+        pretty_table.align['Branch name'] = "l"  # Left align branch names
+        for group in sorted( biggest_groups, reverse = True ):
+            if current > top:
+                break
+            current += 1
+            group_size = group.keys()[0]
+            group_name = group[group_size]
+            pretty_table.add_row( [group_name, '%.2f MB' % ( group_size / 1024 / 1024 ),'%.2f KB' % ( group_size / 1024 / n_events ), '{0:.2f} %'.format( group_size / tree_size * 100 )] )
+        print pretty_table
+
+def print_twiki( file_info, print_all ):
+    print 'print_twiki is currently not implemented'
+
+def print_latex( file_info, print_all ):
+    print 'print_latex is currently not implemented'
+
+if __name__ == '__main__':
+    main()
