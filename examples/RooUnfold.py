@@ -11,7 +11,8 @@
 # ==============================================================================
 
 from ROOT import gRandom, cout, gSystem
-gSystem.Load('/software/RooUnfold-1.1.1/libRooUnfold.so')
+from config.RooUnfold import library
+gSystem.Load(library)
 from ROOT import RooUnfoldResponse
 from ROOT import RooUnfold
 from ROOT import RooUnfoldBayes
