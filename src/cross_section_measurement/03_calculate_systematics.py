@@ -17,22 +17,22 @@ This module produces several results for the three channels (electron, muon, com
 from optparse import OptionParser
 from copy import deepcopy
 
-from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
+from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
-    calculate_lower_and_upper_systematics, combine_errors_in_quadrature
+calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 
 def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties, k_values
     filename = ''
     
     if category in met_uncertainties and variable == 'HT':
-        filename = path_to_JSON + '/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
     else:
-        filename = path_to_JSON + '/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
     
     if channel == 'combined':
-        filename = filename.replace('kv' + str(k_values[channel]), '')
+        filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
 
     normalised_xsection = read_data_from_JSON( filename )
     
@@ -43,9 +43,9 @@ def read_normalised_xsection_measurement( category, channel ):
 
 def write_normalised_xsection_measurement( measurement, measurement_unfolded, channel, summary = '' ):
     global path_to_JSON, met_type, k_values
-    output_file = path_to_JSON + '/' + channel + '/kv' + str(k_values[channel]) + '/central/normalised_xsection_' + met_type + '_with_errors.txt'
+    output_file = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '_with_errors.txt'
     if channel == 'combined':
-        output_file = output_file.replace('kv' + str(k_values[channel]), '')
+        output_file = output_file.replace( 'kv' + str( k_values[channel] ), '' )
     
     if not summary == '':
         output_file = output_file.replace( 'with_errors', summary + '_errors' )
@@ -152,13 +152,12 @@ if __name__ == "__main__":
                       help = "Makes the errors symmetric" )
     
     ( options, args ) = parser.parse_args()
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
+    measurement_config = XSectionConfig( options.CoM )
+    # caching of variables for shorter access
+    translate_options = measurement_config.translate_options
+    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
+    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
 
     variable = options.variable
     k_values = {'electron' : measurement_config.k_values_electron[variable],
@@ -183,7 +182,7 @@ if __name__ == "__main__":
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     # rate changing systematics (luminosity, ttbar/single top cross section uncertainties)
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
-    rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
+    rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
     # all other uncertainties (including JES and JER)
     other_uncertainties = deepcopy( measurement_config.categories_and_prefixes.keys() )
     other_uncertainties.extend( vjets_generator_systematics )
@@ -214,8 +213,8 @@ if __name__ == "__main__":
         other_min, other_max = summarise_systematics( central_measurement, other_systematics )
         other_min_unfolded, other_max_unfolded = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
         # new ones
-        ptreweight_min, ptreweight_max = summarise_systematics( central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']} ) #add back in later
-        ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']} ) #add back in later
+        ptreweight_min, ptreweight_max = summarise_systematics( central_measurement, {'ptreweight':new_systematics[ttbar_theory_systematic_prefix + 'ptreweight']} )  # add back in later
+        ptreweight_min_unfolded, ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, {'ptreweight':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'ptreweight']} )  # add back in later
         mcatnlo_min, mcatnlo_max = summarise_systematics( central_measurement, {'mcatnlo_matrix':new_systematics[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']} )
         mcatnlo_min_unfolded, mcatnlo_max_unfolded = summarise_systematics( central_measurement_unfolded, {'mcatnlo_matrix':new_systematics_unfolded[ttbar_theory_systematic_prefix + 'mcatnlo_matrix']} )
 
@@ -227,7 +226,7 @@ if __name__ == "__main__":
                                                                                                  ptreweight_max, mcatnlo_max] )
         central_measurement_with_systematics_but_without_ttbar_theory = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [pdf_min, met_min, other_min,
-                                                                                                 ptreweight_min, mcatnlo_min], 
+                                                                                                 ptreweight_min, mcatnlo_min],
                                                                                                 [pdf_max, met_max, other_max,
                                                                                                  ptreweight_max, mcatnlo_max] )
         central_measurement_with_systematics_but_without_generator = get_measurement_with_lower_and_upper_errors( central_measurement,
@@ -287,8 +286,8 @@ if __name__ == "__main__":
         other_systematics_unfolded['total_lower'], other_systematics_unfolded['total_upper'] = other_min_unfolded, other_max_unfolded
         new_systematics['mcatnlo_min'], new_systematics['mcatnlo_max'] = mcatnlo_min, mcatnlo_max
         new_systematics_unfolded['mcatnlo_min'], new_systematics_unfolded['mcatnlo_max'] = mcatnlo_min_unfolded, mcatnlo_max_unfolded
-        new_systematics['ptreweight_min'], new_systematics['ptreweight_max'] = ptreweight_min, ptreweight_max #add back in later
-        new_systematics_unfolded['ptreweight_min'], new_systematics_unfolded['ptreweight_max'] = ptreweight_min_unfolded, ptreweight_max_unfolded #add back in later
+        new_systematics['ptreweight_min'], new_systematics['ptreweight_max'] = ptreweight_min, ptreweight_max  # add back in later
+        new_systematics_unfolded['ptreweight_min'], new_systematics_unfolded['ptreweight_max'] = ptreweight_min_unfolded, ptreweight_max_unfolded  # add back in later
         
         write_normalised_xsection_measurement( ttbar_theory_systematics, ttbar_theory_systematics_unfolded, channel, summary = 'ttbar_theory' )
         write_normalised_xsection_measurement( pdf_systematics, pdf_systematics_unfolded, channel, summary = 'PDF' )

@@ -20,8 +20,7 @@ from tools.ROOT_utililities import set_root_defaults
 import collections
 from rootpy.io import File
 
-from config import latex_labels
-from config.cross_section_measurement_common import translate_options
+from config import latex_labels, XSectionConfig
 from config.variable_binning import bin_widths, bin_edges
 from tools.plotting import Histogram_properties, compare_measurements
 from tau_value_determination import get_tau_from_global_correlation
@@ -174,14 +173,7 @@ if __name__ == '__main__':
                       help = "plots the y axis in log scale" )
 
     ( options, args ) = parser.parse_args()
-
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
+    measurement_config = XSectionConfig(options.CoM)
     
     centre_of_mass = options.CoM
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
@@ -189,7 +181,7 @@ if __name__ == '__main__':
     load_fakes = options.load_fakes
     method = options.unfolding_method
     plot_location = options.output_folder + '/' + options.test + '/'
-    met_type = translate_options[options.metType]
+    met_type = measurement_config.translate_options[options.metType]
     do_taus = options.do_taus
     log_plots = options.log_plots
     make_folder_if_not_exists( plot_location )

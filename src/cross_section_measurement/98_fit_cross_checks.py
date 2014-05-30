@@ -1,10 +1,8 @@
 from config import CMS
 from optparse import OptionParser
-from config.cross_section_measurement_common import translate_options
+from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import Histogram_properties
-from ROOT import Double
-from uncertainties import ufloat
 
 from matplotlib import pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -131,19 +129,15 @@ if __name__ == '__main__':
 #                  help="use fit inputs instead of fit results")
     
     ( options, args ) = parser.parse_args()
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-        electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n e+jets, $\geq$4 jets'
-        muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 19.7 fb$^{-1}$ at $\sqrt{s}$ = 8 TeV \n $\mu$+jets, $\geq$4 jets'
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-        electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n e+jets, $\geq$4 jets'
-        muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = 5.0 fb$^{-1}$ at $\sqrt{s}$ = 7 TeV \n $\mu$+jets, $\geq$4 jets'
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
+    measurement_config = XSectionConfig(options.CoM)
+    # caching of variables for shorter access
+    translate_options = measurement_config.translate_options
+    lumi = measurement_config.luminosity
+    come = measurement_config.centre_of_mass_energy
+    electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % (lumi, come)
+    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1 fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % (lumi, come)
         
-    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass ) + 'TeV/'
+    path_to_JSON = options.path + '/' + str( come ) + 'TeV/'
     output_folder = options.output_folder
     normalise_to_fit = options.normalise_to_fit
     category = options.category

@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 
 
 from config.variable_binning import bin_edges
-from config import CMS, latex_labels
+from config import CMS, latex_labels, XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist
 
@@ -222,16 +222,10 @@ if __name__ == "__main__":
                       help="k-value used in SVD unfolding, only for categorisation purpose at this stage")
 
     (options, args) = parser.parse_args()
+    measurement_config = XSectionConfig(options.CoM)
     
     if not options.input_folder:
         sys.exit('No input folder specified. Please do so manually using -i option.')
-
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        sys.exit( 'Unknown centre of mass energy' )
 
     centre_of_mass = options.CoM
     variable = options.variable

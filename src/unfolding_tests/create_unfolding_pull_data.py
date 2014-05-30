@@ -14,6 +14,8 @@ from tools.Timer import Timer
 
 from time import clock, time
 from tools.ROOT_utililities import set_root_defaults
+from config import XSectionConfig
+
 def check_multiple_data_multiple_unfolding( input_file, method, channel ):
     global nbins, use_N_toy, output_folder, offset_toy_mc, offset_toy_data, k_value
     # same unfolding input, different data
@@ -114,16 +116,8 @@ if __name__ == "__main__":
                       dest = "offset_toy_data", default = 0,
                       help = "offset of the toy MC used as data for unfolding" )
     ( options, args ) = parser.parse_args()
-
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
-
+    measurement_config = XSectionConfig(options.CoM)
+    
     centre_of_mass = options.CoM
     variable = options.variable
     make_folder_if_not_exists( options.output_folder )

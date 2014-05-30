@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
 
 from src.cross_section_measurement.lib import read_xsection_measurement_results
-import config.cross_section_measurement_7TeV as config_7TeV
-import config.cross_section_measurement_8TeV as config_8TeV
+from config import XSectionConfig
 from config.variable_binning import bin_edges
 from config.latex_labels import variables_latex
 from config import CMS
@@ -27,6 +26,8 @@ def main():
     set_root_defaults()
     options, _ = parse_arguments()
     variable = 'ST'
+    config_7TeV = XSectionConfig(7)
+    config_8TeV = XSectionConfig(8)
     path_to_JSON_7TeV = options.path + '/7TeV/' + variable + '/'
     path_to_JSON_8TeV = options.path + '/8TeV/' + variable + '/'
     # we need the generators

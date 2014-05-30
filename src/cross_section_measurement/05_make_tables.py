@@ -1,8 +1,9 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
 from copy import deepcopy
-from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
 from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex
+from config.variable_binning import variable_bins_latex, variable_bins_ROOT
+from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 
@@ -187,7 +188,7 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     printout += '\hline\n'
 
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass) + 'TeV/'  + variable
+        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
         output_file = open(path + '/fit_results_table_' + channel + '_' + met_type + '.tex', 'w')
         output_file.write(printout)
@@ -229,7 +230,7 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     printout += '\hline \n\n'
     
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass) + 'TeV/'  + variable
+        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
         if channel == 'combined':
             file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type
@@ -313,7 +314,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     printout += '\hline \n\n'
     
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass) + 'TeV/'  + variable
+        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
         if channel == 'combined':
             file_template = path + '/error_table_' + channel + '_' + met_type
@@ -348,14 +349,12 @@ if __name__ == '__main__':
                       help="creates a set of tables for each systematic (in addition to central result).")
 
     (options, args) = parser.parse_args()
-    from config.variable_binning import variable_bins_latex, variable_bins_ROOT
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit('Unknown centre of mass energy')
+    measurement_config = XSectionConfig(options.CoM)
+    # caching of variables for shorter access
+    translate_options = measurement_config.translate_options
+    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
+    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
 
     variable = options.variable
     output_folder = options.output_folder
@@ -367,7 +366,7 @@ if __name__ == '__main__':
                 }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/'
+    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/' + variable + '/'
     
     categories = deepcopy(measurement_config.categories_and_prefixes.keys())
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]

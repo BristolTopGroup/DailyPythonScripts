@@ -7,11 +7,16 @@ import os
 from rootpy.io import File
 from rootpy.plotting import Hist2D
 # DailyPythonScripts
-from tools.Calculation import calculate_xsection, calculate_normalised_xsection, combine_complex_results
-from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
-from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
-from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, make_folder_if_not_exists
 import config.RooUnfold as unfoldCfg
+from config.variable_binning import bin_widths, bin_edges
+from config import XSectionConfig
+from tools.Calculation import calculate_xsection, calculate_normalised_xsection, \
+combine_complex_results
+from tools.hist_utilities import hist_to_value_error_tuplelist, \
+value_error_tuplelist_to_hist
+from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
+from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, \
+make_folder_if_not_exists
 from copy import deepcopy
 from tools.ROOT_utililities import set_root_defaults
 
@@ -315,16 +320,12 @@ if __name__ == '__main__':
     
     
     ( options, args ) = parser.parse_args()
-    from config.cross_section_measurement_common import met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-    
-    from config.variable_binning import bin_widths, bin_edges
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        import sys
-        sys.exit( 'Unknown centre of mass energy' )
+    measurement_config = XSectionConfig( options.CoM )
+    # caching of variables for faster access
+    translate_options = measurement_config.translate_options
+    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
+    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
     
     centre_of_mass = options.CoM
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
@@ -349,7 +350,7 @@ if __name__ == '__main__':
     combine_before_unfolding = options.combine_before_unfolding
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass ) + 'TeV/' + variable + '/'
+    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
     
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
@@ -369,7 +370,7 @@ if __name__ == '__main__':
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( ['QCD_shape', ttbar_theory_systematic_prefix + 'mcatnlo', ttbar_theory_systematic_prefix + 'mcatnlo_matrix'] )
     all_measurements.extend( rate_changing_systematics )
-    
+    print 'Performing unfolding for variable', variable
     for category in all_measurements:
         if variable == 'HT' and category in met_uncertainties:
             continue

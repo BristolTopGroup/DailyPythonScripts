@@ -1,12 +1,10 @@
-from config import CMS
+from config import CMS, XSectionConfig
 from optparse import OptionParser
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 from tools.hist_utilities import prepare_histograms
 from config.variable_binning import variable_bins_ROOT
-from config.cross_section_measurement_common import translate_options
-import config.cross_section_measurement_8TeV as measurement_config
 
 def get_fitted_normalisation(variable, channel):
     global path_to_JSON, category, met_type
@@ -63,11 +61,12 @@ if __name__ == '__main__':
                       help="creates a set of QCD plots for exclusive bins for all variables")
 
     (options, args) = parser.parse_args()
+    measurement_config = XSectionConfig(8)
     path_to_JSON = options.path + '/' + '8TeV/'
     output_folder = options.output_folder
     normalise_to_fit = options.normalise_to_fit
     category = options.category
-    met_type = translate_options[options.metType]
+    met_type = measurement_config.translate_options[options.metType]
     make_additional_QCD_plots = options.additional_QCD_plots
 
     CMS.title['fontsize'] = 40
@@ -103,7 +102,9 @@ if __name__ == '__main__':
 #             'WPT':get_fitted_normalisation('WPT', 'muon')
 #             }
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
-    e_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, 'e+jets, $\geq$4 jets')
+    e_title = title_template % (measurement_config.new_luminosity/ 1000., 
+                                measurement_config.centre_of_mass_energy, 
+                                'e+jets, $\geq$4 jets')
     #bjet_invariant_mass
     #bjet invariant mass
     b_tag_bin = '4orMoreBtags'
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     histogram_files['data'] = measurement_config.data_file_muon
     histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates[category]
 
-    mu_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass, '$\mu$+jets, $\geq$4 jets')
+    mu_title = title_template % (measurement_config.new_luminosity/ 1000., measurement_config.centre_of_mass_energy, '$\mu$+jets, $\geq$4 jets')
     
     #Muon |eta|
     b_tag_bin = '4orMoreBtags'

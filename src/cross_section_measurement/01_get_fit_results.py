@@ -9,10 +9,15 @@ import sys
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 # DailyPythonScripts
+from config.summations_common import b_tag_summations
+from config.variable_binning import variable_bins_ROOT
+from config import XSectionConfig
+
 from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import TMinuitFit, RooFitFit
 from tools.file_utilities import write_data_to_JSON
 from tools.ROOT_utililities import set_root_defaults
+
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag_bin, rebin=1):
     global b_tag_bin_VJets
@@ -74,11 +79,11 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta = h_abs_eta - get_histogram(input_files['SingleTop'], abs_eta, '0btag')
         electron_QCD_normalisation_factor = 1
         h_abs_eta.Rebin(20)
-        if measurement_config.centre_of_mass == 8:
+        if measurement_config.centre_of_mass_energy == 8:
             electron_QCD_normalisation_factor = h_abs_eta_mc.Integral() / h_abs_eta.Integral()
             if electron_QCD_normalisation_factor == 0:
                 electron_QCD_normalisation_factor = 1 / h_abs_eta.Integral()
-        if measurement_config.centre_of_mass == 7:
+        if measurement_config.centre_of_mass_energy == 7:
             # scaling to 10% of data
             electron_QCD_normalisation_factor = 0.1 * histograms['data'].Integral() / h_abs_eta.Integral()
 
@@ -100,11 +105,11 @@ def get_histograms(channel, input_files, variable, met_type, variable_bin, b_tag
         h_abs_eta = h_abs_eta - get_histogram(input_files['SingleTop'], abs_eta, '0btag')
         muon_QCD_normalisation_factor = 1
         h_abs_eta.Rebin(20)
-        if measurement_config.centre_of_mass == 8:
+        if measurement_config.centre_of_mass_energy == 8:
             muon_QCD_normalisation_factor = h_abs_eta_mc.Integral() / h_abs_eta.Integral()
             if muon_QCD_normalisation_factor == 0:
                 muon_QCD_normalisation_factor = 1 / h_abs_eta.Integral()
-        if measurement_config.centre_of_mass == 7:
+        if measurement_config.centre_of_mass_energy == 7:
             muon_QCD_normalisation_factor = 0.05 * histograms['data'].Integral() / h_abs_eta.Integral()
         
         h_abs_eta.Scale(muon_QCD_normalisation_factor)
@@ -263,7 +268,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
     
 def write_fit_results_and_initial_values(channel, category, fit_results, initial_values, templates):
     global variable, met_type, output_path
-    output_folder = output_path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
+    output_folder = output_path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/' + variable + '/fit_results/' + category + '/'
     
     write_data_to_JSON(fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt')
     write_data_to_JSON(initial_values, output_folder + 'initial_values_' + channel + '_' + met_type + '.txt')
@@ -271,7 +276,7 @@ def write_fit_results_and_initial_values(channel, category, fit_results, initial
 
 def write_fit_results(channel, category, fit_results):
     global variable, met_type, output_path
-    output_folder = output_path + '/' + str(measurement_config.centre_of_mass) + 'TeV/' + variable + '/fit_results/' + category + '/'
+    output_folder = output_path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/' + variable + '/fit_results/' + category + '/'
     
     write_data_to_JSON(fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt')
     
@@ -294,7 +299,7 @@ if __name__ == '__main__':
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
     parser.add_option('--fitter', dest = "use_fitter", default='TMinuit', 
                       help = 'Fitter to be used: TMinuit|RooFit. Default = TMinuit.')
-    parser.add_option('-V', dest = "verbose", action="store_true",
+    parser.add_option('-V', '--verbose', dest = "verbose", action="store_true",
                       help="Print the fit info and correlation matrix")
 
     translate_options = {
@@ -314,21 +319,15 @@ if __name__ == '__main__':
     
     
     (options, args) = parser.parse_args()
-    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-    from config.summations_common import b_tag_summations
     
-    from config.variable_binning import variable_bins_ROOT
-    if options.CoM == 8:
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        sys.exit('Unknown centre of mass energy')
-    
+    measurement_config = XSectionConfig(options.CoM)
+    # caching of variables for shorter access
+    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
+    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     generator_systematics = measurement_config.generator_systematics
     categories_and_prefixes = measurement_config.categories_and_prefixes
-    met_systematics_suffixes = met_systematics_suffixes
-    analysis_type = analysis_types
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
+    analysis_type = measurement_config.analysis_types
     
     variable = options.variable
     met_type = translate_options[options.metType]
