@@ -287,7 +287,8 @@ def make_shape_comparison_plot( shapes = [],
             shape.legendstyle = 'F'
             shape.linewidth = 5
             
-    
+    if not histogram_properties.y_limits:
+        histogram_properties.y_limits = [0, get_best_max_y(shapes_, False)]
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
@@ -487,3 +488,9 @@ def adjust_axis_limits( axes, histogram_properties ):
         axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
     else:
         axes.set_ylim( ymin = 0 )
+        
+def get_best_max_y(histograms, include_error = True):
+    return max([histogram.max(include_error = include_error) for histogram in histograms])
+
+def get_best_min_y(histograms, include_error = True):
+    return min([histogram.min(include_error = include_error) for histogram in histograms])
