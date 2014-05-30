@@ -9,6 +9,8 @@ Quick installation recipe:
 # get the code from the repository
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 cd DailyPythonScripts
+# checkout the last working version
+git checkout AN-14-071_2nd_draft
 
 # get submodules:
 git submodule init && git submodule update
