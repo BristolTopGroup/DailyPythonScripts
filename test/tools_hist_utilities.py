@@ -5,18 +5,23 @@ Created on 31 Oct 2012
 '''
 from __future__ import division
 import unittest
-from rootpy.plotting import Hist2D
-from tools.hist_utilities import rebin_2d
+from rootpy.plotting import Hist, Hist2D
+from tools.hist_utilities import rebin_2d, adjust_overflow_to_limit
 
 import numpy as np
+N_bkg1 = 9000
+mu1, sigma1 = 50, 20
+x1 = mu1 + sigma1 * np.random.randn( N_bkg1 )
 
 class Test( unittest.TestCase ):
 
     def setUp( self ):
         # create histograms
+        self.h1 = Hist( 100, 0, 100, title = '1D' )
         self.h2 = Hist2D( 60, 40, 100, 60, 40, 100 )
     
         # fill the histograms with our distributions
+        map( self.h1.Fill, x1 )
         self.h2.fill_array( np.random.multivariate_normal( 
                                     mean = ( 50, 50 ),
                                     cov = np.arange( 4 ).reshape( 2, 2 ),
@@ -104,6 +109,24 @@ class Test( unittest.TestCase ):
                 new_hist.GetBinContent( i, i ),
                 self.result_not_on_boundaries[i - 1],
                 'histogram contents do not match' )
+            
+    def test_adjust_overflow_to_limit( self ):
+        x_min = 40
+        x_max = 80
+        adjusted = adjust_overflow_to_limit(self.h1, x_min, x_max)
+        # number of events should be unchanged
+        self.assertEqual(self.h1.Integral(0, self.h1.nbins()), adjusted.Integral())
+        # first bin (x_min) should contain all events
+        # with x <= x_min
+        x_min_bin = self.h1.FindBin(x_min)
+        x_max_bin = self.h1.FindBin(x_max)
+        self.assertEqual(self.h1.integral(0, x_min_bin, overflow = True), 
+                         adjusted.GetBinContent(x_min_bin))
+        # last bin (x_max) should contain all events
+        # with x >= x_max
+        self.assertEqual(self.h1.integral(x_max_bin, self.h1.nbins(), overflow = True), 
+                         adjusted.GetBinContent(x_max_bin))
+        
             
 if __name__ == "__main__":
     unittest.main()
