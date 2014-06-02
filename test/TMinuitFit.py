@@ -7,7 +7,6 @@ import unittest
 from tools.Fitting import TMinuitFit
 from rootpy.plotting import Hist
 from math import sqrt
-from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, RooArgSet, RooAddPdf
 
 import numpy as np
 N_bkg1 = 9000
@@ -42,28 +41,32 @@ class Test(unittest.TestCase):
         histograms = {'signal': h2,
                       'bkg1': h1,
                       'data': h3}
-        self.minuitFitter = TMinuitFit(histograms, dataLabel='data')
-        self.minuitFitter.fit()
+        self.minuit_fitter = TMinuitFit(histograms, dataLabel='data')
+        self.minuit_fitter.fit()
 
 
     def tearDown(self):
         pass
 
     def testTemplateKeys(self):
-        templateKeys = sorted(self.minuitFitter.templates.keys())
+        templateKeys = sorted(self.minuit_fitter.templates.keys())
         self.assertEqual(templateKeys, sorted(['signal', 'bkg1', 'data']))
 
     def testNormalisation(self):
-        normalisation = self.minuitFitter.normalisation
+        normalisation = self.minuit_fitter.normalisation
         self.assertAlmostEqual(normalisation["data"], N_data, delta = sqrt(N_data))
         self.assertAlmostEqual(normalisation["bkg1"], N_bkg1, delta = sqrt(N_bkg1))
         self.assertAlmostEqual(normalisation["signal"], N_signal, delta = sqrt(N_signal))
         
     def testSignalResult(self):
-        results = self.minuitFitter.readResults()
+        results = self.minuit_fitter.readResults()
         self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta=2 * results['signal'][1])
         self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta=2 * results['bkg1'][1])
         
+    def test_relative_error(self):
+        results = self.minuit_fitter.readResults()
+        self.assertLess(results['signal'][1]/results['signal'][0], 0.1)
+        self.assertLess(results['bkg1'][1]/results['bkg1'][0], 0.1)
 
 
 if __name__ == "__main__":

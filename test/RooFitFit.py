@@ -70,7 +70,11 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(N_signal_obs, results['signal'][0], delta=2 * results['signal'][1])
         self.assertAlmostEqual(N_bkg1_obs, results['bkg1'][0], delta=2 * results['bkg1'][1])
         
-
+#     def test_relative_error(self):
+#         results = self.roofitFitter.readResults()
+#         self.roofitFitter.saved_result.Print("v");
+#         self.assertLess(results['signal'][1]/results['signal'][0], 0.1)
+#         self.assertLess(results['bkg1'][1]/results['bkg1'][0], 0.1)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testTemplates']

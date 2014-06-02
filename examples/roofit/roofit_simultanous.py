@@ -68,7 +68,8 @@ def rf501_simultaneouspdf():
 
     # Create observables
     x = RooRealVar( "x", "x", 40, 200 ) 
-
+    nsig = RooRealVar( "nsig", "#signal events", 200, 0., 10000 )
+    nbkg = RooRealVar( "nbkg", "#background events", 800, 0., 200000 )
     # Construct signal pdf
     mean = RooRealVar( "mean", "mean", mu4, 40, 200 ) 
     sigma = RooRealVar( "sigma", "sigma", sigma4, 0.1, 20 ) 
@@ -80,8 +81,6 @@ def rf501_simultaneouspdf():
     px = RooGaussian( "px", "px", x, mean_bkg, sigma_bkg ) 
 
     # Construct composite pdf
-    nsig = RooRealVar( "nsig", "#signal events", 200, 0., 10000 )
-    nbkg = RooRealVar( "nbkg", "#background events", 800, 0., 200000 )
     model = RooAddPdf( "model", "model", RooArgList( gx, px ), RooArgList( nsig, nbkg ) ) 
 
 
@@ -188,12 +187,16 @@ def rf501_simultaneouspdf():
                    RooFit.LineStyle( kDashed ) ) 
 
     # The same plot for the control sample slice
-    frame2 = x.frame( RooFit.Bins( 30 ), RooFit.Title( "Control sample" ) ) 
+    frame2 = y.frame( RooFit.Bins( 30 ), RooFit.Title( "Control sample" ) ) 
     combData.plotOn( frame2, RooFit.Cut( "sample==sample::control" ) ) 
     simPdf.plotOn( frame2, RooFit.Slice( sample, "control" ),
                   RooFit.ProjWData( RooArgSet( sample ), combData ) ) 
     simPdf.plotOn( frame2, RooFit.Slice( sample, "control" ),
                   RooFit.Components( "px_ctl" ),
+                  RooFit.ProjWData( RooArgSet( sample ), combData ),
+                  RooFit.LineStyle( kDashed ) ) 
+    simPdf.plotOn( frame2, RooFit.Slice( sample, "control" ),
+                  RooFit.Components( "gx_ctl" ),
                   RooFit.ProjWData( RooArgSet( sample ), combData ),
                   RooFit.LineStyle( kDashed ) ) 
 
