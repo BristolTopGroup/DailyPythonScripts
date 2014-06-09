@@ -14,7 +14,8 @@ from config.variable_binning import variable_bins_ROOT
 from config import XSectionConfig
 
 from tools.Calculation import decombine_result, combine_complex_results
-from tools.Fitting import TMinuitFit, RooFitFit
+from tools.Fitting import TMinuitFit, RooFitFit, FitData, FitDataCollection,\
+    Minuit
 from tools.file_utilities import write_data_to_JSON
 from tools.ROOT_utililities import set_root_defaults
 
@@ -193,23 +194,44 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                                       'QCD':histograms['QCD'],
                                       }
         fitter = None
+        fit_data = FitData( histograms['data'],
+                            mc_histograms = {
+                                'signal': h_eta_signal,
+                                'V+Jets':histograms['V+Jets'],
+                                'QCD':histograms['QCD'],
+                            },
+                            fit_boundaries = ( 0., 2.4 ) )
+        fit_data_collection = FitDataCollection()
+        fit_data_collection.add(fit_data, name = 'abs_eta')
+        fit_data_collection.set_normalisation_constraints({'QCD': 2.0, 'V+Jets': 0.5})
+        
         if use_fitter == 'TMinuit':
             fitter = TMinuitFit( histograms = fit_histograms, verbose = verbose )
         elif use_fitter == 'RooFit':
             fitter = RooFitFit( histograms = fit_histograms, fit_boundries = (0., 2.4) )
+        elif use_fitter == 'Minuit':
+            
+            
+            fitter = Minuit(fit_data_collection)
         else: #not recognised
             sys.stderr.write('Do not recognise fitter "%s". Using default (TMinuit).\n' % fitter)
             fitter = TMinuitFit ( histograms=fit_histograms, verbose = verbose )
         
-        fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
+        if not use_fitter == 'Minuit':
+            fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
 
         if verbose:
             print "FITTING: " + channel + '_' + variable + '_' + variable_bin + '_' + met_type + '_' + b_tag_bin
 
         fitter.fit()
         fit_results = fitter.readResults()
-        normalisation = fitter.normalisation
-        normalisation_errors = fitter.normalisation_errors
+        normalisation, normalisation_errors = None, None
+        if use_fitter == 'Minuit':
+            normalisation = fit_data_collection.mc_normalisation('abs_eta')
+            normalisation_errors = fit_data_collection.mc_normalisation_errors('abs_eta')
+        else:
+            normalisation = fitter.normalisation
+            normalisation_errors = fitter.normalisation_errors
         
         N_ttbar_before_fit = histograms['TTJet'].Integral()
         N_SingleTop_before_fit = histograms['SingleTop'].Integral()

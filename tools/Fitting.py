@@ -161,6 +161,17 @@ class FitDataCollection():
                 normalisation[dist] = data.normalisation
             return normalisation
         
+    def mc_normalisation_errors(self, name = ''):
+        if self.n_fit_data == 1:
+            return self.fit_data.items()[0][1].normalisation_errors
+        if not name == '':
+            return self.fit_data[name].normalisation_errors
+        else:
+            normalisation_errors = {}
+            for dist, data in self.fit_data.iteritems():
+                normalisation_errors[dist] = data.normalisation_errors
+            return normalisation_errors
+        
     def n_data( self, name = '' ):
         if self.n_fit_data == 1:
             return self.fit_data.items()[0][1].n_data()
@@ -401,11 +412,12 @@ class TMinuitFit( TemplateFit ):
                 self.param_indices[sample] = param_index
                 param_index += 1
             data_i = self.normalisation[self.data_label] * data
-            if not data == 0 and not x_i == 0:
+            if not data_i == 0 and not x_i == 0:
                 L = TMath.Poisson( data_i, x_i )
 #                L = TMath.Gaus(data_i, x_i, ((data_i + sumxerrorssquared_i)**0.5))
 #                L = TMath.Gaus(data_i, x_i, (x_i**0.5))
-                lnL += math.log( L )
+                if not L == 0:
+                    lnL += math.log( L )
             
             
             
@@ -765,6 +777,7 @@ class Minuit():
         # Adding the QCD and V+jets constraints
         if self.fit_data_collection.constraint_type == 'normalisation':
             f[0] += self.get_fit_normalisation_constraints( par )
+            
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
         for vector_entry, data_i in enumerate( data_vector ):
@@ -775,9 +788,10 @@ class Minuit():
                 self.param_indices[sample] = param_index
                 param_index += 1
             data_term = normalisation[FitData.data_label] * data_i
-            if not data_i == 0 and not x_i == 0:
+            if not data_term == 0 and not x_i == 0:
                 L = TMath.Poisson( data_term, x_i )
-                lnL += math.log( L )
+                if not L == 0:
+                    lnL += math.log( L )
         return lnL
     # constraints = {sample: constraint}
         
