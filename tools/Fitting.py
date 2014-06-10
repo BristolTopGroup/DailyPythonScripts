@@ -129,13 +129,16 @@ class FitDataCollection():
         self.n_fit_data += 1
         
     def is_valid_for_simultaneous_fit( self ):
+        if self.n_fit_data == 1:
+            return True
+        
         data_normalisation = []
         n_samples = []
         for _, data in self.fit_data.iteritems():
             data_normalisation.append( data.n_data() )
             n_samples.append( len( data.samples ) )
         # check if all are the same
-        has_same_n_data = reduce( lambda x, y: x if round( abs( x - y ) ) <= x * 0.0001 else False, data_normalisation ) != False
+        has_same_n_data = reduce( lambda x, y: x if round( abs( x - y ) ) <= x * 0.01 else False, data_normalisation ) != False
         mc_samples = self.mc_samples()
         n_samples.append( len( mc_samples ) )
         has_same_n_samples = reduce( lambda x, y: x if x == y else False, n_samples ) != False

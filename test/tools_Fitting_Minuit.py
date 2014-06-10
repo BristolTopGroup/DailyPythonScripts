@@ -107,18 +107,18 @@ class Test( unittest.TestCase ):
         
     def test_result( self ):
         results = self.minuit_fitter.readResults()
-        self.assertAlmostEqual( N_signal_obs * data_scale, results['signal'][0], delta = results['signal'][1] )
-        self.assertAlmostEqual( N_bkg1_obs * data_scale, results['bkg1'][0], delta = results['bkg1'][1] )
+        self.assertAlmostEqual( N_signal_obs * data_scale, results['signal'][0], delta = 2 * results['signal'][1] )
+        self.assertAlmostEqual( N_bkg1_obs * data_scale, results['bkg1'][0], delta = 2 * results['bkg1'][1] )
         
     def test_result_simultaneous( self ):
         results = self.simultaneous_fit.readResults()
-        self.assertAlmostEqual( N_signal_obs * data_scale, results['signal'][0], delta = results['signal'][1] )
-        self.assertAlmostEqual( N_bkg1_obs * data_scale, results['bkg1'][0], delta = results['bkg1'][1] )
+        self.assertAlmostEqual( N_signal_obs * data_scale, results['signal'][0], delta = 2 * results['signal'][1] )
+        self.assertAlmostEqual( N_bkg1_obs * data_scale, results['bkg1'][0], delta = 2 * results['bkg1'][1] )
         
     def test_result_simultaneous_with_constraints( self ):
         results = self.simultaneous_fit_with_constraints.readResults()
-        self.assertAlmostEqual( N_signal_obs * data_scale, results['signal'][0], delta = results['signal'][1] )
-        self.assertAlmostEqual( N_bkg1_obs * data_scale, results['bkg1'][0], delta = results['bkg1'][1] )
+        self.assertAlmostEqual( N_signal_obs * data_scale, results['signal'][0], delta = 2 * results['signal'][1] )
+        self.assertAlmostEqual( N_bkg1_obs * data_scale, results['bkg1'][0], delta = 2 * results['bkg1'][1] )
         
     def test_result_simultaneous_with_bad_constraints( self ):
         results = self.simultaneous_fit_with_bad_constraints.readResults()
