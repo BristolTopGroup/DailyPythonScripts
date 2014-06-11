@@ -9,11 +9,10 @@ import config.TopSVDUnfold as top_unfold
 from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
 gSystem.Load( unfoldCfg.library )
 gSystem.Load( top_unfold.library )
-from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
-from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
-from ROOT import TSVDUnfold
-from ROOT import TopSVDUnfold
-from ROOT import TH2D, TH1D
+from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes
+from ROOT import RooUnfoldSvd, RooUnfoldBinByBin, RooUnfoldInvert
+#from ROOT import RooUnfoldTUnfold
+from ROOT import TSVDUnfold, TopSVDUnfold, TH2D, TH1D
 from rootpy import asrootpy
 from rootpy.plotting import Hist, Hist2D
 from math import sqrt

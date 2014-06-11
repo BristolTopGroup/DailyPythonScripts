@@ -335,7 +335,7 @@ $(MAINEXE) : $(EXEDIR)%$(ExeSuf) : $(OBJDIR)%.o $(LINKLIB)
 # Useful build targets
 include: $(DLIST)
 lib: $(LIBFILE)
-shlib: $(SHLIBFILE) $(ROOTMAP)
+shlib: $(SHLIBFILE)# $(ROOTMAP)
 bin: shlib $(MAINEXE)
 
 commands :
