@@ -77,6 +77,7 @@ def main():
                 plot_fit_variable( histograms, fit_variable, variable, bin_range, fit_variable_distribution, qcd_fit_variable_distribution, e_title, save_path )
         compare_qcd_control_regions(variable, met_type, e_title)
         compare_vjets_btag_regions(variable, met_type, e_title)
+        
 def get_histogram_template( variable ):     
     histogram_template = '' 
     if variable == 'HT':
@@ -183,9 +184,6 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                                 )
     
     
-def qcd_control_region_plots():
-    pass
-
 def compare_qcd_control_regions( variable = 'MET', met_type = 'patType1CorrectedPFMet', title = 'Untitled'):
     ''' Compares the templates from the control regions in different bins
      of the current variable'''
