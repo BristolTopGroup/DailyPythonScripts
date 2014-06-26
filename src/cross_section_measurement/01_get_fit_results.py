@@ -14,8 +14,7 @@ from config.variable_binning import variable_bins_ROOT
 from config import XSectionConfig
 
 from tools.Calculation import decombine_result, combine_complex_results
-from tools.Fitting import TMinuitFit, RooFitFit, FitData, FitDataCollection,\
-    Minuit
+from tools.Fitting import Minuit, RooFitFit, FitData, FitDataCollection
 from tools.file_utilities import write_data_to_JSON
 from tools.ROOT_utililities import set_root_defaults
 from tools.hist_utilities import clean_control_region
@@ -23,7 +22,7 @@ from tools.hist_utilities import clean_control_region
 def get_histograms(channel, input_files, variable, met_type, variable_bin,
                    b_tag_bin, rebin=1, fit_variable = 'absolute_eta'):
     global b_tag_bin_VJets, fit_variables
-    global electron_control_region, muon_control_region, qcd_histogram_cache
+    global electron_control_region, muon_control_region
 
     histograms = {}
     if not variable in measurement_config.histogram_path_templates.keys():
@@ -95,7 +94,7 @@ def get_qcd_histograms(input_files, variable, variable_bin, channel,
         control_region = muon_control_region
         qcd_file = muon_QCD_MC_file
     inclusive_control_region_hists = {}
-    
+
     for var_bin in variable_bins_ROOT[variable]:
         hist_name = fit_variable_hist_name.replace(variable_bin, var_bin)
 
@@ -117,7 +116,7 @@ def get_qcd_histograms(input_files, variable, variable_bin, channel,
     for sample in samples:
         inclusive_control_region_hists[sample].Rebin(rebin)
 
-    inclusive_control_region_hists['data'] = clean_control_region( inclusive_control_region_hists, 
+    inclusive_control_region_hists['data'] = clean_control_region( inclusive_control_region_hists,
                           subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
     # now apply proper normalisation
     QCD_normalisation_factor = 1
@@ -130,7 +129,7 @@ def get_qcd_histograms(input_files, variable, variable_bin, channel,
         else:
             QCD_normalisation_factor = 1 / n_control
     inclusive_control_region_hists['data'].Scale(QCD_normalisation_factor)
-            
+
     return inclusive_control_region_hists['data']
 
 def get_histogram(input_file, histogram_path, b_tag_bin=''):
@@ -220,18 +219,14 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
         fit_data_collection.add(fit_data, name = 'abs_eta')
         fit_data_collection.set_normalisation_constraints({'QCD': 2.0, 'V+Jets': 0.5})
 
-        if use_fitter == 'TMinuit':
-            fitter = TMinuitFit( histograms = fit_histograms, verbose = verbose )
-        elif use_fitter == 'RooFit':
+        if use_fitter == 'RooFit':
             fitter = RooFitFit( histograms = fit_histograms, fit_boundries = (0., 2.4) )
+            fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
         elif use_fitter == 'Minuit':
             fitter = Minuit(fit_data_collection)
         else: #not recognised
-            sys.stderr.write('Do not recognise fitter "%s". Using default (TMinuit).\n' % fitter)
-            fitter = TMinuitFit ( histograms=fit_histograms, verbose = verbose )
-
-        if not use_fitter == 'Minuit':
-            fitter.set_fit_constraints({'QCD': 2.0, 'V+Jets': 0.5})
+            sys.stderr.write('Do not recognise fitter "%s". Using default (Minuit).\n' % fitter)
+            fitter = Minuit ( fit_data_collection )
 
         if verbose:
             print "FITTING: " + channel + '_' + variable + '_' + variable_bin + '_' + met_type + '_' + b_tag_bin
@@ -336,8 +331,8 @@ if __name__ == '__main__':
                       help="set MET type for analysis of MET, ST or MT")
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
-    parser.add_option('--fitter', dest = "use_fitter", default='TMinuit',
-                      help = 'Fitter to be used: TMinuit|RooFit. Default = TMinuit.')
+    parser.add_option('--fitter', dest = "use_fitter", default='Minuit',
+                      help = 'Fitter to be used: Minuit|RooFit. Default = Minuit.')
     parser.add_option('-V', '--verbose', dest = "verbose", action="store_true",
                       help="Print the fit info and correlation matrix")
 
