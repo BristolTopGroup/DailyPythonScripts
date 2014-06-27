@@ -6,7 +6,7 @@ Created on 31 Oct 2012
 from __future__ import division
 import unittest
 from rootpy.plotting import Hist, Hist2D
-from tools.hist_utilities import rebin_2d, adjust_overflow_to_limit
+from tools.hist_utilities import rebin_2d, adjust_overflow_to_limit, hist_to_value_error_tuplelist
 
 import numpy as np
 N_bkg1 = 9000
@@ -19,6 +19,7 @@ class Test( unittest.TestCase ):
         # create histograms
         self.h1 = Hist( 100, 0, 100, title = '1D' )
         self.h2 = Hist2D( 60, 40, 100, 60, 40, 100 )
+        self.simple = Hist( 100, 0, 100, title = '1D' )
     
         # fill the histograms with our distributions
         map( self.h1.Fill, x1 )
@@ -67,6 +68,9 @@ class Test( unittest.TestCase ):
         # [2, 0, 0] 
         self.bin_edges_not_on_boundaries = [0, 3.5, 6, 20]
         self.result_not_on_boundaries = [2, 1, 2]
+        
+        for i in range(100):
+            self.simple.Fill(i, 1)
 
     def tearDown( self ):
         pass
@@ -110,22 +114,47 @@ class Test( unittest.TestCase ):
                 self.result_not_on_boundaries[i - 1],
                 'histogram contents do not match' )
             
+            
+    def test_adjust_overflow_to_limit_simple( self ):
+        x_min = 0
+        x_max = 95
+        adjusted = adjust_overflow_to_limit(self.simple, x_min, x_max)
+#         for entry_1, entry_2 in zip(hist_to_value_error_tuplelist(self.simple), hist_to_value_error_tuplelist(adjusted)):
+#             print entry_1, entry_2
+#         print self.simple.integral( overflow = True ), adjusted.integral()
+#         print self.simple.GetBinContent(1), self.simple.GetBinContent(self.simple.nbins())
+        # number of events should be unchanged
+        # the adjusted histogram should have no overflow for this example
+        self.assertEqual( self.simple.integral( overflow = True ), adjusted.integral() )
+        # first bin (x_min) should contain all events
+        # with x <= x_min
+        x_min_bin = self.simple.FindBin(x_min)
+        x_max_bin = self.simple.FindBin(x_max)
+        self.assertEqual(self.simple.integral(0, x_min_bin), 
+                         adjusted.GetBinContent(x_min_bin))
+        # last bin (x_max) should contain all events
+        # with x >= x_max
+        self.assertEqual( self.simple.integral( x_max_bin, self.simple.nbins() + 1),
+                         adjusted.GetBinContent( x_max_bin ) )
+        
+        
     def test_adjust_overflow_to_limit( self ):
         x_min = 40
         x_max = 80
         adjusted = adjust_overflow_to_limit(self.h1, x_min, x_max)
         # number of events should be unchanged
-        self.assertEqual(self.h1.Integral(0, self.h1.nbins()), adjusted.Integral())
+        # the adjusted histogram should have no overflow for this example
+        self.assertEqual(self.h1.integral( overflow = True ), adjusted.Integral())
         # first bin (x_min) should contain all events
         # with x <= x_min
         x_min_bin = self.h1.FindBin(x_min)
         x_max_bin = self.h1.FindBin(x_max)
-        self.assertEqual(self.h1.integral(0, x_min_bin, overflow = True), 
+        self.assertEqual(self.h1.integral(0, x_min_bin), 
                          adjusted.GetBinContent(x_min_bin))
         # last bin (x_max) should contain all events
         # with x >= x_max
-        self.assertEqual(self.h1.integral(x_max_bin, self.h1.nbins(), overflow = True), 
-                         adjusted.GetBinContent(x_max_bin))
+        self.assertEqual( self.h1.integral( x_max_bin, self.h1.nbins() + 1 ),
+                         adjusted.GetBinContent( x_max_bin ) )
         
             
 if __name__ == "__main__":
