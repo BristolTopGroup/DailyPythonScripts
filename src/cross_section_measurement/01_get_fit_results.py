@@ -17,7 +17,7 @@ from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import Minuit, RooFitFit, FitData, FitDataCollection
 from tools.file_utilities import write_data_to_JSON
 from tools.ROOT_utililities import set_root_defaults
-from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit
+from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit, hist_to_value_error_tuplelist
 
 def get_histograms(channel, input_files, variable, met_type, variable_bin,
                    b_tag_bin, rebin=1, fit_variable = 'absolute_eta', 
@@ -222,7 +222,6 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                             fit_boundaries = measurement_config.fit_boundaries[fit_variable] )
             fit_data_collection.add(fit_data, name = fit_variable)
         fit_data_collection.set_normalisation_constraints({'QCD': 2.0, 'V+Jets': 0.5})
-        print fit_data_collection.n_data()
 
         if use_fitter == 'RooFit':
             fitter = RooFitFit( fit_data_collection )

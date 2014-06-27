@@ -309,13 +309,13 @@ def adjust_overflow_to_limit(histogram, x_min, x_max):
     overflow, overflow_error = 0, 0
     if not underflow_bin < 1:
         underflow, underflow_error = histogram_.integral(0, underflow_bin, error=True)
-        for i in range(underflow_bin):
+        for i in range(underflow_bin + 1):
             histogram_.SetBinContent(i, 0)
             histogram_.SetBinError(i, 0)
     
     if not overflow_bin > n_bins:
         overflow, overflow_error = histogram_.integral(overflow_bin, n_bins + 1, error=True)
-        for i in range(overflow_bin, n_bins + 1):
+        for i in range(overflow_bin, n_bins + 2):
             histogram_.SetBinContent(i, 0)
             histogram_.SetBinError(i, 0)
     
