@@ -17,6 +17,7 @@ class XSectionConfig():
                   'data_muon_category_templates', 'electron_QCD_MC_file',
                   'electron_control_region',
                   'electron_control_region_systematic',
+                  'fit_boundaries',
                   'general_category_templates',
                   'generator_systematic_ttbar_templates',
                   'generator_systematic_vjets_templates',
@@ -94,6 +95,13 @@ class XSectionConfig():
                         'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet',
                         }
+        
+        self.fit_boundaries = {
+                               'absolute_eta' : ( 0., 2.4 ),
+                               'M3' : ( 0, 600 ),
+                               'M_bl' : ( 0, 400 ),
+                               'angle_bl' : ( 0, 4 ),
+                               }
 
         self.ttbar_theory_systematic_prefix = 'TTJets_'
         self.vjets_theory_systematic_prefix = 'VJets_'
@@ -172,11 +180,11 @@ class XSectionConfig():
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
 
         self.histogram_path_templates = {
-                           'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s_%s',
-                           'HT' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s_%s',
-                           'ST': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s_%s',
-                           'MT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s_%s',
-                           'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s_%s'
+                           'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s',
+                           'HT' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s',
+                           'ST': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s',
+                           'MT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s',
+                           'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s'
                            }
 
         # optimal regularisation parameters
@@ -209,7 +217,12 @@ class XSectionConfig():
 
         self.muon_control_region = 'QCD non iso mu+jets ge3j'
         self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
-        self.rebin = 2
+        self.rebin = {
+                      'absolute_eta' : 2, # 2 -> 0.2
+                      'M3' : 5, # 5 -> 25 GeV
+                      'M_bl' : 2, # 2 -> 10 GeV
+                      'angle_bl' : 2, # 2 -> 0.2
+                      }
 
         self.include_higgs = False
 
