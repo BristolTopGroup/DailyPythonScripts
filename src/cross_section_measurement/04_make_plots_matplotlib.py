@@ -4,8 +4,8 @@ import os, gc
 from copy import deepcopy
 
 from config.latex_labels import variables_latex, measurements_latex, \
-met_systematics_latex, b_tag_bins_latex
-from config.variable_binning import bin_edges, variable_bins_ROOT, eta_bin_edges
+met_systematics_latex, b_tag_bins_latex, fit_variables_latex
+from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, \
@@ -117,133 +117,141 @@ def read_fit_templates_and_results_as_histograms( category, channel ):
     templates = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt' )
     data_values = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt' )['data']
     fit_results = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
-    template_histograms = {}
-    fit_results_histograms = {}
+    fit_variables = templates.keys()
+    template_histograms = {fit_variable: {} for fit_variable in fit_variables}
+    fit_results_histograms = {fit_variable: {} for fit_variable in fit_variables}
     for bin_i, variable_bin in enumerate( variable_bins_ROOT[variable] ):
-        h_template_data = value_tuplelist_to_hist( templates['data'][bin_i], eta_bin_edges )
-        h_template_signal = value_tuplelist_to_hist( templates['signal'][bin_i], eta_bin_edges )
-        h_template_VJets = value_tuplelist_to_hist( templates['V+Jets'][bin_i], eta_bin_edges )
-        h_template_QCD = value_tuplelist_to_hist( templates['QCD'][bin_i], eta_bin_edges )
-        template_histograms[variable_bin] = {
-                                    'signal':h_template_signal,
-                                    'V+Jets':h_template_VJets,
-                                    'QCD':h_template_QCD
-                                    }
-        h_data = h_template_data.Clone()
-        h_signal = h_template_signal.Clone()
-        h_VJets = h_template_VJets.Clone()
-        h_QCD = h_template_QCD.Clone()
-        
-        data_normalisation = data_values[bin_i][0]
-        signal_normalisation = fit_results['signal'][bin_i][0]
-        VJets_normalisation = fit_results['V+Jets'][bin_i][0]
-        QCD_normalisation = fit_results['QCD'][bin_i][0]
-        
-        h_data.Scale( data_normalisation )
-        h_signal.Scale( signal_normalisation )
-        h_VJets.Scale( VJets_normalisation )
-        h_QCD.Scale( QCD_normalisation )
-        h_background = h_VJets + h_QCD
-        
-        for bin_i in range( len( h_data ) ):
-            h_data.SetBinError( bin_i + 1, sqrt( h_data.GetBinContent( bin_i + 1 ) ) )
-        
-        fit_results_histograms[variable_bin] = {
-                                                'data':h_data,
-                                                'signal':h_signal,
-                                                'background':h_background
-                                                }
+        for fit_variable in fit_variables:
+            print len(templates[fit_variable]['data']), len(variable_bins_ROOT[variable]), bin_i
+            print fit_variable, len(fit_variable_bin_edges[fit_variable]), len(templates[fit_variable]['data'][bin_i])
+            h_template_data = value_tuplelist_to_hist( templates[fit_variable]['data'][bin_i], fit_variable_bin_edges[fit_variable] )
+            h_template_signal = value_tuplelist_to_hist( templates[fit_variable]['signal'][bin_i], fit_variable_bin_edges[fit_variable] )
+            h_template_VJets = value_tuplelist_to_hist( templates[fit_variable]['V+Jets'][bin_i], fit_variable_bin_edges[fit_variable] )
+            h_template_QCD = value_tuplelist_to_hist( templates[fit_variable]['QCD'][bin_i], fit_variable_bin_edges[fit_variable] )
+            template_histograms[fit_variable][variable_bin] = {
+                                        'signal':h_template_signal,
+                                        'V+Jets':h_template_VJets,
+                                        'QCD':h_template_QCD
+                                        }
+            h_data = h_template_data.Clone()
+            h_signal = h_template_signal.Clone()
+            h_VJets = h_template_VJets.Clone()
+            h_QCD = h_template_QCD.Clone()
+            
+            data_normalisation = data_values[bin_i][0]
+            signal_normalisation = fit_results['signal'][bin_i][0]
+            VJets_normalisation = fit_results['V+Jets'][bin_i][0]
+            QCD_normalisation = fit_results['QCD'][bin_i][0]
+            
+            h_data.Scale( data_normalisation )
+            h_signal.Scale( signal_normalisation )
+            h_VJets.Scale( VJets_normalisation )
+            h_QCD.Scale( QCD_normalisation )
+            h_background = h_VJets + h_QCD
+            
+            for bin_i_data in range( len( h_data ) ):
+                h_data.SetBinError( bin_i_data + 1, sqrt( h_data.GetBinContent( bin_i_data + 1 ) ) )
+            
+            fit_results_histograms[fit_variable][variable_bin] = {
+                                                    'data':h_data,
+                                                    'signal':h_signal,
+                                                    'background':h_background
+                                                    }
         
     return template_histograms, fit_results_histograms
 
 def make_template_plots( histograms, category, channel ):
     global variable, output_folder
-    
+    fit_variables = histograms.keys()
     for variable_bin in variable_bins_ROOT[variable]:
         path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_templates/'
         make_folder_if_not_exists( path )
-        plotname = path + channel + '_templates_bin_' + variable_bin 
+        for fit_variable in fit_variables:
+            plotname = path + channel + '_' + fit_variable + '_template_bin_' + variable_bin 
         
-        # check if template plots exist already
-        for output_format in output_formats:
-            if os.path.isfile( plotname + '.' + output_format ):
-                continue
+            # check if template plots exist already
+            for output_format in output_formats:
+                if os.path.isfile( plotname + '.' + output_format ):
+                    continue
+            
+            # plot with matplotlib
+            h_signal = histograms[fit_variable][variable_bin]['signal']
+            h_VJets = histograms[fit_variable][variable_bin]['V+Jets']
+            h_QCD = histograms[fit_variable][variable_bin]['QCD']
+            
+            h_signal.linecolor = 'red'
+            h_VJets.linecolor = 'green'
+            h_QCD.linecolor = 'gray'
+            h_VJets.linestyle = 'dashed'
+            h_QCD.linestyle = 'dotted'  # currently not working
+            # bug report: http://trac.sagemath.org/sage_trac/ticket/13834
+            
+            h_signal.linewidth = 5
+            h_VJets.linewidth = 5
+            h_QCD.linewidth = 5
         
-        # plot with matplotlib
-        h_signal = histograms[variable_bin]['signal']
-        h_VJets = histograms[variable_bin]['V+Jets']
-        h_QCD = histograms[variable_bin]['QCD']
-        
-        h_signal.linecolor = 'red'
-        h_VJets.linecolor = 'green'
-        h_QCD.linecolor = 'gray'
-        h_VJets.linestyle = 'dashed'
-        h_QCD.linestyle = 'dotted'  # currently not working
-        # bug report: http://trac.sagemath.org/sage_trac/ticket/13834
-        
-        h_signal.linewidth = 5
-        h_VJets.linewidth = 5
-        h_QCD.linewidth = 5
+            plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
+            axes = plt.axes()
+            axes.minorticks_on()
+            
+            plt.xlabel( fit_variables_latex[fit_variable], CMS.x_axis_title )
+            plt.ylabel( 'normalised to unit area/(%s)' % get_unit_string(fit_variable), CMS.y_axis_title )
+            plt.tick_params( **CMS.axis_label_major )
+            plt.tick_params( **CMS.axis_label_minor )
     
-        plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
-        axes = plt.axes()
-        axes.minorticks_on()
+            rplt.hist( h_signal, axes = axes, label = 'signal' )
+            if ( h_VJets.Integral() != 0 ):
+                rplt.hist( h_VJets, axes = axes, label = 'V+Jets' )
+            else:
+                print "WARNING: in %s bin %s, %s category, %s channel, V+Jets template is empty: not plotting." % ( variable, variable_bin, category, channel )
+            if ( h_QCD.Integral() != 0 ):
+                rplt.hist( h_QCD, axes = axes, label = 'QCD' )
+            else:
+                print "WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel )
+            axes.set_ylim( [0, 0.2] )
+            axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
+            
+            plt.legend( numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
+            plt.title( get_cms_labels( channel ), CMS.title )
+            plt.tight_layout()
         
-        plt.xlabel( r'lepton $|\eta|$', CMS.x_axis_title )
-        plt.ylabel( 'normalised to unit area/(0.2)', CMS.y_axis_title )
-        plt.tick_params( **CMS.axis_label_major )
-        plt.tick_params( **CMS.axis_label_minor )
-
-        rplt.hist( h_signal, axes = axes, label = 'signal' )
-        if ( h_VJets.Integral() != 0 ):
-            rplt.hist( h_VJets, axes = axes, label = 'V+Jets' )
-        else:
-            print "WARNING: in %s bin %s, %s category, %s channel, V+Jets template is empty: not plotting." % ( variable, variable_bin, category, channel )
-        if ( h_QCD.Integral() != 0 ):
-            rplt.hist( h_QCD, axes = axes, label = 'QCD' )
-        else:
-            print "WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel )
-        axes.set_ylim( [0, 0.2] )
-        
-        plt.legend( numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
-        plt.title( get_cms_labels( channel ), CMS.title )
-        plt.tight_layout()
-    
-        for output_format in output_formats:
-            plt.savefig( plotname + '.' + output_format )
-        
-        plt.close()
-        gc.collect()
+            for output_format in output_formats:
+                plt.savefig( plotname + '.' + output_format )
+            
+            plt.close()
+            gc.collect()
 
 
 def plot_fit_results( histograms, category, channel ):
     global variable, b_tag_bin, output_folder
     from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
-    
+    fit_variables = histograms.keys()
     for variable_bin in variable_bins_ROOT[variable]:
         path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_results/'
         make_folder_if_not_exists( path )
-        plotname = channel + '_bin_' + variable_bin
-        # check if template plots exist already
-        for output_format in output_formats:
-            if os.path.isfile( plotname + '.' + output_format ):
-                continue
+        for fit_variable in fit_variables:
+            plotname = channel + '_' + fit_variable + '_bin_' + variable_bin
+            # check if template plots exist already
+            for output_format in output_formats:
+                if os.path.isfile( plotname + '.' + output_format ):
+                    continue
+                
+            # plot with matplotlib
+            h_data = histograms[fit_variable][variable_bin]['data']
+            h_signal = histograms[fit_variable][variable_bin]['signal']
+            h_background = histograms[fit_variable][variable_bin]['background']
             
-        # plot with matplotlib
-        h_data = histograms[variable_bin]['data']
-        h_signal = histograms[variable_bin]['signal']
-        h_background = histograms[variable_bin]['background']
-        
-        histogram_properties = Histogram_properties()
-        histogram_properties.name = plotname
-        histogram_properties.x_axis_title = channel + ' $\left|\eta\\right|$'
-        histogram_properties.y_axis_title = 'Events/(0.2)'
-        histogram_properties.title = get_cms_labels( channel )
-        
-        make_data_mc_comparison_plot( [h_data, h_background, h_signal],
-                                     ['data', 'background', 'signal'],
-                                     ['black', 'green', 'red'], histogram_properties,
-                                     save_folder = path, save_as = output_formats )    
+            histogram_properties = Histogram_properties()
+            histogram_properties.name = plotname
+            histogram_properties.x_axis_title = channel + ' ' + fit_variables_latex[fit_variable]
+            histogram_properties.y_axis_title = 'Events/(%s)' % get_unit_string(fit_variable)
+            histogram_properties.title = get_cms_labels( channel )
+            histogram_properties.x_limits = measurement_config.fit_boundaries[fit_variable]
+            
+            make_data_mc_comparison_plot( [h_data, h_background, h_signal],
+                                         ['data', 'background', 'signal'],
+                                         ['black', 'green', 'red'], histogram_properties,
+                                         save_folder = path, save_as = output_formats )    
 
 def get_cms_labels( channel ):
     global b_tag_bin
@@ -471,6 +479,17 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
 
     plt.close()
     gc.collect()
+
+def get_unit_string(fit_variable):
+    unit = measurement_config.fit_variable_unit[fit_variable]
+    fit_variable_bin_width = measurement_config.fit_variable_bin_width[fit_variable]
+    unit_string = ''
+    if unit == '':
+        unit_string = fit_variable_bin_width
+    else:
+        unit_string = '%f %s' % (fit_variable_bin_width, unit)
+        
+    return unit_string
 
 if __name__ == '__main__':
     set_root_defaults()

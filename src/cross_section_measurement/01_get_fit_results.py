@@ -116,6 +116,8 @@ def get_qcd_histograms(input_files, variable, variable_bin, channel,
 
     control_region = ''
     control_region_btag = '0btag'
+    if 'M_bl' in fit_variable_hist_name or 'angle_bl' in fit_variable_hist_name:
+        control_region_btag = '1orMoreBtag'
     qcd_file = ''
     samples = ['data', 'V+Jets', 'SingleTop', 'TTJet']
 
@@ -188,9 +190,11 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
     (fit_variables) for each bin in the variable.
     ''' 
     global use_fitter, measurement_config, verbose, fit_variables
+    # results and initial values are the same across different fit variables
+    # templates are not
     results = {}
     initial_values = {}
-    templates = {}
+    templates = {fit_variable: {} for fit_variable in fit_variables}
 
     for variable_bin in variable_bins_ROOT[variable]:
         fitter = None
@@ -204,7 +208,7 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
                                         met_type=met_type,
                                         variable_bin=variable_bin,
                                         b_tag_bin=b_tag_bin,
-                                        rebin=measurement_config.rebin,
+                                        rebin=measurement_config.rebin[fit_variable],
                                         fit_variable=fit_variable,
                                         )
             # create data sets
@@ -278,20 +282,24 @@ def get_fitted_normalisation_from_ROOT(channel, input_files, variable, met_type,
 
         if results == {}:  # empty
             initial_values['data'] = [(normalisation['data'], normalisation_errors['data'])]
-            templates['data'] = [fit_data_collection.vectors(fit_variables[0])['data']]
+            for fit_variable in fit_variables:
+                templates[fit_variable]['data'] = [fit_data_collection.vectors(fit_variable)['data']]
             for sample in fit_results.keys():
                 results[sample] = [fit_results[sample]]
                 initial_values[sample] = [(normalisation[sample], normalisation_errors[sample])]
                 if not sample in ['TTJet', 'SingleTop', 'Higgs']:
-                    templates[sample] = [fit_data_collection.vectors(fit_variables[0])[sample]]
+                    for fit_variable in fit_variables:
+                        templates[fit_variable][sample] = [fit_data_collection.vectors(fit_variable)[sample]]
         else:
             initial_values['data'].append([normalisation['data'], normalisation_errors['data']])
-            templates['data'].append(fit_data_collection.vectors(fit_variables[0])['data'])
+            for fit_variable in fit_variables:
+                templates[fit_variable]['data'].append(fit_data_collection.vectors(fit_variable)['data'])
             for sample in fit_results.keys():
                 results[sample].append(fit_results[sample])
                 initial_values[sample].append([normalisation[sample], normalisation_errors[sample]])
                 if not sample in ['TTJet', 'SingleTop', 'Higgs']:
-                    templates[sample].append(fit_data_collection.vectors(fit_variables[0])[sample])
+                    for fit_variable in fit_variables:
+                        templates[fit_variable][sample].append(fit_data_collection.vectors(fit_variable)[sample])
 
     return results, initial_values, templates
 

@@ -83,3 +83,10 @@ samples_latex = {
                  'TTJet':'$\mathrm{t}\\bar{\mathrm{t}}$',
                  'SingleTop':'Single-Top'                 
                  }
+
+fit_variables_latex = {
+                       'absolute_eta' : r'lepton $|\eta|$',
+                       'M3' : r'$M3$',
+                       'M_bl' : r'$M(b,l)$',
+                       'angle_bl' : r'angle$(b,l)$',
+                       }

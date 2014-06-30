@@ -18,6 +18,8 @@ class XSectionConfig():
                   'electron_control_region',
                   'electron_control_region_systematic',
                   'fit_boundaries',
+                  'fit_variable_bin_width',
+                  'fit_variable_unit',
                   'general_category_templates',
                   'generator_systematic_ttbar_templates',
                   'generator_systematic_vjets_templates',
@@ -102,6 +104,19 @@ class XSectionConfig():
                                'M_bl' : ( 0, 400 ),
                                'angle_bl' : ( 0, 4 ),
                                }
+        # dependent on rebin
+        self.fit_variable_bin_width = {
+                                     'absolute_eta' : 0.2,
+                                     'M3' : 25,
+                                     'M_bl' : 10,
+                                     'angle_bl' : 0.2,
+                                     }
+        self.fit_variable_unit = {
+                                     'absolute_eta' : '',
+                                     'M3' : 'GeV',
+                                     'M_bl' : 'GeV',
+                                     'angle_bl' : '',
+                                     }
 
         self.ttbar_theory_systematic_prefix = 'TTJets_'
         self.vjets_theory_systematic_prefix = 'VJets_'
@@ -217,6 +232,7 @@ class XSectionConfig():
 
         self.muon_control_region = 'QCD non iso mu+jets ge3j'
         self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
+        # relates to fit_variable_bin_width
         self.rebin = {
                       'absolute_eta' : 2, # 2 -> 0.2
                       'M3' : 5, # 5 -> 25 GeV
