@@ -21,7 +21,7 @@ def make_correlation_plot_from_file( channel, variable, CoM, normalisation, titl
 # global b_tag_bin
     parameters = ["signal", "vJets", "QCD"]
     
-    input_file = open( "logs/%s_fit_%dTeV.log" % (variable,CoM), "r" )
+    input_file = open( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), "r" )
     # cycle through the lines in the file 
     for line_number, line in enumerate( input_file ):
         # for now, only make plots for the fits for the central measurement
@@ -33,33 +33,33 @@ def make_correlation_plot_from_file( channel, variable, CoM, normalisation, titl
         weights = {}
         if channel == 'electron':
                 # matrix we want is 10 lines below the line with the measurement ("central")
-            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % (variable, CoM), line_number + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) )
+            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), line_number + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) )
             weights["QCD_QCD"] = matrix_line.split()[2]
             weights["QCD_vJets"] = matrix_line.split()[3]
             weights["QCD_signal"] = matrix_line.split()[4]
         
-            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % (variable, CoM), line_number + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) + 1 )    
+            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), line_number + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) + 1 )    
             weights["vJets_QCD"] = matrix_line.split()[2]
             weights["vJets_vJets"] = matrix_line.split()[3]
             weights["vJets_signal"] = matrix_line.split()[4]
             
-            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % (variable, CoM), line_number + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) + 2 )
+            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), line_number + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) + 2 )
             weights["signal_QCD"] = matrix_line.split()[2]
             weights["signal_vJets"] = matrix_line.split()[3]
             weights["signal_signal"] = matrix_line.split()[4]
         
         if channel == 'muon':
-            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % (variable, CoM), line_number + ( ( ( len( variable_bins_ROOT[variable] ) ) * 10 ) + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) ) )
+            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), line_number + ( ( ( len( variable_bins_ROOT[variable] ) ) * 10 ) + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) ) )
             weights["QCD_QCD"] = matrix_line.split()[2]
             weights["QCD_vJets"] = matrix_line.split()[3]
             weights["QCD_signal"] = matrix_line.split()[4]
         
-            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % (variable, CoM), line_number + ( ( ( len( variable_bins_ROOT[variable] ) ) * 10 ) + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) ) + 1 )    
+            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), line_number + ( ( ( len( variable_bins_ROOT[variable] ) ) * 10 ) + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) ) + 1 )    
             weights["vJets_QCD"] = matrix_line.split()[2]
             weights["vJets_vJets"] = matrix_line.split()[3]
             weights["vJets_signal"] = matrix_line.split()[4]
             
-            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % (variable,CoM), line_number + ( ( ( len( variable_bins_ROOT[variable] ) ) * 10 ) + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) ) + 2 )
+            matrix_line = linecache.getline( "logs/%s_fit_%dTeV.log" % ( variable, CoM ), line_number + ( ( ( len( variable_bins_ROOT[variable] ) ) * 10 ) + ( ( variable_bins_ROOT[variable].index( variable_bin ) + 1 ) * 10 ) ) + 2 )
             weights["signal_QCD"] = matrix_line.split()[2]
             weights["signal_vJets"] = matrix_line.split()[3]
             weights["signal_signal"] = matrix_line.split()[4]
@@ -129,13 +129,13 @@ if __name__ == '__main__':
 #                  help="use fit inputs instead of fit results")
     
     ( options, args ) = parser.parse_args()
-    measurement_config = XSectionConfig(options.CoM)
+    measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
     lumi = measurement_config.luminosity
     come = measurement_config.centre_of_mass_energy
-    electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % (lumi, come)
-    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1 fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % (lumi, come)
+    electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % ( lumi, come )
+    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % ( lumi, come )
         
     path_to_JSON = options.path + '/' + str( come ) + 'TeV/'
     output_folder = options.output_folder
@@ -176,5 +176,27 @@ if __name__ == '__main__':
     normalisations_electron, normalisations_muon = fit_results_electron, fit_results_muon
     
     # make correlation plots for electron and muon channel
-    make_correlation_plot_from_file( channel = 'electron', variable = options.variable, CoM = options.CoM, normalisation = normalisations_electron, title = electron_histogram_title, x_title = '', y_title = '', x_limits = [0, 3], y_limits = [0, 3], rebin = 1, save_folder = 'plots/fitchecks/', save_as = ['pdf', 'png'] )
-    make_correlation_plot_from_file( channel = 'muon', variable = options.variable, CoM = options.CoM, normalisation = normalisations_electron, title = muon_histogram_title, x_title = '', y_title = '', x_limits = [0, 3], y_limits = [0, 3], rebin = 1, save_folder = 'plots/fitchecks/', save_as = ['pdf', 'png'] )
+    make_correlation_plot_from_file( channel = 'electron',
+                                     variable = options.variable,
+                                     CoM = options.CoM,
+                                     normalisation = normalisations_electron,
+                                     title = electron_histogram_title,
+                                     x_title = '',
+                                     y_title = '',
+                                     x_limits = [0, 3], 
+                                     y_limits = [0, 3], 
+                                     rebin = 1, 
+                                     save_folder = 'plots/fitchecks/', 
+                                     save_as = ['pdf', 'png'] )
+    make_correlation_plot_from_file( channel = 'muon', 
+                                     variable = options.variable, 
+                                     CoM = options.CoM, 
+                                     normalisation = normalisations_electron, 
+                                     title = muon_histogram_title, 
+                                     x_title = '', 
+                                     y_title = '', 
+                                     x_limits = [0, 3], 
+                                     y_limits = [0, 3], 
+                                     rebin = 1, 
+                                     save_folder = 'plots/fitchecks/', 
+                                     save_as = ['pdf', 'png'] )

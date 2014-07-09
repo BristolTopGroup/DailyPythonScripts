@@ -12,7 +12,6 @@ from itertools import izip
 from rootpy.plotting.hist import Hist2D
 import random
 import string
-from cmath import sqrt
 from copy import deepcopy
 
 def hist_to_value_error_tuplelist( hist ):
@@ -274,6 +273,57 @@ def conditional_rebin( histogram, bin_edges ):
             histogram_ = histogram_.rebinned( bin_edges, axis = 0 )
             if 'TH2' in histogram_.class_name():
                 histogram_ = histogram_.rebinned( bin_edges, axis = 1 )
+    return histogram_
+
+def clean_control_region(histograms = {}, 
+                         data_label = 'data', 
+                         subtract = [], 
+                         fix_to_zero = True):
+    '''This function takes a dictionary of histograms (sample_name:histogram)
+     and will subtract all samples given in the parameter "subtract" from the 
+     data distribution.
+     '''
+    data_hist = deepcopy(histograms[data_label])
+    # first subtract all necessary samples
+    for sample, histogram in histograms.iteritems():
+        if sample in subtract:
+            data_hist -= histogram
+    # next make sure there are no negative events
+    if fix_to_zero:
+        for bin_i, y in enumerate(data_hist.y()):
+            if y < 0:
+                data_hist.SetBinContent(bin_i + 1, 0)
+                # add the difference to 0 to the existing error
+                data_hist.SetBinError(bin_i, data_hist.GetBinError(bin_i + 1) + abs(y))
+    return data_hist
+
+def adjust_overflow_to_limit(histogram, x_min, x_max):
+    ''' Adjust the first and last bin of the histogram such that it becomes
+    the new under- and overflow bin'''
+    # get the bin before x_min
+    histogram_ = deepcopy(histogram)
+    underflow_bin = histogram_.FindBin(x_min)
+    overflow_bin = histogram_.FindBin(x_max)
+    n_bins = histogram_.nbins()
+    underflow, underflow_error = 0, 0
+    overflow, overflow_error = 0, 0
+    if not underflow_bin < 1:
+        underflow, underflow_error = histogram_.integral(0, underflow_bin, error=True)
+        for i in range(underflow_bin + 1):
+            histogram_.SetBinContent(i, 0)
+            histogram_.SetBinError(i, 0)
+    
+    if not overflow_bin > n_bins:
+        overflow, overflow_error = histogram_.integral(overflow_bin, n_bins + 1, error=True)
+        for i in range(overflow_bin, n_bins + 2):
+            histogram_.SetBinContent(i, 0)
+            histogram_.SetBinError(i, 0)
+    
+    histogram_.SetBinContent(underflow_bin, underflow)
+    histogram_.SetBinError(underflow_bin, underflow_error)
+    histogram_.SetBinContent(overflow_bin, overflow)
+    histogram_.SetBinError(overflow_bin, overflow_error)     
+        
     return histogram_
 
 if __name__ == '__main__':

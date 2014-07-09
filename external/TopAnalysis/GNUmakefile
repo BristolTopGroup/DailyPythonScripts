@@ -51,7 +51,7 @@ ARCH          = $(shell $(ROOTCONFIG) --arch)
 ROOTLIBS      = $(shell $(ROOTCONFIG) --libs)
 CXXFLAGS      = $(shell $(ROOTCONFIG) --cflags)
 CXX           = g++
-CXXFLAGS     += -Wall -fPIC 
+CXXFLAGS     += -Wall -fPIC
 LD            = g++
 LDFLAGS       =
 SOFLAGS       = -shared
@@ -74,8 +74,16 @@ endif
 ROOTINCDIR    = $(shell $(ROOTCONFIG) --incdir)
 ROOTLIBDIR    = $(shell $(ROOTCONFIG) --libdir)
 ROOTINCLUDES  = -I$(ROOTINCDIR)
+
+ROOTVERSION = $(shell $(ROOTCONFIG) --version)
+ROOTMAJORVERSION = $(firstword $(subst ., ,$(ROOTVERSION)))
+
 ifeq ($(ROOTCINT),)
+ifeq ($(ROOTMAJORVERSION),6)
+ROOTCINT      = rootcling
+else
 ROOTCINT      = rootcint
+endif
 endif
 ifeq ($(RLIBMAP),)
 RLIBMAP       = rlibmap
@@ -184,7 +192,7 @@ CPPFLAGS     += -DMAKEBUILD
 ifneq ($(findstring g++,$(CXX)),)
 MFLAGS        = -MM
 endif
-INCLUDES      = -I$(INCDIR)
+INCLUDES      = -I$(INCDIR) -I$(HOME) -iquote$(INCDIR) -iquote$(HOME)
 CXX          += $(EXTRAINCLUDES)
 LDFLAGS      += $(EXTRALDFLAGS)
 
@@ -335,7 +343,7 @@ $(MAINEXE) : $(EXEDIR)%$(ExeSuf) : $(OBJDIR)%.o $(LINKLIB)
 # Useful build targets
 include: $(DLIST)
 lib: $(LIBFILE)
-shlib: $(SHLIBFILE) $(ROOTMAP)
+shlib: $(SHLIBFILE)# $(ROOTMAP)
 bin: shlib $(MAINEXE)
 
 commands :
