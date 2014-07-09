@@ -100,17 +100,24 @@ class XSectionConfig():
         
         self.fit_boundaries = {
                                'absolute_eta' : ( 0., 2.4 ),
-                               'M3' : ( 0, 600 ),
+                               'M3' : ( 0, 900 ),
                                'M_bl' : ( 0, 400 ),
                                'angle_bl' : ( 0, 4 ),
                                }
         # dependent on rebin
         self.fit_variable_bin_width = {
                                      'absolute_eta' : 0.2,
-                                     'M3' : 25,
+                                     'M3' : 20,
                                      'M_bl' : 10,
                                      'angle_bl' : 0.2,
                                      }
+        # relates to fit_variable_bin_width
+        self.rebin = {
+                      'absolute_eta' : 2, # 2 -> 0.2
+                      'M3' : 5, # 5 -> 25 GeV
+                      'M_bl' : 4, # 2 -> 20 GeV
+                      'angle_bl' : 2, # 2 -> 0.2
+                      }
         self.fit_variable_unit = {
                                      'absolute_eta' : '',
                                      'M3' : 'GeV',
@@ -232,13 +239,6 @@ class XSectionConfig():
 
         self.muon_control_region = 'QCD non iso mu+jets ge3j'
         self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
-        # relates to fit_variable_bin_width
-        self.rebin = {
-                      'absolute_eta' : 2, # 2 -> 0.2
-                      'M3' : 5, # 5 -> 25 GeV
-                      'M_bl' : 2, # 2 -> 10 GeV
-                      'angle_bl' : 2, # 2 -> 0.2
-                      }
 
         self.include_higgs = False
 

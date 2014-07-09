@@ -4,6 +4,7 @@ Created on 3 May 2013
 @author: kreczko
 '''
 import matplotlib as mpl
+from tools.file_utilities import make_folder_if_not_exists
 mpl.use('agg')
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -408,6 +409,7 @@ def compare_measurements( models = {}, measurements = {},
             prescription as the models parameter.
         @param histogram_properties: a Histogram_properties object to describe the look of the histogram
     """
+    make_folder_if_not_exists(save_folder)
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     axes = plt.axes()
@@ -428,6 +430,8 @@ def compare_measurements( models = {}, measurements = {},
     linecycler = cycle( lines )
     
     for label, histogram in models.iteritems():
+        if not histogram: # skip empty ones
+            continue
         histogram.linewidth = 2 
         histogram.color = next( colorcycler )
         histogram.linestyle = next( linecycler ) 

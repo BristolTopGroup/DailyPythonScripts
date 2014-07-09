@@ -336,7 +336,7 @@ class Minuit():
 
     def readResults( self ):
         return self.results
-    
+
 # This class name won't cause any confusion, right?
 class RooFitFit():
 
@@ -347,7 +347,7 @@ class RooFitFit():
         self.constraints = fit_data_collection.constraints()
         self.constraint_type = ''
         self.saved_result = None
-        
+
         self.fit_data_collection = fit_data_collection
         self.samples = fit_data_collection.mc_samples()
         self.normalisation = fit_data_collection.mc_normalisation()
@@ -364,7 +364,7 @@ class RooFitFit():
         variables.add( fit_variable )
         variable_set = RooArgSet()
         variable_set.add( fit_variable )
-        
+
         roofit_histograms = {}
         roofit_pdfs = {}
         roofit_variables = {}
@@ -373,7 +373,7 @@ class RooFitFit():
         N_min = 0.
         pdf_arglist = RooArgList()
         variable_arglist = RooArgList()
-        
+
         roofit_histograms[self.data_label] = RooDataHist( self.data_label,
                                                          self.data_label,
                                                          variables,
@@ -410,7 +410,7 @@ class RooFitFit():
 
         if self.method == 'TMinuit':
             #WARNING: number of cores changes the results!!!
-            self.saved_result = use_model.fitTo( 
+            self.saved_result = use_model.fitTo(
                         roofit_histograms[self.data_label],
                         RooFit.Minimizer( "Minuit2", "Migrad" ),
                         RooFit.NumCPU( 1 ),
@@ -420,7 +420,7 @@ class RooFitFit():
 
         results = {}
         for sample in self.samples:
-            results[sample] = ( roofit_variables[sample].getVal(), roofit_variables[sample].getError() )    
+            results[sample] = ( roofit_variables[sample].getVal(), roofit_variables[sample].getError() )
         self.results = results
 
     def get_fit_normalisation_constraints( self, model, roofit_variables ):

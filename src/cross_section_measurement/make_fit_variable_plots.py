@@ -20,18 +20,18 @@ electron_fit_variables.append( 'electron_absolute_eta' )
 muon_fit_variables = copy( common_fit_variables )
 muon_fit_variables.append( 'muon_absolute_eta' )
 
+measurement_config = XSectionConfig( 8 )
 fit_variable_properties = {
-                       'M3': {'min':0, 'max':600, 'rebin':4, 'x-title': 'M3 [GeV]', 'y-title': 'Events/20 GeV'},
-                       'M_bl': {'min':0, 'max':400, 'rebin':4, 'x-title': 'M(b,l) [GeV]', 'y-title': 'Events/20 GeV'},
-                       'angle_bl': {'min':0, 'max':4, 'rebin':1, 'x-title': 'angle(b,l)', 'y-title': 'Events/(0.1)'},
-                       'electron_absolute_eta': {'min':0, 'max':2.6, 'rebin':1, 'x-title': '$\left|\eta(e)\\right|$', 'y-title': 'Events/(0.1)'},
-                       'muon_absolute_eta': {'min':0, 'max':2.6, 'rebin':1, 'x-title': '$\left|\eta(\mu)\\right|$', 'y-title': 'Events/(0.1)'},
+                       'M3': {'min':0, 'max':1000, 'rebin':5, 'x-title': 'M3 [GeV]', 'y-title': 'Events/25 GeV'},
+                       'M_bl': {'min':0, 'max':400, 'rebin':2, 'x-title': 'M(b,l) [GeV]', 'y-title': 'Events/10 GeV'},
+                       'angle_bl': {'min':0, 'max':3.5, 'rebin':2, 'x-title': 'angle(b,l)', 'y-title': 'Events/(0.2)'},
+                       'electron_absolute_eta': {'min':0, 'max':2.6, 'rebin':2, 'x-title': '$\left|\eta(e)\\right|$', 'y-title': 'Events/(0.2)'},
+                       'muon_absolute_eta': {'min':0, 'max':2.6, 'rebin':2, 'x-title': '$\left|\eta(\mu)\\right|$', 'y-title': 'Events/(0.2)'},
                        }
 
 b_tag_bin = '2orMoreBtags'
 b_tag_bin_ctl = '0orMoreBtag'
 category = 'central'
-measurement_config = XSectionConfig( 8 )
 histogram_files = {
         'data' : measurement_config.data_file_electron,
         'TTJet': measurement_config.ttbar_category_templates[category],
@@ -68,6 +68,8 @@ def main():
                 b_tag_bin_ctl = '0orMoreBtag'
             save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
             make_folder_if_not_exists(save_path)
+            make_folder_if_not_exists(save_path + 'qcd/')
+            make_folder_if_not_exists(save_path + 'vjets/')
             for bin_range in variable_bins:
                 params = {'met_type': met_type, 'bin_range':bin_range, 'fit_variable':fit_variable, 'b_tag_bin':b_tag_bin, 'variable':variable}
                 fit_variable_distribution = histogram_template % params
@@ -121,7 +123,7 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_QCDConversions' % b_tag_bin_ctl
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties,
-                                 save_folder = save_path,
+                                 save_folder = save_path + '/qcd/',
                                  show_ratio = False,
                                  save_as = save_as,
                                  )
@@ -135,7 +137,7 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                                   histogram_lables = ['data', 'QCD'],
                                   histogram_colors = ['black', 'yellow'],
                                   histogram_properties = histogram_properties,
-                                  save_folder = save_path,
+                                  save_folder = save_path + '/qcd/',
                                   show_ratio = False,
                                   save_as = save_as,
                                   )
@@ -164,14 +166,15 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_' + b_tag_bin + '_templates'
     # change histogram order for better visibility
-    histograms_to_draw = [histograms['TTJet'][fit_variable_distribution],
+    histograms_to_draw = [histograms['TTJet'][fit_variable_distribution] + histograms['SingleTop'][fit_variable_distribution], 
+                          histograms['TTJet'][fit_variable_distribution],
                           histograms['SingleTop'][fit_variable_distribution],
                           histograms['V+Jets'][fit_variable_distribution],
                           qcd_from_data]
-    histogram_lables = ['QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_lables = ['QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet'], samples_latex['TTJet'] + ' + ' + 'Single-Top']
     histogram_lables.reverse()
     # change QCD color to orange for better visibility
-    histogram_colors = ['orange', 'green', 'magenta', 'red']
+    histogram_colors = ['orange', 'green', 'magenta', 'red', 'black']
     histogram_colors.reverse()
     make_shape_comparison_plot( shapes = histograms_to_draw,
                                 names = histogram_lables,
@@ -199,7 +202,7 @@ def compare_qcd_control_regions( variable = 'MET', met_type = 'patType1Corrected
         else:
             b_tag_bin_ctl = '0orMoreBtag'
         save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
-        make_folder_if_not_exists(save_path)
+        make_folder_if_not_exists(save_path + '/qcd/')
         
         max_bins = 3
         for bin_range in variable_bins[0:max_bins]:
@@ -244,7 +247,7 @@ def compare_qcd_control_regions( variable = 'MET', met_type = 'patType1Corrected
                              measurements = measurements, 
                              show_measurement_errors = True, 
                              histogram_properties = histogram_properties, 
-                             save_folder = save_path, 
+                             save_folder = save_path + '/qcd/', 
                              save_as = save_as)
         
 def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedPFMet', title = 'Untitled'):
@@ -260,7 +263,7 @@ def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedP
         else:
             b_tag_bin_ctl = '0orMoreBtag'
         save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
-        make_folder_if_not_exists(save_path)
+        make_folder_if_not_exists(save_path + '/vjets/')
         histogram_properties = Histogram_properties()
         histogram_properties.x_axis_title = fit_variable_properties[fit_variable]['x-title']
         histogram_properties.y_axis_title = fit_variable_properties[fit_variable]['y-title']
@@ -281,7 +284,7 @@ def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedP
                              measurements = {'$>=$ 2 b-tags': histograms['V+Jets'][fit_variable_distribution]}, 
                              show_measurement_errors = True, 
                              histogram_properties = histogram_properties, 
-                             save_folder = save_path, 
+                             save_folder = save_path + '/vjets/', 
                              save_as = save_as)
             
 if __name__ == '__main__':
