@@ -21,6 +21,13 @@ y_axis_title = {
               'horizontalalignment': 'right'
               }
 
+y_axis_title_small = {
+              'fontsize':40,
+              'position' : (0, 1.),
+              'verticalalignment': 'bottom',
+              'horizontalalignment': 'right'
+              }
+
 axis_label_major = {
               'which':'major',
               'labelsize':40,
@@ -36,7 +43,7 @@ axis_label_minor = {
               'pad': 12
               }
 
-legend_properties = {'size':40}
+legend_properties = {'size':35}
 
 figsize = (16,16)
 dpi = 400

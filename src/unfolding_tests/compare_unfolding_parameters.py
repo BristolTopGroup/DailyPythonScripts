@@ -68,7 +68,7 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
         result = calculate_normalised_xsection( 
                         hist_to_value_error_tuplelist( unfolded_data ),
                         bin_widths[variable],
-                        normalise_to_one = True )
+                        normalise_to_one = False )
         h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
         k_value_results[k_value] = deepcopy( h_result )
     
@@ -87,7 +87,7 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
             result = calculate_normalised_xsection( 
                             hist_to_value_error_tuplelist( unfolded_data ),
                             bin_widths[variable],
-                            normalise_to_one = True )
+                            normalise_to_one = False)
             h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
             tau_value_results[tau_value] = deepcopy( h_result )
         
@@ -112,11 +112,11 @@ def compare( central_mc, expected_result = None, measured_result = None, results
         title_template = 'CMS Simulation at $\sqrt{s}$ = %d TeV \n %s'
         title = title_template % ( centre_of_mass, channel_label )
 
-    models = {'central' : central_mc}
+    models = {latex_labels.measurements_latex['MADGRAPH'] : central_mc}
     if expected_result:
-        models['expected'] = expected_result
-    if measured_result:
-        models['measured'] = measured_result
+        models.update({'expected' : expected_result})
+    if measured_result and test != 'data':
+        models.update({'measured' : measured_result})
     
     measurements = collections.OrderedDict()
     for key, value in results['k_value_results'].iteritems():
@@ -213,6 +213,7 @@ if __name__ == '__main__':
             
             if test == 'data':
                 h_data = get_data_histogram( channel, variable, met_type )
+                h_expected = deepcopy( h_data )
             elif test == 'bias':
                 h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 
                                 inputfile = input_file_bias,
@@ -233,19 +234,19 @@ if __name__ == '__main__':
             central_mc_result = calculate_normalised_xsection( 
                             hist_to_value_error_tuplelist( h_truth ),
                             bin_widths[variable],
-                            normalise_to_one = True )
+                            normalise_to_one = False )
             central_mc = value_error_tuplelist_to_hist( central_mc_result, bin_edges[variable] )
             if h_expected:
                 expected_result = calculate_normalised_xsection( 
                             hist_to_value_error_tuplelist( h_expected ),
                             bin_widths[variable],
-                            normalise_to_one = True )
+                            normalise_to_one = False )
                 h_expected = value_error_tuplelist_to_hist( expected_result, bin_edges[variable] )
 
             data_result = calculate_normalised_xsection( 
                             hist_to_value_error_tuplelist( h_data ),
                             bin_widths[variable],
-                            normalise_to_one = True )
+                            normalise_to_one = False )
             h_data = value_error_tuplelist_to_hist( data_result, bin_edges[variable] )
                 
             compare( central_mc = central_mc, expected_result = h_expected, measured_result = h_data,

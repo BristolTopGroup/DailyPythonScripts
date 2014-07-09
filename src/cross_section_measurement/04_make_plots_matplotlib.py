@@ -9,7 +9,7 @@ from config.variable_binning import bin_edges, variable_bins_ROOT, eta_bin_edges
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, \
-value_tuplelist_to_hist, value_errors_tuplelist_to_graph
+value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
 from math import sqrt
 # rootpy & matplotlib
 from ROOT import kRed, kGreen, kMagenta, kBlue
@@ -18,6 +18,8 @@ import matplotlib as mpl
 mpl.use( 'agg' )
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib.ticker import MultipleLocator
 from config import CMS
 from matplotlib import rc
 rc( 'font', **CMS.font )
@@ -258,7 +260,7 @@ def get_cms_labels( channel ):
     return label
     
     
-def make_plots( histograms, category, output_folder, histname, show_before_unfolding = False ):
+def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
     global variable, k_values
     
     channel = 'electron'
@@ -286,11 +288,16 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
     hist_measured.marker = 'o'
     hist_measured.color = 'red'
 
-    plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
-    axes = plt.axes()
+    plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    if show_ratio:
+        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] ) 
+        axes = plt.subplot( gs[0] )
+    else:
+        axes = plt.axes()
+        plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+
     axes.minorticks_on()
     
-    plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
     plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
@@ -341,9 +348,64 @@ def make_plots( histograms, category, output_folder, histname, show_before_unfol
             new_handles.append( handle )
             new_labels.append( label )
     
-    plt.legend( new_handles, new_labels, numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
+    legend_location = 'upper right'
+    if variable == 'MT':
+        legend_location = 'upper left'
+    plt.legend( new_handles, new_labels, numpoints = 1, loc = legend_location, prop = CMS.legend_properties )
     plt.title( get_cms_labels( channel ), CMS.title )
-    plt.tight_layout()
+
+    if show_ratio:
+        plt.setp( axes.get_xticklabels(), visible = False )
+        ax1 = plt.subplot( gs[1] )
+        ax1.minorticks_on()
+        #ax1.grid( True, 'major', linewidth = 1 )
+        # setting the x_limits identical to the main plot
+        x_limits = axes.get_xlim()
+        ax1.set_xlim(x_limits)
+        ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+        ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+
+        plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+        plt.tick_params( **CMS.axis_label_major )
+        plt.tick_params( **CMS.axis_label_minor ) 
+        plt.ylabel( '$\\frac{\\textrm{theory}}{\\textrm{data}}$', CMS.y_axis_title_small )
+        ax1.yaxis.set_label_coords(-0.115, 0.8)
+        #draw a horizontal line at y=1 for data
+        plt.axhline(y = 1, color = 'black', linewidth = 1)
+
+        for key, hist in sorted( histograms.iteritems() ):
+            if not 'unfolded' in key and not 'measured' in key:
+                ratio = hist.Clone()
+                ratio.Divide( hist_data ) #divide by data
+                rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
+
+        stat_lower = hist_data.Clone()
+        stat_upper = hist_data.Clone()
+        syst_lower = hist_data.Clone()
+        syst_upper = hist_data.Clone()
+
+        # plot error bands on data in the ratio plot
+        for bin_i in range( 1, hist_data.GetNbinsX() + 1 ):
+            stat_errors = graph_to_value_errors_tuplelist(hist_data)
+            stat_lower.SetBinContent( bin_i, 1 - stat_errors[bin_i-1][1]/stat_errors[bin_i-1][0] )
+            stat_upper.SetBinContent( bin_i, 1 + stat_errors[bin_i-1][2]/stat_errors[bin_i-1][0] )
+            if category == 'central':
+                syst_errors = graph_to_value_errors_tuplelist(hist_data_with_systematics)
+                syst_lower.SetBinContent( bin_i, 1 - syst_errors[bin_i-1][1]/syst_errors[bin_i-1][0] )
+                syst_upper.SetBinContent( bin_i, 1 + syst_errors[bin_i-1][2]/syst_errors[bin_i-1][0] )
+
+        if category == 'central':
+            rplt.fill_between( syst_lower, syst_upper, ax1, facecolor = 'yellow', alpha = 0.5 )
+
+        rplt.fill_between( stat_upper, stat_lower, ax1, facecolor = '0.75', alpha = 0.5 )
+
+        # p1 = plt.Rectangle((0, 0), 1, 1, fc="yellow")
+        # p2 = plt.Rectangle((0, 0), 1, 1, fc="0.75") 
+        # plt.legend([p1, p2], ['Stat. $\\oplus$ Syst.', 'Stat.'], loc = 'upper left', prop = {'size':20})
+        ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+
+    if CMS.tight_layout:
+        plt.tight_layout()
 
     path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category
     make_folder_if_not_exists( path )
