@@ -1,12 +1,12 @@
 #!/bin/bash
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding &> logs/MET_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -v HT &> logs/HT_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -v ST &> logs/ST_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -v MT &> logs/MT_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -v WPT &> logs/WPT_unfold_8TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py &> logs/MET_unfold_8TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -v HT &> logs/HT_unfold_8TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -v ST &> logs/ST_unfold_8TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -v MT &> logs/MT_unfold_8TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -v WPT &> logs/WPT_unfold_8TeV.log &
 # 7 TeV
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -c 7 &> logs/MET_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -c 7 -v HT &> logs/HT_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -c 7 -v ST &> logs/ST_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -c 7 -v MT &> logs/MT_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py --combine-before-unfolding -c 7 -v WPT &> logs/WPT_unfold_7TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -c 7 &> logs/MET_unfold_7TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v HT &> logs/HT_unfold_7TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v ST &> logs/ST_unfold_7TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v MT &> logs/MT_unfold_7TeV.log &
+python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v WPT &> logs/WPT_unfold_7TeV.log &

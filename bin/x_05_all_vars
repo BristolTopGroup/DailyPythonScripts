@@ -1,5 +1,4 @@
 #!/bin/bash
-mkdir -p plots
 python src/cross_section_measurement/05_make_tables.py &> logs/MET_table_8TeV.log &
 python src/cross_section_measurement/05_make_tables.py -v HT &> logs/HT_table_8TeV.log &
 python src/cross_section_measurement/05_make_tables.py -v ST &> logs/ST_table_8TeV.log &

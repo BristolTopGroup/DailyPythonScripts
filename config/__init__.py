@@ -182,18 +182,18 @@ class XSectionConfig():
         # optimal regularisation parameters
         self.k_values_electron = {
                    'MET' : 3,
-                   'HT' : 7,
-                   'ST' : 6,
+                   'HT' : 4,
+                   'ST' : 3,
                    'MT' : 2,
                    'WPT' : 3
                    }
 
         self.k_values_muon = {
                    'MET' : 3,
-                   'HT' : 6,
-                   'ST' : 6,
+                   'HT' : 4,
+                   'ST' : 3,
                    'MT' : 2,
-                   'WPT' : 6
+                   'WPT' : 3
                    }
 
         self.k_values_combined = {
@@ -242,7 +242,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
         
-        self.new_luminosity = self.luminosity  # pb^-1
+        self.new_luminosity = 19712  # pb^-1
         self.ttbar_xsection = 245.8  # pb
         
         self.data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
