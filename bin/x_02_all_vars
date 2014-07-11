@@ -1,12 +1,24 @@
 #!/bin/bash
-python src/cross_section_measurement/02_unfold_and_measure.py &> logs/MET_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -v HT &> logs/HT_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -v ST &> logs/ST_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -v MT &> logs/MT_unfold_8TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -v WPT &> logs/WPT_unfold_8TeV.log &
-# 7 TeV
-python src/cross_section_measurement/02_unfold_and_measure.py -c 7 &> logs/MET_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v HT &> logs/HT_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v ST &> logs/ST_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v MT &> logs/MT_unfold_7TeV.log &
-python src/cross_section_measurement/02_unfold_and_measure.py -c 7 -v WPT &> logs/WPT_unfold_7TeV.log &
+echo "This will take a whil	e ... grab a coffee/tea/water"
+mkdir -p logs
+fit_var="absolute_eta,M3,angle_bl"
+nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
+N_JOBS=4
+
+echo "Using the fit variable(s): $fit_var"
+
+i=0
+for var in MET HT ST MT WPT; do
+	echo "Unfolding distribution: $var"
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 7 -p data/$nice_fit_var &> logs/${var}_unfold_7TeV_${nice_fit_var}.log &
+	let i+=1
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 8 -p data/$nice_fit_var &> logs/${var}_unfold_8TeV_${nice_fit_var}.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+
+echo "All done! Time to run x_03_all_vars."
