@@ -4,6 +4,7 @@ Created on 3 May 2013
 @author: kreczko
 '''
 import matplotlib as mpl
+from tools.file_utilities import make_folder_if_not_exists
 mpl.use('agg')
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -287,7 +288,8 @@ def make_shape_comparison_plot( shapes = [],
             shape.legendstyle = 'F'
             shape.linewidth = 5
             
-    
+    if not histogram_properties.y_limits:
+        histogram_properties.y_limits = [0, get_best_max_y(shapes_, False)]
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
@@ -407,6 +409,7 @@ def compare_measurements( models = {}, measurements = {},
             prescription as the models parameter.
         @param histogram_properties: a Histogram_properties object to describe the look of the histogram
     """
+    make_folder_if_not_exists(save_folder)
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     axes = plt.axes()
@@ -427,6 +430,8 @@ def compare_measurements( models = {}, measurements = {},
     linecycler = cycle( lines )
     
     for label, histogram in models.iteritems():
+        if not histogram: # skip empty ones
+            continue
         histogram.linewidth = 2 
         histogram.color = next( colorcycler )
         histogram.linestyle = next( linecycler ) 
@@ -487,3 +492,9 @@ def adjust_axis_limits( axes, histogram_properties ):
         axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
     else:
         axes.set_ylim( ymin = 0 )
+        
+def get_best_max_y(histograms, include_error = True):
+    return max([histogram.max(include_error = include_error) for histogram in histograms])
+
+def get_best_min_y(histograms, include_error = True):
+    return min([histogram.min(include_error = include_error) for histogram in histograms])
