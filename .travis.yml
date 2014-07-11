@@ -50,32 +50,4 @@ install:
   # add base path from setup_standalone to PYTHONPATH
   - export PYTHONPATH=$PYTHONPATH:$base
 
-script:
-
-  # Check if root and PyROOT work ok
-  - time root -l -q
-  - time python -c 'import ROOT; ROOT.TBrowser()'
-
-  # Check that rootpy can be imported
-  - time python -c 'import rootpy'
-  # What if ROOT already been initialized
-  - time python -c "from ROOT import kTRUE; import rootpy"
-
-  # Give user write access to shared memory to make multiprocessing semaphores work
-  # https://github.com/rootpy/rootpy/pull/176#issuecomment-13712313
-  - ls -la /dev/shm
-  - sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
-  #- sudo chmod a+w /dev/shm
-  - ls -la /dev/shm
-
-  # Now run the actual tests (from the installed version, not the local build dir)
-  - time python test/config_XSectionConfig.py
-  - time python test/cross_section_measurement_00_pick_bins.py
-  - time python test/fix_overflow.py
-  - time python test/tools_Calculation.py
-  - time python test/tools_Fitting_FitData.py
-  - time python test/tools_Fitting_Minuit.py
-  - time python test/tools_Fitting_RooFitFit.py
-  - time python test/tools_hist_utilities.py
-  - time python test/tools_Unfolding.py
-  - time python test/Integral_GetBinContent_consistency.py
+script: bash ci/test.sh
