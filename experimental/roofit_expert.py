@@ -1,15 +1,16 @@
 from __future__ import division
 from optparse import OptionParser
 from math import sqrt
-import ROOT
+import sys
 # rootpy                                                                                                                                                                                                                      
 from rootpy.io import File
 from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, RooArgSet, RooAddPdf
 from ROOT import RooChi2Var, RooFormulaVar, RooMinuit, TCanvas, RooPlot, RooGaussian, RooProdPdf, RooLinkedList
-from config.variable_binning_8TeV import variable_bins_ROOT
-import config.cross_section_measurement_8TeV as measurement_config
+from config.variable_binning import variable_bins_ROOT
 from tools.Calculation import decombine_result
 from uncertainties import ufloat
+from config import XSectionConfig
+from config.summations_common import b_tag_summations
         
 # copied from 01_get_fit_results.py
 def get_histogram(input_file, histogram_path, b_tag_bin=''):
@@ -264,34 +265,16 @@ if __name__ == '__main__':
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
                       help="set the centre of mass energy for analysis. Default = 8 [TeV]")
 
-    translate_options = {
-                        '0':'0btag',
-                        '1':'1btag',
-                        '2':'2btags',
-                        '3':'3btags',
-                        '0m':'0orMoreBtag',
-                        '1m':'1orMoreBtag',
-                        '2m':'2orMoreBtags',
-                        '3m':'3orMoreBtags',
-                        '4m':'4orMoreBtags',
-                        # mettype:
-                        'pf':'PFMET',
-                        'type1':'patType1CorrectedPFMet'
-                        }
-    
-    
     (options, args) = parser.parse_args()
-    from config.cross_section_measurement_common import analysis_types, met_systematics_suffixes, translate_options, ttbar_theory_systematic_prefix, vjets_theory_systematic_prefix
-    from config.summations_common import b_tag_summations
-
-    if options.CoM == 8:
-        from config.variable_binning_8TeV import variable_bins_ROOT
-        import config.cross_section_measurement_8TeV as measurement_config
-    elif options.CoM == 7:
-        from config.variable_binning_7TeV import variable_bins_ROOT
-        import config.cross_section_measurement_7TeV as measurement_config
-    else:
-        sys.exit('Unknown centre of mass energy')
+    measurement_config = XSectionConfig(options.CoM)
+    # caching of variables for shorter access
+    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
+    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
+    generator_systematics = measurement_config.generator_systematics
+    categories_and_prefixes = measurement_config.categories_and_prefixes
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
+    analysis_types = measurement_config.analysis_types
+    translate_options = measurement_config.translate_options
         
     generator_systematics = measurement_config.generator_systematics
     categories_and_prefixes = measurement_config.categories_and_prefixes
