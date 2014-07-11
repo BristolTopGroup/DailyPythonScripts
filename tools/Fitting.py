@@ -208,7 +208,7 @@ class TMinuitFit( TemplateFit ):
                 L = TMath.Poisson( data_i, x_i )
 #                L = TMath.Gaus(data_i, x_i, ((data_i + sumxerrorssquared_i)**0.5))
 #                L = TMath.Gaus(data_i, x_i, (x_i**0.5))
-                lnL += TMath.log( L )
+                lnL += math.log( L )
             
             
             
