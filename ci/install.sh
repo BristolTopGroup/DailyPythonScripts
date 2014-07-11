@@ -29,23 +29,11 @@ time sudo apt-get update -qq
 
 # Install the dependencies we need
 time sudo apt-get -qq install clang-3.5 libclang-3.5-dev gcc-4.8 g++-4.8
-time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose
+time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip
 # matplotlib and PyTables are not available for Python 3 as packages from the main repo yet.
-if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then time sudo apt-get install -qq python${PYTHON_SUFFIX}-matplotlib python${PYTHON_SUFFIX}-tables; fi
-
-# This is needed for the docs
-git submodule init
-git submodule update
-
-# Use system python, not virtualenv, because building the dependencies from source takes too long
-deactivate # the virtualenv
-
-
-# Install the dependencies we need
-time sudo apt-get -qq install clang-3.5 libclang-3.5-dev gcc-4.8 g++-4.8
-time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose
-# matplotlib and PyTables are not available for Python 3 as packages from the main repo yet.
-if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then time sudo apt-get install -qq python${PYTHON_SUFFIX}-matplotlib python${PYTHON_SUFFIX}-tables; fi
+if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then 
+	time sudo apt-get install -qq python-matplotlib python-tables; 
+fi
 
 # Install a ROOT binary that we custom-built in a 64-bit Ubuntu VM
 # for the correct python / ROOT version
@@ -53,6 +41,12 @@ time wget --no-check-certificate https://copy.com/s3BcYu1drmZa/ci/root_builds/ro
 time tar zxf root_v${ROOT}_python_${TRAVIS_PYTHON_VERSION}.tar.gz
 mv root_v${ROOT}_python_${TRAVIS_PYTHON_VERSION} root
 source root/bin/thisroot.sh
+
+# test ROOT install 
+# Check if ROOT and PyROOT work
+root -l -q
+python -c "import ROOT; ROOT.TBrowser()"
+
 # setup newer compilers for ROOT 6
 if [[ $ROOT == '6-00-00' ]]; then 
 	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50;
@@ -61,14 +55,40 @@ if [[ $ROOT == '6-00-00' ]]; then
 fi
 
 # setup vpython with all packages
+# being standalone.sh
+#DailyPythonTools location
 export base=`pwd`
+
+#package list from FinalStateAnalysis (https://github.com/uwcms/FinalStateAnalysis/blob/master/recipe/install_python.sh)
+echo "Installing yolk"
+time sudo pip install -U yolk
+echo "Installing ipython"
+time sudo pip install -U ipython
+echo "Installing termcolor"
+time sudo pip install -U termcolor
+echo "Installing uncertainties <-- awesome error propagation"
+time sudo pip install -U uncertainties
+echo "Install progressbar"
+time sudo pip install -U progressbar
+echo "Install cython"
+time sudo pip install -U cython
+echo "Installing argparse"
+time sudo pip install -U argparse
+echo "Installing pudb <-- interactive debugging"
+time sudo pip install -U pudb
+#echo "Installing numpy"
+#time sudo pip install -U numpy
+echo "Installing dateutil"
+time sudo pip install python-dateutil
+echo "Installing PrettyTable"
+time sudo pip install PrettyTable
+
 echo "Installing rootpy"
-pip install -e $base/external/rootpy &> /dev/null
-success $? rootpy
+time pip install --user -e $base/external/rootpy
 
 echo "Installing root_numpy"
-pip install root_numpy &> /dev/null
-success $? root_numpy
+git clone https://github.com/rootpy/root_numpy.git && (cd root_numpy && python setup.py install --user)
+cd $base
 
 if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
@@ -85,7 +105,7 @@ if [ ! -d "$base/external/lib" ]; then
 
 	echo "Building TopAnalysis"
 	cd $base/external/TopAnalysis/
-	make -j4 &> /dev/null
+	make -j4
 	success $? TopAnalysis
 	# remove tmp folder
 	rm -fr $base/external/TopAnalysis/tmp
@@ -96,5 +116,6 @@ fi
 
 cd $base
 export PATH=$PATH:$base/bin
+# end standalone.sh
 # add base path from setup_standalone to PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:$base
