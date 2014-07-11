@@ -10,7 +10,7 @@ from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
 gSystem.Load( unfoldCfg.library )
 gSystem.Load( top_unfold.library )
 from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
-from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
+from ROOT import RooUnfoldBinByBin, RooUnfoldInvert
 from ROOT import TSVDUnfold
 from ROOT import TopSVDUnfold
 from ROOT import TH2D, TH1D
@@ -65,10 +65,6 @@ class Unfolding:
                 self.unfoldObject = RooUnfoldBinByBin     ( self.unfoldResponse, self.data )
             elif self.method == 'RooUnfoldInvert':
                 self.unfoldObject = RooUnfoldInvert     ( self.unfoldResponse, self.data )
-            elif self.method == 'RooUnfoldTUnfold':
-                self.unfoldObject = RooUnfoldTUnfold     ( self.unfoldResponse, self.data )
-                if self.tau >= 0:
-                    self.unfoldObject.FixTau( self.tau )
             elif self.method == 'RooUnfoldSvd':
                 self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
             elif self.method == 'TSVDUnfold':
@@ -168,8 +164,6 @@ class Unfolding:
                 self.closure_test = RooUnfoldBinByBin     ( self.unfoldResponse, self.measured )
             elif self.method == 'RooUnfoldInvert':
                 self.closure_test = RooUnfoldInvert     ( self.unfoldResponse, self.measured )
-            elif self.method == 'RooUnfoldTUnfold':
-                self.closure_test = RooUnfoldTUnfold     ( self.unfoldResponse, self.measured )
             elif self.method == 'RooUnfoldSvd':
                 self.closure_test = RooUnfoldSvd( self.unfoldResponse, self.measured, self.k_value, self.n_toy )
             elif self.method == 'TSVDUnfold':
