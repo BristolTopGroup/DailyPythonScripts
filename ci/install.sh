@@ -6,15 +6,6 @@
 
 set -e
 
-# Helper functions
-success() {
-	if [ $1 -eq 0 ];then
-		echo "Successfully installed $2"
-	else
-		echo "Failed to install $2"
-	fi
-}
-
 # Check if we are running Python 2 or 3. This is needed for the apt-get package names
 if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then 
 	export PYTHON_SUFFIX="3"; 
@@ -29,7 +20,7 @@ time sudo apt-get update -qq
 
 # Install the dependencies we need
 time sudo apt-get -qq install clang-3.5 libclang-3.5-dev gcc-4.8 g++-4.8
-time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip
+time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX}
 # matplotlib and PyTables are not available for Python 3 as packages from the main repo yet.
 if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then 
 	time sudo apt-get install -qq python-matplotlib python-tables; 
@@ -59,7 +50,8 @@ fi
 #DailyPythonTools location
 export base=`pwd`
 
-#package list from FinalStateAnalysis (https://github.com/uwcms/FinalStateAnalysis/blob/master/recipe/install_python.sh)
+# package list from FinalStateAnalysis 
+# (https://github.com/uwcms/FinalStateAnalysis/blob/master/recipe/install_python.sh)
 echo "Installing yolk"
 time sudo pip install -U yolk
 echo "Installing ipython"
@@ -70,14 +62,10 @@ echo "Installing uncertainties <-- awesome error propagation"
 time sudo pip install -U uncertainties
 echo "Install progressbar"
 time sudo pip install -U progressbar
-echo "Install cython"
-time sudo pip install -U cython
 echo "Installing argparse"
 time sudo pip install -U argparse
 echo "Installing pudb <-- interactive debugging"
 time sudo pip install -U pudb
-#echo "Installing numpy"
-#time sudo pip install -U numpy
 echo "Installing dateutil"
 time sudo pip install python-dateutil
 echo "Installing PrettyTable"
@@ -95,7 +83,6 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Building RooUnfold"
 	cd $base/external/RooUnfold/
 	make -j4
-	success $? RooUnfold
 	#remove tmp folder
 	rm -fr $base/external/RooUnfold/tmp
 	mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
@@ -106,7 +93,6 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Building TopAnalysis"
 	cd $base/external/TopAnalysis/
 	make -j4
-	success $? TopAnalysis
 	# remove tmp folder
 	rm -fr $base/external/TopAnalysis/tmp
 	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
