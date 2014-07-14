@@ -7,6 +7,14 @@ from config.variable_binning import bin_edges
 
 is7TeVData = False
 
+class channel:
+    def __init__(self, channelName, treeName, outputDirName):
+        self.channelName = channelName
+        self.treeName = treeName
+        self.outputDirName = outputDirName
+        pass
+    pass
+
 # For debug
 def setup_canvas():
     canvas = Canvas(width=700, height=500)
@@ -30,14 +38,9 @@ file_name = 'nTuple_53X_mc.root'
 outputFileName = 'TestBLTUnfold_nTuple_53X_mc.root'
 
 channels = [
-            'ePlusJets',
-            'muPlusJets',
+            channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
+            channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
             ]
-
-treeDir = {
-            'ePlusJets':'rootTupleTreeEPlusJets',
-            'muPlusJets':'rootTupleTreeMuPlusJets',
-             }
 
 with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
     for channel in channels:
@@ -50,14 +53,19 @@ with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate')
                     pass
                 
                 # Get the tree
-                tree = f.Get(treeDir[channel]+'/'+channel+'Tree')
+                tree = f.Get(channel.treeName+'/'+channel.channelName+'Tree')
     
                 # Make dir in output file
-                if applyTopPtReweighting:
-                    outputDir = out.mkdir('unfolding_'+variable+'analyser_withTopPtReweighting_'+channel)
-                else:
-                    outputDir = out.mkdir('unfolding_'+variable+'analyser_'+channel)
+                metSuffix='_patType1CorrectedPFMet'
+                if variable is 'HT':
+                    metSuffix=''
+                    pass
                 
+                if applyTopPtReweighting:
+                    outputDir = out.mkdir('unfolding_'+variable+'_analyser_'+channel.outputDirName+'_channel'+metSuffix+'_withTopPtReweighting')
+                else:
+                    outputDir = out.mkdir('unfolding_'+variable+'_analyser_'+channel.outputDirName+'_channel'+metSuffix)
+
                 # Variable names in tree
                 genSelection = '( unfolding.GenSelection == 1 )'
                 genWeight = '( unfolding.puWeight )'
@@ -66,13 +74,13 @@ with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate')
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
                 genVariable = 'unfolding.gen'+variable
                 recoVariable = 'unfolding.reco'+variable
-                
+
                 # Weights derived from variables in tree
                 if applyTopPtReweighting:
                     ptWeight = topPtWeight( is7TeVData )
                     offlineWeight += '&&'+ptWeight
                     pass
-                    
+
                 # Histograms to fill
                 # 1D histograms
                 truth = Hist( bin_edges[variable], name='truth')
