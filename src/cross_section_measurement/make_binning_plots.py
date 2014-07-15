@@ -42,8 +42,8 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
 
     ax0 = plt.axes()
     ax0.minorticks_on()
-    ax0.grid( True, 'major', linewidth = 2 )
-    ax0.grid( True, 'minor' )
+#     ax0.grid( True, 'major', linewidth = 2 )
+#     ax0.grid( True, 'minor' )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
     ax0.xaxis.labelpad = 12
