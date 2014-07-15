@@ -5,7 +5,7 @@ from rootpy.interactive import wait
 
 from config.variable_binning import bin_edges
 
-is7TeVData = False
+from scaleFactors import *
 
 class channel:
     def __init__(self, channelName, treeName, outputDirName):
@@ -32,6 +32,37 @@ def topPtWeight( is7TeV ):
         return 'sqrt( exp(0.174-0.00137*unfolding.hadronicTopPt) * exp(0.174-0.00137*unfolding.leptonicTopPt) )'
     else:
         return 'sqrt( exp(0.159-0.00141*unfolding.hadronicTopPt) * exp(0.159-0.00141*unfolding.leptonicTopPt) )'
+
+# Get the lepton scale factors
+def getScaleFactor( is7TeV, channelName ):
+    if is7TeV:
+        if channelName is 'ePlusJets':
+            return '(1)'
+        else:
+            return convertScaleFactorsToString(muon7TeVScaleFactors)
+    else:
+        if channelName is 'ePlusJets':
+            return convertScaleFactorsToString(electron8TeVScaleFactors)
+        else:
+            return convertScaleFactorsToString(muon8TeVScaleFactors)
+    pass
+
+# Convert the scale factors into a string for Tree::Draw
+def convertScaleFactorsToString( scaleFactors ):
+    firstScaleFactor = True
+    sfString = '( '
+    for scaleFactor in scaleFactors:
+        if ( firstScaleFactor ):
+            sfString += '( ( ( unfolding.leptonEta > '+scaleFactor.etaLowEdge+') && ( unfolding.leptonEta < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
+            firstScaleFactor = False
+        else :
+            sfString += '+ ( ( ( unfolding.leptonEta > '+scaleFactor.etaLowEdge+') && ( unfolding.leptonEta < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
+
+    sfString += ')'
+    return sfString
+
+
+is7TeVData = False
 
 file_name = 'nTuple_53X_mc.root'
 
@@ -78,8 +109,12 @@ with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate')
                 # Weights derived from variables in tree
                 if applyTopPtReweighting:
                     ptWeight = topPtWeight( is7TeVData )
-                    offlineWeight += '&&'+ptWeight
+                    offlineWeight += ' * '+ptWeight
                     pass
+                
+                # Scale factors
+                scaleFactor = getScaleFactor( is7TeVData, channel.channelName )
+                offlineWeight += ' * '+scaleFactor
 
                 # Histograms to fill
                 # 1D histograms
@@ -92,11 +127,17 @@ with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate')
                 
                 # Fill histograms
                 # 1D
+                print '1D'
+                print 'Gen'
                 tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
+                print 'Reco'
                 tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
+                print 'Fake'
                 tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
                 # 2D
+                print 'Response'
                 tree.Draw(genVariable+':'+recoVariable,offlineWeight+'*'+offlineSelection,hist=response)
+                print 'Response without fakes'
                 tree.Draw(genVariable+':'+recoVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
                             
                 outputDir.cd()
