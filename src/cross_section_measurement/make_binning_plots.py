@@ -27,7 +27,7 @@ my_cmap = cm.get_cmap( 'jet' )
 my_cmap.set_under( 'w' )
 
 def make_scatter_plot( input_file, histogram, channel, variable, title ):
-    global output_folder, output_formats
+    global output_folder, output_formats, options
     scatter_plot = get_histogram_from_file( histogram, input_file )
 #     scatter_plot.Rebin2D( 5, 5 )
 
@@ -36,7 +36,7 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
 
     x_title = 'Reconstructed $' + variables_latex[variable] + '$ [GeV]'
     y_title = 'Generated $' + variables_latex[variable] + '$ [GeV]'
-    save_as_name = channel + '_' + variable
+    save_as_name = channel + '_' + variable + '_' + str(options.CoM) + 'TeV'
 
     plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
 
