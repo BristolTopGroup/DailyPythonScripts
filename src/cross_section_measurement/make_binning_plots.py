@@ -89,24 +89,27 @@ if __name__ == '__main__':
     make_folder_if_not_exists( options.output_folder )
 
     hist_file = measurement_config.central_general_template % ( 'TTJet' )
+    hist_file = measurement_config.unfolding_madgraph_raw
 #     hist_file = '/storage/Workspace/Analysis/AnalysisSoftware/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET_TEST.root'
     
-    histograms = ['MET_gen_nu_vs_reco', 'HT_genJet_vs_reco', 'ST_gen_vs_reco', 'MT_gen_vs_reco', 'WPT_gen_vs_reco']
-    variables_translation = {'MET_gen_nu_vs_reco':'MET', 'HT_genJet_vs_reco':'HT', 'ST_gen_vs_reco':'ST',
-    						'MT_gen_vs_reco':'MT', 'WPT_gen_vs_reco':'WPT'}
+    histogram_name = 'response_withoutFakes'
+    histogram_templates = {
+                           'MET': 'unfolding_MET_analyser_%s_channel_patType1CorrectedPFMet/%s',
+                           'HT' : 'unfolding_HT_analyser_%s_channel/%s',
+                           'ST' : 'unfolding_ST_analyser_%s_channel_patType1CorrectedPFMet/%s',
+                           'MT' : 'unfolding_MT_analyser_%s_channel_patType1CorrectedPFMet/%s',
+                           'WPT': 'unfolding_WPT_analyser_%s_channel_patType1CorrectedPFMet/%s'
+                           }
 
-    channels = ['EPlusJets', 'MuPlusJets']
-    channels_latex = { 'EPlusJets':'e+jets', 'MuPlusJets':'$\mu$+jets' }
+    channels = ['electron', 'muon']
+    channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets' }
 
     b_tag_bin = '2orMoreBtags'
     title_template = 'CMS Simulation, $\sqrt{s}$ = %d TeV, %s, %s, %s'
 
     for channel in channels:
         title = title_template % ( measurement_config.centre_of_mass_energy, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
-        for histogram in histograms:
-            histogram_path = 'Binning/' + channel + '/' + histogram# + '_' + b_tag_bin
-            variable = variables_translation[histogram]
+        for variable, histogram_template in histogram_templates.iteritems():
+            
+            histogram_path = histogram_template % (channel, histogram_name)
             make_scatter_plot( hist_file, histogram_path, channel, variable, title )
-
-
-
