@@ -29,13 +29,13 @@ my_cmap.set_under( 'w' )
 def make_scatter_plot( input_file, histogram, channel, variable, title ):
     global output_folder, output_formats
     scatter_plot = get_histogram_from_file( histogram, input_file )
-    scatter_plot.Rebin2D( 5, 5 )
+#     scatter_plot.Rebin2D( 5, 5 )
 
     x_limits = [0, bin_edges[variable][-1]]
     y_limits = x_limits
 
-    x_title = 'Generated $' + variables_latex[variable] + '$ [GeV]'
-    y_title = 'Reconstructed $' + variables_latex[variable] + '$ [GeV]'
+    x_title = 'Reconstructed $' + variables_latex[variable] + '$ [GeV]'
+    y_title = 'Generated $' + variables_latex[variable] + '$ [GeV]'
     save_as_name = channel + '_' + variable
 
     plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
@@ -56,8 +56,8 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     for edge in bin_edges[variable]:
         # do not inclue first and last values
         if ( edge != bin_edges[variable][0] ) and ( edge != bin_edges[variable][-1] ):
-            plt.axvline( x = edge, color = 'red', linewidth = 4 )
-            plt.axhline( y = edge, color = 'red', linewidth = 4 )
+            plt.axvline( x = edge, color = 'red', linewidth = 4, alpha = 0.5 )
+            plt.axhline( y = edge, color = 'red', linewidth = 4, alpha = 0.5 )
 
     ax0.set_xlim( x_limits )
     ax0.set_ylim( y_limits )
