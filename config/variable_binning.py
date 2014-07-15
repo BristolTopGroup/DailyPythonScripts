@@ -4,7 +4,6 @@ fit_variable_bin_edges = {
                           'M_bl' : [i * 10 for i in range ( int( 1000 / 10 ) + 1 )],
                           'angle_bl' : [round( i * 0.2, 2 ) for i in range ( int( 4 / 0.2 ) + 1 )],
                           }
-eta_bin_edges = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]
 
 bin_edges = {
              'MET':[0.0, 31.0, 58.0, 96.0, 142.0, 191.0, 300],

@@ -10,7 +10,7 @@ from lib import read_fit_results, closure_tests
 from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x, \
     limit_range_y
 from tools.plotting import compare_measurements, Histogram_properties
-from config.latex_labels import fit_variables_latex
+from config.latex_labels import fit_variables_latex, samples_latex
 from src.cross_section_measurement.lib import read_fit_input
 # import linecache
 # 
@@ -33,7 +33,7 @@ def plot_fit_results( fit_results, initial_values, channel ):
         # absolute eta measurement as baseline
         h_absolute_eta = None
         h_before = None
-        histogram_properties.y_axis_title = 'Fitted number of events for ' + sample
+        histogram_properties.y_axis_title = 'Fitted number of events for ' + samples_latex[sample]
         
         for fit_var_input in fit_results.keys():
             latex_string = create_latex_string( fit_var_input )
@@ -115,8 +115,8 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     variable = options.variable
     
-    electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % ( lumi, come )
-    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % ( lumi, come )
+    electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % ( lumi/1000, come )
+    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % ( lumi/1000, come )
     
     fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
                       'absolute_eta_angle_bl',

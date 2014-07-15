@@ -81,7 +81,8 @@ samples_latex = {
                  'WJets':'W $\\rightarrow \ell\\nu$',
                  'ZJets':'Z/$\gamma^*$ + jets',
                  'TTJet':'$\mathrm{t}\\bar{\mathrm{t}}$',
-                 'SingleTop':'Single-Top'                 
+                 'SingleTop':'Single-Top'  ,
+                 'V+Jets' : 'W/Z + jets'               
                  }
 
 fit_variables_latex = {
