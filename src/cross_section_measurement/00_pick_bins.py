@@ -45,6 +45,7 @@ from rootpy.io import File
 from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config.variable_binning import bin_edges as old_binning
+from config import XSectionConfig
 
 def main():
     '''
@@ -61,7 +62,7 @@ def main():
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     
-    for variable in ['MET']:#, 'HT', 'ST', 'MT', 'WPT']:
+    for variable in ['MET']:  # , 'HT', 'ST', 'MT', 'WPT']:
         histogram_information = get_histograms( variable )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
@@ -85,38 +86,42 @@ def main():
         print '=' * 120  
 
 def get_histograms( variable ):
+    config_7TeV = XSectionConfig( 7 )
+    config_8TeV = XSectionConfig( 8 )
+    
     path_electron = ''
     path_muon = ''
+    histogram_name = 'response_withoutFakes'
     if variable == 'MET':
-        path_electron = 'Binning/EPlusJets/MET_gen_vs_reco'
-        path_muon = 'Binning/MuPlusJets/MET_gen_vs_reco'
+        path_electron = 'unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
     elif variable == 'HT':
-        path_electron = 'Binning/EPlusJets/HT_genJet_vs_reco'
-        path_muon = 'Binning/MuPlusJets/HT_genJet_vs_reco'
+        path_electron = 'unfolding_HT_analyser_electron_channel/%s' % histogram_name
+        path_muon = 'unfolding_HT_analyser_muon_channel/%s' % histogram_name
     elif variable == 'ST':
-        path_electron = 'Binning/EPlusJets/ST_gen_vs_reco'
-        path_muon = 'Binning/MuPlusJets/ST_gen_vs_reco'
+        path_electron = 'unfolding_ST_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_ST_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
     elif variable == 'MT':
-        path_electron = 'Binning/EPlusJets/MT_gen_vs_reco'
-        path_muon = 'Binning/MuPlusJets/MT_gen_vs_reco'
+        path_electron = 'unfolding_MT_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_MT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
     elif variable == 'WPT':
-        path_electron = 'Binning/EPlusJets/WPT_gen_vs_reco'
-        path_muon = 'Binning/MuPlusJets/WPT_gen_vs_reco'
+        path_electron = 'unfolding_WPT_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_WPT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
         
     histogram_information = [
-                {'file':'data/TTJet_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root',
+                {'file': config_7TeV.unfolding_madgraph_raw,
                  'CoM': 7,
                  'path':path_electron,
                  'channel':'electron'},
-                {'file':'data/TTJet_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root',
+                {'file':config_7TeV.unfolding_madgraph_raw,
                  'CoM': 7,
                  'path':path_muon,
                  'channel':'muon'},
-                {'file':'data/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root',
+                {'file':config_8TeV.unfolding_madgraph_raw,
                  'CoM': 8,
                  'path':path_electron,
                  'channel':'electron'},
-                {'file':'data/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root',
+                {'file':config_8TeV.unfolding_madgraph_raw,
                  'CoM': 8,
                  'path':path_muon,
                  'channel':'muon'},
