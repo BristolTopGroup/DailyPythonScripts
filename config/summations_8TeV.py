@@ -23,6 +23,7 @@ muon_qcd_samples = [ 'QCD_Pt-15to20_MuEnrichedPt5',
 		     'QCD_Pt-170to300_MuEnrichedPt5',
 		     'QCD_Pt-300to470_MuEnrichedPt5',
 		     'QCD_Pt-470to600_MuEnrichedPt5',
+		     'QCD_Pt-600to800_MuEnrichedPt5',
 		     'QCD_Pt-800to1000_MuEnrichedPt5',
 		     'QCD_Pt-1000_MuEnrichedPt5']
 singleTop_samples = [ 'T_tW-channel',

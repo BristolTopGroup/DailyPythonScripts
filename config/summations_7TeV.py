@@ -11,16 +11,32 @@ electron_qcd_samples = [ 'QCD_Pt-20to30_BCtoE',
                  'QCD_Pt-20to30_EMEnriched',
                  'QCD_Pt-30to80_EMEnriched',
                  'QCD_Pt-80to170_EMEnriched',
-                 'GJets_HT-40To100',
-                 'GJets_HT-100To200',
-                 'GJets_HT-200']
+                 'QCD_Pt-170to250_EMEnriched',
+                 'QCD_Pt-250to350_EMEnriched',
+                 'QCD_Pt-350_EMEnriched',
+#                 'GJets_HT-40To100', # will need to uncomment when this sample becomes available
+                 'GJets_HT-100To200']
+#                 'GJets_HT-200'] # will need to uncomment when this sample becomes available
+muon_qcd_samples = [ 'QCD_Pt-15to20_MuEnrichedPt5',
+             'QCD_Pt-20to30_MuEnrichedPt5',
+             'QCD_Pt-30to50_MuEnrichedPt5',
+             'QCD_Pt-50to80_MuEnrichedPt5',
+             'QCD_Pt-80to120_MuEnrichedPt5',
+             'QCD_Pt-120to170_MuEnrichedPt5',
+             'QCD_Pt-170to300_MuEnrichedPt5',
+             'QCD_Pt-300to470_MuEnrichedPt5',
+             'QCD_Pt-470to600_MuEnrichedPt5',
+             'QCD_Pt-600to800_MuEnrichedPt5',
+             'QCD_Pt-800to1000_MuEnrichedPt5',
+             'QCD_Pt-1000_MuEnrichedPt5']
 singleTop_samples = [ 'T_tW-channel',
              'T_t-channel',
              'T_s-channel',
              'Tbar_tW-channel',
              'Tbar_t-channel',
              'Tbar_s-channel']
-wplusjets_samples = [ 'W1Jet', 'W2Jets', 'W3Jets', 'W4Jets']
+#wplusjets_samples = [ 'W1Jet', 'W2Jets', 'W3Jets', 'W4Jets'] # will need to uncomment when these samples become available
+wplusjets_samples = [ 'WJetsToLNu']
 vplusjets_samples = wplusjets_samples
 vplusjets_samples.append('DYJetsToLL')
 diboson_samples = [ 'WWtoAnything', 'WZtoAnything', 'ZZtoAnything']
@@ -51,7 +67,8 @@ ttjets_scaleup_unfolding_samples = ['TTJets-scaleup']
 ttjets_scaledown_unfolding_samples = ['TTJets-scaledown']
 
 sample_summations = {
-                  'QCD_Electron':electron_qcd_samples,
+                  'QCD_Electron' : electron_qcd_samples,
+                  'QCD_Muon' : muon_qcd_samples,
                   'SingleTop' : singleTop_samples,
                   'WJets' : wplusjets_samples,
                   'VJets' : vplusjets_samples,

@@ -51,7 +51,7 @@ class XSectionConfig():
 
     def __init__( self, centre_of_mass_energy ):
         if not centre_of_mass_energy in self.known_centre_of_mass_energies:
-            raise AttributeError( 'Uknown centre of mass energy' )
+            raise AttributeError( 'Unknown centre of mass energy' )
         self.centre_of_mass_energy = centre_of_mass_energy
         self.__fill_defaults__()
 
