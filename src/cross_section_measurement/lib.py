@@ -6,6 +6,48 @@ from config.variable_binning import bin_edges
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from tools.file_utilities import read_data_from_JSON
 from tools.Timer import Timer
+
+closure_tests = {
+                 'simple' : {'V+Jets': 1.1, 'SingleTop': 1.2, 'TTJet': 1.3, 'QCD': 1.5},
+                 'ttbar_only' : {'V+Jets': 0, 'SingleTop': 0, 'TTJet': 1, 'QCD': 0},
+                 'singletop_only' : {'V+Jets': 0, 'SingleTop': 1, 'TTJet': 0, 'QCD': 0},
+                 'vjets_only' : {'V+Jets': 1, 'SingleTop': 0, 'TTJet': 0, 'QCD': 0},
+                 'qcd_only' : {'V+Jets': 0, 'SingleTop': 0, 'TTJet': 0, 'QCD': 1},
+                 }
+
+def read_fit_results(path_to_JSON = 'data', 
+                     variable = 'MET', 
+                     category = 'central',
+                     channel = 'combined', 
+                     met_type = 'patType1CorrectedPFMet'):
+    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'fit_results')
+
+def read_fit_input(path_to_JSON = 'data', 
+                     variable = 'MET', 
+                     category = 'central',
+                     channel = 'combined', 
+                     met_type = 'patType1CorrectedPFMet'):
+    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'initial_values')
+
+def read_fit_templates(path_to_JSON = 'data', 
+                     variable = 'MET', 
+                     category = 'central',
+                     channel = 'combined', 
+                     met_type = 'patType1CorrectedPFMet'):
+    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'templates')
+
+def read_from_fit_results_folder(path_to_JSON = 'data', 
+                     variable = 'MET', 
+                     category = 'central',
+                     channel = 'combined', 
+                     met_type = 'patType1CorrectedPFMet',
+                     data_type = 'fit_results'):
+    filename = path_to_JSON + '/' + variable + '/fit_results/' + category + '/'
+    filename += data_type + '_' + channel + '_' + met_type + '.txt'
+    results = read_data_from_JSON( filename )
+    
+    return results
+
 def read_xsection_measurement_results( path_to_JSON, variable, bin_edges,
                                         category,
                                        channel,

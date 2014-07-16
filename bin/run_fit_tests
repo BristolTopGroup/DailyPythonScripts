@@ -1,0 +1,19 @@
+#!/bin/bash
+echo "This will take a while ... grab a coffee/tea/water"
+mkdir -p logs
+for var in absolute_eta M_bl M3 angle_bl absolute_eta,M_bl absolute_eta,M3 absolute_eta,angle_bl absolute_eta,M_bl,M3 absolute_eta,M3,angle_bl absolute_eta,M_bl,angle_bl absolute_eta,M_bl,M3,angle_bl; do
+	nicevar=`echo $var | sed 's/,/_/g'`
+	echo "Doing variable set: $nicevar"
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --closure_test &> logs/fit_closure_test_$nicevar.log &
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --closure_test --no_combined_signal -p data/no_merging &> logs/fit_closure_test_no_merging_$nicevar.log &
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --closure_test --disable-constraints -p data/no_constraints &> logs/fit_closure_test_no_constraints_$nicevar.log &
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --closure_test --disable-constraints --no_combined_signal -p data/no_constraints_no_merging &> logs/fit_closure_test_NCNM_$nicevar.log &
+	wait
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --test &> logs/fit_test_$nicevar.log &
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --test --no_combined_signal -p data/no_merging &> logs/fit_test_no_merging_$nicevar.log &
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --test --disable-constraints -p data/no_constraints &> logs/fit_test_no_constraints_$nicevar.log &
+	nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $var --test --disable-constraints --no_combined_signal -p data/no_constraints_no_merging &> logs/fit_test_NCNM_$nicevar.log &
+	wait;
+done
+
+echo "All done!"
