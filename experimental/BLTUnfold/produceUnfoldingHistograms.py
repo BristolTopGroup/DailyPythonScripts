@@ -63,8 +63,21 @@ def convertScaleFactorsToString( scaleFactors ):
     return sfString
 
 
-file_name = '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root'
-
+fileNames = {
+             '8TeV' : {
+                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root',
+                    'scaleup' : 'scaleupFile',
+                    'scaledown' : 'scaledownFile',
+                    'matchingup' : 'matchingupFile',
+                    'matchingdown' : 'matchingdownFile',
+                    'powheg' : 'powhegFile',
+                    'mcatnlo' : 'mcatnlo'
+                },
+             '7TeV' : {
+                       'central' : 'central',
+                       'matchingup' :'/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root'
+                       }
+             }
 
 channels = [
         channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
@@ -77,19 +90,39 @@ def main():
     parser.add_option('--topPtReweighting', action='store_true', dest='applyTopPtReweighting', default=False )
     parser.add_option('--is7TeV', action='store_true', dest='is7TeVData', default=False )
     parser.add_option('-p', '--pdfWeight', type='int', dest='pdfWeight', default=0 )
+    parser.add_option('-s', '--sample', dest='sample', default='central')
+    parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
     (options, _) = parser.parse_args()
 
+
+
+    # Input file name
+    file_name = 'crap.root'
+    if options.is7TeVData:
+        file_name = fileNames['7TeV'][options.sample]
+    else:
+        file_name = fileNames['8TeV'][options.sample]
+    
     # Output file name
     outputFileName = 'crap.root'
-    if options.applyTopPtReweighting:
-        outputFileName = 'TestBLTUnfold_nTuple_53X_mc_withTopPtReweighting.root'
-    elif options.pdfWeight != 0:
-        outputFileName = 'TestBLTUnfold_nTuple_53X_mc_pdfWeight_%i.root' % options.pdfWeight
-    else:
-        outputFileName = 'TestBLTUnfold_nTuple_53X_mc.root'
+    outputFileDir = 'unfolding/'
+    energySuffix = '8TeV'
+    if options.is7TeVData:
+        energySuffix = '7TeV'
         
+    if options.applyTopPtReweighting:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
+    elif options.pdfWeight != 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_.rootpdfWeight_%i' % ( energySuffix, options.pdfWeight )
+    elif options.sample != 'central':
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
+    else:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
+                
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
         for channel in channels:
+            if options.debug and channel.channelName != 'muPlusJets' : continue
+            
             print 'Channel : ',channel.channelName
 
             # Get the tree
@@ -106,7 +139,8 @@ def main():
                 pass
                         
             for variable in bin_edges:
-                if variable != 'HT': continue
+                if options.debug and variable != 'HT' : continue
+                
                 print '--->Doing variable :',variable
 
                 # Output dir name                
@@ -165,7 +199,7 @@ def main():
                 tree.Draw(genVariable+':'+recoVariable,offlineWeight+'*'+offlineSelection,hist=response)
                 tree.Draw(genVariable+':'+recoVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
                 
-
+                # Output histgorams to file
                 outputDir.cd()
                 truth.Write()
                 measured.Write()
