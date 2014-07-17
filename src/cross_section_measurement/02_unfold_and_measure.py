@@ -402,10 +402,6 @@ if __name__ == '__main__':
         TTJet_fit_results_electron = fit_results_electron['TTJet']
         TTJet_fit_results_muon = fit_results_muon['TTJet']
         TTJet_fit_results_combined = fit_results_combined['TTJet']
-
-        Higgs_fit_results_electron = fit_results_electron['Higgs']
-        Higgs_fit_results_muon = fit_results_muon['Higgs']
-        Higgs_fit_results_combined = fit_results_combined['Higgs']
         
         # change back to original MET type for the unfolding
         met_type = translate_options[options.metType]
@@ -430,20 +426,24 @@ if __name__ == '__main__':
         filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
         
-        # now the same for the Higgs
-        unfolded_normalisation_electron_higgs = get_unfolded_normalisation( Higgs_fit_results_electron, category, 'electron', k_value_electron )
-        unfolded_normalisation_muon_higgs = get_unfolded_normalisation( Higgs_fit_results_muon, category, 'muon', k_value_muon )
-        if combine_before_unfolding:
-            unfolded_normalisation_combined_higgs = get_unfolded_normalisation( Higgs_fit_results_combined, category, 'combined', k_value_combined )
-        else:
-            unfolded_normalisation_combined_higgs = combine_complex_results( unfolded_normalisation_electron_higgs, unfolded_normalisation_muon_higgs )
-
-        filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_electron, category, met_type )
-        write_data_to_JSON( unfolded_normalisation_electron_higgs, filename )
-        filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_muon, category, met_type )
-        write_data_to_JSON( unfolded_normalisation_muon_higgs, filename )
-        filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s_Higgs.txt' % ( category, met_type )
-        write_data_to_JSON( unfolded_normalisation_combined_higgs, filename )
+        if measurement_config.include_higgs:
+            # now the same for the Higgs
+            Higgs_fit_results_electron = fit_results_electron['Higgs']
+            Higgs_fit_results_muon = fit_results_muon['Higgs']
+            Higgs_fit_results_combined = fit_results_combined['Higgs']
+            unfolded_normalisation_electron_higgs = get_unfolded_normalisation( fit_results_electron['Higgs'], category, 'electron', k_value_electron )
+            unfolded_normalisation_muon_higgs = get_unfolded_normalisation( fit_results_muon['Higgs'], category, 'muon', k_value_muon )
+            if combine_before_unfolding:
+                unfolded_normalisation_combined_higgs = get_unfolded_normalisation( fit_results_combined['Higgs'], category, 'combined', k_value_combined )
+            else:
+                unfolded_normalisation_combined_higgs = combine_complex_results( unfolded_normalisation_electron_higgs, unfolded_normalisation_muon_higgs )
+    
+            filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_electron, category, met_type )
+            write_data_to_JSON( unfolded_normalisation_electron_higgs, filename )
+            filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_muon, category, met_type )
+            write_data_to_JSON( unfolded_normalisation_muon_higgs, filename )
+            filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s_Higgs.txt' % ( category, met_type )
+            write_data_to_JSON( unfolded_normalisation_combined_higgs, filename )
 
         # measure xsection
         calculate_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron )
