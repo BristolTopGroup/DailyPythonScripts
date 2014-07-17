@@ -317,10 +317,13 @@ if __name__ == '__main__':
                       help = "Perform combination of channels before unfolding" )
     parser.add_option( "-w", "--write-unfolding-objects", dest = "write_unfolding_objects", action = "store_true",
                       help = "Write out the unfolding objects (D, SV)" )
+    parser.add_option( '--test', dest = "test", action = "store_true",
+                      help = "Just run the central measurement" )
     
     
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig( options.CoM )
+    run_just_central = options.test
     # caching of variables for faster access
     translate_options = measurement_config.translate_options
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
@@ -372,6 +375,8 @@ if __name__ == '__main__':
     all_measurements.extend( rate_changing_systematics )
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
+        if run_just_central and not category == 'central':
+            continue
         if variable == 'HT' and category in met_uncertainties:
             continue
         print 'Unfolding category "%s"' % category
