@@ -1,17 +1,18 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
 from copy import deepcopy
-from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex
+from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex, samples_latex
 from config.variable_binning import variable_bins_latex, variable_bins_ROOT
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from lib import read_fit_results, read_fit_input
 
 def read_xsection_measurement_results_with_errors(channel):
     global path_to_JSON, variable, k_values, met_type
     category = 'central'
 
-    file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+    file_template = path_to_JSON + '/' + variable +  '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
     if channel == 'combined':
         file_template = file_template.replace('kv' + str(k_values[channel]), '')
 
@@ -56,17 +57,17 @@ def read_xsection_measurement_results_with_errors(channel):
     
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
-def read_fit_results(channel):
-    global path_to_JSON, variable, met_type
-    category = 'central'
-    fit_results = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
-    return fit_results
-
-def read_initial_values(channel):
-    global path_to_JSON, variable, met_type
-    category = 'central'
-    initial_values = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')
-    return initial_values
+# def read_fit_results(channel):
+#     global path_to_JSON, variable, met_type
+#     category = 'central'
+#     fit_results = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
+#     return fit_results
+# 
+# def read_initial_values(channel):
+#     global path_to_JSON, variable, met_type
+#     category = 'central'
+#     initial_values = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')
+#     return initial_values
 
 def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
     global output_folder, variable, met_type
@@ -77,34 +78,42 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     printout += '\n'
     printout += '\\\\ \n\hline\n'
     header = 'Process'
-    signal_in_line = 'signal in'
-    vjets_in_line = 'V+jets in'
-    qcd_in_line = 'QCD in'
+    template_in = '%s in'
+    ttjet_in_line = template_in % samples_latex['TTJet'] 
+    singletop_in_line = template_in % samples_latex['SingleTop'] 
+    vjets_in_line = template_in % samples_latex['V+Jets'] 
+    qcd_in_line = template_in % samples_latex['QCD'] 
 
-    signal_fit_line = 'signal fit'
-    vjets_fit_line = 'V+jets fit'
-    qcd_fit_line = 'QCD fit'
+    template_fit = '%s fit'
+    ttjet_fit_line = template_in % samples_latex['TTJet'] 
+    singletop_fit_line = template_in % samples_latex['SingleTop'] 
+    vjets_fit_line = template_in % samples_latex['V+Jets'] 
+    qcd_fit_line = template_in % samples_latex['QCD'] 
 
     sum_MC_in_line = 'Sum MC in'
     sum_MC_fit_line = 'Sum MC fit'
     sum_data_line = 'Data'
 
-    N_initial_signal = 0
+    N_initial_ttjet = 0
+    N_initial_singletop = 0
     N_initial_vjets = 0
     N_initial_qcd = 0
     N_initial_sum_MC = 0
-    N_initial_signal_error = 0
+    N_initial_ttjet_error = 0
+    N_initial_singletop_error = 0
     N_initial_vjets_error = 0
     N_initial_qcd_error = 0
     N_initial_sum_MC_error = 0
     N_data = 0
     N_data_error = 0
 
-    N_fit_signal = 0
+    N_fit_ttjet = 0
+    N_fit_singletop = 0
     N_fit_vjets = 0
     N_fit_qcd = 0
     N_fit_sum_MC = 0
-    N_fit_signal_error = 0
+    N_fit_ttjet_error = 0
+    N_fit_singletop_error = 0
     N_fit_vjets_error = 0
     N_fit_qcd_error = 0
     N_fit_sum_MC_error = 0
@@ -112,9 +121,13 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     bins = variable_bins_ROOT[variable]
     for bin_i, variable_bin in enumerate(bins):
         header += ' & %s' % (variable_bins_latex[variable_bin])
-        signal_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['signal'][bin_i][0], initial_values['signal'][bin_i][1])
-        N_initial_signal += initial_values['signal'][bin_i][0]
-        N_initial_signal_error += initial_values['signal'][bin_i][1]
+        ttjet_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['TTJet'][bin_i][0], initial_values['TTJet'][bin_i][1])
+        N_initial_ttjet += initial_values['TTJet'][bin_i][0]
+        N_initial_ttjet_error += initial_values['TTJet'][bin_i][1]
+        
+        singletop_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['SingleTop'][bin_i][0], initial_values['SingleTop'][bin_i][1])
+        N_initial_singletop += initial_values['SingleTop'][bin_i][0]
+        N_initial_singletop_error += initial_values['SingleTop'][bin_i][1]
 
         vjets_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['V+Jets'][bin_i][0], initial_values['V+Jets'][bin_i][1])
         N_initial_vjets += initial_values['V+Jets'][bin_i][0]
@@ -124,16 +137,20 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         N_initial_qcd += initial_values['QCD'][bin_i][0]
         N_initial_qcd_error += initial_values['QCD'][bin_i][1]
 
-        sumMCin = initial_values['signal'][bin_i][0] + initial_values['V+Jets'][bin_i][0] + initial_values['QCD'][bin_i][0]
-        sumMCinerror = initial_values['signal'][bin_i][1] + initial_values['V+Jets'][bin_i][1] + initial_values['QCD'][bin_i][1]
+        sumMCin = initial_values['TTJet'][bin_i][0] + initial_values['SingleTop'][bin_i][0] + initial_values['V+Jets'][bin_i][0] + initial_values['QCD'][bin_i][0]
+        sumMCinerror = initial_values['TTJet'][bin_i][1] + initial_values['SingleTop'][bin_i][1] + initial_values['V+Jets'][bin_i][1] + initial_values['QCD'][bin_i][1]
 
         sum_MC_in_line += ' & %.1f $\pm$ %.1f' % (sumMCin, sumMCinerror)
         N_initial_sum_MC += sumMCin
         N_initial_sum_MC_error += sumMCinerror
 
-        signal_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['signal'][bin_i][0], fit_results['signal'][bin_i][1])
-        N_fit_signal += fit_results['signal'][bin_i][0]
-        N_fit_signal_error += fit_results['signal'][bin_i][1]
+        ttjet_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['TTJet'][bin_i][0], fit_results['TTJet'][bin_i][1])
+        N_fit_ttjet += fit_results['TTJet'][bin_i][0]
+        N_fit_ttjet_error += fit_results['TTJet'][bin_i][1]
+        
+        singletop_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['SingleTop'][bin_i][0], fit_results['SingleTop'][bin_i][1])
+        N_fit_singletop += fit_results['SingleTop'][bin_i][0]
+        N_fit_singletop_error += fit_results['SingleTop'][bin_i][1]
 
         vjets_fit_line += ' & %.1f $\pm$ %.1f' % (fit_results['V+Jets'][bin_i][0], fit_results['V+Jets'][bin_i][1])
         N_fit_vjets += fit_results['V+Jets'][bin_i][0]
@@ -143,8 +160,8 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         N_fit_qcd += fit_results['QCD'][bin_i][0]
         N_fit_qcd_error += fit_results['QCD'][bin_i][1]
         
-        sumMCfit = fit_results['signal'][bin_i][0] + fit_results['V+Jets'][bin_i][0] + fit_results['QCD'][bin_i][0]
-        sumMCfiterror = fit_results['signal'][bin_i][1] + fit_results['V+Jets'][bin_i][1] + fit_results['QCD'][bin_i][1]
+        sumMCfit = fit_results['TTJet'][bin_i][0] + fit_results['SingleTop'][bin_i][0] + fit_results['V+Jets'][bin_i][0] + fit_results['QCD'][bin_i][0]
+        sumMCfiterror = fit_results['TTJet'][bin_i][1] + fit_results['SingleTop'][bin_i][1] + fit_results['V+Jets'][bin_i][1] + fit_results['QCD'][bin_i][1]
 
         sum_MC_fit_line += ' & %.1f $\pm$ %.1f' % (sumMCfit, sumMCfiterror)
         N_fit_sum_MC += sumMCfit
@@ -155,11 +172,13 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         N_data_error += initial_values['data'][bin_i][1]
 
     header += '& Total \\\\'
-    signal_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_signal, N_initial_signal_error)
+    ttjet_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_ttjet, N_initial_ttjet_error)
+    singletop_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_singletop, N_initial_singletop_error)
     vjets_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_vjets, N_initial_vjets_error)
     qcd_in_line += ' & %.1f $\pm$ %.1f \\\\' % (N_initial_qcd, N_initial_qcd_error)
     sum_MC_in_line += '& %.1f $\pm$ %.1f \\\\' % (N_initial_sum_MC, N_initial_sum_MC_error)
-    signal_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_signal, N_fit_signal_error)
+    ttjet_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_ttjet, N_fit_ttjet_error)
+    singletop_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_singletop, N_fit_singletop_error)
     vjets_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_vjets, N_fit_vjets_error)
     qcd_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_qcd, N_fit_qcd_error)
     sum_MC_fit_line += ' & %.1f $\pm$ %.1f \\\\' % (N_fit_sum_MC, N_fit_sum_MC_error)
@@ -167,9 +186,13 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
 
     printout += header
     printout += '\n\hline\n'
-    printout += signal_in_line
+    printout += ttjet_in_line
     printout += '\n'
-    printout += signal_fit_line
+    printout += ttjet_fit_line
+    printout += '\n\hline\n'
+    printout += singletop_in_line
+    printout += '\n'
+    printout += singletop_fit_line
     printout += '\n\hline\n'
     printout += vjets_in_line
     printout += '\n'
@@ -366,7 +389,7 @@ if __name__ == '__main__':
                 }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/' + variable + '/'
+    path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/'
     
     categories = deepcopy(measurement_config.categories_and_prefixes.keys())
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
@@ -400,6 +423,8 @@ if __name__ == '__main__':
         print_error_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
 
         if not channel == 'combined':
-            print_fit_results_table(read_initial_values(channel), read_fit_results(channel), channel, toFile = True)
+            fit_input = read_fit_input(path_to_JSON, variable, 'central', channel, met_type)
+            fit_results = read_fit_results(path_to_JSON, variable, 'central', channel, met_type)
+            print_fit_results_table(fit_input, fit_results, channel, toFile = True)
 
     
