@@ -1,7 +1,9 @@
 import os
 
-do7TeV = False
-do8TeV = True
+do7TeV = True
+do8TeV = False
+
+doCentral = True
 
 scaleSyst = False
 matchingSyst = False
@@ -20,7 +22,8 @@ jobs = [
 if do8TeV:
     # 8 TeV
     # Central
-    jobs.append('')
+    if doCentral:
+        jobs.append('')
     
     # Scale up/down
     if scaleSyst:
@@ -49,7 +52,8 @@ if do8TeV:
 if do7TeV:
     # 7 TeV
     # Central
-    jobs.append('--is7TeV')
+    if doCentral:
+        jobs.append('--is7TeV')
     
     # Top pt reweighting
     if topPtReweighting:
@@ -59,15 +63,15 @@ if do7TeV:
 
 # Add pdf systematic jobs
 if pdfVariations:
-    for variation in range (1,44):
+    for variation in range (1,2+1):
         # 8 TeV
         if do8TeV:
-            jobs.append('-p %i,' % variation)
+            jobs.append('-p %i' % variation)
             pass
         
         # 7 TeV
         if do7TeV:
-            jobs.append(' --is7TeV -p %i,' % variation)
+            jobs.append(' --is7TeV -p %i' % variation)
             pass
         pass
 

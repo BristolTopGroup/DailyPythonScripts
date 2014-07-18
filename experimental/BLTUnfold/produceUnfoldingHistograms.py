@@ -66,6 +66,7 @@ def convertScaleFactorsToString( scaleFactors ):
 fileNames = {
              '8TeV' : {
                     'central' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root',
+#                     'central' : '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
                     'scaleup' : 'scaleupFile',
                     'scaledown' : 'scaledownFile',
                     'matchingup' : 'matchingupFile',
@@ -74,8 +75,8 @@ fileNames = {
                     'mcatnlo' : 'mcatnlo'
                 },
              '7TeV' : {
-                       'central' : 'central',
-                       'matchingup' :'/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root'
+                       'central' : '/storage/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
+                       'matchingup' :'matchingup'
                        }
              }
 
@@ -92,6 +93,7 @@ def main():
     parser.add_option('-p', '--pdfWeight', type='int', dest='pdfWeight', default=0 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
+    parser.add_option('-n', action='store_true', dest='donothing', default=False)
     (options, _) = parser.parse_args()
 
 
@@ -113,7 +115,7 @@ def main():
     if options.applyTopPtReweighting:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
     elif options.pdfWeight != 0:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_.rootpdfWeight_%i' % ( energySuffix, options.pdfWeight )
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, options.pdfWeight )
     elif options.sample != 'central':
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
     else:
@@ -132,8 +134,13 @@ def main():
             if options.pdfWeight != 0:
                 pdfWeight = '( unfolding.PDFWeights[%i]/unfolding.PDFWeights[0] )' % options.pdfWeight
                 pdfWeightHist = Hist( 10, 0.8, 1.2, name='pdfWeights_'+channel.channelName )
-                tree.Draw( pdfWeight, hist=pdfWeightHist)
-                outputDir = out.mkdir('pdfWeights')
+                if not options.donothing:
+                    tree.Draw( pdfWeight, hist=pdfWeightHist)
+                outputDir = 0
+                if not ( out.FindObject('pdfWeights') ):
+                    outputDir = out.mkdir('pdfWeights')
+                else :
+                    outputDir = out.Get('pdfWeights')
                 outputDir.cd()
                 pdfWeightHist.Write()
                 pass
@@ -184,20 +191,19 @@ def main():
                 measured = Hist( bin_edges[variable], name='measured')
                 fake = Hist( bin_edges[variable], name='fake')
                 
-
-                
                 # 2D histograms
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
                  
                 # Fill histograms
                 # 1D
-                tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
-                tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
-                tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
-                # 2D
-                tree.Draw(genVariable+':'+recoVariable,offlineWeight+'*'+offlineSelection,hist=response)
-                tree.Draw(genVariable+':'+recoVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
+                if not options.donothing:
+                    tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
+                    tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
+                    tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
+                    # 2D
+                    tree.Draw(genVariable+':'+recoVariable,offlineWeight+'*'+offlineSelection,hist=response)
+                    tree.Draw(genVariable+':'+recoVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
                 
                 # Output histgorams to file
                 outputDir.cd()
