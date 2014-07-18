@@ -15,6 +15,7 @@ from math import sqrt
 from ROOT import kRed, kGreen, kMagenta, kBlue
 from tools.ROOT_utililities import set_root_defaults
 import matplotlib as mpl
+from tools.plotting import get_best_max_y
 mpl.use( 'agg' )
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
@@ -122,40 +123,43 @@ def read_fit_templates_and_results_as_histograms( category, channel ):
     fit_results_histograms = {fit_variable: {} for fit_variable in fit_variables}
     for bin_i, variable_bin in enumerate( variable_bins_ROOT[variable] ):
         for fit_variable in fit_variables:
-            print len(templates[fit_variable]['data']), len(variable_bins_ROOT[variable]), bin_i
-            print fit_variable, len(fit_variable_bin_edges[fit_variable]), len(templates[fit_variable]['data'][bin_i])
             h_template_data = value_tuplelist_to_hist( templates[fit_variable]['data'][bin_i], fit_variable_bin_edges[fit_variable] )
-            h_template_signal = value_tuplelist_to_hist( templates[fit_variable]['signal'][bin_i], fit_variable_bin_edges[fit_variable] )
+            h_template_ttjet =  value_tuplelist_to_hist( templates[fit_variable]['TTJet'][bin_i], fit_variable_bin_edges[fit_variable] )
+            h_template_singletop =  value_tuplelist_to_hist( templates[fit_variable]['SingleTop'][bin_i], fit_variable_bin_edges[fit_variable] )
             h_template_VJets = value_tuplelist_to_hist( templates[fit_variable]['V+Jets'][bin_i], fit_variable_bin_edges[fit_variable] )
             h_template_QCD = value_tuplelist_to_hist( templates[fit_variable]['QCD'][bin_i], fit_variable_bin_edges[fit_variable] )
             template_histograms[fit_variable][variable_bin] = {
-                                        'signal':h_template_signal,
+                                        'TTJet' : h_template_ttjet,
+                                        'SingleTop' : h_template_singletop,
                                         'V+Jets':h_template_VJets,
                                         'QCD':h_template_QCD
                                         }
             h_data = h_template_data.Clone()
-            h_signal = h_template_signal.Clone()
+            h_ttjet = h_template_ttjet.Clone()
+            h_singletop = h_template_singletop.Clone()
             h_VJets = h_template_VJets.Clone()
             h_QCD = h_template_QCD.Clone()
             
             data_normalisation = data_values[bin_i][0]
-            signal_normalisation = fit_results['signal'][bin_i][0]
+            n_ttjet = fit_results['TTJet'][bin_i][0]
+            n_singletop = fit_results['SingleTop'][bin_i][0]
             VJets_normalisation = fit_results['V+Jets'][bin_i][0]
             QCD_normalisation = fit_results['QCD'][bin_i][0]
             
             h_data.Scale( data_normalisation )
-            h_signal.Scale( signal_normalisation )
+            h_ttjet.Scale( n_ttjet )
+            h_singletop.Scale( n_singletop )
             h_VJets.Scale( VJets_normalisation )
             h_QCD.Scale( QCD_normalisation )
-            h_background = h_VJets + h_QCD
+            h_background = h_VJets + h_QCD + h_singletop
             
             for bin_i_data in range( len( h_data ) ):
                 h_data.SetBinError( bin_i_data + 1, sqrt( h_data.GetBinContent( bin_i_data + 1 ) ) )
             
             fit_results_histograms[fit_variable][variable_bin] = {
-                                                    'data':h_data,
-                                                    'signal':h_signal,
-                                                    'background':h_background
+                                                    'data' : h_data,
+                                                    'signal' : h_ttjet,
+                                                    'background' : h_background
                                                     }
         
     return template_histograms, fit_results_histograms
@@ -175,18 +179,21 @@ def make_template_plots( histograms, category, channel ):
                     continue
             
             # plot with matplotlib
-            h_signal = histograms[fit_variable][variable_bin]['signal']
+            h_ttjet = histograms[fit_variable][variable_bin]['TTJet']
+            h_single_top = histograms[fit_variable][variable_bin]['SingleTop']
             h_VJets = histograms[fit_variable][variable_bin]['V+Jets']
             h_QCD = histograms[fit_variable][variable_bin]['QCD']
             
-            h_signal.linecolor = 'red'
+            h_ttjet.linecolor = 'red'
+            h_single_top.linecolor = 'magenta'
             h_VJets.linecolor = 'green'
             h_QCD.linecolor = 'gray'
             h_VJets.linestyle = 'dashed'
             h_QCD.linestyle = 'dotted'  # currently not working
             # bug report: http://trac.sagemath.org/sage_trac/ticket/13834
             
-            h_signal.linewidth = 5
+            h_ttjet.linewidth = 5
+            h_single_top.linewidth = 5
             h_VJets.linewidth = 5
             h_QCD.linewidth = 5
         
@@ -199,7 +206,9 @@ def make_template_plots( histograms, category, channel ):
             plt.tick_params( **CMS.axis_label_major )
             plt.tick_params( **CMS.axis_label_minor )
     
-            rplt.hist( h_signal, axes = axes, label = 'signal' )
+            rplt.hist( h_ttjet, axes = axes, label = 'signal' )
+            rplt.hist( h_single_top, axes = axes, label = 'Single Top' )
+            
             if ( h_VJets.Integral() != 0 ):
                 rplt.hist( h_VJets, axes = axes, label = 'V+Jets' )
             else:
@@ -208,7 +217,8 @@ def make_template_plots( histograms, category, channel ):
                 rplt.hist( h_QCD, axes = axes, label = 'QCD' )
             else:
                 print "WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel )
-            axes.set_ylim( [0, 0.2] )
+            y_max = get_best_max_y([h_ttjet, h_single_top, h_VJets, h_QCD])
+            axes.set_ylim( [0, y_max * 1.1] )
             axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
             
             plt.legend( numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
@@ -243,7 +253,7 @@ def plot_fit_results( histograms, category, channel ):
             
             histogram_properties = Histogram_properties()
             histogram_properties.name = plotname
-            histogram_properties.x_axis_title = channel + ' ' + fit_variables_latex[fit_variable]
+            histogram_properties.x_axis_title = fit_variables_latex[fit_variable]
             histogram_properties.y_axis_title = 'Events/(%s)' % get_unit_string(fit_variable)
             histogram_properties.title = get_cms_labels( channel )
             histogram_properties.x_limits = measurement_config.fit_boundaries[fit_variable]
@@ -262,8 +272,9 @@ def get_cms_labels( channel ):
         lepton = '$\mu$ + jets'
     else:
         lepton = 'e, $\mu$ + jets combined'
-    channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
-    template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+#     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
+    channel_label = lepton
+    template = 'CMS Preliminary, %.1f fb$^{-1}$ (%d TeV), %s'
     label = template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, channel_label )
     return label
     
