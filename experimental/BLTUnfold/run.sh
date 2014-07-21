@@ -1,5 +1,7 @@
 # Some checks
+ls
 cd src
+ls
 hostname
 which git
 echo $PATH
@@ -7,9 +9,7 @@ echo $PATH
 # CMSSW stuff
 echo $VO_CMS_SW_DIR
 . $VO_CMS_SW_DIR/cmsset_default.sh
-cd ..
 cmsenv
-cd DailyPythonScripts
 
 # Checkout and setup DailyPythonScripts
 rm -r DailyPythonScripts
