@@ -1,12 +1,15 @@
 cd src
 hostname
+which git
+echo $PATH
+ls /usr/bin/
 rm -r DailyPythonScripts
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 git clone https://github.com/EmyrClement/DailyPythonScripts.git -b BLT_Unfold
 
 # Running stuff from git repository NOT what you have locally
 cd DailyPythonScripts
-git submodule init && git submodule update
+/usr/bin/git submodule init && /usr/bin/git submodule update
 
 echo $VO_CMS_SW_DIR
 . $VO_CMS_SW_DIR/cmsset_default.sh
