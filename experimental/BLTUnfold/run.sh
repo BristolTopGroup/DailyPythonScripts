@@ -1,20 +1,21 @@
+# Some checks
 cd src
 hostname
 which git
 echo $PATH
-ls /usr/bin/
-rm -r DailyPythonScripts
-git clone https://github.com/EmyrClement/DailyPythonScripts.git -b BLT_Unfold
 
-# Running stuff from git repository NOT what you have locally
-cd DailyPythonScripts
-git submodule init && git submodule update
-
+# CMSSW stuff
 echo $VO_CMS_SW_DIR
 . $VO_CMS_SW_DIR/cmsset_default.sh
 cd ..
 cmsenv
 cd DailyPythonScripts
+
+# Checkout and setup DailyPythonScripts
+rm -r DailyPythonScripts
+git clone https://github.com/EmyrClement/DailyPythonScripts.git -b BLT_Unfold
+cd DailyPythonScripts
+git submodule init && git submodule update
 
 ./setup_standalone.sh
 source environment.sh
