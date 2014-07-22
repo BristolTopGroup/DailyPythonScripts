@@ -36,7 +36,7 @@ jobs = [
 #     pass
     
 parser = OptionParser()
-parse.add_option('-j','--job_number',type='int',dest='jobNumber',default=0)
+parser.add_option('-j','--job_number',type='int',dest='jobNumber',default=0)
 
 os.sytem('touch unfolding_%i.root' % options.jobNumber)
 print jobs[options.jobNumber]
