@@ -18,9 +18,13 @@ git clone https://github.com/EmyrClement/DailyPythonScripts.git -b BLT_Unfold
 cd DailyPythonScripts
 git submodule init && git submodule update
 
+ls -trlh
+ls environment.sh
+echo $PYTHONPATH
 ./setup_standalone.sh
+echo $PYTHONPATH
 source environment.sh
-mkdir unfolding #ÊFor output file
+mkdir unfolding # For output file
 
 python experimental/BLTUnfold/runJobsCrab.py -j $1
 #python experimental/BLTUnfold/produceUnfoldingHistograms.py
