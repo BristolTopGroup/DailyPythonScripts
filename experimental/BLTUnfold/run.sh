@@ -5,6 +5,7 @@ ls
 hostname
 which git
 echo $PATH
+ls /hdfs/
 
 # CMSSW stuff
 echo $VO_CMS_SW_DIR
