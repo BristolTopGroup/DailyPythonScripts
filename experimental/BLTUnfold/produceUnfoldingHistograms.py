@@ -75,7 +75,7 @@ fileNames = {
                     'mcatnlo' : 'mcatnlo'
                 },
              '7TeV' : {
-                       'central' : '/storage/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
+                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
                        'matchingup' :'matchingup'
                        }
              }

@@ -39,5 +39,5 @@ parser = OptionParser()
 parser.add_option('-j','--job_number',type='int',dest='jobNumber',default=0)
 (options, _) = parser.parse_args()
 
-os.system('touch unfolding/unfolding_%i.root' % options.jobNumber)
+os.system('python experimental/BLTUnfold/produceUnfoldingHistograms.py %s -n' % jobs[options.jobNumber-1] )
 print jobs[options.jobNumber]
