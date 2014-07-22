@@ -81,29 +81,29 @@ success $? rootpy
 #pip install root_numpy &> /dev/null
 #success $? root_numpy
 
-#if [ ! -d "$base/external/lib" ]; then
-#	mkdir $base/external/lib
-#	echo "Building RooUnfold"
-#	cd $base/external/RooUnfold/
-#	make -j4
-#	success $? RooUnfold
-#	#remove tmp folder
-#	rm -fr $base/external/RooUnfold/tmp
-#	mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
-#	echo "Updating RooUnfold config"
-#	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
-#	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
-#
-#	echo "Building TopAnalysis"
-#	cd $base/external/TopAnalysis/
-#	make -j4 &> /dev/null
-#	success $? TopAnalysis
-#	# remove tmp folder
-#	rm -fr $base/external/TopAnalysis/tmp
-#	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
-#	echo "Updating TopSVDUnfold config"
-#	echo "library = '$base/external/lib/libTopSVDUnfold.so'" > $base/config/TopSVDUnfold.py
-#fi
+if [ ! -d "$base/external/lib" ]; then
+	mkdir $base/external/lib
+	echo "Building RooUnfold"
+	cd $base/external/RooUnfold/
+	make -j4
+	success $? RooUnfold
+	#remove tmp folder
+	rm -fr $base/external/RooUnfold/tmp
+	mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
+	echo "Updating RooUnfold config"
+	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
+	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
+
+	echo "Building TopAnalysis"
+	cd $base/external/TopAnalysis/
+	make -j4 &> /dev/null
+	success $? TopAnalysis
+	# remove tmp folder
+	rm -fr $base/external/TopAnalysis/tmp
+	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
+	echo "Updating TopSVDUnfold config"
+	echo "library = '$base/external/lib/libTopSVDUnfold.so'" > $base/config/TopSVDUnfold.py
+fi
 
 cd $base
 export PATH=$PATH:$base/bin

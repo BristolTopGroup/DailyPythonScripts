@@ -25,6 +25,7 @@ ls environment.sh
 echo $PYTHONPATH
 ./setup_standalone.sh
 echo $PYTHONPATH
+ls -trlh environment.sh
 source environment.sh
 mkdir unfolding # For output file
 
