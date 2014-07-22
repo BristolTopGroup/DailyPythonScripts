@@ -306,16 +306,16 @@ class Minuit():
 
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
-        for vector_entry, data_i in enumerate( data_vector ):
+        for vector_entry, v_data in enumerate( data_vector ):
             x_i = 0
             param_index = 0
             for sample in self.samples:
                 x_i += par[param_index] * mc_vectors[sample][vector_entry]
                 self.param_indices[sample] = param_index
                 param_index += 1
-            data_term = normalisation[FitData.data_label] * data_i
-            if not data_term == 0 and not x_i == 0:
-                L = TMath.Poisson( data_term, x_i )
+            data_i = normalisation[FitData.data_label] * v_data
+            if not data_i == 0 and not x_i == 0:
+                L = TMath.Poisson( data_i, x_i )
                 if not L == 0:
                     lnL += math.log( L )
         return lnL
