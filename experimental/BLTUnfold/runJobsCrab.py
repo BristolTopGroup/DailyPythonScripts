@@ -29,15 +29,16 @@ jobs = [
         '--is7TeV --topPtReweighting',
         ]
 
-# # Add pdf variations to list of jobs
-# for variation in range(1,45):
-#     jobs.append('-p %i' % variation)
-#     jobs.append('--is7TeV -p %i' % variation)
-#     pass
+ # Add pdf variations to list of jobs
+for variation in range(1,45+1):
+    jobs.append('-p %i' % variation)
+    jobs.append('--is7TeV -p %i' % variation)
+    pass
     
 parser = OptionParser()
 parser.add_option('-j','--job_number',type='int',dest='jobNumber',default=0)
 (options, _) = parser.parse_args()
 
-os.system('python experimental/BLTUnfold/produceUnfoldingHistograms.py %s -n' % jobs[options.jobNumber-1] )
 print jobs[options.jobNumber]
+os.system('python experimental/BLTUnfold/produceUnfoldingHistograms.py %s ' % jobs[options.jobNumber-1] )
+
