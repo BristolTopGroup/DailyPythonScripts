@@ -8,7 +8,6 @@ echo $PATH
 ls /hdfs/
 
 # CMSSW stuff
-export SCRAM_ARCH=slc6_amd64_gcc481
 echo $SCRAM_ARCH
 echo $VO_CMS_SW_DIR
 . $VO_CMS_SW_DIR/cmsset_default.sh
