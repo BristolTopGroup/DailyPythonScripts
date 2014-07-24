@@ -54,10 +54,10 @@ def convertScaleFactorsToString( scaleFactors ):
     sfString = '( '
     for scaleFactor in scaleFactors:
         if ( firstScaleFactor ):
-            sfString += '( ( ( unfolding.leptonEta > '+scaleFactor.etaLowEdge+') && ( unfolding.leptonEta < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
+            sfString += '( ( ( abs( unfolding.leptonEta ) > '+scaleFactor.etaLowEdge+') && ( abs( unfolding.leptonEta ) < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
             firstScaleFactor = False
         else :
-            sfString += '+ ( ( ( unfolding.leptonEta > '+scaleFactor.etaLowEdge+') && ( unfolding.leptonEta < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
+            sfString += '+ ( ( ( abs( unfolding.leptonEta ) > '+scaleFactor.etaLowEdge+') && ( abs( unfolding.leptonEta ) < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
 
     sfString += ')'
     return sfString
@@ -94,6 +94,8 @@ def main():
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
     parser.add_option('-n', action='store_true', dest='donothing', default=False)
+    parser.add_option('-e', action='store_true', dest='extraHists', default=False)
+
     (options, _) = parser.parse_args()
 
 
@@ -161,8 +163,14 @@ def main():
                 # Variable names in tree
                 genSelection = '( unfolding.GenSelection == 1 )'
                 genWeight = '( unfolding.puWeight )'
+                # PU weights dodgy for 7 TeV, but should be v. close to 1
+                if options.is7TeVData:
+                    genWeight = '( 1 )'
                 offlineSelection = '( unfolding.OfflineSelection == 1 )'
                 offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
+                # PU weights dodgy for 7 TeV, but should be v. close to 1
+                if options.is7TeVData:
+                    offlineWeight = '( unfolding.bTagWeight )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
                 genVariable = 'unfolding.gen'+variable
                 recoVariable = 'unfolding.reco'+variable
@@ -194,6 +202,9 @@ def main():
                 # 2D histograms
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
+                
+                # Some interesting histograms
+                puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                  
                 # Fill histograms
                 # 1D
@@ -204,6 +215,10 @@ def main():
                     # 2D
                     tree.Draw(genVariable+':'+recoVariable,offlineWeight+'*'+offlineSelection,hist=response)
                     tree.Draw(genVariable+':'+recoVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
+                    
+                    if options.extraHists:
+                        tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
+                        pass
                 
                 # Output histgorams to file
                 outputDir.cd()
@@ -212,6 +227,8 @@ def main():
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()
+                if options.extraHists:
+                    puOffline.Write()
                 pass
             pass
         pass
