@@ -48,7 +48,10 @@ muon8TeVScaleFactors = [
                     scaleFactor( 2.1, 2.4, 40, 50, 1.0267340195 ),
                     scaleFactor( 2.1, 2.4, 90, 140, 1.04942096158 ),
                     scaleFactor( 2.1, 2.4, 35, 40, 1.04866260908 ),
-                    scaleFactor( 2.1, 2.4, 140, 300, 0.894756597947 ),                         
+                    scaleFactor( 2.1, 2.4, 140, 300, 0.894756597947 ),
+                    # Dummy scale factors for where none are provided
+                    scaleFactor( 0, 2.4, 300, 1000000, 1 ), # High pt
+                    scaleFactor( 2.4, 10, 10, 1000000, 1 ), # Large eta
                     ]
 
 
@@ -67,7 +70,10 @@ muon7TeVScaleFactors = [
                     scaleFactor( 0, 1.2, 40, 50, 0.992806774333 ),
                     scaleFactor( 0, 1.2, 60, 80, 0.991186501183 ),
                     scaleFactor( 0, 1.2, 30, 40, 0.987894599962 ),
-                        ]
+                    scaleFactor( 1.2, 10, 250, 1000000, 1 ),
+                    # Dummy scale factors for where none are provided
+                    scaleFactor( 0, 10, 250, 1000000, 1 ), # High pt
+                    ]
 
 electron8TeVScaleFactors = [
                             scaleFactor( 0, 0.8, 20, 30, 0.949*0.987),
@@ -82,4 +88,7 @@ electron8TeVScaleFactors = [
                             scaleFactor( 1.478, 2.5, 30, 40, 0.907*1.004),
                             scaleFactor( 1.478, 2.5, 40, 50, 0.937*1.033),
                             scaleFactor( 1.478, 2.5, 50, 200, 0.954*0.976),
+                            # Dummy scale factors for where none are provided
+                            scaleFactor( 0, 2.5, 200, 1000000, 1 ), # High pt
+                            scaleFactor( 2.5, 10, 20, 1000000, 1 ), # Large eta
                             ]
