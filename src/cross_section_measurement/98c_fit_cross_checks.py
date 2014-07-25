@@ -286,8 +286,8 @@ def plot_results ( results ):
                         hist_properties.title = '$\\chi^2$ distribution for fit output (' + sample + ')'
                         hist_properties.x_axis_title = '$' + latex_labels.variables_latex[variable] + '$ [TeV]'
                         hist_properties.y_axis_title = '$\chi^2 = \\left({N_{fit}} - N_{{exp}}\\right)^2$'
-#                         hist_properties.set_log_y = True
-#                         hist_properties.y_limits = (1e-10, 1e2)
+                        hist_properties.set_log_y = True
+                        hist_properties.y_limits = (1e-20, 1e20)
                         path = output_base + '/' + COMEnergy + 'TeV/' + channel + '/' + variable + '/' + fit_variable + '/'
                         if options.test:
                             path = output_base + '/test/'
