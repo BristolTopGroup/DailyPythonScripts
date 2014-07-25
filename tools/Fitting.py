@@ -182,7 +182,7 @@ class Minuit():
 
     def __init__( self, fit_data_collection, method = 'logLikelihood', verbose = False ):
         # only simultaneous fit data is supported!
-        assert( fit_data_collection.is_valid_for_simultaneous_fit() )
+#         assert( fit_data_collection.is_valid_for_simultaneous_fit() )
         self.method = method
         self.logger = logging.getLogger( 'TMinuitFit' )
         self.constraints = {}
@@ -219,8 +219,8 @@ class Minuit():
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long( 2 )
 
-        N_total = self.fit_data_collection.max_n_data() * 2
-        N_min = 0
+        N_max = self.fit_data_collection.max_n_data() * 2
+        N_min = -N_max
 
         param_index = 0
 
@@ -237,9 +237,9 @@ class Minuit():
         #                >0 if MNPARM unable to implement definition
         for sample in self.samples:  # all samples but data
             if self.n_distributions > 1:
-                gMinuit.mnparm( param_index, sample, self.normalisation[self.distributions[0]][sample], 10.0, N_min, N_total, errorFlag )
+                gMinuit.mnparm( param_index, sample, self.normalisation[self.distributions[0]][sample], 1.0, N_min, N_max, errorFlag )
             else:
-                gMinuit.mnparm( param_index, sample, self.normalisation[sample], 10.0, N_min, N_total, errorFlag )
+                gMinuit.mnparm( param_index, sample, self.normalisation[sample], 1.0, N_min, N_max, errorFlag )
             param_index += 1
 
         arglist = array( 'd', 10 * [0.] )
