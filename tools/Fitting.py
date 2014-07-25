@@ -219,8 +219,8 @@ class Minuit():
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long( 2 )
 
-        N_max = self.fit_data_collection.max_n_data() * 2
-        N_min = -N_max
+        N_max = self.fit_data_collection.max_n_data() *2
+        N_min = - N_max
 
         param_index = 0
 
@@ -237,9 +237,9 @@ class Minuit():
         #                >0 if MNPARM unable to implement definition
         for sample in self.samples:  # all samples but data
             if self.n_distributions > 1:
-                gMinuit.mnparm( param_index, sample, self.normalisation[self.distributions[0]][sample], 1.0, N_min, N_max, errorFlag )
+                gMinuit.mnparm( param_index, sample, self.normalisation[self.distributions[0]][sample], 10.0, N_min, N_max, errorFlag )
             else:
-                gMinuit.mnparm( param_index, sample, self.normalisation[sample], 1.0, N_min, N_max, errorFlag )
+                gMinuit.mnparm( param_index, sample, self.normalisation[sample], 10.0, N_min, N_max, errorFlag )
             param_index += 1
 
         arglist = array( 'd', 10 * [0.] )
@@ -314,10 +314,11 @@ class Minuit():
                 self.param_indices[sample] = param_index
                 param_index += 1
             data_i = normalisation[FitData.data_label] * v_data
-            if not data_i == 0 and not x_i == 0:
-                L = TMath.Poisson( data_i, x_i )
-                if not L == 0:
-                    lnL += math.log( L )
+            L = TMath.Poisson( data_i, x_i )
+            if not L == 0:
+                lnL += math.log( L )
+            else:
+                lnL += -1e90
         return lnL
 
     def get_fit_normalisation_constraints( self, params ):
