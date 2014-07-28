@@ -62,6 +62,15 @@ def convertScaleFactorsToString( scaleFactors ):
     sfString += ')'
     return sfString
 
+def copyEventFilterHist( inputFile, outputFile ):
+    eventFilter = inputFile.Get('EventFilter/EventCounter')
+    outputFile.cd()
+    eventFilterOutputDir = outputFile.mkdir('EventFilter')
+    eventFilterOutputDir.cd()
+    eventFilter.Write()
+    inputFile.cd()
+    pass
+
 
 fileNames = {
              '8TeV' : {
@@ -122,8 +131,11 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
-                
+
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
+        
+        copyEventFilterHist( f, out )
+        
         for channel in channels:
             if options.debug and channel.channelName != 'muPlusJets' : continue
             
