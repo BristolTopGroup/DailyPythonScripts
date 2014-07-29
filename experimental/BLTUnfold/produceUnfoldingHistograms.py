@@ -214,7 +214,8 @@ def main():
                 # 2D histograms
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
-                
+                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')      
+                          
                 # Some interesting histograms
                 puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                  
@@ -225,9 +226,10 @@ def main():
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
                     # 2D
-                    tree.Draw(genVariable+':'+recoVariable,offlineWeight+'*'+offlineSelection,hist=response)
-                    tree.Draw(genVariable+':'+recoVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
-                    
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+offlineSelection,hist=response)
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=response_only_fakes)
+
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
                         pass
