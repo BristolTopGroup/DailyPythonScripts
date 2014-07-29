@@ -81,7 +81,7 @@ fileNames = {
                     'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/TTJets-matchingdown_nTuple_53X_mc_merged.root',
                     'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_CT10_TuneZ2star_8TeV-powheg-tauola/TTJets_nTuple_53X_mc_merged.root',
                     'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_CT10_AUET2_8TeV-powheg-herwig/TTJets_nTuple_53X_mc_merged.root',
-                    'mcatnlo' : 'mcatnlo',
+                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_8TeV-mcatnlo/TTJets_nTuple_53X_mc_merged.root',
                 },
              '7TeV' : {
                        'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',

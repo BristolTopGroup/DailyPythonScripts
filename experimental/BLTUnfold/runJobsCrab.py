@@ -17,7 +17,7 @@ jobs = [
         # Other generators
         '-s powheg',
         '-s powhegherwig',
-#         '-s mcatnlo',
+        '-s mcatnlo',
         
         # Top pt reweighting
         '--topPtReweighting',
