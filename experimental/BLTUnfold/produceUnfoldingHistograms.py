@@ -241,6 +241,7 @@ def main():
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()
+                response_only_fakes.Write()
                 if options.extraHists:
                     puOffline.Write()
                 pass
