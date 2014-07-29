@@ -25,13 +25,13 @@ jobs = [
         # 7 TeV
         # Central
         '--is7TeV',
-        
-        # Top pt reweighting
-        '--is7TeV --topPtReweighting',
-        
+
         # Scale up/down
         '--is7TeV -s scaleup',
         '--is7TeV -s scaledown',
+                
+        # Top pt reweighting
+        '--is7TeV --topPtReweighting',
         ]
 
  # Add pdf variations to list of jobs
@@ -44,6 +44,6 @@ parser = OptionParser()
 parser.add_option('-j','--job_number',type='int',dest='jobNumber',default=0)
 (options, _) = parser.parse_args()
 
-print jobs[options.jobNumber]
+print 'Running job :',jobs[options.jobNumber]
 os.system('python experimental/BLTUnfold/produceUnfoldingHistograms.py %s ' % jobs[options.jobNumber-1] )
 

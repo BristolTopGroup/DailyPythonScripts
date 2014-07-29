@@ -25,6 +25,8 @@ export PATH=$PATH:$base/bin
 
 mkdir unfolding
 python experimental/BLTUnfold/runJobsCrab.py -j $1
+ls unfolding
 
+echo "Tar output"
 tar -cvf $ORIGDIR/output.tar unfolding/*.root
 ls -trlh $ORIGDIR
