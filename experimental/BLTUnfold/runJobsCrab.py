@@ -6,16 +6,17 @@ jobs = [
         # Central
         '',
         
-#         # Scale up/down
-#         '-s scaleup',
-#         '-s scaledown',
-#         
-#         # Matching up/down
-#         '-s matchingup',
-#         '-s matchingdown',
-#         
-#         # Other generators
-#         '-s powheg',
+        # Scale up/down
+        '-s scaleup',
+        '-s scaledown',
+         
+        # Matching up/down
+        '-s matchingup',
+        '-s matchingdown',
+         
+        # Other generators
+        '-s powheg',
+        '-s powhegherwig',
 #         '-s mcatnlo',
         
         # Top pt reweighting
@@ -27,13 +28,17 @@ jobs = [
         
         # Top pt reweighting
         '--is7TeV --topPtReweighting',
+        
+        # Scale up/down
+        '--is7TeV -s scaleup',
+        '--is7TeV -s scaledown',
         ]
 
  # Add pdf variations to list of jobs
-for variation in range(1,45+1):
-    jobs.append('-p %i' % variation)
-    jobs.append('--is7TeV -p %i' % variation)
-    pass
+# for variation in range(1,45+1):
+#     jobs.append('-p %i' % variation)
+#     jobs.append('--is7TeV -p %i' % variation)
+#     pass
     
 parser = OptionParser()
 parser.add_option('-j','--job_number',type='int',dest='jobNumber',default=0)

@@ -74,18 +74,19 @@ def copyEventFilterHist( inputFile, outputFile ):
 
 fileNames = {
              '8TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root',
-#                     'central' : '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/BLTUnfoldTest2/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
-                    'scaleup' : 'scaleupFile',
-                    'scaledown' : 'scaledownFile',
-                    'matchingup' : 'matchingupFile',
-                    'matchingdown' : 'matchingdownFile',
-                    'powheg' : 'powhegFile',
-                    'mcatnlo' : 'mcatnlo'
+                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root',
+                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/TTJets-scaleup_nTuple_53X_mc_merged.root',
+                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/TTJets-scaledown_nTuple_53X_mc_merged.root',
+                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/TTJets-matchingup_nTuple_53X_mc_merged.root',
+                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/TTJets-matchingdown_nTuple_53X_mc_merged.root',
+                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_CT10_TuneZ2star_8TeV-powheg-tauola/TTJets_nTuple_53X_mc_merged.root',
+                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_CT10_AUET2_8TeV-powheg-herwig/TTJets_nTuple_53X_mc_merged.root',
+                    'mcatnlo' : 'mcatnlo',
                 },
              '7TeV' : {
                        'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
-                       'matchingup' :'matchingup'
+                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_scaledown_TuneZ2star_7TeV-madgraph-tauola/TTJets-scaledown_nTuple_53X_mc_merged.root',
+                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_scaleup_TuneZ2star_7TeV-madgraph-tauola/TTJets-scaleup_nTuple_53X_mc_merged.root',
                        }
              }
 
