@@ -452,42 +452,42 @@ if __name__ == '__main__':
     if measurement_config.include_higgs:
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
     # matching/scale up/down systematics for ttbar + jets
-    for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
-        if run_just_central:
-            continue
-        TTJet_file = File( filename )
-        if verbose:
-            print "\n" + systematic + "\n"
-        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
-                      input_files = {
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_electron,
-                                   'Higgs' : Higgs_file,
-                                   },
-                      variable = variable,
-                      met_type = met_type,
-                      b_tag_bin = b_tag_bin,
-                      )
+    # for systematic, filename in measurement_config.generator_systematic_ttbar_templates.iteritems():
+    #     if run_just_central:
+    #         continue
+    #     TTJet_file = File( filename )
+    #     if verbose:
+    #         print "\n" + systematic + "\n"
+    #     fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
+    #                   input_files = {
+    #                                'TTJet': TTJet_file,
+    #                                'SingleTop': SingleTop_file,
+    #                                'V+Jets': VJets_file,
+    #                                'data': data_file_electron,
+    #                                'Higgs' : Higgs_file,
+    #                                },
+    #                   variable = variable,
+    #                   met_type = met_type,
+    #                   b_tag_bin = b_tag_bin,
+    #                   )
 
-        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
-                      input_files = {
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_muon,
-                                   'Higgs' : Higgs_file,
-                                   },
-                      variable = variable,
-                      met_type = met_type,
-                      b_tag_bin = b_tag_bin,
-                      )
+    #     fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
+    #                   input_files = {
+    #                                'TTJet': TTJet_file,
+    #                                'SingleTop': SingleTop_file,
+    #                                'V+Jets': VJets_file,
+    #                                'data': data_file_muon,
+    #                                'Higgs' : Higgs_file,
+    #                                },
+    #                   variable = variable,
+    #                   met_type = met_type,
+    #                   b_tag_bin = b_tag_bin,
+    #                   )
 
-        write_fit_results_and_initial_values( 'electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron )
-        write_fit_results_and_initial_values( 'muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon )
-        write_fit_results( 'combined', ttbar_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
-        TTJet_file.Close()
+    #     write_fit_results_and_initial_values( 'electron', ttbar_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron )
+    #     write_fit_results_and_initial_values( 'muon', ttbar_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon )
+    #     write_fit_results( 'combined', ttbar_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
+    #     TTJet_file.Close()
 
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
     # matching/scale up/down systematics for V+Jets
@@ -603,55 +603,53 @@ if __name__ == '__main__':
         if Higgs_file:
             Higgs_file.Close()
 
-    # now do PDF uncertainty
     data_file_electron = File( measurement_config.data_electron_category_templates['central'] )
     data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
     SingleTop_file = File( measurement_config.SingleTop_category_templates['central'] )
     VJets_file = File( measurement_config.VJets_category_templates['central'] )
     muon_QCD_MC_file = File( measurement_config.muon_QCD_MC_category_templates['central'] )
-    data_file_electron = File( measurement_config.data_electron_category_templates['central'] )
-    data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
     if measurement_config.include_higgs:
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
 
-    for index in range( 1, 45 ):
-        if run_just_central:  # no systematics for closure test
-            continue
-        category = 'PDFWeights_%d' % index
-        TTJet_file = File( measurement_config.pdf_uncertainty_template % index )
+    # # now do PDF uncertainty
+    # for index in range( 1, 45 ):
+    #     if run_just_central:  # no systematics for closure test
+    #         continue
+    #     category = 'PDFWeights_%d' % index
+    #     TTJet_file = File( measurement_config.pdf_uncertainty_template % index )
 
-        if verbose:
-            print "\nPDF_" + str( index ) + "\n"
+    #     if verbose:
+    #         print "\nPDF_" + str( index ) + "\n"
 
-        fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
-                      input_files = {
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_electron,
-                                   'Higgs' : Higgs_file,
-                                   },
-                      variable = variable,
-                      met_type = met_type,
-                      b_tag_bin = b_tag_bin,
-                      )
+    #     fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
+    #                   input_files = {
+    #                                'TTJet': TTJet_file,
+    #                                'SingleTop': SingleTop_file,
+    #                                'V+Jets': VJets_file,
+    #                                'data': data_file_electron,
+    #                                'Higgs' : Higgs_file,
+    #                                },
+    #                   variable = variable,
+    #                   met_type = met_type,
+    #                   b_tag_bin = b_tag_bin,
+    #                   )
 
-        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
-                      input_files = {
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_muon,
-                                   'Higgs' : Higgs_file,
-                                   },
-                      variable = variable,
-                      met_type = met_type,
-                      b_tag_bin = b_tag_bin,
-                      )
-        write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
-        write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
-        write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
-        TTJet_file.Close()
+    #     fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
+    #                   input_files = {
+    #                                'TTJet': TTJet_file,
+    #                                'SingleTop': SingleTop_file,
+    #                                'V+Jets': VJets_file,
+    #                                'data': data_file_muon,
+    #                                'Higgs' : Higgs_file,
+    #                                },
+    #                   variable = variable,
+    #                   met_type = met_type,
+    #                   b_tag_bin = b_tag_bin,
+    #                   )
+    #     write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
+    #     write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
+    #     write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
+    #     TTJet_file.Close()
 
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
 
