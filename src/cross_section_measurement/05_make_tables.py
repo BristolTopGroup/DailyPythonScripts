@@ -25,14 +25,14 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_with_errors.txt')
     normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_ttbar_theory_errors.txt')
-    normalised_xsection_ttbar_theory_errors = read_data_from_JSON( file_name )
+    file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
+    normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
 
     file_name = file_template.replace('.txt', '_MET_errors.txt')
     normalised_xsection_MET_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_PDF_errors.txt')
-    normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
+    # file_name = file_template.replace('.txt', '_PDF_errors.txt')
+    # normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
 
     file_name = file_template.replace('.txt', '_other_errors.txt')
     normalised_xsection_other_errors = read_data_from_JSON( file_name )
@@ -43,14 +43,14 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
                                                 'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded']})
     
-    normalised_xsection_measured_errors = normalised_xsection_ttbar_theory_errors['TTJet_measured']
-    normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
+    normalised_xsection_measured_errors = normalised_xsection_ttbar_generator_errors['TTJet_measured']
+    # normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
 
-    normalised_xsection_unfolded_errors = normalised_xsection_ttbar_theory_errors['TTJet_unfolded']
-    normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors = normalised_xsection_ttbar_generator_errors['TTJet_unfolded']
+    # normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
@@ -397,18 +397,18 @@ if __name__ == '__main__':
     categories.extend(ttbar_generator_systematics)
     categories.extend(vjets_generator_systematics)
     
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1, 45)]
-    pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range(1, 12)]
-    pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range(12, 23)]
-    pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range(23, 34)]
-    pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34, 45)]
+    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1, 45)]
+    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range(1, 12)]
+    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range(12, 23)]
+    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range(23, 34)]
+    # pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range(34, 45)]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
+    new_uncertainties = ['ptreweight_max', 'hadronisation_max', 'QCD_shape']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     all_measurements = deepcopy(categories)
-    all_measurements.extend(pdf_uncertainties)
+    # all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
     all_measurements.extend(new_uncertainties)
     all_measurements.extend(rate_changing_systematics)

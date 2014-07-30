@@ -12,7 +12,7 @@ from tools.hist_utilities import value_error_tuplelist_to_hist, \
 value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
 from math import sqrt
 # rootpy & matplotlib
-from ROOT import kRed, kGreen, kMagenta, kBlue
+from ROOT import kRed, kGreen, kMagenta, kBlue, kBlack
 from tools.ROOT_utililities import set_root_defaults
 import matplotlib as mpl
 from tools.plotting import get_best_max_y
@@ -53,7 +53,9 @@ def read_xsection_measurement_results( category, channel ):
     if category == 'central':
         # true distributions
         h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
-        h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG'], bin_edges[variable] )
+        h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
+        h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
+        h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
         h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
         h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
         h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
@@ -61,10 +63,13 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
         
         histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                    'POWHEG':h_normalised_xsection_POWHEG,
+                                                                    'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
+                                                                    'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
+                                                                    'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG,
                                                                     'MCATNLO':h_normalised_xsection_MCATNLO} )
         
         histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
+                                                                  'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
                                                                   'matchingdown': h_normalised_xsection_mathchingdown,
                                                                   'matchingup': h_normalised_xsection_mathchingup,
                                                                   'scaledown': h_normalised_xsection_scaledown,
@@ -93,25 +98,13 @@ def read_xsection_measurement_results( category, channel ):
                                                                 bin_edges[variable] )
         
         
-        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
-        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
+        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
+        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
         
-        histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
-        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
+        histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
+        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
     
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
-
-def read_unfolded_xsections( channel ):
-    global path_to_JSON, variable, k_values, met_type, b_tag_bin
-    TTJet_xsection_unfolded = {}
-    filename = ''
-    for category in categories:
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
-        if channel == 'combined':
-            filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
-        normalised_xsections = read_data_from_JSON( filename )
-        TTJet_xsection_unfolded[category] = normalised_xsections['TTJet_unfolded']
-    return TTJet_xsection_unfolded
 
 def read_fit_templates_and_results_as_histograms( category, channel ):
     global path_to_JSON, variable, met_type
@@ -335,21 +328,24 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         if not 'unfolded' in key and not 'measured' in key:
             hist.linewidth = 2
             # setting colours
-            if 'POWHEG' in key or 'matchingdown' in key:
+            if 'POWHEG_PYTHIA' in key or 'matchingdown' in key:
                 hist.linestyle = 'longdashdot'
                 hist.SetLineColor( kBlue )
+            elif 'POWHEG_HERWIG' in key or 'scaledown' in key:
+                hist.linestyle = 'dashed'
+                hist.SetLineColor( kGreen )
+            elif 'MADGRAPH_ptreweight' in key:
+                hist.linestyle = 'solid'
+                hist.SetLineColor( kBlack )
             elif 'MADGRAPH' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor( kRed + 1 )
             elif 'matchingup' in key:
-                hist.linestyle = 'solid'
+                hist.linestyle = 'verylongdashdot'
                 hist.linecolor = 'orange'
             elif 'MCATNLO'  in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor( kMagenta + 3 )
-            elif 'scaledown' in key:
-                hist.linestyle = 'dashed'
-                hist.SetLineColor( kGreen )
             rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
             
     handles, labels = axes.get_legend_handles_labels()
@@ -520,13 +516,6 @@ if __name__ == '__main__':
     parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
                       help = "creates a set of plots for each systematic (in addition to central result)." )
     
-    maximum = {
-               'MET': 0.02,
-               'HT': 0.005,
-               'ST': 0.004,
-               'MT': 0.02
-               }
-
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()
     
@@ -555,19 +544,19 @@ if __name__ == '__main__':
     categories.extend( ttbar_generator_systematics )
     categories.extend( vjets_generator_systematics )
     
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
-    pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
-    pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
-    pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
-    pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
+    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
+    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
+    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
+    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
+    # pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', ttbar_theory_systematic_prefix + 'mcatnlo_matrix', 'QCD_shape']
+    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', 'QCD_shape']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 
     all_measurements = deepcopy( categories )
-    all_measurements.extend( pdf_uncertainties )
+    # all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
@@ -607,19 +596,19 @@ if __name__ == '__main__':
     
         plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
         
-        plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_theory_only' )
+        plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
         
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
+        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
+        # plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
         
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
+        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
+        # plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
         
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
+        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
+        # plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
         
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_44 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_34_to_44, exclude = exclude, suffix = 'PDF_34_to_44' )
+        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_44 ) )
+        # plot_central_and_systematics( channel, pdf_uncertainties_34_to_44, exclude = exclude, suffix = 'PDF_34_to_44' )
         
         plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
         plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
