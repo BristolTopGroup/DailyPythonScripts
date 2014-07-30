@@ -7,13 +7,15 @@ from collections import OrderedDict
 from copy import copy, deepcopy
 
 from tools.ROOT_utililities import get_histograms_from_files
-from tools.hist_utilities import prepare_histograms, clean_control_region
+from tools.hist_utilities import prepare_histograms, clean_control_region,\
+    spread_x
 from tools.file_utilities import make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_shape_comparison_plot,\
     compare_measurements
 from config.latex_labels import b_tag_bins_latex
 from config.latex_labels import samples_latex
 from config import XSectionConfig
+from config.variable_binning import fit_variable_bin_edges, bin_edges, variable_bins_ROOT
 common_fit_variables = ['M3', 'M_bl', 'angle_bl']
 electron_fit_variables = copy( common_fit_variables )
 electron_fit_variables.append( 'electron_absolute_eta' )
@@ -41,17 +43,18 @@ histogram_files = {
 }
 
 # the following will move into variable_binning etc.
-variables = ['MET']
-variable_bins_ROOT = {
-                  'MET': ['0-31', '31-58', '58-96', '96-142', '142-191', '191-inf'],
-                  }
+# variables = ['MET']
+variables = bin_edges.keys()
+# variable_bins_ROOT = {
+#                   'MET': ['0-31', '31-58', '58-96', '96-142', '142-191', '191-inf'],
+#                   }
 
 save_as = ['pdf', 'png']
 save_as = ['pdf']
     
 def main():
     global electron_fit_variables, muon_fit_variables, fit_variable_properties
-    global b_tag_bin, category, histogram_files, variables, variable_bins_ROOT
+    global b_tag_bin, category, histogram_files, variables
     global b_tag_bin_ctl
     
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
@@ -70,15 +73,36 @@ def main():
             make_folder_if_not_exists(save_path)
             make_folder_if_not_exists(save_path + 'qcd/')
             make_folder_if_not_exists(save_path + 'vjets/')
+            inclusive_histograms = {}
+            inclusive_fit_distribution = ''
+            inclusive_qcd_distribution = ''
             for bin_range in variable_bins:
                 params = {'met_type': met_type, 'bin_range':bin_range, 'fit_variable':fit_variable, 'b_tag_bin':b_tag_bin, 'variable':variable}
                 fit_variable_distribution = histogram_template % params
                 qcd_fit_variable_distribution = fit_variable_distribution.replace( 'Ref selection', 'QCDConversions' )
                 qcd_fit_variable_distribution = qcd_fit_variable_distribution.replace( b_tag_bin, b_tag_bin_ctl )
                 histograms = get_histograms_from_files( [fit_variable_distribution, qcd_fit_variable_distribution], histogram_files )
-                plot_fit_variable( histograms, fit_variable, variable, bin_range, fit_variable_distribution, qcd_fit_variable_distribution, e_title, save_path )
+                for sample, hist in histograms.iteritems():
+                    inclusive_fit_distribution = fit_variable_distribution.replace(bin_range, "inclusive")
+                    inclusive_qcd_distribution = qcd_fit_variable_distribution.replace(bin_range, "inclusive")
+                    if not inclusive_histograms.has_key(sample):
+                        inclusive_histograms[sample] = {}
+                        inclusive_histograms[sample][inclusive_fit_distribution] = hist[fit_variable_distribution].clone()
+                        inclusive_histograms[sample][inclusive_qcd_distribution] = hist[qcd_fit_variable_distribution].clone() 
+                    else:
+                        inclusive_histograms[sample][inclusive_fit_distribution] += hist[fit_variable_distribution]   
+                        inclusive_histograms[sample][inclusive_qcd_distribution] += hist[qcd_fit_variable_distribution]
+                         
+                plot_fit_variable( histograms, fit_variable, variable, 
+                                   bin_range, fit_variable_distribution, 
+                                   qcd_fit_variable_distribution, e_title, 
+                                   save_path )
+            plot_fit_variable( inclusive_histograms, fit_variable, variable, 
+                               'inclusive', inclusive_fit_distribution, 
+                               inclusive_qcd_distribution, e_title, save_path )
         compare_qcd_control_regions(variable, met_type, e_title)
         compare_vjets_btag_regions(variable, met_type, e_title)
+        compare_vjets_templates(variable, met_type, e_title)
         
 def get_histogram_template( variable ):     
     histogram_template = '' 
@@ -87,7 +111,7 @@ def get_histogram_template( variable ):
     elif variable == 'MET':
         histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     else:
-        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_%s_Analysis/%(variable)s_with_%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
+        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_%(variable)s_Analysis/%(variable)s_with_%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     return histogram_template
                       
 def plot_fit_variable( histograms, fit_variable, variable, bin_range,
@@ -282,6 +306,62 @@ def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedP
             histograms['V+Jets'][fit_variable_distribution_ctl].Scale(1/histograms['V+Jets'][fit_variable_distribution_ctl].Integral())
             compare_measurements(models = {'no b-tag' : histograms['V+Jets'][fit_variable_distribution_ctl]}, 
                              measurements = {'$>=$ 2 b-tags': histograms['V+Jets'][fit_variable_distribution]}, 
+                             show_measurement_errors = True, 
+                             histogram_properties = histogram_properties, 
+                             save_folder = save_path + '/vjets/', 
+                             save_as = save_as)
+            
+            
+def compare_vjets_templates( variable = 'MET', met_type = 'patType1CorrectedPFMet', title = 'Untitled'):
+    ''' Compares the V+jets templates in different bins
+     of the current variable'''
+    global fit_variable_properties, b_tag_bin, save_as
+    variable_bins = variable_bins_ROOT[variable]
+    histogram_template = get_histogram_template( variable )
+    
+    for fit_variable in electron_fit_variables:
+        all_hists = {}
+        inclusive_hist = None
+        save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
+        make_folder_if_not_exists(save_path + '/vjets/')
+        
+        max_bins = len(variable_bins)
+        for bin_range in variable_bins[0:max_bins]:
+            
+            params = {'met_type': met_type, 'bin_range':bin_range, 'fit_variable':fit_variable, 'b_tag_bin':b_tag_bin, 'variable':variable}
+            fit_variable_distribution = histogram_template % params
+            # format: histograms['data'][qcd_fit_variable_distribution]
+            histograms = get_histograms_from_files( [fit_variable_distribution], histogram_files )
+            prepare_histograms( histograms, rebin = fit_variable_properties[fit_variable]['rebin'], scale_factor = measurement_config.luminosity_scale )
+            all_hists[bin_range] = histograms['V+Jets'][fit_variable_distribution]
+    
+        # create the inclusive distributions
+        inclusive_hist = deepcopy(all_hists[variable_bins[0]])
+        for bin_range in variable_bins[1:max_bins]:
+            inclusive_hist += all_hists[bin_range]
+        for bin_range in variable_bins[0:max_bins]:
+            if not all_hists[bin_range].Integral() == 0:
+                all_hists[bin_range].Scale(1/all_hists[bin_range].Integral())
+        # normalise all histograms
+        inclusive_hist.Scale(1/inclusive_hist.Integral())
+        # now compare inclusive to all bins
+        histogram_properties = Histogram_properties()
+        histogram_properties.x_axis_title = fit_variable_properties[fit_variable]['x-title']
+        histogram_properties.y_axis_title = fit_variable_properties[fit_variable]['y-title']
+        histogram_properties.y_axis_title = histogram_properties.y_axis_title.replace('Events', 'a.u.')
+        histogram_properties.x_limits = [fit_variable_properties[fit_variable]['min'], fit_variable_properties[fit_variable]['max']]
+#         histogram_properties.y_limits = [0, 0.5]
+        histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
+        histogram_properties.name = variable + '_' + fit_variable + '_' + b_tag_bin + '_VJets_template_comparison'
+        measurements = {bin_range + ' GeV': histogram for bin_range, histogram in all_hists.iteritems()}
+        measurements = OrderedDict(sorted(measurements.items()))
+        fit_var = fit_variable.replace('electron_','')
+        fit_var = fit_var.replace('muon_','')
+        graphs = spread_x(measurements.values(), fit_variable_bin_edges[fit_var])
+        for key, graph in zip( sorted(measurements.keys()), graphs ):
+            measurements[key] = graph
+        compare_measurements(models = {'inclusive' : inclusive_hist}, 
+                             measurements = measurements, 
                              show_measurement_errors = True, 
                              histogram_properties = histogram_properties, 
                              save_folder = save_path + '/vjets/', 
