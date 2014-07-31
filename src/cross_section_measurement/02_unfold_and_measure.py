@@ -85,10 +85,10 @@ def data_covariance_matrix( data ):
     return cov_matrix
 
 def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
-    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_mcatnlo, file_for_ptreweight
+    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_mcatnlo, file_for_ptreweight, files_for_pdfs
     global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
     global file_for_matchingdown, file_for_matchingup, file_for_scaledown, file_for_scaleup
-    global ttbar_generator_systematics, ttbar_theory_systematics
+    global ttbar_generator_systematics, ttbar_theory_systematics, pdf_uncertainties
     global use_ptreweight
 
     files_for_systematics = {
@@ -104,6 +104,16 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
     if category in ttbar_generator_systematics or category in ttbar_theory_systematics:
         h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_systematics[category],
+                                                                              variable = variable,
+                                                                              channel = channel,
+                                                                              met_type = met_type,
+                                                                              centre_of_mass = centre_of_mass,
+                                                                              ttbar_xsection = ttbar_xsection,
+                                                                              luminosity = luminosity,
+                                                                              load_fakes = load_fakes
+                                                                              )
+    elif category in pdf_uncertainties:
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_pdfs[category],
                                                                               variable = variable,
                                                                               channel = channel,
                                                                               met_type = met_type,
@@ -375,6 +385,7 @@ if __name__ == '__main__':
     file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
     file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
     file_for_ptreweight = File ( measurement_config.unfolding_ptreweight, 'read' )
+    files_for_pdfs = { 'PDFWeights_%d' % index : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 1, 46 ) }
         
     file_for_scaledown = File( measurement_config.unfolding_scale_down, 'read' )
     file_for_scaleup = File( measurement_config.unfolding_scale_up, 'read' )
@@ -400,18 +411,18 @@ if __name__ == '__main__':
     categories.extend( vjets_generator_systematics )
 
     # ttbar theory systematics, including pt reweighting and hadronisation systematic
-    ttbar_theory_systematics = [ ttbar_theory_systematic_prefix + 'ptreweight' ]
+    ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
     ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
     categories.extend( ttbar_theory_systematics )
     
-    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 46 )]
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy( categories )
-    # all_measurements.extend( pdf_uncertainties )
+    all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
@@ -439,8 +450,8 @@ if __name__ == '__main__':
         muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
-        # don't change fit input for ttbar theory systematics
-        if category in ttbar_generator_systematics or category in ttbar_theory_systematics:
+        # don't change fit input for ttbar generator/theory systematics and PDF weights
+        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties:
             electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'

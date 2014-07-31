@@ -544,19 +544,19 @@ if __name__ == '__main__':
     categories.extend( ttbar_generator_systematics )
     categories.extend( vjets_generator_systematics )
     
-    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
-    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
-    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
-    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
-    # pdf_uncertainties_34_to_44 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 46 )]
+    pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
+    pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
+    pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
+    pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 46 )]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = [ttbar_theory_systematic_prefix + 'ptreweight', 'QCD_shape']
+    new_uncertainties = ['QCD_shape'] #ttbar_theory_systematic_prefix + 'ptreweight', 
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 
     all_measurements = deepcopy( categories )
-    # all_measurements.extend( pdf_uncertainties )
+    all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
@@ -598,17 +598,17 @@ if __name__ == '__main__':
         
         plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
         
-        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
-        # plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
+        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
+        plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
         
-        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
-        # plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
+        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
+        plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
         
-        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
-        # plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
+        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
+        plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
         
-        # exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_44 ) )
-        # plot_central_and_systematics( channel, pdf_uncertainties_34_to_44, exclude = exclude, suffix = 'PDF_34_to_44' )
+        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_45 ) )
+        plot_central_and_systematics( channel, pdf_uncertainties_34_to_45, exclude = exclude, suffix = 'PDF_34_to_45' )
         
         plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
         plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )

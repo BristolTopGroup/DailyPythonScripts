@@ -33,7 +33,6 @@ class XSectionConfig():
                   'muon_QCD_file', 'muon_control_region',
                   'muon_control_region_systematic', 'new_luminosity',
                   'parameters', 'path_to_files', 'path_to_unfolding_histograms',
-                  #'pdf_uncertainty_template',
                   'rate_changing_systematics',
                   'rebin', 'special_muon_histogram', 'translate_options',
                   'ttbar_category_templates',
@@ -47,6 +46,7 @@ class XSectionConfig():
                   'unfolding_scale_down', 'unfolding_scale_down_raw',
                   'unfolding_scale_up', 'unfolding_scale_up_raw',
                   'unfolding_ptreweight', 'unfolding_ptreweight_raw',
+                  'unfolding_pdfweights',
                   'vjets_theory_systematic_prefix'
                   ]
 
@@ -207,6 +207,8 @@ class XSectionConfig():
         self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
+
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'PDFweights/' + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
 
         self.histogram_path_templates = {
                            'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s',
