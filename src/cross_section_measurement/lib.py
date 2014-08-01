@@ -9,6 +9,7 @@ from tools.Timer import Timer
 
 closure_tests = {
                  'simple' : {'V+Jets': 1.1, 'SingleTop': 1.2, 'TTJet': 1.3, 'QCD': 1.5},
+                 #
                  'ttbar_only' : {'V+Jets': 0, 'SingleTop': 0, 'TTJet': 1, 'QCD': 0},
                  'singletop_only' : {'V+Jets': 0, 'SingleTop': 1, 'TTJet': 0, 'QCD': 0},
                  'vjets_only' : {'V+Jets': 1, 'SingleTop': 0, 'TTJet': 0, 'QCD': 0},
