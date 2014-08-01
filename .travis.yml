@@ -10,6 +10,8 @@ env:
   matrix:
     - ROOT=5-34-18
     - ROOT=6-00-00
+  global:
+    - CLANG_VERSION=3.6
 
 install: source ci/install.sh
 script: bash ci/test.sh
