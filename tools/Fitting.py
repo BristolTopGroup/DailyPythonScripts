@@ -219,8 +219,8 @@ class Minuit():
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long( 2 )
 
-        N_total = self.fit_data_collection.max_n_data() * 2
         N_min = 0
+        N_max = self.fit_data_collection.max_n_data() * 2
 
         param_index = 0
 
@@ -237,9 +237,9 @@ class Minuit():
         #                >0 if MNPARM unable to implement definition
         for sample in self.samples:  # all samples but data
             if self.n_distributions > 1:
-                gMinuit.mnparm( param_index, sample, self.normalisation[self.distributions[0]][sample], 10.0, N_min, N_total, errorFlag )
+                gMinuit.mnparm( param_index, sample, self.normalisation[self.distributions[0]][sample], 10.0, N_min, N_max, errorFlag )
             else:
-                gMinuit.mnparm( param_index, sample, self.normalisation[sample], 10.0, N_min, N_total, errorFlag )
+                gMinuit.mnparm( param_index, sample, self.normalisation[sample], 10.0, N_min, N_max, errorFlag )
             param_index += 1
 
         arglist = array( 'd', 10 * [0.] )
@@ -306,18 +306,19 @@ class Minuit():
 
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
-        for vector_entry, data_i in enumerate( data_vector ):
+        for vector_entry, v_data in enumerate( data_vector ):
             x_i = 0
             param_index = 0
             for sample in self.samples:
                 x_i += par[param_index] * mc_vectors[sample][vector_entry]
                 self.param_indices[sample] = param_index
                 param_index += 1
-            data_term = normalisation[FitData.data_label] * data_i
-            if not data_term == 0 and not x_i == 0:
-                L = TMath.Poisson( data_term, x_i )
-                if not L == 0:
-                    lnL += math.log( L )
+            data_i = normalisation[FitData.data_label] * v_data
+            L = TMath.Poisson( data_i, x_i )
+            if not L == 0:
+                lnL += math.log( L )
+            else:
+                lnL += -1e10
         return lnL
 
     def get_fit_normalisation_constraints( self, params ):
@@ -369,8 +370,8 @@ class RooFitFit():
         roofit_pdfs = {}
         roofit_variables = {}
 
-        N_total = self.normalisation[self.data_label] * 2.
         N_min = 0.
+        N_max = self.normalisation[self.data_label] * 2.
         pdf_arglist = RooArgList()
         variable_arglist = RooArgList()
 
@@ -386,7 +387,7 @@ class RooFitFit():
             roofit_variable = RooRealVar( sample, sample + " events",
                                           self.normalisation[sample],
                                           N_min,
-                                          N_total )
+                                          N_max )
             roofit_variables[sample] = roofit_variable
             pdf_arglist.add( roofit_pdf )
             variable_arglist.add( roofit_variable )
@@ -476,13 +477,13 @@ class SimultaneousFit():
         samples = fit_data_1.samples
         self.observables = {}
         N_min = 0
-        N_total = fit_data_1.n_data() * 2
+        N_max = fit_data_1.n_data() * 2
         for sample in samples:
             self.observables[sample] = Observable( 'n_' + sample,
                                                   'number of ' + sample + " events",
                                                   fit_data_1.normalisation[sample],
                                                   N_min,
-                                                  N_total,
+                                                  N_max,
                                                   "events" )
 
         # next create the models
