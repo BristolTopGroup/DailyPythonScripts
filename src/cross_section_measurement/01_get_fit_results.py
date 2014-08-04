@@ -84,6 +84,11 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
 
     h_qcd = get_qcd_histograms( input_files, variable, variable_bin,
                                            channel, fit_variable_name, rebin )
+
+    if h_qcd.Integral() < 0.1:
+        h_qcd.Scale( 0.1/h_qcd.Integral() )
+        pass
+    
     histograms['QCD'] = adjust_overflow_to_limit( h_qcd,
                                                  boundaries[0], boundaries[1] )
     # normalise histograms
@@ -104,7 +109,6 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
             for sample, histogram in histograms.iteritems():
                 if sample in source:
                     histogram.Scale( factor )
-    
     return histograms
 
 def get_qcd_histograms( input_files, variable, variable_bin, channel,
@@ -430,6 +434,7 @@ if __name__ == '__main__':
     output_path = options.path
     if options.closure_test:
         output_path += '/closure_test/'
+        output_path += options.closure_test_type+'/'
     use_fitter = options.use_fitter
     verbose = options.verbose
     fit_variables = options.fit_variables.split( ',' )
