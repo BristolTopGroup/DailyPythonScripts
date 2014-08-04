@@ -213,6 +213,7 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
                                         b_tag_bin = b_tag_bin,
                                         rebin = measurement_config.rebin[fit_variable],
                                         fit_variable = fit_variable,
+                                        scale_factors = scale_factors,
                                         )
             # create data sets
             h_fit_variable_signal = None
@@ -708,7 +709,7 @@ if __name__ == '__main__':
                 factor = 1.0 - shift
 
             if verbose:
-                print "\n" + systematic + variation + "\n"
+                print "\n" + systematic + variation, factor, "\n"
 
             scale_factors = {}
             scale_factors[systematic + variation] = factor
