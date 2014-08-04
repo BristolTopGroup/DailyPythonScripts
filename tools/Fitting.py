@@ -214,7 +214,7 @@ class Minuit():
         # SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
         # Minuit defines parameter errors as the change in parameter value required to change the function value by UP.
         # Normally, for chisquared fits UP=1, and for negative log likelihood, UP=0.5.
-        gMinuit.SetErrorDef( 1 )
+        gMinuit.SetErrorDef( 0.5 )
 
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long( 2 )
@@ -298,7 +298,7 @@ class Minuit():
                                        self.normalisation,
                                        par )
 
-        f[0] = -2.0 * lnL
+        f[0] = -2.0 * lnL / self.n_distributions
 
         # Adding the QCD and V+jets constraints
         if self.fit_data_collection.constraint_type == 'normalisation':
