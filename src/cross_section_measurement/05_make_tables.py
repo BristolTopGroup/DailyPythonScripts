@@ -213,7 +213,8 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
-        output_file = open(path + '/fit_results_table_' + channel + '_' + met_type + '.tex', 'w')
+        file_template = path + '/%s_fit_results_table_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
+        output_file = open(file_template, 'w')
         output_file.write(printout)
         output_file.close()
     else:
@@ -221,13 +222,27 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
 
 def print_xsections(xsections, channel, toFile = True, print_before_unfolding = False):
     global output_folder, variable, k_values, met_type, b_tag_bin
-    printout = '=' * 60
+    printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += 'Results for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
+    printout += '%% Results for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
     if print_before_unfolding:
-        printout += 'BEFORE UNFOLDING\n'
-    printout += '=' * 60
+        printout += '%% BEFORE UNFOLDING\n'
+    printout += '%% ' + '=' * 60
     printout += '\n'
+
+    printout += '\\begin{table}[htbp]\n'
+    printout += '\\centering\n'
+    printout += '\\caption{Normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
+    printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
+    if channel == 'combined':
+        printout += '(combination of electron and muon channels).}\n'
+    else:
+        printout += '(%s channel).}\n' % channel
+    printout += '\\label{tab:%s_xsections_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
+    printout += '\\resizebox{\\columnwidth}{!} {\n'
+    printout += '\\begin{tabular}{lr}\n'
+    printout += '\\hline\n'
+
     printout += '$%s$ bin & $\sigma_{meas}$' % variables_latex[variable]
     printout += '\\\\ \n\hline\n'
     scale = 100
@@ -250,20 +265,24 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
                     '(^{+%.2f}_{-%.2f}' % (relativeError_up * 100, relativeError_down * 100) + '\%)$'
         printout += '\\\\ \n'
 
-    printout += '\hline \n\n'
+    printout += '\\hline \n'
+    printout += '\\end{tabular}\n'
+    printout += '}\n'
+    printout += '\\end{table}\n'
     
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
-        if channel == 'combined':
-            file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type
-        else:
-            file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
+        file_template = path + '/%s_normalised_xsection_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
+        # k-value/met_type specific filenames
+        # if channel == 'combined':
+        #     file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type
+        # else:
+        #     file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
 
         if print_before_unfolding:
-            file_template += '_measured.tex'
-        else:
-            file_template += '_unfolded.tex'
+            make_folder_if_not_exists(path + '/before_unfolding/')
+            file_template = file_template.replace(path, path + '/before_unfolding/')
         output_file = open(file_template, 'w')
         output_file.write(printout)
         output_file.close()
@@ -272,18 +291,32 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
 
 def print_error_table(central_values, errors, channel, toFile = True, print_before_unfolding = False):
     global output_folder, variable, k_values, met_type, b_tag_bin, all_measurements
-    printout = '=' * 60
-    printout += '\n'
-    printout += 'Errors for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
-    if print_before_unfolding:
-        printout += 'BEFORE UNFOLDING\n'
-    printout += '=' * 60
-    printout += '\n\hline\n'
-    
-    header = 'Systematic'
-    rows = {}
-    
     bins = variable_bins_ROOT[variable]
+
+    printout = '%% ' + '=' * 60
+    printout += '\n'
+    printout += '%% Systematics table for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
+    if print_before_unfolding:
+        printout += '%% BEFORE UNFOLDING\n'
+    printout += '%% ' + '=' * 60
+    printout += '\n'
+
+    printout += '\\begin{table}[htbp]\n'
+    printout += '\\centering\n'
+    printout += '\\caption{Systematic uncertainties for the normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
+    printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
+    if channel == 'combined':
+        printout += '(combination of electron and muon channels).}\n'
+    else:
+        printout += '(%s channel).}\n' % channel
+    printout += '\\label{tab:%s_systematics_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
+    printout += '\\resizebox{\\columnwidth}{!} {\n'
+    printout += '\\begin{tabular}{l' + 'r'*len(bins) + '}\n'
+    printout += '\\hline\n'
+    
+    header = 'Uncertainty source '
+    rows = {}
+
     assert(len(bins) == len(errors['central']))
     if print_before_unfolding:
         assert(len(bins) == len(central_values['measured']))
@@ -302,8 +335,6 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             text = '%.2f' % (relative_error*100)
             if rows.has_key(source):
                 rows[source].append(text)
-            elif 'PDF' in source:
-                continue
             elif met_type in source:
                 rows[source] = [met_systematics_latex[source.replace(met_type, '')] + ' (\%)', text]
             else:
@@ -312,18 +343,18 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
 
     header += ' \\\\'
     printout += header
-    printout += '\n\hline\n'
-    
+    printout += '\n\\hline\n'
+
     for source in sorted(rows.keys()):
         if source == 'central':
             continue
         for item in rows[source]:
             printout += item + ' & '
         printout = printout.rstrip('& ')
-        printout += '\\\\ \n'
+        printout += ' \\\\ \n'
 
     #append the total error to the table
-    printout += '\hline \n'
+    printout += '\\hline \n'
     total_line = 'Total (\%)'
     for bin_i, variable_bin in enumerate(bins):
         if print_before_unfolding:
@@ -334,20 +365,24 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         relativeError = getRelativeError(value, error)
         total_line += ' & %.2f ' % (relativeError * 100)
     printout += total_line + '\\\\ \n'
-    printout += '\hline \n\n'
+    printout += '\\hline \n'
+    printout += '\\end{tabular}\n'
+    printout += '}\n'
+    printout += '\\end{table}\n'
     
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
-        if channel == 'combined':
-            file_template = path + '/error_table_' + channel + '_' + met_type
-        else:
-            file_template = path + '/error_table_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
+        file_template = path + '/%s_systematics_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
+        # k-value/met_type specific filenames
+        # if channel == 'combined':
+        #     file_template = path + '/error_table_' + channel + '_' + met_type
+        # else:
+        #     file_template = path + '/error_table_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
 
         if print_before_unfolding:
-            file_template += '_measured.tex'
-        else:
-            file_template += '_unfolded.tex'
+            make_folder_if_not_exists(path + '/before_unfolding/')
+            file_template = file_template.replace(path, path + '/before_unfolding/')
         output_file = open(file_template, 'w')
         output_file.write(printout)
         output_file.close()
@@ -397,18 +432,19 @@ if __name__ == '__main__':
     categories.extend(ttbar_generator_systematics)
     categories.extend(vjets_generator_systematics)
     
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1, 46)]
-    pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range(1, 12)]
-    pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range(12, 23)]
-    pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range(23, 34)]
-    pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range(34, 46)]
+    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1, 46)]
+    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range(1, 12)]
+    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range(12, 23)]
+    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range(23, 34)]
+    # pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range(34, 46)]
+
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = ['hadronisation', 'QCD_shape']
+    new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     all_measurements = deepcopy(categories)
-    all_measurements.extend(pdf_uncertainties)
+    # all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
     all_measurements.extend(new_uncertainties)
     all_measurements.extend(rate_changing_systematics)
