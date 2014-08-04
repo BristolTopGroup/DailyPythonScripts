@@ -3,7 +3,6 @@ Created on 30 Oct 2012
 
 @author: kreczko
 '''
-
 from ROOT import TMinuit, TMath, Long, Double
 from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, \
 RooArgSet, RooAddPdf, RooMsgService, RooProdPdf, RooGaussian, RooLinkedList, \
@@ -23,13 +22,14 @@ def generate_templates_and_normalisation( histograms ):
     normalisation = {}
     normalisation_errors = {}
     templates = {}
+
     for sample, histogram in histograms.iteritems():
         normalisation[sample] = histogram.Integral()
         normalisation_errors[sample] = sum( histogram.yerravg() )
         temp = histogram.Clone( sample + '_' + 'template' )
         nEntries = temp.Integral()
         if not nEntries == 0:
-            temp.Scale( 1 / nEntries )
+            temp.Scale( 1.0 / nEntries )
         templates[sample] = temp
     return templates, normalisation, normalisation_errors
 
@@ -62,9 +62,9 @@ class FitData():
         keys = sorted( mc_histograms.keys() )
         self.samples = keys
         self.templates, self.normalisation, self.normalisation_errors = generate_templates_and_normalisation( self.histograms_ )
-
+        
         self.vectors, self.errors = vectorise( self.templates )
-
+        
     def n_data( self ):
         return self.normalisation[FitData.data_label]
 
@@ -201,7 +201,11 @@ class Minuit():
         gMinuit = TMinuit( numberOfParameters )
         if self.method == 'logLikelihood':  # set function for minimisation
             gMinuit.SetFCN( self.logLikelihood )
-
+            pass
+        
+        
+        gMinuit.SetMaxIterations(1000000000000)
+        
         # set Minuit print level
         # printlevel  = -1  quiet (also suppress all warnings)
         #            =  0  normal
@@ -241,7 +245,7 @@ class Minuit():
             else:
                 gMinuit.mnparm( param_index, sample, self.normalisation[sample], 10.0, N_min, N_max, errorFlag )
             param_index += 1
-
+            
         arglist = array( 'd', 10 * [0.] )
 
         # minimisation strategy: 1 standard, 2 try to improve minimum (a bit slower)
@@ -252,9 +256,12 @@ class Minuit():
         # In general, low values of <level> mean fewer function calls and high values mean more reliable minimization.
         # Currently allowed values are 0, 1 (default), and 2.
         gMinuit.mnexcm( "SET STR", arglist, 1, errorFlag )
-
+#         gMinuit.mnexcm("MINOS", arglist ,1,errorFlag)
+        
         gMinuit.Migrad()
-
+        
+        gMinuit.mnscan()
+        
         if self.verbose:
             gMinuit.mnmatu( 1 )  # prints correlation matrix
 
@@ -273,9 +280,18 @@ class Minuit():
             if ( math.isnan( temp_err ) ):
                 self.logger.warning( 'Template fit error is NAN, setting to sqrt(N).' )
                 temp_err = math.sqrt( temp_par )
-
+            
+#             gMinuit.Command("SCAn %i %i %i %i" % ( param_index, 100, N_min, N_total ) );
+#             scan = gMinuit.GetPlot()
+#             results[sample] = ( temp_par, temp_err, scan )
             results[sample] = ( temp_par, temp_err )
             param_index += 1
+            
+# #         gMinuit.Command("CONtour 1 2 3 50")
+#         gMinuit.SetErrorDef(1)
+#         results['contour'] = [gMinuit.Contour(100, 0, 1)]
+#         gMinuit.SetErrorDef(4)
+#         results['contour'].append(gMinuit.Contour(100, 0, 1))
 
         self.results = results
 
@@ -299,6 +315,12 @@ class Minuit():
                                        par )
 
         f[0] = -2.0 * lnL / self.n_distributions
+
+# REMOVE CONSTRAINTS AS NO LONGER NEEDED
+#         # Adding the QCD and V+jets constraints
+#         if self.fit_data_collection.constraint_type == 'normalisation':
+#             f[0] += self.get_fit_normalisation_constraints( par )
+#         print 'Par :',par[0], 'f[0]',f[0], 'lnL',lnL
 
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
