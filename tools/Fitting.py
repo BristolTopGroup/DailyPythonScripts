@@ -182,7 +182,7 @@ class Minuit():
 
     def __init__( self, fit_data_collection, method = 'logLikelihood', verbose = False ):
         # only simultaneous fit data is supported!
-        assert( fit_data_collection.is_valid_for_simultaneous_fit() )
+#         assert( fit_data_collection.is_valid_for_simultaneous_fit() )
         self.method = method
         self.logger = logging.getLogger( 'TMinuitFit' )
         self.constraints = {}
@@ -208,7 +208,7 @@ class Minuit():
         #            =  1  verbose
         #            =  2  additional output giving intermediate results.
         #            =  3  maximum output, showing progress of minimizations.
-        gMinuit.SetPrintLevel( -1 )
+        gMinuit.SetPrintLevel( -3 )
 
         # Error definition: 1 for chi-squared, 0.5 for negative log likelihood
         # SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
@@ -299,10 +299,6 @@ class Minuit():
                                        par )
 
         f[0] = -2.0 * lnL / self.n_distributions
-
-        # Adding the QCD and V+jets constraints
-        if self.fit_data_collection.constraint_type == 'normalisation':
-            f[0] += self.get_fit_normalisation_constraints( par )
 
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
