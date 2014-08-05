@@ -57,18 +57,6 @@ def read_xsection_measurement_results_with_errors(channel):
     
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
-# def read_fit_results(channel):
-#     global path_to_JSON, variable, met_type
-#     category = 'central'
-#     fit_results = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
-#     return fit_results
-# 
-# def read_initial_values(channel):
-#     global path_to_JSON, variable, met_type
-#     category = 'central'
-#     initial_values = read_data_from_JSON(path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt')
-#     return initial_values
-
 def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
     global output_folder, variable, met_type
     printout = '=' * 60
@@ -274,11 +262,6 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
         file_template = path + '/%s_normalised_xsection_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
-        # k-value/met_type specific filenames
-        # if channel == 'combined':
-        #     file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type
-        # else:
-        #     file_template = path + '/normalised_xsection_result_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
 
         if print_before_unfolding:
             make_folder_if_not_exists(path + '/before_unfolding/')
@@ -374,11 +357,6 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
         make_folder_if_not_exists(path)
         file_template = path + '/%s_systematics_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
-        # k-value/met_type specific filenames
-        # if channel == 'combined':
-        #     file_template = path + '/error_table_' + channel + '_' + met_type
-        # else:
-        #     file_template = path + '/error_table_' + channel + '_' + met_type + '_kv' + str(k_values[channel])
 
         if print_before_unfolding:
             make_folder_if_not_exists(path + '/before_unfolding/')
@@ -432,19 +410,12 @@ if __name__ == '__main__':
     categories.extend(ttbar_generator_systematics)
     categories.extend(vjets_generator_systematics)
     
-    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range(1, 46)]
-    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range(1, 12)]
-    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range(12, 23)]
-    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range(23, 34)]
-    # pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range(34, 46)]
-
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     all_measurements = deepcopy(categories)
-    # all_measurements.extend(pdf_uncertainties)
     all_measurements.extend(met_uncertainties)
     all_measurements.extend(new_uncertainties)
     all_measurements.extend(rate_changing_systematics)

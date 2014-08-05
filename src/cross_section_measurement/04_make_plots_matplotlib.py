@@ -551,7 +551,7 @@ if __name__ == '__main__':
     pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 46 )]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = ['QCD_shape'] #ttbar_theory_systematic_prefix + 'ptreweight', 
+    new_uncertainties = ['QCD_shape']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 

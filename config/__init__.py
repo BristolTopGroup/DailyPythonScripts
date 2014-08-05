@@ -21,7 +21,6 @@ class XSectionConfig():
                   'fit_variable_bin_width',
                   'fit_variable_unit',
                   'general_category_templates',
-                  #'generator_systematic_ttbar_templates',
                   'generator_systematic_vjets_templates',
                   'generator_systematics',
                   'higgs_category_templates', 'higgs_file',
@@ -166,10 +165,7 @@ class XSectionConfig():
 
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
-        # not changing the fit input for theory ttbar systematics
-        # self.generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
-        #self.pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWeights_%d.root'
 
         categories_and_prefixes = self.categories_and_prefixes
 
