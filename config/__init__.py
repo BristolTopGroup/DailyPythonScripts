@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 class XSectionConfig():
-    current_analysis_path = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_3rd_draft/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_3rd_draft/'
     known_centre_of_mass_energies = [7, 8]
     # has to be separate as many variables depend on it
     luminosities = {7:5050, 8:19584}
