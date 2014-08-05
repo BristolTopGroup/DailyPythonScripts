@@ -79,7 +79,8 @@ def read_xsection_measurement_results( path_to_JSON, variable, bin_edges,
     if category == 'central':
         # true distributions
         h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
-        h_normalised_xsection_POWHEG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG'], bin_edges[variable] )
+        h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
+        h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
         h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
         h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
         h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
@@ -87,7 +88,8 @@ def read_xsection_measurement_results( path_to_JSON, variable, bin_edges,
         h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
         
         histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                    'POWHEG':h_normalised_xsection_POWHEG,
+                                                                    'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
+                                                                    'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG,
                                                                     'MCATNLO':h_normalised_xsection_MCATNLO} )
         
         histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,

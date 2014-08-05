@@ -25,7 +25,7 @@ class Test( unittest.TestCase ):
         self.assertTrue( '7TeV' in self.config_7TeV.path_to_files )
         self.assertTrue( '8TeV' in self.config_8TeV.path_to_files )
         
-        unfolding_files = ['unfolding_powheg_raw', 'unfolding_mcatnlo_raw', 'unfolding_scale_down_raw', 'unfolding_scale_up_raw', 'unfolding_matching_down_raw', 'unfolding_matching_up_raw', ]
+        unfolding_files = ['unfolding_powheg_pythia_raw', 'unfolding_powheg_herwig_raw', 'unfolding_mcatnlo_raw', 'unfolding_scale_down_raw', 'unfolding_scale_up_raw', 'unfolding_matching_down_raw', 'unfolding_matching_up_raw', ]
         for u_file in unfolding_files:
             full_path = getattr(self.config_7TeV, u_file)
             self.assertEqual(full_path.count('7TeV'), 2)

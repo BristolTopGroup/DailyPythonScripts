@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 class XSectionConfig():
-    current_analysis_path = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_2nd_draft/'
+    current_analysis_path = '/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_3rd_draft/'
     known_centre_of_mass_energies = [7, 8]
     # has to be separate as many variables depend on it
     luminosities = {7:5050, 8:19584}
@@ -21,7 +21,6 @@ class XSectionConfig():
                   'fit_variable_bin_width',
                   'fit_variable_unit',
                   'general_category_templates',
-                  'generator_systematic_ttbar_templates',
                   'generator_systematic_vjets_templates',
                   'generator_systematics',
                   'higgs_category_templates', 'higgs_file',
@@ -33,17 +32,20 @@ class XSectionConfig():
                   'muon_QCD_file', 'muon_control_region',
                   'muon_control_region_systematic', 'new_luminosity',
                   'parameters', 'path_to_files', 'path_to_unfolding_histograms',
-                  'pdf_uncertainty_template', 'rate_changing_systematics',
+                  'rate_changing_systematics',
                   'rebin', 'special_muon_histogram', 'translate_options',
-                  'ttbar_category_templates', 'ttbar_generator_systematics',
+                  'ttbar_category_templates',
                   'ttbar_theory_systematic_prefix', 'ttbar_xsection',
                   'unfolding_madgraph', 'unfolding_madgraph_raw',
                   'unfolding_matching_down', 'unfolding_matching_down_raw',
                   'unfolding_matching_up', 'unfolding_matching_up_raw',
                   'unfolding_mcatnlo', 'unfolding_mcatnlo_raw',
-                  'unfolding_powheg', 'unfolding_powheg_raw',
+                  'unfolding_powheg_pythia', 'unfolding_powheg_pythia_raw',
+                  'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
                   'unfolding_scale_down', 'unfolding_scale_down_raw',
                   'unfolding_scale_up', 'unfolding_scale_up_raw',
+                  'unfolding_ptreweight', 'unfolding_ptreweight_raw',
+                  'unfolding_pdfweights',
                   'vjets_theory_systematic_prefix'
                   ]
 
@@ -161,12 +163,9 @@ class XSectionConfig():
         if self.centre_of_mass_energy == 8:
             self.__fill_defaults_8TeV__()
 
-        self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown']
-        self.ttbar_generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown', 'mcatnlo', 'ptreweight']
+        self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
-        self.generator_systematic_ttbar_templates = { systematic: path_to_files + 'central/TTJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.ttbar_generator_systematics}
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
-        self.pdf_uncertainty_template = path_to_files + 'PDFWeights/TTJet' + middle + '_PDFWeights_%d.root'
 
         categories_and_prefixes = self.categories_and_prefixes
 
@@ -184,8 +183,10 @@ class XSectionConfig():
                                     }
 
         self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_merged.root'
-        self.unfolding_powheg_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg_pythia.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg_herwig.root' % self.centre_of_mass_energy
         self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_mcatnlo.root' % self.centre_of_mass_energy
+        self.unfolding_ptreweight_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ptreweight.root' % self.centre_of_mass_energy
 
         self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaledown.root' % self.centre_of_mass_energy
         self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleup.root' % self.centre_of_mass_energy
@@ -193,13 +194,17 @@ class XSectionConfig():
         self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
 
         self.unfolding_madgraph = self.unfolding_madgraph_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_powheg = self.unfolding_powheg_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_pythia = self.unfolding_powheg_pythia_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mcatnlo = self.unfolding_mcatnlo_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_ptreweight = self.unfolding_ptreweight_raw.replace( '.root', '_asymmetric.root' )
 
         self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
+
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'PDFweights/' + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
 
         self.histogram_path_templates = {
                            'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s',
