@@ -13,6 +13,7 @@ config_7TeV = XSectionConfig(7)
 config_8TeV = XSectionConfig(8)
 
 # it takes ~ 20 min to do all files
+# do these in two groups, 7TeV and 8TeV, because otherwise too many jobs for soolin
 files_to_load = [config_7TeV.unfolding_madgraph_raw,
                  config_7TeV.unfolding_matching_down_raw,
                  config_7TeV.unfolding_matching_up_raw,

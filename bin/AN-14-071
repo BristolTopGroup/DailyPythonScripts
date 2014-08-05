@@ -16,7 +16,9 @@ wait
 x_05_all_vars
 wait
 
-nohup python src/cross_section_measurement/99_QCD_cross_checks.py >& logs/99_QCD_cross_checks.log &
-
 x_98_all_vars
 wait
+
+nohup python src/cross_section_measurement/99_QCD_cross_checks.py >& logs/99_QCD_cross_checks.log &
+wait
+

@@ -7,11 +7,24 @@ python src/cross_section_measurement/98_fit_cross_checks.py -v HT >& logs/98_HT_
 python src/cross_section_measurement/98_fit_cross_checks.py -v ST >& logs/98_ST_fit_cross_checks_8TeV.log &
 python src/cross_section_measurement/98_fit_cross_checks.py -v MT >& logs/98_MT_fit_cross_checks_8TeV.log &
 python src/cross_section_measurement/98_fit_cross_checks.py -v WPT >& logs/98_WPT_fit_cross_checks_8TeV.log &
+#wait
+python src/cross_section_measurement/98b_fit_cross_checks.py >& logs/98b_MET_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -v HT >& logs/98b_HT_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -v ST >& logs/98b_ST_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -v MT >& logs/98b_MT_fit_cross_checks_8TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -v WPT >& logs/98b_WPT_fit_cross_checks_8TeV.log &
 wait
+
 # 7 TeV
 python src/cross_section_measurement/98_fit_cross_checks.py -e 7 >& logs/98_MET_fit_cross_checks_7TeV.log &
 python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v HT >& logs/98_HT_fit_cross_checks_7TeV.log &
 python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v ST >& logs/98_ST_fit_cross_checks_7TeV.log &
 python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v MT >& logs/98_MT_fit_cross_checks_7TeV.log &
 python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v WPT >& logs/98_WPT_fit_cross_checks_7TeV.log &
+#wait
+python src/cross_section_measurement/98b_fit_cross_checks.py -e 7 >& logs/98b_MET_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -e 7 -v HT >& logs/98b_HT_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -e 7 -v ST >& logs/98b_ST_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -e 7 -v MT >& logs/98b_MT_fit_cross_checks_7TeV.log &
+python src/cross_section_measurement/98b_fit_cross_checks.py -e 7 -v WPT >& logs/98b_WPT_fit_cross_checks_7TeV.log &
 wait
