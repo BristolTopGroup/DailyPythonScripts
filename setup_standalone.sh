@@ -12,6 +12,13 @@ export base=`pwd`
 export vpython=$base/external/vpython
 cd $base/external/virtualenv
 
+if [ ! -z "$CMSSW_BASE" ]; then
+    echo "CMSSW has been set up..."
+    echo "...giving priority to vpython."
+    export PYTHONPATH=$vpython/lib/python2.7/site-packages:$PYTHONPATH
+    echo $PYTHONPATH
+fi
+
 echo "Creating virtual python environment in $vpython"
 if [ ! -d "$vpython" ]; then
   python virtualenv.py --distribute $vpython
