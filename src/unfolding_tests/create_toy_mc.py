@@ -43,8 +43,9 @@ def main():
                       help = "set MET type for analysis of MET, ST or MT" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]", type = int )
-    parser.add_option( "-l", "--limit", dest = "limit", default = -1,
-                      help = "set the number of (input) events to run over. all == -1. Default = -1", type = int )
+    parser.add_option( "-l", "--limit", dest = "limit", default = 7000000,
+                      help = "set the number of (input) events to run over." +
+                      "all == -1. Default = 7000000", type = int )
     parser.add_option( '-V', '--verbose', dest = "verbose", action = "store_true",
                       help = "Print the event number, reco and gen variable value" )
 
@@ -146,6 +147,10 @@ def main():
             get_var = event.__getattr__
             passes_gen_sel = get_var( 'unfolding.GenSelection' )
             passes_offline_sel = get_var( 'unfolding.OfflineSelection' )
+            if not passes_gen_sel and not passes_offline_sel:
+                # we are not interested in events that pass neither the gen
+                # selection nor the offline selection
+                continue
             gen_var = get_var( gen_var_name )
             reco_var = get_var( reco_var_name )
             # generate toy MC

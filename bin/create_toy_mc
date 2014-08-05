@@ -3,7 +3,7 @@
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
 N_JOBS=4
-N_toy=10000
+N_toy=300
 
 i=0
 for var in MET HT ST WPT MT; do
