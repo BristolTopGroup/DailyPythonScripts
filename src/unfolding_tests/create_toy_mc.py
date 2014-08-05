@@ -73,8 +73,8 @@ def main():
     # rootTupleTreeEPlusJets/ePlusJetsTree
     # rootTupleTreeMuPlusJets/muPlusJetsTree
     # ttbarDecayAnalyser (as topPairEPlusJetsSelectionAnalyser)
-    input_files = {7: '/storage/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
-                   8: '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root'}
+    input_files = {7: '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
+                   8: '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root'}
     input_file_BLT = input_files[centre_of_mass]
     # get histograms
     input_file_hists = File( measurement_config.path_to_unfolding_histograms + 'unfolding_merged_asymmetric.root' )
