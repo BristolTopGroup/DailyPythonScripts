@@ -289,3 +289,12 @@ class XSectionConfig():
                                     'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
                                     'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
+
+fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
+                      'absolute_eta_angle_bl',
+                      'absolute_eta_M3',
+                      'absolute_eta_M_bl',
+                      'absolute_eta_M_bl_angle_bl',
+                      'absolute_eta_M3_angle_bl',
+                      'absolute_eta_M_bl_M3',
+                      'absolute_eta_M_bl_M3_angle_bl' ]
