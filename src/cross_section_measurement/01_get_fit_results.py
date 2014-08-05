@@ -286,6 +286,7 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
     #             print 'Bin ', variable_bin, ': ttbar/higgs ratio undefined for %s channel! Setting to 0.' % channel
                 TTJet_Higgs_ratio = 0
      
+            
             N_ttbar, N_Higgs = decombine_result(N_ttbar_all, TTJet_Higgs_ratio)
     
             fit_results['TTJet'] = N_ttbar
@@ -306,7 +307,8 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
             for sample in fit_results.keys():
                 results[sample] = [fit_results[sample]]
                 initial_values[sample] = [( normalisation[sample], normalisation_errors[sample] )]
-#                 if not sample in ['TTJet', 'SingleTop', 'Higgs']:
+                if sample in ['TTJet', 'SingleTop', 'Higgs'] and options.make_combined_signal:
+                    continue
                 for fit_variable in fit_variables:
                     templates[fit_variable][sample] = [fit_data_collection.vectors( fit_variable )[sample]]
         else:
@@ -316,7 +318,8 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
             for sample in fit_results.keys():
                 results[sample].append( fit_results[sample] )
                 initial_values[sample].append( [normalisation[sample], normalisation_errors[sample]] )
-#                 if not sample in ['TTJet', 'SingleTop', 'Higgs']:
+                if sample in ['TTJet', 'SingleTop', 'Higgs'] and options.make_combined_signal:
+                    continue
                 for fit_variable in fit_variables:
                     templates[fit_variable][sample].append( fit_data_collection.vectors( fit_variable )[sample] )
 
