@@ -1,4 +1,4 @@
-from lib import read_fit_results, read_fit_templates, read_fit_input, closure_tests
+from src.cross_section_measurement.lib import read_fit_results, read_fit_templates, read_fit_input, closure_tests
 from rootpy.plotting import Hist
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 
@@ -10,12 +10,11 @@ fit_variable_properties = {
                        }
 
 
-variables = ['MET']
+variables = [ 'MET', 'HT', 'ST', 'WPT', 'MT' ]
 
 
 for test in closure_tests:
-    if test != 'qcd_only': continue
-
+    if test != 'qcd_only' : continue;
     for variable in variables:
         
         fit_results_ = read_fit_results( 'data/closure_test/'+test+'/absolute_eta_M3_angle_bl/8TeV/',
@@ -36,7 +35,7 @@ for test in closure_tests:
                                         'electron',
                                          'patType1CorrectedPFMet' )
     
-        for whichBin in range (0,6):
+        for whichBin in range (0,len(fit_results_['TTJet'])):
             for fitVariable in fit_variable_properties:
                 fitTemplates = fit_templates_[fitVariable]
                 
