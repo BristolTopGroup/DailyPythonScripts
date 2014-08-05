@@ -212,7 +212,7 @@ if __name__ == "__main__":
     parser.add_option("-i", "--input-folder", type='string',
                       dest="input_folder", help="location of the pull data")
     parser.add_option("-o", "--output",
-                      dest="output_folder", default='plots_unfolding_pull',
+                      dest="output_folder", default='plots/unfolding_pulls',
                       help="output folder for unfolding pull plots")
     parser.add_option("-c", "--channel", type='string',
                       dest="channel", default='combined',
