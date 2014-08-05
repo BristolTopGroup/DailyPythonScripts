@@ -105,6 +105,7 @@ def main():
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
     parser.add_option('-n', action='store_true', dest='donothing', default=False)
     parser.add_option('-e', action='store_true', dest='extraHists', default=False)
+    parser.add_option('-f',action='store_true', dest='fineBinned', default=False)
 
     (options, _) = parser.parse_args()
 
@@ -216,7 +217,18 @@ def main():
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
                 response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')      
-                          
+
+                if options.fineBinned:
+                    minVar = bin_edges[variable][0]
+                    maxVar = bin_edges[variable][-1]
+                    nBins = int(maxVar - minVar)
+                    truth = Hist( nBins, minVar, maxVar, name='truth')
+                    measured = Hist( nBins, minVar, maxVar, name='measured')
+                    fake = Hist( nBins, minVar, maxVar, name='fake')
+                    response = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
+                    response_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
+                    response_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes')
+                    
                 # Some interesting histograms
                 puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                  
