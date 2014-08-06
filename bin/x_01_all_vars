@@ -8,20 +8,17 @@ N_JOBS=4
 echo "Using the fit variable(s): $fit_var"
 
 i=0
-for fitComb in absolute_eta,M3,angle_bl; do
-	echo "$fitComb"
-	for var in MET HT ST WPT MT; do
-		echo "Fitting distribution: $var"
-		nohup time python src/cross_section_measurement/01_get_fit_results.py -V -v $var --no_combined_signal -c 7 --fit-variables $fitComb &> logs/${var}_fit_7TeV_${nice_fit_var}.log &
-		let i+=1
-		nohup time python src/cross_section_measurement/01_get_fit_results.py -V -v $var --no_combined_signal -c 8 --fit-variables $fitComb &> logs/${var}_fit_8TeV_${nice_fit_var}.log &
-		let i+=1
-		if (( $i % N_JOBS == 0 ))
-		then
-			echo "Waiting on the above to finish."
-	    	wait;
-		fi
-	done
+for var in MET HT ST WPT MT; do
+	echo "Fitting distribution: $var"
+	nohup time python src/cross_section_measurement/01_get_fit_results.py -V -v $var --no_combined_signal -c 7 --fit-variables $fit_var &> logs/${var}_fit_7TeV_${nice_fit_var}.log &
+	let i+=1
+	nohup time python src/cross_section_measurement/01_get_fit_results.py -V -v $var --no_combined_signal -c 8 --fit-variables $fit_var &> logs/${var}_fit_8TeV_${nice_fit_var}.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
 done
 
 echo "All done! Time to run x_02_all_vars."
