@@ -256,11 +256,11 @@ class Minuit():
         # In general, low values of <level> mean fewer function calls and high values mean more reliable minimization.
         # Currently allowed values are 0, 1 (default), and 2.
         gMinuit.mnexcm( "SET STR", arglist, 1, errorFlag )
-#         gMinuit.mnexcm("MINOS", arglist ,1,errorFlag)
         
         gMinuit.Migrad()
-        
+
         gMinuit.mnscan()
+
         
         if self.verbose:
             gMinuit.mnmatu( 1 )  # prints correlation matrix
