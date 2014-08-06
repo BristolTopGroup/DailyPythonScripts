@@ -64,7 +64,7 @@ class FitData():
         self.samples = keys
         self.templates, self.normalisation, self.normalisation_errors = generate_templates_and_normalisation( self.histograms_ )
         self.vectors, self.errors = vectorise( self.templates )
-        
+
     def n_data( self ):
         return self.normalisation[FitData.data_label]
 

@@ -109,7 +109,7 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
             for sample, histogram in histograms.iteritems():
                 if sample in source:
                     histogram.Scale( factor )
-                    
+
     return histograms
 
 def get_qcd_histograms( input_files, variable, variable_bin, channel,
