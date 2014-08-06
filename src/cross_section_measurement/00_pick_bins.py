@@ -58,11 +58,11 @@ def main():
     s_min = 0.5
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 200
+    n_min = 100
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     
-    for variable in ['MET']:  # , 'HT', 'ST', 'MT', 'WPT']:
+    for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
         histogram_information = get_histograms( variable )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
@@ -91,7 +91,7 @@ def get_histograms( variable ):
     
     path_electron = ''
     path_muon = ''
-    histogram_name = 'response_withoutFakes'
+    histogram_name = 'response_without_fakes'
     if variable == 'MET':
         path_electron = 'unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
         path_muon = 'unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
@@ -129,7 +129,13 @@ def get_histograms( variable ):
     
     for histogram in histogram_information:
         f = File( histogram['file'] )
+        # scale to lumi
+        nEvents = f.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+        config = XSectionConfig( histogram['CoM'] )
+        lumiweight = config.ttbar_xsection * config.new_luminosity / nEvents
+
         histogram['hist'] = f.Get( histogram['path'] ).Clone()
+        histogram['hist'].Scale( lumiweight )
         # change scope from file to memory
         histogram['hist'].SetDirectory( 0 )
         f.close()
