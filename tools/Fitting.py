@@ -3,6 +3,7 @@ Created on 30 Oct 2012
 
 @author: kreczko
 '''
+
 from ROOT import TMinuit, TMath, Long, Double
 from ROOT import RooFit, RooRealVar, RooDataHist, RooArgList, RooHistPdf, \
 RooArgSet, RooAddPdf, RooMsgService, RooProdPdf, RooGaussian, RooLinkedList, \
@@ -62,7 +63,6 @@ class FitData():
         keys = sorted( mc_histograms.keys() )
         self.samples = keys
         self.templates, self.normalisation, self.normalisation_errors = generate_templates_and_normalisation( self.histograms_ )
-        
         self.vectors, self.errors = vectorise( self.templates )
         
     def n_data( self ):
@@ -201,9 +201,7 @@ class Minuit():
         gMinuit = TMinuit( numberOfParameters )
         if self.method == 'logLikelihood':  # set function for minimisation
             gMinuit.SetFCN( self.logLikelihood )
-            pass
-        
-        
+
         gMinuit.SetMaxIterations(1000000000000)
         
         # set Minuit print level
@@ -212,7 +210,7 @@ class Minuit():
         #            =  1  verbose
         #            =  2  additional output giving intermediate results.
         #            =  3  maximum output, showing progress of minimizations.
-        gMinuit.SetPrintLevel( -3 )
+        gMinuit.SetPrintLevel( -1 )
 
         # Error definition: 1 for chi-squared, 0.5 for negative log likelihood
         # SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
@@ -245,7 +243,7 @@ class Minuit():
             else:
                 gMinuit.mnparm( param_index, sample, self.normalisation[sample], 10.0, N_min, N_max, errorFlag )
             param_index += 1
-            
+
         arglist = array( 'd', 10 * [0.] )
 
         # minimisation strategy: 1 standard, 2 try to improve minimum (a bit slower)
@@ -256,12 +254,11 @@ class Minuit():
         # In general, low values of <level> mean fewer function calls and high values mean more reliable minimization.
         # Currently allowed values are 0, 1 (default), and 2.
         gMinuit.mnexcm( "SET STR", arglist, 1, errorFlag )
-        
+
         gMinuit.Migrad()
 
         gMinuit.mnscan()
 
-        
         if self.verbose:
             gMinuit.mnmatu( 1 )  # prints correlation matrix
 
