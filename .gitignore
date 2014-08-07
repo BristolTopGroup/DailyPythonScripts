@@ -5,6 +5,7 @@
 *.png
 *.pdf
 *.root
+*.out
 *.o
 *~
 .DS_Store
