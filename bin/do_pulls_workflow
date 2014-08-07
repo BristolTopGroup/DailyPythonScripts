@@ -33,10 +33,11 @@ echo "Doing unfolding pulls for: $var"
 	esac
 	echo 'Creating toy MC for all variables, 300x300, combined channel (default)'
 	echo "Producing pull data for $var variable, combined channel, kv=$k"
-	for i in 1 2 3 4 5 6 7 8 9; do
-		nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_7TeV.root -n 100 ${options[$i-1]} -c electron &> logs/pull_${var}_kv${k}_${i}_7TeV.log &
+	for j in 1 2 3 4 5 6 7 8 9; do
+		echo "Doing part $j out of 9"
+		nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_7TeV.root -n 100 ${options[$j-1]} -c electron &> logs/pull_${var}_kv${k}_${j}_7TeV.log &
 		let i+=1
-		nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_8TeV.root -n 100 ${options[$i-1]} -c electron &> logs/pull_${var}_kv${k}_${i}_8TeV.log &
+		nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_8TeV.root -n 100 ${options[$j-1]} -c electron &> logs/pull_${var}_kv${k}_${j}_8TeV.log &
 		let i+=1
 		if (( $i % N_JOBS == 0 ))
 		then
