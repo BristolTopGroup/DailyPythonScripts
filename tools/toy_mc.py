@@ -3,17 +3,39 @@ Created on 11 Dec 2012
 
 @author: kreczko
 '''
-import numpy.random as rnd
+from numpy.random import poisson
 from math import sqrt
 from hist_utilities import value_error_tuplelist_to_hist
 
-def generate_toy_MC_from_distribution(distribution):
+def generate_toy_MC_from_distribution( distribution ):
     initial_values = list( distribution.y() )
-    new_values = [rnd.poisson(value) for value in initial_values]
-    #statistical errors
-    new_errors = [sqrt(value) for value in new_values]
-    toy_MC = value_error_tuplelist_to_hist(zip(new_values, new_errors), list(distribution.xedges()))
+    new_values, new_errors = generate_toy_MC_from_values( initial_values )
+    toy_MC = value_error_tuplelist_to_hist( zip( new_values, new_errors ), list( distribution.xedges() ) )
     return toy_MC
+
+def generate_toy_MC_from_values( values ):
+    new_values = [poisson( value ) for value in values]
+    # statistical errors
+    new_errors = [sqrt( value ) for value in new_values]
+    return new_values, new_errors
+
+def generate_toy_MC_from_2Ddistribution( distribution ):
+    n_bins_x = distribution.nbins(axis = 0)
+    n_bins_y = distribution.nbins(axis = 1)
+    
+    new_distribution = distribution.Clone()
+    get_bin_content = distribution.GetBinContent
+    set_bin_content = new_distribution.SetBinContent
+    set_bin_error = new_distribution.SetBinError
+    
+    for bin_x in range(1, n_bins_x + 1):
+        for bin_y in range(1, n_bins_y + 1):
+            value = get_bin_content(bin_x, bin_y)
+            new_value = poisson(value)
+            error = sqrt(new_value)
+            set_bin_content(bin_x, bin_y, new_value)
+            set_bin_error(bin_x, bin_y, error)
+    return new_distribution
     
 if __name__ == '__main__':
     from array import array
