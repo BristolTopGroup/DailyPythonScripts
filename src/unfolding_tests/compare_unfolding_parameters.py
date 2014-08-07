@@ -1,6 +1,6 @@
 """
 The purpose of this of this script is to compare the unfolding performance for 
-different unfolding parameters k or tau. Three kinds of tests are envisioned:
+different unfolding parameters k. Three kinds of tests are envisioned:
 1) closure tests: 
     - using the same MC to create the response matrix & provide pseudo-data
     - comparing result to input
@@ -23,13 +23,19 @@ from rootpy.io import File
 from config import latex_labels, XSectionConfig
 from config.variable_binning import bin_widths, bin_edges
 from tools.plotting import Histogram_properties, compare_measurements
-from tau_value_determination import get_tau_from_global_correlation
-from tau_value_determination import get_tau_from_L_shape, get_data_histogram
 from tools.Unfolding import get_unfold_histogram_tuple, Unfolding
 from tools.Calculation import calculate_normalised_xsection
 from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x
-from tools.file_utilities import make_folder_if_not_exists
+from tools.file_utilities import make_folder_if_not_exists, read_data_from_JSON
+
+def get_data_histogram( channel, variable, met_type ):
+    global data_path, centre_of_mass
+    fit_result_input = data_path + '/%(CoM)dTeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_results = read_data_from_JSON( fit_result_input % {'CoM': centre_of_mass, 'channel': channel, 'variable': variable, 'met_type':met_type} )
+    fit_data = fit_results['TTJet']
+    h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
+    return h_data
 
 def get_test_k_values( h_truth, h_measured, h_response, h_data = None ):
     """
@@ -39,21 +45,9 @@ def get_test_k_values( h_truth, h_measured, h_response, h_data = None ):
     
     return [i for i in range( 2, n_bins - 1 )]
 
-def get_test_tau_values( h_truth, h_measured, h_response, h_data = None ):
-    """
-        tau values should be between 0 and large (> 1)
-    """
-    tau_global = get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data )[0]
-    tau_L_shape = get_tau_from_L_shape( h_truth, h_measured, h_response, h_data )[0]
-    tau_values = [0, tau_global, tau_L_shape, 40]
-    
-    return tau_values
-
 def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable = 'MET' ):
-    global method, load_fakes, do_taus
+    global method, load_fakes
     k_values = get_test_k_values( h_truth, h_measured, h_response, h_data )
-    if do_taus:
-        tau_values = get_test_tau_values( h_truth, h_measured, h_response, h_data )
     
     k_value_results = {}
     for k_value in k_values:
@@ -72,30 +66,12 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
         h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
         k_value_results[k_value] = deepcopy( h_result )
     
-    tau_value_results = {}
-    if do_taus:
-        for tau_value in tau_values:
-            unfolding = Unfolding( h_truth,
-                              h_measured,
-                              h_response,
-                              fakes = h_fakes,
-                              method = 'TopSVDUnfold',
-                              k_value = -1,
-                              tau = tau_value )
-            unfolded_data = unfolding.unfold( h_data )
-
-            result = calculate_normalised_xsection( 
-                            hist_to_value_error_tuplelist( unfolded_data ),
-                            bin_widths[variable],
-                            normalise_to_one = False)
-            h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
-            tau_value_results[tau_value] = deepcopy( h_result )
         
-    return {'k_value_results':k_value_results, 'tau_value_results' :tau_value_results}
+    return { 'k_value_results' : k_value_results }
 
 def compare( central_mc, expected_result = None, measured_result = None, results = {}, variable = 'MET',
              channel = 'electron', bin_edges = [] ):
-    global plot_location, luminosity, centre_of_mass, method, test, do_taus, log_plots
+    global plot_location, luminosity, centre_of_mass, method, test, log_plots
 
     channel_label = ''
     if channel == 'electron':
@@ -121,10 +97,6 @@ def compare( central_mc, expected_result = None, measured_result = None, results
     measurements = collections.OrderedDict()
     for key, value in results['k_value_results'].iteritems():
         measurements['k = ' + str( key )] = value
-    
-    if do_taus:
-        for key, value in results['tau_value_results'].iteritems():
-            measurements['$\\tau$ = %.2g' % key] = value
     
     # get some spread in x    
     graphs = spread_x( measurements.values(), bin_edges )
@@ -155,7 +127,9 @@ if __name__ == '__main__':
     TH1F.AddDirectory( False )
 
     parser = OptionParser()
-    parser.add_option( "-o", "--output-folder", dest = "output_folder", default = 'plots_unfolding_tests/',
+    parser.add_option( "-p", "--path", dest = "data_path", default = 'data/absolute_eta_M3_angle_bl',
+                  help = "set input path for data JSON files (for data test)" )
+    parser.add_option( "-o", "--output-folder", dest = "output_folder", default = 'plots/unfolding_tests/',
                       help = "set path to save plots" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
@@ -165,24 +139,22 @@ if __name__ == '__main__':
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
     parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
                       help = "set MET type used in the analysis of MET-dependent variables" )
-    parser.add_option( "-t", "--test", dest = "test", default = 'bias',
-                      help = "set the test type for comparison: bias (default), closure or data" )    
-    parser.add_option( "-a", "--plot-tau-values", dest = "do_taus", action = "store_true",
-                      help = "include results for tau values" )
+    parser.add_option( "-t", "--test", dest = "test", default = 'closure',
+                      help = "set the test type for comparison: bias, closure (default) or data" )    
     parser.add_option( "-l", "--log-plots", dest = "log_plots", action = "store_true",
                       help = "plots the y axis in log scale" )
 
     ( options, args ) = parser.parse_args()
-    measurement_config = XSectionConfig(options.CoM)
+    measurement_config = XSectionConfig( options.CoM)
     
-    centre_of_mass = options.CoM
+    centre_of_mass = measurement_config.centre_of_mass_energy
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
     ttbar_xsection = measurement_config.ttbar_xsection
     load_fakes = options.load_fakes
     method = options.unfolding_method
-    plot_location = options.output_folder + '/' + options.test + '/'
+    data_path = options.data_path
+    plot_location = options.output_folder + '/' + str(centre_of_mass) + 'TeV/' + options.test + '/'
     met_type = measurement_config.translate_options[options.metType]
-    do_taus = options.do_taus
     log_plots = options.log_plots
     make_folder_if_not_exists( plot_location )
 
@@ -195,10 +167,12 @@ if __name__ == '__main__':
 
     input_file = File( input_filename_central, 'read' )
     input_file_bias = File( input_filename_bias, 'read' )
+
+    print 'Performing', test, 'unfolding checks at', centre_of_mass, 'TeV'
     
-    for channel in ['electron', 'muon', 'combined']:
+    for channel in ['electron', 'muon']:
         for variable in variables:
-            print 'Doing variable"', variable, '" in', channel, 'channel'
+            print 'Doing', variable, 'variable in', channel, 'channel'
             h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
                                 inputfile = input_file,
                                 variable = variable,

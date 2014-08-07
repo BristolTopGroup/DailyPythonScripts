@@ -6,13 +6,14 @@ Created on 1 May 2014
 from collections import OrderedDict
 from copy import copy, deepcopy
 
+from optparse import OptionParser
 from tools.ROOT_utililities import get_histograms_from_files
 from tools.hist_utilities import prepare_histograms, clean_control_region
 from tools.file_utilities import make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, make_shape_comparison_plot,\
     compare_measurements
-from config.latex_labels import b_tag_bins_latex
-from config.latex_labels import samples_latex
+from config.latex_labels import b_tag_bins_latex, samples_latex
+from config.variable_binning import variable_bins_ROOT
 from config import XSectionConfig
 common_fit_variables = ['M3', 'M_bl', 'angle_bl']
 electron_fit_variables = copy( common_fit_variables )
@@ -20,7 +21,6 @@ electron_fit_variables.append( 'electron_absolute_eta' )
 muon_fit_variables = copy( common_fit_variables )
 muon_fit_variables.append( 'muon_absolute_eta' )
 
-measurement_config = XSectionConfig( 8 )
 fit_variable_properties = {
                        'M3': {'min':0, 'max':1000, 'rebin':5, 'x-title': 'M3 [GeV]', 'y-title': 'Events/25 GeV'},
                        'M_bl': {'min':0, 'max':400, 'rebin':2, 'x-title': 'M(b,l) [GeV]', 'y-title': 'Events/10 GeV'},
@@ -32,26 +32,15 @@ fit_variable_properties = {
 b_tag_bin = '2orMoreBtags'
 b_tag_bin_ctl = '0orMoreBtag'
 category = 'central'
-histogram_files = {
-        'data' : measurement_config.data_file_electron,
-        'TTJet': measurement_config.ttbar_category_templates[category],
-        'V+Jets': measurement_config.VJets_category_templates[category],
-        'QCD': measurement_config.electron_QCD_MC_file,  # this should also be category-dependent, but unimportant and not available atm
-        'SingleTop': measurement_config.SingleTop_category_templates[category]
-}
 
-# the following will move into variable_binning etc.
-variables = ['MET']
-variable_bins_ROOT = {
-                  'MET': ['0-31', '31-58', '58-96', '96-142', '142-191', '191-inf'],
-                  }
+variables = ['MET', 'HT', 'ST', 'WPT', 'MT']
 
-save_as = ['pdf', 'png']
 save_as = ['pdf']
     
 def main():
+    global measurement_config, histogram_files
     global electron_fit_variables, muon_fit_variables, fit_variable_properties
-    global b_tag_bin, category, histogram_files, variables, variable_bins_ROOT
+    global b_tag_bin, category, histogram_files, variables
     global b_tag_bin_ctl
     
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
@@ -66,7 +55,7 @@ def main():
                 b_tag_bin_ctl = '1orMoreBtag'
             else:
                 b_tag_bin_ctl = '0orMoreBtag'
-            save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
+            save_path = 'plots/%dTeV/fit_variables/%s/%s/' % (measurement_config.centre_of_mass_energy, variable, fit_variable)
             make_folder_if_not_exists(save_path)
             make_folder_if_not_exists(save_path + 'qcd/')
             make_folder_if_not_exists(save_path + 'vjets/')
@@ -87,7 +76,7 @@ def get_histogram_template( variable ):
     elif variable == 'MET':
         histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     else:
-        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_%s_Analysis/%(variable)s_with_%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
+        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_%(variable)s_Analysis/%(variable)s_with_%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     return histogram_template
                       
 def plot_fit_variable( histograms, fit_variable, variable, bin_range,
@@ -201,7 +190,7 @@ def compare_qcd_control_regions( variable = 'MET', met_type = 'patType1Corrected
                 b_tag_bin_ctl = '1orMoreBtag'
         else:
             b_tag_bin_ctl = '0orMoreBtag'
-        save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
+        save_path = 'plots/fit_variables/%dTeV/%s/%s/' % (measurement_config.centre_of_mass_energy, variable, fit_variable)
         make_folder_if_not_exists(save_path + '/qcd/')
         
         max_bins = 3
@@ -262,7 +251,7 @@ def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedP
                 b_tag_bin_ctl = '1orMoreBtag'
         else:
             b_tag_bin_ctl = '0orMoreBtag'
-        save_path = 'plots/fit_variables/' + variable + '/' + fit_variable + '/'
+        save_path = 'plots/fit_variables/%dTeV/%s/%s/' % (measurement_config.centre_of_mass_energy, variable, fit_variable)
         make_folder_if_not_exists(save_path + '/vjets/')
         histogram_properties = Histogram_properties()
         histogram_properties.x_axis_title = fit_variable_properties[fit_variable]['x-title']
@@ -288,4 +277,19 @@ def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedP
                              save_as = save_as)
             
 if __name__ == '__main__':
-    main()
+  parser = OptionParser()
+  parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
+                    help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
+  ( options, args ) = parser.parse_args()
+  
+  measurement_config = XSectionConfig( options.CoM )
+
+  histogram_files = {
+        'data' : measurement_config.data_file_electron,
+        'TTJet': measurement_config.ttbar_category_templates[category],
+        'V+Jets': measurement_config.VJets_category_templates[category],
+        'QCD': measurement_config.electron_QCD_MC_file,  # this should also be category-dependent, but unimportant and not available atm
+        'SingleTop': measurement_config.SingleTop_category_templates[category]
+  }
+
+  main()

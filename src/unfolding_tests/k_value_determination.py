@@ -80,7 +80,7 @@ def get_data_histogram( path_to_JSON, channel, variable, met_type ):
 def draw_d_i( d_i ):
     global variable, output_folder, output_formats, test
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
-    fit = TF1("fit", 'expo', 1, d_i.nbins(0)) #change the range here to exclude bins
+    fit = TF1("fit", 'expo', 0, d_i.nbins(0)) #change the range here to exclude bins
     d_i.Fit(fit, 'WWSQR')
     p0 = ufloat(fit.GetParameter(0), fit.GetParError(0))
     p1 = ufloat(fit.GetParameter(1), fit.GetParError(1))
@@ -135,14 +135,14 @@ if __name__ == '__main__':
     set_root_defaults()
 
     parser = OptionParser()
-    parser.add_option("-p", "--path", dest="path", default='../../data/',
+    parser.add_option("-p", "--path", dest="path", default='data/absolute_eta_M3_angle_bl/',
                       help="set path to JSON files")
-    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_k_values/',
+    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots/unfolding_tests/',
                       help = "set path to save plots" )
     parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
     parser.add_option("-t", "--test", dest="test", default='data',
-                      help="set the test type for k-value determination: bias, closure or data (data)")  
+                      help="set the test type for k-value determination: bias, closure or data (default)")  
     parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'RooUnfoldSvd',
                       help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
     parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
@@ -158,8 +158,8 @@ if __name__ == '__main__':
     met_type = measurement_config.translate_options[options.metType]
     method = options.unfolding_method
     load_fakes = options.load_fakes
-    output_folder = options.output_folder
-    make_folder_if_not_exists(options.output_folder)
+    output_folder = options.output_folder + '/%dTeV/k_values/' % measurement_config.centre_of_mass_energy
+    make_folder_if_not_exists(output_folder)
     test = options.test
 
 
@@ -174,9 +174,11 @@ if __name__ == '__main__':
 
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
 
+    print 'Determining optimal k-values at', centre_of_mass, 'TeV'
+
     taus_from_global_correlaton = {}
     taus_from_L_shape = {}
-    for channel in ['electron', 'muon', 'combined']:
+    for channel in ['electron', 'muon']:
         taus_from_global_correlaton[channel] = {}
         taus_from_L_shape[channel] = {}
         for variable in variables:
