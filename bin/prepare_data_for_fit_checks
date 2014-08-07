@@ -1,0 +1,24 @@
+#!/bin/bash
+echo "This will take a while ... grab a coffee/tea/water"
+mkdir -p logs
+N_JOBS=4
+
+i=0
+for fit_var in absolute_eta M_bl M3 angle_bl absolute_eta,M_bl absolute_eta,M3 absolute_eta,angle_bl absolute_eta,M_bl,M3 absolute_eta,M3,angle_bl absolute_eta,M_bl,angle_bl absolute_eta,M_bl,M3,angle_bl; do
+	nicevar=`echo $fit_var | sed 's/,/_/g'`
+	
+	for var in MET HT ST WPT MT; do
+		echo "Doing fit variable set '$nicevar' for variable '$var'"
+		nohup time python src/cross_section_measurement/01_get_fit_results.py -v $var --fit-variables $fit_var --test --no_combined_signal -p data/fit_checks/no_merging -c 7 &> logs/fit_test_no_merging_${nicevar}_7TeV.log &
+		let i+=1
+		nohup time python src/cross_section_measurement/01_get_fit_results.py -v $var --fit-variables $fit_var --test --no_combined_signal -p data/fit_checks/no_merging -c 8 &> logs/fit_test_no_merging_${nicevar}_8TeV.log &
+		let i+=1
+		if (( $i % N_JOBS == 0 ))
+		then
+			echo "Waiting on the above to finish."
+    		wait;
+		fi
+	done
+done
+
+echo "All done!"
