@@ -233,7 +233,7 @@ if __name__ == "__main__":
     k_value = options.k_value
     output_folder = options.output_folder + '/' + variable + '/' + channel + '/kv' + str(k_value) + '/'
     make_folder_if_not_exists(output_folder)
-    output_formats = ['png']
+    output_formats = ['pdf']
 
     bins = array('d', bin_edges[variable])
     nbins = len(bins) - 1
