@@ -74,9 +74,10 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
     make_plot(MeanResiduals, 'MeanRes', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
 
-def get_data_histogram( path_to_JSON, channel, variable, met_type ):
-    fit_result_input = path_to_JSON + '/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
-    fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
+def get_data_histogram( channel, variable, met_type ):
+    global data_path, centre_of_mass
+    fit_result_input = data_path + '/%(CoM)dTeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_results = read_data_from_JSON( fit_result_input % {'CoM': centre_of_mass, 'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
     return h_data
@@ -86,9 +87,9 @@ if __name__ == '__main__':
     set_root_defaults()
 
     parser = OptionParser()
-    parser.add_option("-p", "--path", dest="path", default='../cross_section_measurement/data/',
+    parser.add_option("-p", "--path", dest="path", default='data/absolute_eta_M3_angle_bl/',
                       help="set path to JSON files")
-    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots_k_optimisation/',
+    parser.add_option("-o", "--output_folder", dest = "output_folder", default = 'plots/unfolding_tests/',
                       help = "set path to save plots" )
     parser.add_option("-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     met_type = measurement_config.translate_options[options.metType]
     method = options.unfolding_method
     load_fakes = options.load_fakes
-    output_folder_base = options.output_folder
+    output_folder_base = options.output_folder + '/%dTeV/k_optimisation/' % measurement_config.centre_of_mass_energy
     test = options.test
 
     ttbar_xsection = measurement_config.ttbar_xsection
@@ -121,10 +122,12 @@ if __name__ == '__main__':
     
     variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
 
+    print 'Performing k-value optimisation checks using', test, 'info at', centre_of_mass, 'TeV'
+
     input_file = File( input_filename_central, 'read' )
     input_file_bias = File( input_filename_bias, 'read' )
 
-    for channel in ['electron', 'muon', 'combined']:
+    for channel in ['electron', 'muon']:
         for variable in variables:
             print 'Doing variable', variable, 'in', channel, 'channel'
         
