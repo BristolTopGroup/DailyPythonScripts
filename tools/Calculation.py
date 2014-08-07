@@ -9,6 +9,7 @@ import numpy
 from math import sqrt
 from config.met_systematics import metsystematics_sources
 from rootpy import asrootpy
+from config.variable_binning import bin_edges
 
 def calculate_xsection(inputs, luminosity, efficiency=1.):
     '''
@@ -119,7 +120,7 @@ def calculate_lower_and_upper_PDFuncertainty(central_measurement, pdf_uncertaint
     positive = []
     
     # split PDF uncertainties into downwards (negative) and upwards (positive) components
-    for index in range(1, 46):
+    for index in range(1, 45):
         pdf_weight = 'PDFWeights_%d' % index
         pdf_uncertainty = pdf_uncertainty_values[pdf_weight]
         if index % 2 == 0:  # even == negative
@@ -283,5 +284,12 @@ def calculate_stabilities( gen_vs_reco_histogram ):
         
     return stabilities
     
-    
-    
+def which_variable_bin(variable, value):
+    variable_bin = 0
+    # last bin is to INF
+    for i,edge in enumerate(bin_edges[variable][:-1]):
+        if value > edge:
+            variable_bin = i
+        else:
+            break
+    return variable_bin
