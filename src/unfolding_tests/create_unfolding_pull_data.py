@@ -77,7 +77,7 @@ def save_pulls( pulls, test, method, channel ):
 def get_histograms( folder ):
     h_truth = folder.truth.Clone()
     h_measured = folder.measured.Clone()
-    h_response = folder.response_without_fakes_AsymBins.Clone()
+    h_response = folder.response.Clone()
     
     return h_truth, h_measured, h_response
 
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     parser = OptionParser()
     parser.add_option( "-o", "--output",
-                      dest = "output_folder", default = '../data/pull_data/',
+                      dest = "output_folder", default = 'data/pull_data/',
                       help = "output folder for pull data files" )
     parser.add_option( "-n", "--n_input_mc", type = 'int',
                       dest = "n_input_mc", default = 100,
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                       dest = "method", default = 'RooUnfoldSvd',
                       help = "unfolding method" )
     parser.add_option( "-f", "--file", type = 'string',
-                      dest = "file", default = '../data/toy_mc/unfolding_toy_mc.root',
+                      dest = "file", default = 'data/toy_mc/unfolding_toy_mc.root',
                       help = "file with toy MC" )
 
     parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',

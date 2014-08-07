@@ -1,0 +1,22 @@
+#!/bin/bash
+# This script uses around 300 MB RAM per instance
+echo "This will take a while ... grab a coffee/tea/water"
+mkdir -p logs
+N_JOBS=4
+N_toy=300
+
+i=0
+for var in MET HT ST WPT MT; do
+	echo "Creating toy MC for: $var"
+	nohup time python src/unfolding_tests/create_toy_mc.py -V -v $var -c 7 --n_toy_mc=$N_toy &> logs/${var}_${N_toy}_toy_MC_7TeV.log &
+	let i+=1
+	nohup time python src/unfolding_tests/create_toy_mc.py -V -v $var -c 8 --n_toy_mc=$N_toy &> logs/${var}_${N_toy}_toy_MC_8TeV.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+
+echo "All done! Time to run the unfolding tests."
