@@ -23,13 +23,14 @@ def generate_templates_and_normalisation( histograms ):
     normalisation = {}
     normalisation_errors = {}
     templates = {}
+
     for sample, histogram in histograms.iteritems():
         normalisation[sample] = histogram.Integral()
         normalisation_errors[sample] = sum( histogram.yerravg() )
         temp = histogram.Clone( sample + '_' + 'template' )
         nEntries = temp.Integral()
         if not nEntries == 0:
-            temp.Scale( 1 / nEntries )
+            temp.Scale( 1.0 / nEntries )
         templates[sample] = temp
     return templates, normalisation, normalisation_errors
 
@@ -62,7 +63,6 @@ class FitData():
         keys = sorted( mc_histograms.keys() )
         self.samples = keys
         self.templates, self.normalisation, self.normalisation_errors = generate_templates_and_normalisation( self.histograms_ )
-
         self.vectors, self.errors = vectorise( self.templates )
 
     def n_data( self ):
@@ -182,7 +182,7 @@ class Minuit():
 
     def __init__( self, fit_data_collection, method = 'logLikelihood', verbose = False ):
         # only simultaneous fit data is supported!
-        assert( fit_data_collection.is_valid_for_simultaneous_fit() )
+#         assert( fit_data_collection.is_valid_for_simultaneous_fit() )
         self.method = method
         self.logger = logging.getLogger( 'TMinuitFit' )
         self.constraints = {}
@@ -202,6 +202,8 @@ class Minuit():
         if self.method == 'logLikelihood':  # set function for minimisation
             gMinuit.SetFCN( self.logLikelihood )
 
+        gMinuit.SetMaxIterations(1000000000000)
+        
         # set Minuit print level
         # printlevel  = -1  quiet (also suppress all warnings)
         #            =  0  normal
@@ -214,7 +216,7 @@ class Minuit():
         # SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
         # Minuit defines parameter errors as the change in parameter value required to change the function value by UP.
         # Normally, for chisquared fits UP=1, and for negative log likelihood, UP=0.5.
-        gMinuit.SetErrorDef( 1 )
+        gMinuit.SetErrorDef( 0.5 )
 
         # error flag for functions passed as reference.set to as 0 is no error
         errorFlag = Long( 2 )
@@ -255,6 +257,8 @@ class Minuit():
 
         gMinuit.Migrad()
 
+        gMinuit.mnscan()
+
         if self.verbose:
             gMinuit.mnmatu( 1 )  # prints correlation matrix
 
@@ -273,9 +277,18 @@ class Minuit():
             if ( math.isnan( temp_err ) ):
                 self.logger.warning( 'Template fit error is NAN, setting to sqrt(N).' )
                 temp_err = math.sqrt( temp_par )
-
+            
+#             gMinuit.Command("SCAn %i %i %i %i" % ( param_index, 100, N_min, N_total ) );
+#             scan = gMinuit.GetPlot()
+#             results[sample] = ( temp_par, temp_err, scan )
             results[sample] = ( temp_par, temp_err )
             param_index += 1
+            
+# #         gMinuit.Command("CONtour 1 2 3 50")
+#         gMinuit.SetErrorDef(1)
+#         results['contour'] = [gMinuit.Contour(100, 0, 1)]
+#         gMinuit.SetErrorDef(4)
+#         results['contour'].append(gMinuit.Contour(100, 0, 1))
 
         self.results = results
 
@@ -298,11 +311,12 @@ class Minuit():
                                        self.normalisation,
                                        par )
 
-        f[0] = -2.0 * lnL
+        f[0] = -2.0 * lnL / self.n_distributions
 
         # Adding the QCD and V+jets constraints
         if self.fit_data_collection.constraint_type == 'normalisation':
             f[0] += self.get_fit_normalisation_constraints( par )
+        print 'Par :',par[0], 'f[0]',f[0], 'lnL',lnL
 
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
