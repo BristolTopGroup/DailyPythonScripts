@@ -183,7 +183,7 @@ if __name__ == "__main__":
     ttbar_hadronisation_systematic_list = [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig']
 
     # 45 PDF uncertainties
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 46 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
 
     # all MET uncertainties except JES and JER as this is already included
     met_uncertainties_list = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]

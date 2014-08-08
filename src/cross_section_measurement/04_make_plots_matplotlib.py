@@ -544,11 +544,11 @@ if __name__ == '__main__':
     categories.extend( ttbar_generator_systematics )
     categories.extend( vjets_generator_systematics )
     
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 46 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
     pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
     pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
-    pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 46 )]
+    pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     new_uncertainties = ['QCD_shape']
