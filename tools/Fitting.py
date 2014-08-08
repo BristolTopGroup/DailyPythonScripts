@@ -316,7 +316,7 @@ class Minuit():
         # Adding the QCD and V+jets constraints
         if self.fit_data_collection.constraint_type == 'normalisation':
             f[0] += self.get_fit_normalisation_constraints( par )
-        print 'Par :',par[0], 'f[0]',f[0], 'lnL',lnL
+        # print 'Par :',par[0], 'f[0]',f[0], 'lnL',lnL
 
     def build_single_LL( self, data_vector, mc_vectors, normalisation, par ):
         lnL = 0.0
