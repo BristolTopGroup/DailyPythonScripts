@@ -326,12 +326,12 @@ def calculate_normalised_xsections( normalisation, category, channel, k_value = 
                            }
     
     if not channel == 'combined':
-      filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
+        filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
     else:
-      filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
     
     if normalise_to_one:
-      filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
+        filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
     write_data_to_JSON( normalised_xsection, filename )
 
 if __name__ == '__main__':
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
     file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
     file_for_ptreweight = File ( measurement_config.unfolding_ptreweight, 'read' )
-    files_for_pdfs = { 'PDFWeights_%d' % index : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 1, 46 ) }
+    files_for_pdfs = { 'PDFWeights_%d' % index : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 1, 45 ) }
         
     file_for_scaledown = File( measurement_config.unfolding_scale_down, 'read' )
     file_for_scaleup = File( measurement_config.unfolding_scale_up, 'read' )
@@ -415,7 +415,7 @@ if __name__ == '__main__':
     ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
     categories.extend( ttbar_theory_systematics )
     
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 46 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 
