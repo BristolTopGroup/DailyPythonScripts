@@ -159,9 +159,11 @@ if __name__ == '__main__':
                 h_data = deepcopy( h_measured_bias )
                 h_expected = h_truth_bias
                 output_folder = output_folder_base + '/' + variable + '_bias/'
-            else:
+            elif test == 'closure':
                 h_data = deepcopy( h_measured )
                 output_folder = output_folder_base + '/' + variable + '_closure/'
+            else:
+                raise Exception("Unknown test attempted - please choose data, bias or closure")
             make_folder_if_not_exists(output_folder)
             
             draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes, h_data )

@@ -58,13 +58,7 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
                           method = method,
                           k_value = k_value )
         unfolded_data = unfolding.unfold( h_data )
-
-        result = calculate_normalised_xsection( 
-                        hist_to_value_error_tuplelist( unfolded_data ),
-                        bin_widths[variable],
-                        normalise_to_one = False )
-        h_result = value_error_tuplelist_to_hist( result, bin_edges[variable] )
-        k_value_results[k_value] = deepcopy( h_result )
+        k_value_results[k_value] = deepcopy( unfolded_data )
     
         
     return { 'k_value_results' : k_value_results }
@@ -89,7 +83,9 @@ def compare( central_mc, expected_result = None, measured_result = None, results
         title = title_template % ( centre_of_mass, channel_label )
 
     models = {latex_labels.measurements_latex['MADGRAPH'] : central_mc}
-    if expected_result:
+    if expected_result and test == 'data':
+        models.update({'fitted data' : expected_result})
+    elif expected_result:
         models.update({'expected' : expected_result})
     if measured_result and test != 'data':
         models.update({'measured' : measured_result})
@@ -107,7 +103,7 @@ def compare( central_mc, expected_result = None, measured_result = None, results
     histogram_properties.name = channel + '_' + variable + '_' + method + '_' + test
     histogram_properties.title = title + ', ' + latex_labels.b_tag_bins_latex['2orMoreBtags']
     histogram_properties.x_axis_title = '$' + latex_labels.variables_latex[variable] + '$'
-    histogram_properties.y_axis_title = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + latex_labels.variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$'
+    histogram_properties.y_axis_title = r'Events'
 #     histogram_properties.y_limits = [0, 0.03]
     histogram_properties.x_limits = [bin_edges[0], bin_edges[-1]]
 
@@ -201,29 +197,14 @@ if __name__ == '__main__':
                 h_data = deepcopy( h_measured_bias )
                 h_expected = h_truth_bias
                 # h_fakes = None
-            else:
+            elif test == 'closure':
                 h_data = deepcopy( h_measured )
-            results = run_test( h_truth, h_measured, h_response, h_data, h_fakes, variable )
-            
-            central_mc_result = calculate_normalised_xsection( 
-                            hist_to_value_error_tuplelist( h_truth ),
-                            bin_widths[variable],
-                            normalise_to_one = False )
-            central_mc = value_error_tuplelist_to_hist( central_mc_result, bin_edges[variable] )
-            if h_expected:
-                expected_result = calculate_normalised_xsection( 
-                            hist_to_value_error_tuplelist( h_expected ),
-                            bin_widths[variable],
-                            normalise_to_one = False )
-                h_expected = value_error_tuplelist_to_hist( expected_result, bin_edges[variable] )
+            else:
+                raise Exception("Unknown test attempted - please choose data, bias or closure")
 
-            data_result = calculate_normalised_xsection( 
-                            hist_to_value_error_tuplelist( h_data ),
-                            bin_widths[variable],
-                            normalise_to_one = False )
-            h_data = value_error_tuplelist_to_hist( data_result, bin_edges[variable] )
+            results = run_test( h_truth, h_measured, h_response, h_data, h_fakes, variable )
                 
-            compare( central_mc = central_mc, expected_result = h_expected, measured_result = h_data,
+            compare( central_mc = h_truth, expected_result = h_expected, measured_result = h_data,
                      results = results, variable = variable, channel = channel,
                      bin_edges = bin_edges[variable] )
     # done

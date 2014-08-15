@@ -209,8 +209,10 @@ if __name__ == '__main__':
                                 luminosity = luminosity,
                                 load_fakes = load_fakes )
                 h_data = deepcopy( h_measured_bias )
-            else:
+            elif test == 'closure':
                 h_data = deepcopy( h_measured )
+            else:
+                raise Exception("Unknown test attempted - please choose data, bias or closure")
             
             
             k, hist_di = get_k_from_d_i( h_truth, h_measured, h_response, h_fakes, h_data )
