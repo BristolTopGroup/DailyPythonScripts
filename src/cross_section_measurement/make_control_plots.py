@@ -2,7 +2,7 @@ from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex
 from config.variable_binning import variable_bins_ROOT
 from config import XSectionConfig
-from tools.file_utilities import read_data_from_JSON
+from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
 from tools.hist_utilities import prepare_histograms
@@ -50,13 +50,15 @@ def get_normalisation_error( normalisation ):
 if __name__ == '__main__':
     set_root_defaults()
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/',
+    parser.add_option( "-p", "--path", dest = "path", default = 'data/absolute_eta_M3_angle_bl/',
                   help = "set path to JSON files" )
-    parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/',
+    parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/control_plots/',
                   help = "set path to save plots" )
     parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
                       help = "set MET type used in the analysis of MET-dependent variables" )
-    parser.add_option( "-c", "--category", dest = "category", default = 'central',
+    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
+                      help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
+    parser.add_option( "--category", dest = "category", default = 'central',
                       help = "set the category to take the fit results from (default: central)" )
     parser.add_option( "-n", "--normalise_to_fit", dest = "normalise_to_fit", action = "store_true",
                   help = "normalise the MC to fit results" )
@@ -68,8 +70,9 @@ if __name__ == '__main__':
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
     
-    path_to_JSON = options.path + '/' + '8TeV/'
-    output_folder = options.output_folder
+    path_to_JSON = '%s/%dTeV/' % ( options.path, measurement_config.centre_of_mass_energy )
+    output_folder = '%s/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
+    make_folder_if_not_exists(output_folder)
     normalise_to_fit = options.normalise_to_fit
     category = options.category
     met_type = translate_options[options.metType]
@@ -84,8 +87,8 @@ if __name__ == '__main__':
             'data' : measurement_config.data_file_electron,
             'TTJet': measurement_config.ttbar_category_templates[category],
             'V+Jets': measurement_config.VJets_category_templates[category],
-            'QCD': measurement_config.electron_QCD_MC_file,  # this should also be category-dependent, but unimportant and not available atm
-            'SingleTop': measurement_config.SingleTop_category_templates[category]
+            'QCD': measurement_config.electron_QCD_MC_category_templates[category],
+            'SingleTop': measurement_config.SingleTop_category_templates[category],
     }
 
     # getting normalisations
@@ -1834,7 +1837,7 @@ if __name__ == '__main__':
     histogram_properties.x_limits = [0, 50]
     histogram_properties.mc_error = 0.0
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, normalise = True )
+                                 histogram_properties, save_folder = output_folder, normalise = True )
     
     b_tag_bin = ''
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex_reweighted'
@@ -1860,7 +1863,7 @@ if __name__ == '__main__':
     histogram_properties.x_limits = [0, 50]
     histogram_properties.mc_error = 0.0
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, normalise = True )
+                                 histogram_properties, save_folder = output_folder, normalise = True )
 
     if make_additional_QCD_plots:
         # QCD non-iso control regions (muon |eta|), MET bins
