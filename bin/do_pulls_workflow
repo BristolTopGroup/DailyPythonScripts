@@ -45,7 +45,9 @@ echo "Doing unfolding pulls for: $var"
     		wait;
 		fi
 	done
-	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/$var/100_input_toy_mc/k_value_$k -c electron -v $var -k $k &> logs/pull_${var}_kv${k}_plots.log &
-	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/$var/100_input_toy_mc/k_value_$k -c muon -v $var -k $k &> logs/pull_${var}_kv${k}_plots.log &
+	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/7TeV/$var/100_input_toy_mc/k_value_$k -c electron -v $var -k $k &> logs/pull_${var}_kv${k}_plots_7TeV.log &
+	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/7TeV/$var/100_input_toy_mc/k_value_$k -c muon -v $var -k $k &> logs/pull_${var}_kv${k}_plots_7TeV.log &
+	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/8TeV/$var/100_input_toy_mc/k_value_$k -c electron -v $var -k $k &> logs/pull_${var}_kv${k}_plots_8TeV.log &
+	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/8TeV/$var/100_input_toy_mc/k_value_$k -c muon -v $var -k $k &> logs/pull_${var}_kv${k}_plots_8TeV.log &
 	wait
 done
