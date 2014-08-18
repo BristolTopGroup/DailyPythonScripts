@@ -31,11 +31,11 @@ singleTop_samples = [ 'T_tW-channel',
              'T_s-channel',
              'Tbar_tW-channel',
              'Tbar_t-channel',
-             'Tbar_s-channel']
-wplusjets_samples = [ 'W1Jet', 'W2Jets', 'W3Jets', 'W4Jets']
-dyplusjets_samples = [ 'DY1JetsToLL', 'DY2JetsToLL', 'DY3JetsToLL', 'DY4JetsToLL']
+             'Tbar_s-channel' ]
+wplusjets_samples = [ 'W1Jet', 'W2Jets', 'W3Jets', 'W4Jets' ]
+dyplusjets_samples = [ 'DY1JetsToLL', 'DY2JetsToLL', 'DY3JetsToLL', 'DY4JetsToLL' ]
 vplusjets_samples = wplusjets_samples + dyplusjets_samples
-diboson_samples = [ 'WWtoAnything', 'WZtoAnything', 'ZZtoAnything']
+diboson_samples = [ 'WWtoAnything', 'WZtoAnything', 'ZZtoAnything' ]
 signal_samples = [ 'TTJet', 'SingleTop']
 
 wplusjets_matchingup_samples = [ 'WJets-matchingup' ]

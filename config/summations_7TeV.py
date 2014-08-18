@@ -14,9 +14,9 @@ electron_qcd_samples = [ 'QCD_Pt-20to30_BCtoE',
                  'QCD_Pt-170to250_EMEnriched',
                  'QCD_Pt-250to350_EMEnriched',
                  'QCD_Pt-350_EMEnriched',
-#                 'GJets_HT-40To100', # will need to uncomment when this sample becomes available
-                 'GJets_HT-100To200']
-#                 'GJets_HT-200'] # will need to uncomment when this sample becomes available
+                 'GJets_HT-40To100',
+                 'GJets_HT-100To200',
+                 'GJets_HT-200']
 muon_qcd_samples = [ 'QCD_Pt-15to20_MuEnrichedPt5',
              'QCD_Pt-20to30_MuEnrichedPt5',
              'QCD_Pt-30to50_MuEnrichedPt5',
@@ -35,10 +35,9 @@ singleTop_samples = [ 'T_tW-channel',
              'Tbar_tW-channel',
              'Tbar_t-channel',
              'Tbar_s-channel']
-#wplusjets_samples = [ 'W1Jet', 'W2Jets', 'W3Jets', 'W4Jets'] # will need to uncomment when these samples become available
-wplusjets_samples = [ 'WJetsToLNu']
-vplusjets_samples = wplusjets_samples
-vplusjets_samples.append('DYJetsToLL')
+wplusjets_samples = [ 'W1Jet', 'W2Jets', 'W3Jets', 'W4Jets' ]
+dyplusjets_samples = [ 'DYJetsToLL' ]
+vplusjets_samples = wplusjets_samples + dyplusjets_samples
 diboson_samples = [ 'WWtoAnything', 'WZtoAnything', 'ZZtoAnything']
 signal_samples = [ 'TTJet', 'SingleTop']
 
