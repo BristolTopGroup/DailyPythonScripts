@@ -255,7 +255,7 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
         if use_fitter == 'RooFit':
             fitter = RooFitFit( fit_data_collection )
         elif use_fitter == 'Minuit':
-            fitter = Minuit( fit_data_collection )
+            fitter = Minuit( fit_data_collection, verbose = verbose )
         else:  # not recognised
             sys.stderr.write( 'Do not recognise fitter "%s". Using default (Minuit).\n' % fitter )
             fitter = Minuit ( fit_data_collection )

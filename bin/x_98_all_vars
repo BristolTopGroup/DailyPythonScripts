@@ -1,16 +1,54 @@
 #!/bin/bash
+echo "This will take a while ... grab a coffee/tea/water/cocktail"
+mkdir -p logs
 mkdir -p plots
+fit_var="absolute_eta,M3,angle_bl"
+nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
+N_JOBS=5
 
-# 8 TeV
-python src/cross_section_measurement/98_fit_cross_checks.py >& logs/MET_fit_cross_checks_8TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -v HT >& logs/HT_fit_cross_checks_8TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -v ST >& logs/ST_fit_cross_checks_8TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -v MT >& logs/MT_fit_cross_checks_8TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -v WPT >& logs/WPT_fit_cross_checks_8TeV.log &
-wait
-# 7 TeV
-python src/cross_section_measurement/98_fit_cross_checks.py -e 7 >& logs/MET_fit_cross_checks_7TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v HT >& logs/HT_fit_cross_checks_7TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v ST >& logs/ST_fit_cross_checks_7TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v MT >& logs/MT_fit_cross_checks_7TeV.log &
-python src/cross_section_measurement/98_fit_cross_checks.py -e 7 -v WPT >& logs/WPT_fit_cross_checks_7TeV.log &
+echo "Using the fit variable(s): $fit_var"
+
+i=0
+for var in MET HT ST WPT MT; do
+	echo "Fitting distribution: $var"
+	nohup time python src/cross_section_measurement/98_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+	let i+=1
+	nohup time python src/cross_section_measurement/98_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+echo "98_fit_cross_checks all done! Moving on to 98b_fit_cross_checks."
+
+i=0
+for var in MET HT ST WPT MT; do
+	echo "Fitting distribution: $var"
+	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98b_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+	let i+=1
+	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98b_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+echo "98b_fit_cross_checks all done! Moving on to 98c_fit_cross_checks."
+
+i=0
+for var in MET HT ST WPT MT; do
+	echo "Fitting distribution: $var"
+	nohup time python src/cross_section_measurement/98c_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98c_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+	let i+=1
+	nohup time python src/cross_section_measurement/98c_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98c_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+echo "All 98x_fit_cross_checks done!"

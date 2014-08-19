@@ -51,7 +51,7 @@ class XSectionConfig():
 
     def __init__( self, centre_of_mass_energy ):
         if not centre_of_mass_energy in self.known_centre_of_mass_energies:
-            raise AttributeError( 'Uknown centre of mass energy' )
+            raise AttributeError( 'Unknown centre of mass energy' )
         self.centre_of_mass_energy = centre_of_mass_energy
         self.__fill_defaults__()
 
@@ -99,7 +99,7 @@ class XSectionConfig():
                         'pf':'PFMET',
                         'type1':'patType1CorrectedPFMet',
                         }
-        
+
         self.fit_boundaries = {
                                'absolute_eta' : ( 0., 2.4 ),
                                'M3' : ( 0, 900 ),
@@ -276,7 +276,7 @@ class XSectionConfig():
     def __fill_defaults_8TeV__( self ):
         middle = self.middle
         path_to_files = self.path_to_files
-        
+
         self.new_luminosity = 19712  # pb^-1
         self.ttbar_xsection = 245.8  # pb
 

@@ -256,11 +256,9 @@ class Minuit():
         gMinuit.mnexcm( "SET STR", arglist, 1, errorFlag )
 
         gMinuit.Migrad()
+        gMinuit.mnscan() # class for minimization using a scan method to find the minimum; allows for user interaction: set/change parameters, do minimization, change parameters, re-do minimization etc. 
 
-        gMinuit.mnscan()
-
-        if self.verbose:
-            gMinuit.mnmatu( 1 )  # prints correlation matrix
+        gMinuit.mnmatu( 1 )  # prints correlation matrix (always needed)
 
         self.module = gMinuit
         self.performedFit = True

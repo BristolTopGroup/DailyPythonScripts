@@ -1,5 +1,6 @@
 from config.summations_8TeV import sample_summations
-import config.cross_section_measurement_8TeV as measurement_config
+from config import XSectionConfig
+from tools.file_utilities import make_folder_if_not_exists
 
 from tools.file_utilities import merge_ROOT_files
 import os
@@ -8,15 +9,33 @@ import time
 
 new_files = []
 
+config_8TeV = XSectionConfig(8)
+
+#Can not output to DICE, and since we are now working with input files on /hdfs, need to find somewhere to output the merged files 
+#this script creates
+#So, create folders in working directory with structure: AN-XX-XXX_Xth_draft/XTeV/<central/BJet_up/Light_Jet_up/etc. for all categories>
+#NOTE: YOU WILL THEN HAVE TO MOVE THESE MERGED FILES MANUALLY TO THE APPROPRIATE LOCATION IN /hdfs/TopQuarkGroup/results/histogramfiles/...
+
+# first get current working directory
+current_working_directory = os.getcwd()
+path_to_AN_folder = config_8TeV.path_to_files
+# change path from /hdfs to current working directory
+path_to_AN_folder = path_to_AN_folder.replace("/hdfs/TopQuarkGroup/results/histogramfiles", current_working_directory)
+#loop through all categories (e.g. central, BJet_up, LightJet_up, etc....) and make folder
+for category in config_8TeV.categories_and_prefixes.keys():
+    make_folder_if_not_exists( path_to_AN_folder + "/" + category)
+
 # merge generator systematics histogram files
 for sample, input_samples in sample_summations.iteritems():
     if not sample in ['WJets', 'DYJets', 'VJets-matchingup',
                       'VJets-matchingdown', 'VJets-scaleup',
-                      'VJets-scaledown']:  #
+                      'VJets-scaledown']: #
         continue
     print "Merging"
-    output_file = measurement_config.central_general_template % sample
-    input_files = [measurement_config.central_general_template % input_sample for input_sample in input_samples]
+    current_working_directory = os.getcwd()  #find current working directory
+    output_file = config_8TeV.central_general_template % sample
+    output_file = output_file.replace("/hdfs/TopQuarkGroup/results/histogramfiles", current_working_directory)
+    input_files = [config_8TeV.central_general_template % input_sample for input_sample in input_samples]
 
     print output_file
     for input_file in input_files:
@@ -33,13 +52,16 @@ for sample, input_samples in sample_summations.iteritems():
         time.sleep( 30 )  # sleep for 30 seconds
 
 # merge all other histogram files
-for category in measurement_config.categories_and_prefixes.keys():
+for category in config_8TeV.categories_and_prefixes.keys():
     for sample, input_samples in sample_summations.iteritems():
-        if not sample in ['QCD_Electron', 'QCD_Muon', 'SingleTop', 'VJets']:  # 
+        if not sample in ['QCD_Electron', 'QCD_Muon', 'VJets',
+                          'SingleTop']: #
             continue
         print "Merging"
-        output_file = measurement_config.general_category_templates[category] % sample
-        input_files = [measurement_config.general_category_templates[category] % input_sample for input_sample in input_samples]
+        current_working_directory = os.getcwd()  #find current working directory
+        output_file = config_8TeV.general_category_templates[category] % sample
+        output_file = output_file.replace("/hdfs/TopQuarkGroup/results/histogramfiles", current_working_directory)
+        input_files = [config_8TeV.general_category_templates[category] % input_sample for input_sample in input_samples]
         
         print output_file
         for input_file in input_files:
