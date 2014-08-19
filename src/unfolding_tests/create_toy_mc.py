@@ -47,7 +47,6 @@ def main():
 
     centre_of_mass = options.CoM
     ttbar_xsection = measurement_config.ttbar_xsection
-    luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
     variable = options.variable
     met_type = measurement_config.translate_options[options.metType]
     n_toy_mc = options.n_toy_mc
@@ -68,7 +67,6 @@ def main():
                                                                                        met_type,
                                                                                        centre_of_mass,
                                                                                        ttbar_xsection,
-                                                                                       luminosity,
                                                                                        load_fakes = False )
         # create directories
         directory = output.mkdir( channel )
