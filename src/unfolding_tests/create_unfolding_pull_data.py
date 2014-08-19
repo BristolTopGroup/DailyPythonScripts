@@ -134,7 +134,7 @@ if __name__ == "__main__":
     bins = array( 'd', bin_edges[variable] )
     nbins = len( bins ) - 1
     
-    output_folder = options.output_folder + '/' + variable + '/%d_input_toy_mc/k_value_%d/' % ( use_N_toy, k_value )
+    output_folder = options.output_folder + '/' + str(centre_of_mass) + 'TeV/' + variable + '/%d_input_toy_mc/k_value_%d/' % ( use_N_toy, k_value )
     make_folder_if_not_exists( output_folder )
 
     print 'Producing unfolding pull data for %s variable, k-value %s. \nOutput folder: %s' % ( variable, k_value, output_folder )

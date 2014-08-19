@@ -6,7 +6,16 @@ N_JOBS=4
 
 i=0
 k=3
-options=("--offset_toy_mc=0 --offset_toy_data=0" "--offset_toy_mc=100 --offset_toy_data=0" "--offset_toy_mc=200 --offset_toy_data=0" "--offset_toy_mc=0 --offset_toy_data=100" "--offset_toy_mc=0 --offset_toy_data=200" "--offset_toy_mc=100 --offset_toy_data=100" "--offset_toy_mc=200 --offset_toy_data=200" "--offset_toy_mc=100 --offset_toy_data=200" "--offset_toy_mc=200 --offset_toy_data=100")
+options[0]="--offset_toy_mc=0 --offset_toy_data=0"
+options[1]="--offset_toy_mc=35 --offset_toy_data=0"
+options[2]="--offset_toy_mc=70 --offset_toy_data=0"
+options[3]="--offset_toy_mc=0 --offset_toy_data=35" 
+options[4]="--offset_toy_mc=0 --offset_toy_data=70" 
+options[5]="--offset_toy_mc=35 --offset_toy_data=35" 
+options[6]="--offset_toy_mc=70 --offset_toy_data=70" 
+options[7]="--offset_toy_mc=35 --offset_toy_data=70" 
+options[8]="--offset_toy_mc=70 --offset_toy_data=35"
+
 
 
 for var in MET HT ST WPT MT; do
@@ -33,19 +42,20 @@ echo "Doing unfolding pulls for: $var"
 	esac
 	echo 'Creating toy MC for all variables, 300x300, combined channel (default)'
 	echo "Producing pull data for $var variable, combined channel, kv=$k"
-	for j in 1 2 3 4 5 6 7 8 9; do
-		echo "Doing part $j out of 9"
-		nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_7TeV.root -n 100 ${options[$j-1]} -c electron &> logs/pull_${var}_kv${k}_${j}_7TeV.log &
-		let i+=1
-		nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_8TeV.root -n 100 ${options[$j-1]} -c electron &> logs/pull_${var}_kv${k}_${j}_8TeV.log &
-		let i+=1
-		if (( $i % N_JOBS == 0 ))
-		then
-			echo "Waiting on the above to finish."
-    		wait;
-		fi
+	for energy in 7 8; do
+		for c in electron muon; do
+			for j in 1 2 3 4 5 6 7 8 9; do
+				echo "Doing part $j out of 9"
+				nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_${energy}TeV.root -n 35 ${options[$j-1]} -c $c -s $energy &> logs/pull_${var}_kv${k}_${c}_${j}_${energy}TeV.log &
+				let i+=1
+				if (( $i % N_JOBS == 0 ))
+				then
+					echo "Waiting on the above to finish."
+    				wait;
+				fi
+			done
+			nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/7TeV/$var/35_input_toy_mc/k_value_$k -c $c -v $var -k $k -s $energy &> logs/pull_${var}_kv${k}_${c}_plots_${energy}TeV.log &
+			wait;
+		done
 	done
-	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/$var/100_input_toy_mc/k_value_$k -c electron -v $var -k $k &> logs/pull_${var}_kv${k}_plots.log &
-	nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/$var/100_input_toy_mc/k_value_$k -c muon -v $var -k $k &> logs/pull_${var}_kv${k}_plots.log &
-	wait
 done
