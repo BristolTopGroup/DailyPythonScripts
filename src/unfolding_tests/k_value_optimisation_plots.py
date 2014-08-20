@@ -16,8 +16,8 @@ import matplotlib
 from copy import deepcopy
 from tools.ROOT_utililities import set_root_defaults
 
-from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist
+from tools.file_utilities import make_folder_if_not_exists
+from tools.hist_utilities import value_error_tuplelist_to_hist, get_fit_results_histogram
 from tools.plotting import make_plot, Histogram_properties
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from config.variable_binning import bin_edges
@@ -73,16 +73,6 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
     histogram_properties.y_axis_title = 'Mean of residuals'
     make_plot(MeanResiduals, 'MeanRes', histogram_properties, output_folder, output_formats, draw_errorbar = True, draw_legend = False)
 
-
-def get_data_histogram( channel, variable, met_type ):
-    global data_path, centre_of_mass
-    fit_result_input = data_path + '/%(CoM)dTeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
-    fit_results = read_data_from_JSON( fit_result_input % {'CoM': centre_of_mass, 'channel': channel, 'variable': variable, 'met_type':met_type} )
-    fit_data = fit_results['TTJet']
-    h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
-    return h_data
-
-   
 if __name__ == '__main__':
     set_root_defaults()
 
@@ -144,7 +134,12 @@ if __name__ == '__main__':
             
             h_data = None
             if test == 'data':
-                h_data = get_data_histogram( path_to_JSON, channel, variable, met_type )
+                h_data = get_fit_results_histogram( data_path = path_to_JSON,
+                               centre_of_mass = centre_of_mass,
+                               channel = channel,
+                               variable = variable,
+                               met_type = met_type,
+                               bin_edges = bin_edges[variable] )
                 output_folder = output_folder_base + '/' + variable + '_data/'
             elif test == 'bias':
                 h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 

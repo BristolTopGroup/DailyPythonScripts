@@ -183,11 +183,11 @@ class XSectionConfig():
                                     'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-        self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_merged.root'
-        self.unfolding_powheg_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg_pythia.root' % self.centre_of_mass_energy
-        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg_herwig.root' % self.centre_of_mass_energy
+        self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegherwig.root' % self.centre_of_mass_energy
         self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_mcatnlo.root' % self.centre_of_mass_energy
-        self.unfolding_ptreweight_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ptreweight.root' % self.centre_of_mass_energy
+        self.unfolding_ptreweight_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_withTopPtReweighting.root' % self.centre_of_mass_energy
 
         self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaledown.root' % self.centre_of_mass_energy
         self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleup.root' % self.centre_of_mass_energy
@@ -198,14 +198,14 @@ class XSectionConfig():
         self.unfolding_powheg_pythia = self.unfolding_powheg_pythia_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mcatnlo = self.unfolding_mcatnlo_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_ptreweight = self.unfolding_ptreweight_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_ptreweight = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting.root' % self.centre_of_mass_energy
 
         self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
 
-        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'PDFweights/' + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
 
         self.histogram_path_templates = {
                            'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s',
@@ -214,31 +214,6 @@ class XSectionConfig():
                            'MT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s',
                            'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s'
                            }
-
-        # optimal regularisation parameters
-        self.k_values_electron = {
-                   'MET' : 3,
-                   'HT' : 4,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 3
-                   }
-
-        self.k_values_muon = {
-                   'MET' : 3,
-                   'HT' : 4,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 3
-                   }
-
-        self.k_values_combined = {
-                   'MET' : 3,
-                   'HT' : 3,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 4
-                   }
 
         self.electron_control_region = 'QCDConversions'
         self.electron_control_region_systematic = 'QCD non iso e+jets'
@@ -263,6 +238,32 @@ class XSectionConfig():
                         'SingleTop_cross_section': 0.3,
                         'TTJet_cross_section': 0.15
                          }
+
+        # optimal regularisation parameters
+        self.k_values_electron = {
+                   'MET' : 2,
+                   'HT' : 3,
+                   'ST' : 3,
+                   'MT' : 2,
+                   'WPT' : 3
+                   }
+
+        self.k_values_muon = {
+                   'MET' : 2,
+                   'HT' : 3,
+                   'ST' : 3,
+                   'MT' : 2,
+                   'WPT' : 3
+                   }
+        #keeping combined values for backward compatibility
+        self.k_values_combined = {
+                   'MET' : 0,
+                   'HT' : 0,
+                   'ST' : 0,
+                   'MT' : 0,
+                   'WPT' : 0
+                   }
+
         self.categories_and_prefixes['PU_down'] = '_PU_64600mb'
         self.categories_and_prefixes['PU_up'] = '_PU_71400mb'
 
@@ -286,6 +287,32 @@ class XSectionConfig():
                         'SingleTop_cross_section': 0.034,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
                         'TTJet_cross_section': 0.043
                          }
+
+        # optimal regularisation parameters
+        self.k_values_electron = {
+                   'MET' : 3,
+                   'HT' : 3,
+                   'ST' : 4,
+                   'MT' : 2,
+                   'WPT' : 3
+                   }
+
+        self.k_values_muon = {
+                   'MET' : 3,
+                   'HT' : 3,
+                   'ST' : 4,
+                   'MT' : 2,
+                   'WPT' : 3
+                   }
+        #keeping combined values for backward compatibility
+        self.k_values_combined = {
+                   'MET' : 0,
+                   'HT' : 0,
+                   'ST' : 0,
+                   'MT' : 0,
+                   'WPT' : 0
+                   }
+
         self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
         self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
 

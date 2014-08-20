@@ -25,17 +25,9 @@ from config.variable_binning import bin_widths, bin_edges
 from tools.plotting import Histogram_properties, compare_measurements
 from tools.Unfolding import get_unfold_histogram_tuple, Unfolding
 from tools.Calculation import calculate_normalised_xsection
-from tools.hist_utilities import hist_to_value_error_tuplelist
+from tools.hist_utilities import hist_to_value_error_tuplelist, get_fit_results_histogram
 from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x
-from tools.file_utilities import make_folder_if_not_exists, read_data_from_JSON
-
-def get_data_histogram( channel, variable, met_type ):
-    global data_path, centre_of_mass
-    fit_result_input = data_path + '/%(CoM)dTeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
-    fit_results = read_data_from_JSON( fit_result_input % {'CoM': centre_of_mass, 'channel': channel, 'variable': variable, 'met_type':met_type} )
-    fit_data = fit_results['TTJet']
-    h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
-    return h_data
+from tools.file_utilities import make_folder_if_not_exists
 
 def get_test_k_values( h_truth, h_measured, h_response, h_data = None ):
     """
@@ -65,7 +57,7 @@ def run_test( h_truth, h_measured, h_response, h_data, h_fakes = None, variable 
 
 def compare( central_mc, expected_result = None, measured_result = None, results = {}, variable = 'MET',
              channel = 'electron', bin_edges = [] ):
-    global plot_location, luminosity, centre_of_mass, method, test, log_plots
+    global input_file, plot_location, ttbar_xsection, luminosity, centre_of_mass, method, test, log_plots
 
     channel_label = ''
     if channel == 'electron':
@@ -85,6 +77,10 @@ def compare( central_mc, expected_result = None, measured_result = None, results
     models = {latex_labels.measurements_latex['MADGRAPH'] : central_mc}
     if expected_result and test == 'data':
         models.update({'fitted data' : expected_result})
+        # scale central MC to lumi
+        nEvents = input_file.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+        lumiweight = ttbar_xsection * luminosity / nEvents
+        central_mc.Scale( lumiweight )
     elif expected_result:
         models.update({'expected' : expected_result})
     if measured_result and test != 'data':
@@ -148,7 +144,7 @@ if __name__ == '__main__':
     ttbar_xsection = measurement_config.ttbar_xsection
     load_fakes = options.load_fakes
     method = options.unfolding_method
-    data_path = options.data_path
+    path_to_JSON = options.data_path
     plot_location = options.output_folder + '/' + str(centre_of_mass) + 'TeV/' + options.test + '/'
     met_type = measurement_config.translate_options[options.metType]
     log_plots = options.log_plots
@@ -182,7 +178,12 @@ if __name__ == '__main__':
             h_expected = None
             
             if test == 'data':
-                h_data = get_data_histogram( channel, variable, met_type )
+                h_data = get_fit_results_histogram( data_path = path_to_JSON,
+                               centre_of_mass = centre_of_mass,
+                               channel = channel,
+                               variable = variable,
+                               met_type = met_type,
+                               bin_edges = bin_edges[variable] )
                 h_expected = deepcopy( h_data )
             elif test == 'bias':
                 h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 

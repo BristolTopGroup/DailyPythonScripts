@@ -27,8 +27,8 @@ from rootpy import asrootpy
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
-from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist
+from tools.file_utilities import make_folder_if_not_exists
+from tools.hist_utilities import value_error_tuplelist_to_hist, get_fit_results_histogram
 from tools.ROOT_utililities import set_root_defaults
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from config.variable_binning import bin_edges
@@ -68,14 +68,6 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_fakes = None, h_data = No
             break
             
     return best_k, hist_d_i.clone()
-
-
-def get_data_histogram( path_to_JSON, channel, variable, met_type ):
-    fit_result_input = path_to_JSON + '/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
-    fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
-    fit_data = fit_results['TTJet']
-    h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
-    return h_data
 
 def draw_d_i( d_i ):
     global variable, output_folder, output_formats, test
@@ -151,7 +143,7 @@ if __name__ == '__main__':
                       help="set MET type used in the analysis of MET-dependent variables")
 
     ( options, args ) = parser.parse_args()
-    measurement_config = XSectionConfig(options.CoM)
+    measurement_config = XSectionConfig( options.CoM )
     output_formats = ['pdf']
     centre_of_mass = options.CoM
     path_to_JSON = options.path
@@ -172,7 +164,7 @@ if __name__ == '__main__':
     input_file = File( input_filename_central, 'read' )
     input_file_bias = File( input_filename_bias, 'read' )
 
-    variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
+    variables = ['MET', 'WPT', 'MT', 'ST', 'HT']
 
     print 'Determining optimal k-values at', centre_of_mass, 'TeV'
 
@@ -197,7 +189,12 @@ if __name__ == '__main__':
             
             h_data = None
             if test == 'data':
-                h_data = get_data_histogram( path_to_JSON, channel, variable, met_type )
+                h_data = get_fit_results_histogram( data_path = path_to_JSON,
+                               centre_of_mass = centre_of_mass,
+                               channel = channel,
+                               variable = variable,
+                               met_type = met_type,
+                               bin_edges = bin_edges[variable] )
             elif test == 'bias':
                 h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 
                                 inputfile = input_file_bias,
