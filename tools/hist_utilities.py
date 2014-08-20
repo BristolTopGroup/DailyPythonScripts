@@ -13,6 +13,7 @@ from rootpy.plotting.hist import Hist2D
 import random
 import string
 from copy import deepcopy
+from tools.file_utilities import read_data_from_JSON
 
 def hist_to_value_error_tuplelist( hist ):
     values = list( hist.y() )
@@ -325,6 +326,18 @@ def adjust_overflow_to_limit(histogram, x_min, x_max):
     histogram_.SetBinError(overflow_bin, overflow_error)     
         
     return histogram_
+
+def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
+                               centre_of_mass = 8,
+                               channel = 'electron',
+                               variable = 'MET',
+                               met_type = 'patType1CorrectedPFMet',
+                               bin_edges = [] ):
+    fit_result_input = data_path + '/%(CoM)dTeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_results = read_data_from_JSON( fit_result_input % {'CoM': centre_of_mass, 'channel': channel, 'variable': variable, 'met_type':met_type} )
+    fit_data = fit_results['TTJet']
+    h_data = value_error_tuplelist_to_hist( fit_data, bin_edges )
+    return h_data
 
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
