@@ -16,7 +16,7 @@ electron_qcd_samples = [ 'QCD_Pt-20to30_BCtoE',
                  'QCD_Pt-350_EMEnriched',
                  'GJets_HT-40To100',
                  'GJets_HT-100To200',
-                 'GJets_HT-200']
+                 'GJets_HT-200ToInf']
 muon_qcd_samples = [ 'QCD_Pt-15to20_MuEnrichedPt5',
              'QCD_Pt-20to30_MuEnrichedPt5',
              'QCD_Pt-30to50_MuEnrichedPt5',
