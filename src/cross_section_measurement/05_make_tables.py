@@ -60,12 +60,23 @@ def read_xsection_measurement_results_with_errors(channel):
 
 def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
     global output_folder, variable, met_type
-    printout = '=' * 60
+    bins = variable_bins_ROOT[variable]
+
+    printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += 'Results for %s variable, %s channel, met type %s\n' % (variables_latex[variable], channel, met_type)
-    printout += '=' * 60
+    printout += '%% Fit sesults for %s variable, %s channel, met type %s \n' % (variable, channel, met_type)
+    printout += '%% ' + '=' * 60
     printout += '\n'
-    printout += '\\\\ \n\hline\n'
+
+    printout += '\\begin{table}[htbp]\n'
+    printout += '\\centering\n'
+    printout += '\\caption{Fit results for the \\%s variable\n' % variable
+    printout += 'at a centre-of-mass energy of %d TeV (%s channel).}\n' % ( measurement_config.centre_of_mass_energy, channel )
+    printout += '\\label{tab:%s_fit_results_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
+    printout += '\\resizebox{\\columnwidth}{!} {\n'
+    printout += '\\begin{tabular}{l' + 'r'*len(bins) + 'r}\n'
+    printout += '\\hline\n'
+
     header = 'Process'
     template_in = '%s in'
     ttjet_in_line = template_in % samples_latex['TTJet'] 
@@ -74,10 +85,10 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     qcd_in_line = template_in % samples_latex['QCD'] 
 
     template_fit = '%s fit'
-    ttjet_fit_line = template_in % samples_latex['TTJet'] 
-    singletop_fit_line = template_in % samples_latex['SingleTop'] 
-    vjets_fit_line = template_in % samples_latex['V+Jets'] 
-    qcd_fit_line = template_in % samples_latex['QCD'] 
+    ttjet_fit_line = template_fit % samples_latex['TTJet'] 
+    singletop_fit_line = template_fit % samples_latex['SingleTop'] 
+    vjets_fit_line = template_fit % samples_latex['V+Jets'] 
+    qcd_fit_line = template_fit % samples_latex['QCD'] 
 
     sum_MC_in_line = 'Sum MC in'
     sum_MC_fit_line = 'Sum MC fit'
@@ -107,7 +118,6 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     N_fit_qcd_error = 0
     N_fit_sum_MC_error = 0
 
-    bins = variable_bins_ROOT[variable]
     for bin_i, variable_bin in enumerate(bins):
         header += ' & %s' % (variable_bins_latex[variable_bin])
         ttjet_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['TTJet'][bin_i][0], initial_values['TTJet'][bin_i][1])
@@ -197,7 +207,9 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     printout += '\n\hline\n'
     printout += sum_data_line
     printout += '\n\hline\n'
-    printout += '\hline\n'
+    printout += '\\end{tabular}\n'
+    printout += '}\n'
+    printout += '\\end{table}\n'
 
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
