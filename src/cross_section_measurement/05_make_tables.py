@@ -7,6 +7,7 @@ from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from lib import read_fit_results, read_fit_input
+import math
 
 def read_xsection_measurement_results_with_errors(channel):
     global path_to_JSON, variable, k_values, met_type
@@ -227,35 +228,41 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     else:
         printout += '(%s channel).}\n' % channel
     printout += '\\label{tab:%s_xsections_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
-    printout += '\\resizebox{\\columnwidth}{!} {\n'
+    #printout += '\\resizebox{\\columnwidth}{!} {\n'
     printout += '\\begin{tabular}{lr}\n'
     printout += '\\hline\n'
 
     printout += '$%s$ bin & $\sigma_{meas}$' % variables_latex[variable]
     printout += '\\\\ \n\hline\n'
-    scale = 100
+    scale = 1000
     
     bins = variable_bins_ROOT[variable]
     assert(len(bins) == len(xsections['unfolded_with_systematics']))
     
     for bin_i, variable_bin in enumerate(bins):
         if print_before_unfolding:
-            value, error_up, error_down = xsections['measured_with_systematics'][bin_i]
+            value, stat_error = xsections['measured'][bin_i]
+            _, total_error_up, total_error_down = xsections['measured_with_systematics'][bin_i]
         else:
-            value, error_up, error_down = xsections['unfolded_with_systematics'][bin_i]
-        relativeError_up = getRelativeError(value, error_up)
-        relativeError_down = getRelativeError(value, error_down)
-        if error_up == error_down:
-            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f \pm %.2f ) \cdot 10^{-2} ' % (value * scale, error_up * scale) +\
-                    '(%.2f' % (relativeError_up * 100) + '\%)$'
+            value, stat_error = xsections['unfolded'][bin_i]
+            _, total_error_up, total_error_down = xsections['unfolded_with_systematics'][bin_i]
+        # extracting the systematic error from the total in quadrature
+        syst_error_up = math.sqrt(total_error_up**2 - stat_error**2)
+        syst_error_down = math.sqrt(total_error_down**2 - stat_error**2)
+        #relative errors for percentages
+        total_relativeError_up = getRelativeError(value, total_error_up)
+        total_relativeError_down = getRelativeError(value, total_error_down)
+        if total_error_up == total_error_down:
+            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f \pm %.2f~\\textrm{(stat.+unfold.)} \pm %.2f~\\textrm{(syst.)} ) \cdot 10^{-3} ' % (value * scale, stat_error * scale, syst_error_up * scale) +\
+                    '(%.2f' % (total_relativeError_up * 100) + '\%)$'
         else:
-            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f^{+%.2f}_{-%.2f)} \cdot 10^{-2} ' % (value * scale, error_up * scale, error_down * scale) +\
-                    '(^{+%.2f}_{-%.2f}' % (relativeError_up * 100, relativeError_down * 100) + '\%)$'
+            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f \pm %.2f~\\textrm{(stat.+unfold.)}~^{+%.2f}_{-%.2f}~\\textrm{(syst.)} ) \cdot 10^{-3} ' % (value * scale, stat_error * scale, syst_error_up * scale, syst_error_down * scale) +\
+                    '(^{+%.2f}_{-%.2f}' % (total_relativeError_up * 100, total_relativeError_down * 100) + '\%)$'
         printout += '\\\\ \n'
 
     printout += '\\hline \n'
     printout += '\\end{tabular}\n'
-    printout += '}\n'
+    #printout += '}\n' #for resizebox
     printout += '\\end{table}\n'
     
     if toFile:
