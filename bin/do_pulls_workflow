@@ -17,7 +17,7 @@ options[7]="--offset_toy_mc=35 --offset_toy_data=70"
 options[8]="--offset_toy_mc=70 --offset_toy_data=35"
 
 
-
+echo 'Creating toy MC for all variables, 105x105, both electron and muon channels'
 for var in MET HT ST WPT MT; do
 echo "Doing unfolding pulls for: $var"
 	case "$var" in
@@ -40,10 +40,10 @@ echo "Doing unfolding pulls for: $var"
 			k=3
 			;;
 	esac
-	echo 'Creating toy MC for all variables, 300x300, combined channel (default)'
-	echo "Producing pull data for $var variable, combined channel, kv=$k"
+	
 	for energy in 7 8; do
 		for c in electron muon; do
+			echo "Producing pull data for $var variable, $c channel, kv=$k, sqrt(s) = $energy TeV"
 			for j in 1 2 3 4 5 6 7 8 9; do
 				echo "Doing part $j out of 9"
 				nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_${energy}TeV.root -n 35 ${options[$j-1]} -c $c -s $energy &> logs/pull_${var}_kv${k}_${c}_${j}_${energy}TeV.log &
