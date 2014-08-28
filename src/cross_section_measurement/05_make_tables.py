@@ -220,19 +220,20 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     printout += '\n'
 
     printout += '\\begin{table}[htbp]\n'
+    printout += '\\setlength{\\tabcolsep}{2pt}\n'
     printout += '\\centering\n'
     printout += '\\caption{Normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
     printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
     if channel == 'combined':
-        printout += '(combination of electron and muon channels).}\n'
+        printout += '(combination of electron and muon channels).'
     else:
-        printout += '(%s channel).}\n' % channel
+        printout += '(%s channel).' % channel
+    printout += ' The errors shown are combined statistical, fit and unfolding errors ($^\dagger$) and systematic uncertainty ($^\star$).}\n'
     printout += '\\label{tab:%s_xsections_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
     #printout += '\\resizebox{\\columnwidth}{!} {\n'
-    printout += '\\begin{tabular}{lr}\n'
+    printout += '\\begin{tabular}{lrrrr}\n'
     printout += '\\hline\n'
-
-    printout += '$%s$ bin & $\sigma_{meas}$' % variables_latex[variable]
+    printout += '$%s$ bin [\\GeV] & \\multicolumn{4}{c}{$\sigma_{meas} \\left(\\times 10^{3}\\right)$}' % variables_latex[variable]
     printout += '\\\\ \n\hline\n'
     scale = 1000
     
@@ -253,11 +254,11 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
         total_relativeError_up = getRelativeError(value, total_error_up)
         total_relativeError_down = getRelativeError(value, total_error_down)
         if total_error_up == total_error_down:
-            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f \pm %.2f~\\textrm{(stat.+unfold.)} \pm %.2f~\\textrm{(syst.)} ) \cdot 10^{-3} ' % (value * scale, stat_error * scale, syst_error_up * scale) +\
-                    '(%.2f' % (total_relativeError_up * 100) + '\%)$'
+            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $%.2f$ & $ \pm~ %.2f^\\dagger$ & $ \pm~ %.2f^\\star$ & ' % (value * scale, stat_error * scale, syst_error_up * scale) +\
+                    '$(%.2f' % (total_relativeError_up * 100) + '\%)$'
         else:
-            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f \pm %.2f~\\textrm{(stat.+unfold.)}~^{+%.2f}_{-%.2f}~\\textrm{(syst.)} ) \cdot 10^{-3} ' % (value * scale, stat_error * scale, syst_error_up * scale, syst_error_down * scale) +\
-                    '(^{+%.2f}_{-%.2f}' % (total_relativeError_up * 100, total_relativeError_down * 100) + '\%)$'
+            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $%.2f$ & $ \pm~ %.2f^\\dagger$ & $ ~^{+%.2f}_{-%.2f}^\\star$ & ' % (value * scale, stat_error * scale, syst_error_up * scale, syst_error_down * scale) +\
+                    '$(^{+%.2f}_{-%.2f}' % (total_relativeError_up * 100, total_relativeError_down * 100) + '\%)$'
         printout += '\\\\ \n'
 
     printout += '\\hline \n'
