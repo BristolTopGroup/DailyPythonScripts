@@ -1,7 +1,7 @@
 from config import CMS
 from optparse import OptionParser
 from config import XSectionConfig
-from tools.file_utilities import read_data_from_JSON
+from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import Histogram_properties
 
 from matplotlib import pyplot as plt
@@ -194,7 +194,8 @@ if __name__ == '__main__':
     muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % ( lumi/1000.0, CoM )
 
     path_to_JSON = options.path + '/' + str( CoM ) + 'TeV/'
-    output_folder = options.output_folder
+    output_folder = options.output_folder + '/%dTeV/' % CoM
+    make_folder_if_not_exists(output_folder)
     normalise_to_fit = options.normalise_to_fit
     category = options.category
     met_type = translate_options[options.metType]
@@ -220,8 +221,8 @@ if __name__ == '__main__':
                                      x_limits = [0, 4],
                                      y_limits = [0, 4],
                                      rebin = 1,
-                                     save_folder = 'plots/fitchecks/',
-                                     save_as = ['pdf', 'png'] )
+                                     save_folder = output_folder,
+                                     save_as = ['pdf'] )
     make_correlation_plot_from_file( channel = 'muon',
                                      variable = options.variable,
                                      CoM = options.CoM,
@@ -232,5 +233,5 @@ if __name__ == '__main__':
                                      x_limits = [0, 3],
                                      y_limits = [0, 3],
                                      rebin = 1,
-                                     save_folder = 'plots/fitchecks/',
-                                     save_as = ['pdf', 'png'] )
+                                     save_folder = output_folder,
+                                     save_as = ['pdf'] )
