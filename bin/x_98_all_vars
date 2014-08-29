@@ -21,34 +21,20 @@ for var in MET HT ST WPT MT; do
     	wait;
 	fi
 done
-echo "98_fit_cross_checks all done! Moving on to 98b_fit_cross_checks."
+echo "98_fit_cross_checks all done!"
 
-i=0
-for var in MET HT ST WPT MT; do
-	echo "Fitting distribution: $var"
-	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98b_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
-	let i+=1
-	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98b_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
-	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
-done
-echo "98b_fit_cross_checks all done! Moving on to 98c_fit_cross_checks."
-
-i=0
-for var in MET HT ST WPT MT; do
-	echo "Fitting distribution: $var"
-	nohup time python src/cross_section_measurement/98c_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98c_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
-	let i+=1
-	nohup time python src/cross_section_measurement/98c_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98c_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
-	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
-done
-echo "All 98x_fit_cross_checks done!"
+# For this check, fit results for all combinations of fit variables are needed. Uncomment manually before running.
+#i=0
+#for var in MET HT ST WPT MT; do
+#	echo "Fitting distribution: $var"
+#	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 7 &> logs/98b_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+#	let i+=1
+#	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 8 &> logs/98b_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+#	let i+=1
+#	if (( $i % N_JOBS == 0 ))
+#	then
+#		echo "Waiting on the above to finish."
+#    	wait;
+#	fi
+#done
+#echo "98b_fit_cross_checks all done! Moving on to 98c_fit_cross_checks."
