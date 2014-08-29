@@ -53,7 +53,7 @@ def main():
     make_folder_if_not_exists( options.output_folder )
     
     # get histograms
-    input_file_hists = File( measurement_config.path_to_unfolding_histograms + 'unfolding_merged_asymmetric.root' )
+    input_file_hists = File( measurement_config.unfolding_madgraph )
     # define output file
     out_file_template = '%s/toy_mc_%s_N_%d_%dTeV.root'
     out_file_name = out_file_template % (options.output_folder, variable, n_toy_mc, centre_of_mass)
