@@ -7,6 +7,7 @@ from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from lib import read_fit_results, read_fit_input
+import math
 
 def read_xsection_measurement_results_with_errors(channel):
     global path_to_JSON, variable, k_values, met_type
@@ -59,12 +60,23 @@ def read_xsection_measurement_results_with_errors(channel):
 
 def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
     global output_folder, variable, met_type
-    printout = '=' * 60
+    bins = variable_bins_ROOT[variable]
+
+    printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += 'Results for %s variable, %s channel, met type %s\n' % (variables_latex[variable], channel, met_type)
-    printout += '=' * 60
+    printout += '%% Fit sesults for %s variable, %s channel, met type %s \n' % (variable, channel, met_type)
+    printout += '%% ' + '=' * 60
     printout += '\n'
-    printout += '\\\\ \n\hline\n'
+
+    printout += '\\begin{table}[htbp]\n'
+    printout += '\\centering\n'
+    printout += '\\caption{Fit results for the \\%s variable\n' % variable
+    printout += 'at a centre-of-mass energy of %d TeV (%s channel).}\n' % ( measurement_config.centre_of_mass_energy, channel )
+    printout += '\\label{tab:%s_fit_results_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
+    printout += '\\resizebox{\\columnwidth}{!} {\n'
+    printout += '\\begin{tabular}{l' + 'r'*len(bins) + 'r}\n'
+    printout += '\\hline\n'
+
     header = 'Process'
     template_in = '%s in'
     ttjet_in_line = template_in % samples_latex['TTJet'] 
@@ -73,10 +85,10 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     qcd_in_line = template_in % samples_latex['QCD'] 
 
     template_fit = '%s fit'
-    ttjet_fit_line = template_in % samples_latex['TTJet'] 
-    singletop_fit_line = template_in % samples_latex['SingleTop'] 
-    vjets_fit_line = template_in % samples_latex['V+Jets'] 
-    qcd_fit_line = template_in % samples_latex['QCD'] 
+    ttjet_fit_line = template_fit % samples_latex['TTJet'] 
+    singletop_fit_line = template_fit % samples_latex['SingleTop'] 
+    vjets_fit_line = template_fit % samples_latex['V+Jets'] 
+    qcd_fit_line = template_fit % samples_latex['QCD'] 
 
     sum_MC_in_line = 'Sum MC in'
     sum_MC_fit_line = 'Sum MC fit'
@@ -106,7 +118,6 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     N_fit_qcd_error = 0
     N_fit_sum_MC_error = 0
 
-    bins = variable_bins_ROOT[variable]
     for bin_i, variable_bin in enumerate(bins):
         header += ' & %s' % (variable_bins_latex[variable_bin])
         ttjet_in_line += ' & %.1f $\pm$ %.1f' % (initial_values['TTJet'][bin_i][0], initial_values['TTJet'][bin_i][1])
@@ -196,7 +207,9 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     printout += '\n\hline\n'
     printout += sum_data_line
     printout += '\n\hline\n'
-    printout += '\hline\n'
+    printout += '\\end{tabular}\n'
+    printout += '}\n'
+    printout += '\\end{table}\n'
 
     if toFile:
         path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
@@ -219,43 +232,50 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     printout += '\n'
 
     printout += '\\begin{table}[htbp]\n'
+    printout += '\\setlength{\\tabcolsep}{2pt}\n'
     printout += '\\centering\n'
     printout += '\\caption{Normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
     printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
     if channel == 'combined':
-        printout += '(combination of electron and muon channels).}\n'
+        printout += '(combination of electron and muon channels).'
     else:
-        printout += '(%s channel).}\n' % channel
+        printout += '(%s channel).' % channel
+    printout += ' The errors shown are combined statistical, fit and unfolding errors ($^\dagger$) and systematic uncertainty ($^\star$).}\n'
     printout += '\\label{tab:%s_xsections_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
-    printout += '\\resizebox{\\columnwidth}{!} {\n'
-    printout += '\\begin{tabular}{lr}\n'
+    #printout += '\\resizebox{\\columnwidth}{!} {\n'
+    printout += '\\begin{tabular}{lrrrr}\n'
     printout += '\\hline\n'
-
-    printout += '$%s$ bin & $\sigma_{meas}$' % variables_latex[variable]
+    printout += '$%s$ bin [\\GeV] & \\multicolumn{4}{c}{$\sigma_{meas} \\left(\\times 10^{3}\\right)$}' % variables_latex[variable]
     printout += '\\\\ \n\hline\n'
-    scale = 100
+    scale = 1000
     
     bins = variable_bins_ROOT[variable]
     assert(len(bins) == len(xsections['unfolded_with_systematics']))
     
     for bin_i, variable_bin in enumerate(bins):
         if print_before_unfolding:
-            value, error_up, error_down = xsections['measured_with_systematics'][bin_i]
+            value, stat_error = xsections['measured'][bin_i]
+            _, total_error_up, total_error_down = xsections['measured_with_systematics'][bin_i]
         else:
-            value, error_up, error_down = xsections['unfolded_with_systematics'][bin_i]
-        relativeError_up = getRelativeError(value, error_up)
-        relativeError_down = getRelativeError(value, error_down)
-        if error_up == error_down:
-            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f \pm %.2f ) \cdot 10^{-2} ' % (value * scale, error_up * scale) +\
-                    '(%.2f' % (relativeError_up * 100) + '\%)$'
+            value, stat_error = xsections['unfolded'][bin_i]
+            _, total_error_up, total_error_down = xsections['unfolded_with_systematics'][bin_i]
+        # extracting the systematic error from the total in quadrature
+        syst_error_up = math.sqrt(total_error_up**2 - stat_error**2)
+        syst_error_down = math.sqrt(total_error_down**2 - stat_error**2)
+        #relative errors for percentages
+        total_relativeError_up = getRelativeError(value, total_error_up)
+        total_relativeError_down = getRelativeError(value, total_error_down)
+        if total_error_up == total_error_down:
+            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $%.2f$ & $ \pm~ %.2f^\\dagger$ & $ \pm~ %.2f^\\star$ & ' % (value * scale, stat_error * scale, syst_error_up * scale) +\
+                    '$(%.2f' % (total_relativeError_up * 100) + '\%)$'
         else:
-            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $(%.2f^{+%.2f}_{-%.2f)} \cdot 10^{-2} ' % (value * scale, error_up * scale, error_down * scale) +\
-                    '(^{+%.2f}_{-%.2f}' % (relativeError_up * 100, relativeError_down * 100) + '\%)$'
+            printout += '%s & ' % variable_bins_latex[variable_bin] + ' $%.2f$ & $ \pm~ %.2f^\\dagger$ & $ ~^{+%.2f}_{-%.2f}^\\star$ & ' % (value * scale, stat_error * scale, syst_error_up * scale, syst_error_down * scale) +\
+                    '$(^{+%.2f}_{-%.2f}' % (total_relativeError_up * 100, total_relativeError_down * 100) + '\%)$'
         printout += '\\\\ \n'
 
     printout += '\\hline \n'
     printout += '\\end{tabular}\n'
-    printout += '}\n'
+    #printout += '}\n' #for resizebox
     printout += '\\end{table}\n'
     
     if toFile:

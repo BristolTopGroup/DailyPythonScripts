@@ -88,11 +88,10 @@ if __name__ == '__main__':
     output_folder = options.output_folder
     make_folder_if_not_exists( options.output_folder )
 
-    hist_file = measurement_config.central_general_template % ( 'TTJet' )
+    #hist_file = measurement_config.central_general_template % ( 'TTJet' )
     hist_file = measurement_config.unfolding_madgraph_raw
-#     hist_file = '/storage/Workspace/Analysis/AnalysisSoftware/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET_TEST.root'
     
-    histogram_name = 'response_withoutFakes'
+    histogram_name = 'response_without_fakes'
     histogram_templates = {
                            'MET': 'unfolding_MET_analyser_%s_channel_patType1CorrectedPFMet/%s',
                            'HT' : 'unfolding_HT_analyser_%s_channel/%s',
