@@ -154,12 +154,12 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
         for xpoint in range( len( parameters ) ):
             for ypoint in range( len( parameters ) ):
-        # for xpoint, ypoint in zip(x, y):
-                ax.annotate( '{:.2f}'.format( float( weights["%s_%s" % ( parameters[xpoint], parameters[ypoint] )] ) ), ( xpoint + 0.5, ypoint + 0.5 ), ha = 'center', va = 'center', bbox = dict( fc = 'white', ec = 'none' ) )
-
+                correlation_value = weights["%s_%s" % ( parameters[xpoint], parameters[ypoint] )]
+                ax.annotate( correlation_value, xy = ( xpoint + 0.5, ypoint + 0.5 ), ha = 'center', va = 'center', bbox = dict( fc = 'white', ec = 'none' ) )
         for save in save_as:
             plt.savefig( save_folder + histogram_properties.name + '.' + save )
-        plt.close()
+        plt.close(fig)
+    plt.close('all')
 
 if __name__ == '__main__':
     parser = OptionParser()
