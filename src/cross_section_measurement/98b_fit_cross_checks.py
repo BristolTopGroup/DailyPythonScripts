@@ -65,7 +65,7 @@ def plot_fit_results( fit_results, initial_values, channel ):
                              show_measurement_errors = True,
                              histogram_properties = histogram_properties,
                              save_folder = output_folder,
-                             save_as = ['png'] )
+                             save_as = ['png', 'pdf'] )
         
 def create_latex_string( fit_var_input ):
     known_fit_vars = fit_variables_latex.keys()
