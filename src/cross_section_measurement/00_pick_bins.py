@@ -73,16 +73,11 @@ def main():
         print '-' * 120
         print 'The corresponding purities and stabilities are:'
         for info in histogram_information:
-            old_hist = rebin_2d( info['hist'], old_binning[variable], old_binning[variable] )
-            old_purities = calculate_purities( old_hist.Clone() )
-            old_stabilities = calculate_stabilities( old_hist.Clone() ) 
-            print 'CoM =', info['CoM'], 'channel =', info['channel']
-            print 'p_i =', info['p_i']
-            print 'p_i (old) =', old_purities
-            print 's_i =', info['s_i']
-            print 's_i (old) =', old_stabilities
-            print 'N   =', info['N']
-            print '*' * 120
+#             old_hist = rebin_2d( info['hist'], old_binning[variable], old_binning[variable] )
+#             old_purities = calculate_purities( old_hist.Clone() )
+#             old_stabilities = calculate_stabilities( old_hist.Clone() ) 
+#             print_console(info, old_purities, old_stabilities, print_old = True)
+            print_latex_table(info, variable, best_binning)
         print '=' * 120  
 
 def get_histograms( variable ):
@@ -227,6 +222,30 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
             current_bin_end = bin_i
     return current_bin_end, p, s, n_gen_and_reco
 
-
+def print_console(info, old_purities, old_stabilities, print_old = False):
+    print 'CoM =', info['CoM'], 'channel =', info['channel']
+    print 'p_i =', info['p_i']
+    if print_old:
+        print 'p_i (old) =', old_purities
+    print 's_i =', info['s_i']
+    if print_old:
+        print 's_i (old) =', old_stabilities
+    print 'N   =', info['N']
+    print '*' * 120
+    
+def print_latex_table( info, variable, best_binning ):
+    print 'CoM =', info['CoM'], 'channel =', info['channel']
+    header = """\%s bin (\GeV) &  purity & stability & number of events\\\\
+    \hline""" % variable.lower()
+    print header
+    for i in range( len( best_binning ) - 1 ):
+        bin_range = ""
+        if i == len( best_binning ) - 2:
+            bin_range = '$\geq %d$' % best_binning[i]
+        else:
+            bin_range = '%d - %d' % ( best_binning[i], best_binning[i + 1] )
+        print '%s & %.3f & %.3f & %d\\\\' % (bin_range, info['p_i'][i], info['s_i'][i], info['N'][i])
+    print '\hline'
+    
 if __name__ == '__main__':
     main()
