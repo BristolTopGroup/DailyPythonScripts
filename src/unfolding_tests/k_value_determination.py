@@ -72,16 +72,30 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_fakes = None, h_data = No
 def draw_d_i( d_i ):
     global variable, output_folder, output_formats, test
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
-    fit = TF1("fit", 'expo', 0, d_i.nbins(0)) #change the range here to exclude bins
-    d_i.Fit(fit, 'WWSQR')
-    p0 = ufloat(fit.GetParameter(0), fit.GetParError(0))
-    p1 = ufloat(fit.GetParameter(1), fit.GetParError(1))
-    k_value = -p0 / p1 # other way of estimation: crossing the d = 1 line by exponential
+    fit_all_bins = TF1("fit_all_bins", 'expo', 0, d_i.nbins(0))
+    fit_exclude_first_bin = TF1("fit_exclude_first_bin", 'expo', 1, d_i.nbins(0))
+    d_i.Fit(fit_all_bins, 'WWSQR')
+    d_i.Fit(fit_exclude_first_bin, 'WWSQR')
 
-    print 'Fitted f = $e^{%.2f \\times i + %.2f }$' % ( p1.nominal_value, p0.nominal_value )
-    print 'Best k-value for %s using exponential crossing d=1 method: %.2f +- %.2f' % (variable, k_value.nominal_value, k_value.std_dev)
-    print 'p1: %f +- %f ' % ( p1.nominal_value, p1.std_dev )
-    print 'p0: %f +- %f ' % ( p0.nominal_value, p0.std_dev )
+    p0_all_bins = ufloat(fit_all_bins.GetParameter(0), fit_all_bins.GetParError(0))
+    p1_all_bins = ufloat(fit_all_bins.GetParameter(1), fit_all_bins.GetParError(1))
+    k_value_all_bins = -p0_all_bins / p1_all_bins # other way of estimation: crossing the d = 1 line by exponential
+    
+    p0_exclude_first_bin = ufloat(fit_exclude_first_bin.GetParameter(0), fit_exclude_first_bin.GetParError(0))
+    p1_exclude_first_bin = ufloat(fit_exclude_first_bin.GetParameter(1), fit_exclude_first_bin.GetParError(1))
+    k_value_exclude_first_bin = -p0_exclude_first_bin / p1_exclude_first_bin # other way of estimation: crossing the d = 1 line by exponential
+
+    print 'Fitted f_all = $e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
+    print 'Best k-value for %s using exponential fitted to all bins crossing d=1 method: %.2f +- %.2f' % (variable, k_value_all_bins.nominal_value, k_value_all_bins.std_dev)
+
+    print 'p1_all_bins: %f +- %f ' % ( p1_all_bins.nominal_value, p1_all_bins.std_dev )
+    print 'p0_all_bins: %f +- %f ' % ( p0_all_bins.nominal_value, p0_all_bins.std_dev )
+
+    print 'Fitted fit_exclude_first_bin = $e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
+    print 'Best k-value for %s using exponential fitted to all but 1st bin crossing d=1 method: %.2f +- %.2f' % (variable, k_value_exclude_first_bin.nominal_value, k_value_exclude_first_bin.std_dev)
+
+    print 'p1_exclude_first_bin: %f +- %f ' % ( p1_exclude_first_bin.nominal_value, p1_exclude_first_bin.std_dev )
+    print 'p0_exclude_first_bin: %f +- %f ' % ( p0_exclude_first_bin.nominal_value, p0_exclude_first_bin.std_dev )
 
     rplt.hist( d_i )
     plt.title( r'SVD unfolding $d_i$ for $' + variables_latex[variable] + '$', CMS.title )
@@ -89,9 +103,19 @@ def draw_d_i( d_i ):
     plt.ylabel( r'$d_i$', CMS.y_axis_title )
     axes = plt.axes()
 
-    x = numpy.linspace(fit.GetXmin(), fit.GetXmax(), fit.GetNpx()*4)#*4 for a very smooth curve
-    function_data = numpy.frompyfunc(fit.Eval, 1, 1)
-    plot(x, function_data(x), axes=axes, color='red', linewidth=2)
+    x_all_bins = numpy.linspace(fit_all_bins.GetXmin(), fit_all_bins.GetXmax(), fit_all_bins.GetNpx()*4)#*4 for a very smooth curve
+    function_data_all_bins = numpy.frompyfunc(fit_all_bins.Eval, 1, 1)
+    plot(x_all_bins, function_data_all_bins(x_all_bins), axes=axes, color='red', linewidth=2)
+    
+    x_exclude_first_bin = numpy.linspace(fit_exclude_first_bin.GetXmin(), fit_exclude_first_bin.GetXmax(), fit_exclude_first_bin.GetNpx()*4)#*4 for a very smooth curve
+    function_data_exclude_first_bin = numpy.frompyfunc(fit_exclude_first_bin.Eval, 1, 1)
+    plot(x_exclude_first_bin, function_data_exclude_first_bin(x_exclude_first_bin), axes=axes, color='red', linewidth=2)
+
+    #fill between fits
+    x = numpy.arange(0, d_i.nbins(0), 0.1)
+    exp1 = numpy.exp( p1_all_bins.nominal_value*x + p0_all_bins.nominal_value )
+    exp2 = numpy.exp( p1_exclude_first_bin.nominal_value*x + p0_exclude_first_bin.nominal_value )
+    plt.fill_between(x, exp1, exp2, color='k', alpha=.5)
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
@@ -105,8 +129,9 @@ def draw_d_i( d_i ):
             del value_range[i]
     axes.set_ylim( ymin = min(value_range)/10 )
 
-    text = 'Fitted f = $e^{%.2f \\times i + %.2f }$' % ( p1.nominal_value, p0.nominal_value )
-    #text += '\nBest k-value = $%.2f \pm %.2f$' % (k_value.nominal_value, k_value.std_dev)
+    text = 'Fit functions:' 
+    text += '\n$f_{all~bins} = e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
+    text += '\n$f_{excl.1st} = e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
     axes.text(0.5, 0.8, text,
         verticalalignment='bottom', horizontalalignment='left',
         transform=axes.transAxes,
