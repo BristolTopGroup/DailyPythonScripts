@@ -1,5 +1,5 @@
 from optparse import OptionParser
-from config import XSectionConfig
+from config import XSectionConfig, fit_var_inputs
 from config.variable_binning import bin_edges
 from lib import read_fit_results, closure_tests
 # from tools.file_utilities import read_data_from_JSON
@@ -118,27 +118,20 @@ if __name__ == '__main__':
     electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % ( lumi/1000, come )
     muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % ( lumi/1000, come )
     
-    fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
-                      'absolute_eta_angle_bl',
-                      'absolute_eta_M3',
-                      'absolute_eta_M_bl',
-                      'absolute_eta_M_bl_angle_bl',
-                      'absolute_eta_M3_angle_bl',
-                      'absolute_eta_M_bl_M3',
-                      'absolute_eta_M_bl_M3_angle_bl' ]
+    fit_variables = fit_var_inputs
 
     fit_results_electron = {}
     fit_results_muon = {}
     initial_values_electron = {}
     initial_values_muon = {}
-    for fit_var_input in fit_var_inputs:
-        path = path_to_JSON + fit_var_input + '/' + str( come ) + 'TeV/'
-        fit_results_electron[fit_var_input] = read_fit_results( path,
+    for fit_variable in fit_variables:
+        path = path_to_JSON + fit_variable + '/' + str( come ) + 'TeV/'
+        fit_results_electron[fit_variable] = read_fit_results( path,
                                                 variable,
                                                 category,
                                                 'electron',
                                                  met_type )
-        fit_results_muon[fit_var_input] = read_fit_results( path,
+        fit_results_muon[fit_variable] = read_fit_results( path,
                                                 variable,
                                                 category,
                                                 'muon',
