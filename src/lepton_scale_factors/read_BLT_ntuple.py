@@ -18,11 +18,11 @@ matplotlib.use('AGG')
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-from rootpy.plotting import Hist
+from rootpy.plotting import Hist, Hist2D, Canvas
 from tools.ROOT_utililities import set_root_defaults
 from tools.file_utilities import make_folder_if_not_exists
 from tools.plotting import make_plot, Histogram_properties
-from ROOT import TLorentzVector, TGraphAsymmErrors, TF1, TEfficiency
+from ROOT import TLorentzVector, TGraphAsymmErrors, TF1, TEfficiency, gPad
 
 import numpy
 from numpy import frompyfunc
@@ -38,9 +38,11 @@ class Particle :
         self.isolation = 99999
         self.ID = 0
 
-    def set_isolation_and_id(self, isolation, ID):
+    def set_isolation_and_id(self, isolation, ID, dxy, passConversionVeto):
         self.isolation = isolation
         self.ID = ID
+        self.dxy = dxy
+        self.passConversionVeto = passConversionVeto
 
     def Pt(self):
         return self.lorentz.Pt()
@@ -53,23 +55,39 @@ trigger_objects = ['TriggerObjectElectronLeg', 'TriggerObjectElectronIsoLeg', 'T
                    'TriggerObjectHadronIsoLeg', 'TriggerObjectHadronPFIsoLeg', 'TriggerObjectMuon1',
                    'TriggerObjectMuon2', 'TriggerObjectMuon2p1', 'TriggerObjectQuadJets']
 
-histograms = {'reco_Z_peak' : Hist(30, 0, 150, name='reco_Z_peak'),
-              'hlt_Z_peak' : Hist(30, 0, 150, name='hlt_Z_peak'),
-              'reco_lepton_multiplicity' : Hist(5, 0, 5, name='reco_N_leptons'),
-              'hlt_lepton_multiplicity' : Hist(5, 0, 5, name='hlt_N_leptons'),
-              'btag_multiplicity' : Hist(5, 0, 5, name='N btags'),
-              'reco_signal_lepton_pt' : Hist(30, 0, 150, name='reco_signal_lepton_pt'),
-              'hlt_signal_lepton_pt' : Hist(30, 0, 150, name='hlt_signal_lepton_pt'),
-              'reco_signal_lepton_eta' : Hist(30, -3, 3, name='reco_signal_lepton_eta'),
-              'hlt_signal_lepton_eta' : Hist(30, -3, 3, name='hlt_signal_lepton_eta'),
-              'reco_probe_lepton_pt' : Hist(30, 0, 150, name='reco_probe_lepton_pt'),
-              'hlt_probe_lepton_pt' : Hist(30, 0, 150, name='hlt_probe_lepton_pt'),
-              'reco_probe_lepton_eta' : Hist(30, -3, 3, name='reco_probe_lepton_eta'),
-              'hlt_probe_lepton_eta' : Hist(30, -3, 3, name='hlt_probe_lepton_eta'),
-              'probe_passed_pt' : Hist(30, 0, 150, name='probe_passed_lepton_pt'),
-              'probe_total_pt' : Hist(30, 0, 150, name='probe_total_lepton_pt'),
-              'probe_passed_eta' : Hist(30, -3, 3, name='probe_passed_lepton_eta'),
-              'probe_total_eta' : Hist(30, -3, 3, name='probe_total_lepton_eta'),
+ptBins = [ 20,30,40,50,100]
+etaBins = [-2.5,-1.478,-0.8,0,0.8,1.478,2.5]
+absEtaBins = [0,0.8,1.478,2.5]
+
+histograms = {
+                'btag_multiplicity' : Hist(5, 0, 5, name='N btags'),
+
+                'reco_lepton_multiplicity' : Hist(5, 0, 5, name='reco_N_leptons'),
+                'reco_lepton_pt' : Hist(30, 0, 150, name='reco_lepton_pt'),
+                'reco_lepton_eta' : Hist(30, -3, 3, name='reco_lepton_eta'),
+
+                'hlt_lepton_multiplicity' : Hist(5, 0, 5, name='hlt_N_leptons'),
+                'hlt_lepton_pt' : Hist(30, 0, 150, name='hlt_lepton_pt'),
+                'hlt_lepton_eta' : Hist(30, -3, 3, name='hlt_lepton_eta'),
+
+
+                'tag_reco_lepton_pt' : Hist(30, 0, 150, name='tag_reco_lepton_pt'),
+                'tag_reco_lepton_eta' : Hist(30, -3, 3, name='tag_reco_lepton_eta'),
+                'tag_hlt_lepton_pt' : Hist(30, 0, 150, name='tag_hlt_lepton_pt'),
+                'tag_hlt_lepton_eta' : Hist(30, -3, 3, name='tag_hlt_lepton_eta'),
+
+                'probe_total_pt' : Hist(ptBins, name='probe_total_lepton_pt'),
+                'probe_total_eta' : Hist(etaBins, name='probe_total_lepton_eta'),
+                'probe_total_pt_eta' : Hist2D(ptBins, absEtaBins, name='probe_total_pt_eta'),
+                'tagProbe_total_Z_peak' : Hist(30, 0, 150, name='tagProbe_total_Z_peak'),
+
+                'probe_passed_pt' : Hist(ptBins, name='probe_passed_lepton_pt'),
+                'probe_passed_eta' : Hist(etaBins, name='probe_passed_lepton_eta'),
+                'probe_passed_pt_eta' : Hist2D(ptBins, absEtaBins, name='probe_passed_pt_eta'),
+                'probe_passed_hlt_pt' : Hist(ptBins, name='probe_passed_hlt_lepton_pt'),
+                'probe_passed_hlt_eta' : Hist(etaBins, name='probe_passed_hlt_lepton_eta'),
+                'tagProbe_passed_Z_peak' : Hist(30, 0, 150, name='tagProbe_passed_Z_peak'),
+                'tagProbe_passed_hlt_Z_peak' : Hist(30, 0, 150, name='tagProbe_passed_hlt_Z_peak'),
 }
 
 def get_parameters(trigger_under_study):
@@ -120,7 +138,7 @@ def get_fitted_function_str(fit, fit_function):
     function_str = function_str.replace('[2]', str('%.2g' % fit.GetParameter(2)))
     function_str = function_str.replace('[3]', str('%.2g' % fit.GetParameter(3)))
     function_str = function_str.replace('[4]', str('%.2g' % fit.GetParameter(4)))
-    print function_str
+    # print function_str
     function_str = function_str.replace('*', ' \\times ')
     function_str = function_str.replace('0 \\times x^{2}', '')
     function_str = function_str.replace('0 \\times x', '')
@@ -141,7 +159,7 @@ def get_fitted_function_str(fit, fit_function):
         function_str = function_str.replace(')', '\\right)}')
         
     function_str = '$' + function_str + '$'
-    print function_str
+    # print function_str
     
     return function_str
 
@@ -213,6 +231,21 @@ def make_single_efficiency_plot(hist_passed, hist_total, efficiency, channel = '
     for output_format in output_formats:
         plt.savefig(output_folder + save_as_name + '.' + output_format)  
 
+def make_2D_efficiency_plot(hist_passed, hist_total, efficiency, channel = 'electron'):
+    global output_folder, output_formats
+
+    plot_efficiency = TEfficiency(hist_passed, hist_total)
+    canvas = Canvas(width=700, height=500)
+
+    plot_efficiency.Draw('COLZ TEXT')
+    gPad.Update()
+    plot_efficiency.GetPaintedHistogram().GetXaxis().SetTitle('p_{T}')
+    plot_efficiency.GetPaintedHistogram().GetYaxis().SetTitle('#eta')
+    save_as_name = efficiency
+    
+    for output_format in output_formats:
+        canvas.Print(output_folder + save_as_name + '.' + output_format)  
+
 def getNBJets(event, channel = 'electron'):
     # Get csv discriminating variable
     # Vector of double
@@ -253,13 +286,16 @@ def is_Z_event(first_lepton, second_lepton):
         return False
 
 def make_plots(channel = 'electron'):
-    make_single_efficiency_plot(histograms['probe_passed_pt'], histograms['probe_total_pt'], 'probe_efficiency_pt', channel)
-    make_single_efficiency_plot(histograms['probe_passed_eta'], histograms['probe_total_eta'], 'probe_efficiency_eta', channel)
+    # make_single_efficiency_plot(histograms['probe_passed_pt'], histograms['probe_total_pt'], 'probe_efficiency_pt', channel)
+    # make_single_efficiency_plot(histograms['probe_passed_eta'], histograms['probe_total_eta'], 'probe_efficiency_eta', channel)
+
+    make_2D_efficiency_plot(histograms['probe_passed_pt_eta'], histograms['probe_total_pt_eta'], 'probe_efficiency_pt_eta', channel)
 
     if channel == 'electron':
         title_channel = 'e+jets'
     else:
         title_channel = '$\mu$+jets'
+
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'btag_multiplicity'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
@@ -275,11 +311,18 @@ def make_plots(channel = 'electron'):
     make_plot(histograms['reco_lepton_multiplicity'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'Z_mass_peak_reco'
+    histogram_properties.name = 'reco_lepton_pt'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'Inv. mass 2 reco leptons'
+    histogram_properties.x_axis_title = 'Reco lepton pt'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['reco_Z_peak'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['reco_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'reco_lepton_eta'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'Reco lepton eta'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['reco_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = 'hlt_leptons_multiplicity'
@@ -289,71 +332,114 @@ def make_plots(channel = 'electron'):
     make_plot(histograms['hlt_lepton_multiplicity'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'Z_mass_peak_hlt'
+    histogram_properties.name = 'hlt_lepton_pt'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'Inv. mass 2 HLT leptons'
+    histogram_properties.x_axis_title = 'HLT lepton pt'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['hlt_Z_peak'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['hlt_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'reco_signal_lepton_pt'
+    histogram_properties.name = 'hlt_lepton_eta'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'Reco signal lepton pt'
+    histogram_properties.x_axis_title = 'HLT lepton eta'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['reco_signal_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['hlt_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'reco_signal_lepton_eta'
+    histogram_properties.name = 'tag_reco_lepton_pt'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'Reco signal lepton eta'
+    histogram_properties.x_axis_title = 'Tag reco lepton pt'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['reco_signal_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['tag_reco_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'hlt_signal_lepton_pt'
+    histogram_properties.name = 'tag_reco_lepton_eta'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'HLT signal lepton pt'
+    histogram_properties.x_axis_title = 'Tag reco lepton eta'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['hlt_signal_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['tag_reco_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'hlt_signal_lepton_eta'
+    histogram_properties.name = 'tag_hlt_lepton_pt'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'HLT signal lepton eta'
+    histogram_properties.x_axis_title = 'Tag HLT lepton pt'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['hlt_signal_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['tag_hlt_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'reco_probe_lepton_pt'
+    histogram_properties.name = 'tag_hlt_lepton_eta'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'Reco probe lepton pt'
+    histogram_properties.x_axis_title = 'Tag HLT lepton eta'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['reco_probe_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['tag_hlt_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'reco_probe_lepton_eta'
+    histogram_properties.name = 'probe_total_pt'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'Reco probe lepton eta'
+    histogram_properties.x_axis_title = 'All probes reco lepton pt'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['reco_probe_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['probe_total_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'hlt_probe_lepton_pt'
+    histogram_properties.name = 'probe_total_eta'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'HLT probe lepton pt'
+    histogram_properties.x_axis_title = 'All probes reco lepton eta'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['hlt_probe_lepton_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['probe_total_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'hlt_probe_lepton_eta'
+    histogram_properties.name = 'probe_passed_pt'
     histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
-    histogram_properties.x_axis_title = 'HLT probe lepton eta'
+    histogram_properties.x_axis_title = 'Passing probes reco lepton pt'
     histogram_properties.y_axis_title = 'Events'
-    make_plot(histograms['hlt_probe_lepton_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+    make_plot(histograms['probe_passed_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
 
-def passes_ID_and_iso(lepton, channel = 'electron'):
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'probe_passed_eta'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'Passing probes reco lepton eta'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['probe_passed_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'probe_passed_hlt_pt'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'Passing probes HLT lepton pt'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['probe_passed_hlt_pt'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'probe_passed_hlt_eta'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'Passing probes HLT lepton eta'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['probe_passed_hlt_eta'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'tagProbe_total_Z_peak'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'Inv. mass all tag and probes leptons'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['tagProbe_total_Z_peak'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'tagProbe_passed_Z_peak'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'Inv. mass passing tag and probes leptons'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['tagProbe_passed_Z_peak'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'tagProbe_passed_hlt_Z_peak'
+    histogram_properties.title = title_channel + ', CMS Preliminary, $\sqrt{s}$ = 7 TeV'
+    histogram_properties.x_axis_title = 'HLT Inv. mass passing tag and probes leptons'
+    histogram_properties.y_axis_title = 'Events'
+    make_plot(histograms['tagProbe_passed_hlt_Z_peak'], 'data', histogram_properties, save_folder = output_folder, save_as = ['pdf'])
+
+
+def passes_probe_ID_and_iso(lepton, channel = 'electron'):
     if channel == 'electron':
-        if lepton.isolation < 0.1 and lepton.ID > 0.5:
+        if abs(lepton.Eta()) < 2.5 and lepton.isolation < 0.1 and lepton.ID > 0.5 and lepton.dxy < 0.02 and lepton.passConversionVeto:
             return True
         else:
             return False
@@ -362,6 +448,32 @@ def passes_ID_and_iso(lepton, channel = 'electron'):
             return True
         else:
             return False
+
+def passes_tag_ID_and_iso(lepton, hlt_leptons, channel = 'electron'):
+    if channel == 'electron':
+        if lepton.Pt() > 30 and abs(lepton.Eta()) < 0.8 and lepton.isolation < 0.1 and lepton.ID > 0.5 and lepton.dxy < 0.02 and lepton.passConversionVeto:
+            # Does this tag also match to hlt lepton
+            matched_index_signal_lepton, matched_delta_R_signal_lepton = match_four_momenta(lepton, hlt_leptons)
+            if matched_delta_R_signal_lepton < 0.3:
+                return True
+            else :
+                return False
+        else:
+            return False
+    else:
+        if lepton.isolation < 0.12 and lepton.ID != 0:
+            return True
+        else:
+            return False
+
+def getTagLepton( reco_leptons, hlt_leptons ):
+    for lepton in reco_leptons:
+        passesId = passes_tag_ID_and_iso( lepton, hlt_leptons, channel )
+        if passesId:
+            matched_index_signal_lepton, matched_delta_R_signal_lepton = match_four_momenta(lepton, hlt_leptons)
+            hlt_lepton = hlt_leptons[matched_index_signal_lepton]
+            return lepton, hlt_lepton
+    return 0, 0
 
 if __name__ == '__main__':
     set_root_defaults()
@@ -401,7 +513,13 @@ if __name__ == '__main__':
     print 'Number of events : ', tree.GetEntries()
     #print 'Number of events after some random selection :', tree.GetEntries('Event.M3.patMETsPFlow > 100')
 
+    nEvents = 0
+    nEventsToConsider = 0
+    nTagEvents = 0
+    nProbeEvents = 0
+    nPassingProbeEvents = 0
     for event in tree:
+        nEvents += 1
         reco_leptons = []
         hlt_leptons = []
         getVar = event.__getattr__
@@ -412,6 +530,9 @@ if __name__ == '__main__':
         reco_leptons_py = getVar(reco_leptons_collection + '.Py')
         reco_leptons_pz = getVar(reco_leptons_collection + '.Pz')
         reco_leptons_E  = getVar(reco_leptons_collection + '.Energy')
+        reco_leptons_dxy = getVar(reco_leptons_collection + '.PrimaryVertexDXY')
+        reco_leptons_passConversionVeto = getVar(reco_leptons_collection + '.passConversionVeto')
+
         if channel == 'electron':
             reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso03RhoEA')
             reco_leptons_id = getVar(reco_leptons_collection + '.mvaTrigV0')
@@ -419,65 +540,77 @@ if __name__ == '__main__':
             reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso04DeltaBeta')
             reco_leptons_id = getVar(reco_leptons_collection + '.isPFMuon')
         assert reco_leptons_px.size() == reco_leptons_py.size() == reco_leptons_pz.size() == reco_leptons_E.size()
+
+        # Get reco leptons and fill histograms for all reco leptons (not much selection)
         for index in range(reco_leptons_E.size()):
             reco_lepton = Particle(reco_leptons_px[index], reco_leptons_py[index], reco_leptons_pz[index], reco_leptons_E[index])
-            reco_lepton.set_isolation_and_id(reco_leptons_isolation[index], reco_leptons_id[index])
+            reco_lepton.set_isolation_and_id(reco_leptons_isolation[index], reco_leptons_id[index], reco_leptons_dxy[index], reco_leptons_passConversionVeto[index])
             reco_leptons.append(reco_lepton)
-            if index != 0:
-                histograms['reco_probe_lepton_pt'].Fill(reco_lepton.Pt())
-                histograms['reco_probe_lepton_eta'].Fill(reco_lepton.Eta())
+            histograms['reco_lepton_pt'].Fill(reco_lepton.Pt())
+            histograms['reco_lepton_eta'].Fill(reco_lepton.Eta())
 
+        # Reco lepton multiplicity
         histograms['reco_lepton_multiplicity'].Fill(len(reco_leptons))
 
-        if len(reco_leptons) != 0:
-            histograms['reco_signal_lepton_pt'].Fill(reco_leptons[0].Pt())
-            histograms['reco_signal_lepton_eta'].Fill(reco_leptons[0].Eta())
 
-        if len(reco_leptons) >= 2:
-            histograms['reco_Z_peak'].Fill((reco_leptons[0].lorentz+reco_leptons[1].lorentz).M())
-
+        # Get HLT leptons and fill histograms for all hlt leptons
         hlt_leptons_px = getVar(trigger_object_lepton + '.Px')
         hlt_leptons_py = getVar(trigger_object_lepton + '.Py')
         hlt_leptons_pz = getVar(trigger_object_lepton + '.Pz')
         hlt_leptons_E =  getVar(trigger_object_lepton + '.Energy')
-        assert hlt_leptons_px.size() == hlt_leptons_px.size() == hlt_leptons_pz.size() == hlt_leptons_E.size()
+        assert hlt_leptons_px.size() == hlt_leptons_py.size() == hlt_leptons_pz.size() == hlt_leptons_E.size()
         for index in range(hlt_leptons_px.size()):
             hlt_lepton = Particle(hlt_leptons_px[index], hlt_leptons_py[index], hlt_leptons_pz[index], hlt_leptons_E[index])
             hlt_leptons.append(hlt_lepton)
-            if index != 0:
-                histograms['hlt_probe_lepton_pt'].Fill(hlt_lepton.Pt())
-                histograms['hlt_probe_lepton_eta'].Fill(hlt_lepton.Eta())
+            histograms['hlt_lepton_pt'].Fill(hlt_lepton.Pt())
+            histograms['hlt_lepton_eta'].Fill(hlt_lepton.Eta())
 
+        # HLT lepton multiplicity
         histograms['hlt_lepton_multiplicity'].Fill(len(hlt_leptons))
-        
-        if len(hlt_leptons) != 0:
-            histograms['hlt_signal_lepton_pt'].Fill(hlt_leptons[0].Pt())
-            histograms['hlt_signal_lepton_eta'].Fill(hlt_leptons[0].Eta())
 
-        if len(hlt_leptons) >= 2:
-            histograms['hlt_Z_peak'].Fill((hlt_leptons[0].lorentz+hlt_leptons[1].lorentz).M())
-
-        event_has_Z_peak = False
-        tag_matches_to_hlt_object = False
-        last_probe_index = 0
         if len(reco_leptons) == 1:
             print 'Just one lepton in event!'
-        if len(reco_leptons) > 1:
-            for index in range(len(reco_leptons)):
-                #assuming index=0 is the signal lepton (tag)
-                matched_index_signal_lepton, matched_delta_R_signal_lepton = match_four_momenta(reco_leptons[0], hlt_leptons)
-                tag_matches_to_hlt_object = matched_index_signal_lepton < 0.3
-                if index != 0 and tag_matches_to_hlt_object and is_Z_event(reco_leptons[0], reco_leptons[index]):
-                    event_has_Z_peak = True
-                    matched_index, matched_delta_R = match_four_momenta(reco_leptons[index], hlt_leptons)
-                    last_probe_index = index
-                    if matched_delta_R < 0.3 and passes_ID_and_iso(reco_leptons[index], channel):
-                        histograms['probe_passed_pt'].Fill(reco_leptons[index].Pt())
-                        histograms['probe_passed_eta'].Fill(reco_leptons[index].Eta())
-                        break
-            if event_has_Z_peak and tag_matches_to_hlt_object and passes_ID_and_iso(reco_leptons[last_probe_index], channel):
-                histograms['probe_total_pt'].Fill(reco_leptons[last_probe_index].Pt())
-                histograms['probe_total_eta'].Fill(reco_leptons[last_probe_index].Eta())
+            continue
+
+        if len(reco_leptons) >= 2:
+            nEventsToConsider += 1
+            # Find leading tag lepton
+            tagLepton, tagHLTLepton = getTagLepton( reco_leptons, hlt_leptons )
+            if tagLepton != 0:
+                nTagEvents += 1
+
+                # Fill histograms for tag lepton
+                histograms['tag_reco_lepton_pt'].Fill(tagLepton.Pt())
+                histograms['tag_reco_lepton_eta'].Fill(tagLepton.Eta())
+                histograms['tag_hlt_lepton_pt'].Fill(tagHLTLepton.Pt())
+                histograms['tag_hlt_lepton_eta'].Fill(tagHLTLepton.Eta())
+
+                for index in range(len(reco_leptons)):
+                    probeLepton = reco_leptons[index]
+                    if tagLepton == probeLepton : continue
+
+                    if is_Z_event(tagLepton, probeLepton):
+                        # All probes
+                        if passes_probe_ID_and_iso(probeLepton, channel):
+                            nProbeEvents += 1
+                            histograms['probe_total_pt'].Fill(probeLepton.Pt())
+                            histograms['probe_total_eta'].Fill(probeLepton.Eta())
+                            histograms['probe_total_pt_eta'].Fill(probeLepton.Pt(), abs( probeLepton.Eta() ) ) 
+                            histograms['tagProbe_total_Z_peak'].Fill((probeLepton.lorentz+tagLepton.lorentz).M())
+
+                        # Matching probes
+                        matched_index, matched_delta_R = match_four_momenta(probeLepton, hlt_leptons)
+                        if matched_delta_R < 0.3 and passes_probe_ID_and_iso(probeLepton, channel):
+                            nPassingProbeEvents += 1
+                            probeHLTLepton = hlt_leptons[matched_index]
+
+                            histograms['probe_passed_pt'].Fill(probeLepton.Pt())
+                            histograms['probe_passed_eta'].Fill(probeLepton.Eta())
+                            histograms['probe_passed_pt_eta'].Fill(probeLepton.Pt(), abs( probeLepton.Eta() ) )
+                            histograms['probe_passed_hlt_pt'].Fill(probeHLTLepton.Pt())
+                            histograms['probe_passed_hlt_eta'].Fill(probeHLTLepton.Eta())
+                            histograms['tagProbe_passed_Z_peak'].Fill((probeLepton.lorentz+tagLepton.lorentz).M())
+                            histograms['tagProbe_passed_hlt_Z_peak'].Fill((probeHLTLepton.lorentz+tagHLTLepton.lorentz).M())
 
         trigger_list = getVar('Trigger.HLTNames')
         trigger_results = getVar('Trigger.HLTResults')
@@ -487,6 +620,11 @@ if __name__ == '__main__':
         #     if not 'not found' in trigger_list[index]:
         #         print trigger_list[index], trigger_results[index]
 
+    print 'nEvents :',nEvents
+    print 'nEvents with at least two reco leptons :',nEventsToConsider
+    print 'nEvents with a tag lepton :',nTagEvents
+    print 'Event with a probe lepton :',nProbeEvents
+    print 'Event with a passing probe lepton :',nPassingProbeEvents
     make_plots(channel = channel)
 
 
