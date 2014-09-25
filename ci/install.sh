@@ -4,7 +4,7 @@
 # The behavior of the script is controlled by environment variabled defined
 # in the .travis.yml in the top level folder of the project.
 
-set -e
+#set -e
 
 # Check if we are running Python 2 or 3. This is needed for the apt-get package names
 if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then 
