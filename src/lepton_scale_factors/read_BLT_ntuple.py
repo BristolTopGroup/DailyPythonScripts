@@ -63,7 +63,7 @@ absEtaBins = [0,0.8,1.478,2.5]
 
 # Finer bins for debugging
 # absEtaBins = [0,0.4,0.8,1.2,1.478,2.0,2.5]
-# etaBins = [-2.5,-2.0,-1.478,-1.2,-0.8,-0.4,0,0.4,0.8,1.2,1.478,2.0,2.5]
+# etaBins = [-2.5,-2.0,-1.566,-1.4442,-1.2,-0.8,-0.4,0,0.4,0.8,1.2,1.4442,1.566,2.0,2.5]
 # ptBins = [ 20,30,40,50,75,100]
 
 histograms = {
@@ -504,7 +504,7 @@ def passes_tag_ID(lepton, hlt_leptons, channel = 'electron'):
 # Baseline probe ID
 def passes_trigger_probe_ID_and_iso(lepton, channel = 'electron'):
     if channel == 'electron':
-        if abs(lepton.Eta()) < 2.5 and lepton.isolation < 0.1 and lepton.ID > 0.5 and lepton.dxy < 0.02 and lepton.passConversionVeto:
+        if abs(lepton.Eta()) < 2.5 and not ( abs(lepton.Eta()) > 1.4442 and abs(lepton.Eta()) < 1.566 ) and lepton.isolation < 0.1 and lepton.ID > 0.5 and lepton.dxy < 0.02 and lepton.passConversionVeto:
             return True
         else:
             return False
@@ -516,7 +516,7 @@ def passes_trigger_probe_ID_and_iso(lepton, channel = 'electron'):
 
 def passes_ID_probe_ID_and_iso(lepton, channel = 'electron'):
     if channel == 'electron':
-        if lepton.Pt() > 20 and abs(lepton.Eta()) < 2.5 and lepton.dxy < 0.02 and lepton.passConversionVeto:
+        if lepton.Pt() > 20 and abs(lepton.Eta()) < 2.5 and not ( abs(lepton.Eta()) > 1.4442 and abs(lepton.Eta()) < 1.566 ) and lepton.dxy < 0.02 and lepton.passConversionVeto:
             return True
         else:
             return False
@@ -555,7 +555,7 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if ( options.doTrigger and options.doID ) and not ( options.doTrigger and options.doID):
+    if ( options.doTrigger and options.doID ) or not ( options.doTrigger or options.doID ):
         print 'Choose one of trigger or iso/id scale factors'
         sys.exit(1)
 
@@ -611,6 +611,12 @@ if __name__ == '__main__':
         else:
             reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso04DeltaBeta')
             reco_leptons_id = getVar(reco_leptons_collection + '.isPFMuon')
+            reco_leptons_chi2 = getVar(reco_leptons_collection+'GlobalTrack.NormalizedChi2')
+            reco_leptons_nValidMuonHits = getVar(reco_leptons_collection+'GlobalTrack.NumberOfValidMuonHits')
+            reco_leptons_trackerLayers = getVar(reco_leptons_collection+'InnerTrack.TrackerLayersWithMeasurement')
+            reco_leptons_validPixelLayers = getVar(reco_leptons_collection+'InnerTrack.NumberOfValidPixelHits')
+            reco_leptons_matchedStations = getVar(reco_leptons_collection+'.NumberOfMatchedStations')
+
         assert reco_leptons_px.size() == reco_leptons_py.size() == reco_leptons_pz.size() == reco_leptons_E.size()
 
         # Get reco leptons and fill histograms for all reco leptons (not much selection)
