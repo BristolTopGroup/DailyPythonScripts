@@ -19,6 +19,14 @@ wait
 x_98_all_vars
 wait
 
-nohup python src/cross_section_measurement/99_QCD_cross_checks.py >& logs/99_QCD_cross_checks.log &
+x_99_QCD_cross_checks
 wait
 
+x_make_fit_variable_plots
+wait
+
+x_make_control_plots
+wait
+
+x_make_binning_plots
+wait

@@ -110,7 +110,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
 
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-p", "--path", dest="path", default='data/',
+    parser.add_option("-p", "--path", dest="path", default='data/absolute_eta_M3_angle_bl/',
                   help="set path to JSON files")
     parser.add_option("-o", "--output_folder", dest="output_folder", default='plots/',
                   help="set path to save plots")
@@ -130,9 +130,9 @@ if __name__ == '__main__':
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
     lumi = measurement_config.luminosity
-    come = measurement_config.centre_of_mass_energy_energy
+    come = measurement_config.centre_of_mass_energy
     electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % (lumi, come)
-    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1 fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % (lumi, come)
+    muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % (lumi, come)
 
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/'
     output_folder = options.output_folder

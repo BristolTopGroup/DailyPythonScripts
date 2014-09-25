@@ -17,7 +17,7 @@ class Test( unittest.TestCase ):
 
     def setUp( self ):
         # load histograms
-        self.input_file = File('data/unfolding_merged_asymmetric.root')
+        self.input_file = File('test/data/unfolding_merged_asymmetric.root')
         self.k_value = 3
         self.unfold_method = 'RooUnfoldSvd'
         self.met_type = 'patType1CorrectedPFMet'
