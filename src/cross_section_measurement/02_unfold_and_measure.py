@@ -88,6 +88,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
     global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_mcatnlo, file_for_ptreweight, files_for_pdfs
     global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
     global file_for_matchingdown, file_for_matchingup, file_for_scaledown, file_for_scaleup
+    global file_for_massdown, file_for_massup
     global ttbar_generator_systematics, ttbar_theory_systematics, pdf_uncertainties
     global use_ptreweight
 
@@ -96,13 +97,15 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                              ttbar_theory_systematic_prefix + 'matchingup':file_for_matchingup,
                              ttbar_theory_systematic_prefix + 'scaledown':file_for_scaledown,
                              ttbar_theory_systematic_prefix + 'scaleup':file_for_scaleup,
+                             ttbar_theory_systematic_prefix + 'massdown':file_for_massdown,
+                             ttbar_theory_systematic_prefix + 'massup':file_for_massup,
                              ttbar_theory_systematic_prefix + 'powheg_pythia':file_for_powheg_pythia,
                              ttbar_theory_systematic_prefix + 'powheg_herwig':file_for_powheg_herwig,
                              ttbar_theory_systematic_prefix + 'ptreweight':file_for_ptreweight,
                              }
     
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
-    if category in ttbar_generator_systematics or category in ttbar_theory_systematics:
+    if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in ttbar_mass_systematics:
         h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_systematics[category],
                                                                               variable = variable,
                                                                               channel = channel,
@@ -392,6 +395,9 @@ if __name__ == '__main__':
     file_for_matchingdown = File( measurement_config.unfolding_matching_down, 'read' )
     file_for_matchingup = File( measurement_config.unfolding_matching_up, 'read' )
 
+    file_for_massdown = File( measurement_config.unfolding_mass_down, 'read' )
+    file_for_massup = File( measurement_config.unfolding_mass_up, 'read' )
+
     variable = options.variable
     k_value_electron = measurement_config.k_values_electron[variable]
     k_value_muon = measurement_config.k_values_muon[variable]
@@ -414,7 +420,11 @@ if __name__ == '__main__':
     ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
     ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
     categories.extend( ttbar_theory_systematics )
-    
+
+    # Add mass systematics
+    ttbar_mass_systematics = measurement_config.topMass_systematics
+    categories.extend( measurement_config.topMass_systematics )
+
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
@@ -426,6 +436,7 @@ if __name__ == '__main__':
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
+
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
         if run_just_central and not category == 'central':
@@ -451,7 +462,7 @@ if __name__ == '__main__':
         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
-        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties:
+        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics:
             electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
