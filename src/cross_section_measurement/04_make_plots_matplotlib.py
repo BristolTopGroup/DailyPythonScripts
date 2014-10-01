@@ -457,6 +457,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
         if systematic in exclude or systematic == 'central':
             continue
 
+        print systematic
         hist_data_systematic = read_xsection_measurement_results( systematic, channel )[0]['unfolded']
         hist_data_systematic.markersize = 2
         hist_data_systematic.marker = 'o'
@@ -543,6 +544,10 @@ if __name__ == '__main__':
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     categories.extend( ttbar_generator_systematics )
     categories.extend( vjets_generator_systematics )
+
+    # Add mass systematics
+    ttbar_mass_systematics = measurement_config.topMass_systematics
+    categories.extend( measurement_config.topMass_systematics )
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
