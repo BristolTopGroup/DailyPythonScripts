@@ -457,7 +457,6 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
         if systematic in exclude or systematic == 'central':
             continue
 
-        print systematic
         hist_data_systematic = read_xsection_measurement_results( systematic, channel )[0]['unfolded']
         hist_data_systematic.markersize = 2
         hist_data_systematic.marker = 'o'
