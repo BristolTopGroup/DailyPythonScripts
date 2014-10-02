@@ -543,6 +543,10 @@ if __name__ == '__main__':
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     categories.extend( ttbar_generator_systematics )
     categories.extend( vjets_generator_systematics )
+
+    # Add mass systematics
+    ttbar_mass_systematics = measurement_config.topMass_systematics
+    categories.extend( measurement_config.topMass_systematics )
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]

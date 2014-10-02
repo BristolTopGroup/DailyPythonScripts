@@ -32,6 +32,9 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_MET_errors.txt')
     normalised_xsection_MET_errors = read_data_from_JSON( file_name )
 
+    file_name = file_template.replace('.txt', '_topMass_errors.txt')
+    normalised_xsection_topMass_errors = read_data_from_JSON( file_name )
+
     file_name = file_template.replace('.txt', '_PDF_errors.txt')
     normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
 
@@ -47,15 +50,17 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_measured_errors = normalised_xsection_ttbar_generator_errors['TTJet_measured']
     normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
 
     normalised_xsection_unfolded_errors = normalised_xsection_ttbar_generator_errors['TTJet_unfolded']
     normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
-    
+
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
 def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
@@ -332,6 +337,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             central_value = central_values['measured'][bin_i][0]
         else:
             central_value = central_values['unfolded'][bin_i][0]
+
         for source in all_measurements:
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
@@ -429,7 +435,11 @@ if __name__ == '__main__':
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     categories.extend(ttbar_generator_systematics)
     categories.extend(vjets_generator_systematics)
-    
+
+    # Add mass systematics
+    ttbar_mass_systematics = measurement_config.topMass_systematics
+    categories.extend( measurement_config.topMass_systematics )
+
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']

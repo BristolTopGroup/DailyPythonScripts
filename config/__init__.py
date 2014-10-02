@@ -39,6 +39,7 @@ class XSectionConfig():
                   'unfolding_madgraph', 'unfolding_madgraph_raw',
                   'unfolding_matching_down', 'unfolding_matching_down_raw',
                   'unfolding_matching_up', 'unfolding_matching_up_raw',
+                  'unfolding_mass_down', 'unfolding_mass_up',
                   'unfolding_mcatnlo', 'unfolding_mcatnlo_raw',
                   'unfolding_powheg_pythia', 'unfolding_powheg_pythia_raw',
                   'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
@@ -164,6 +165,9 @@ class XSectionConfig():
             self.__fill_defaults_8TeV__()
 
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
+        self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
+        self.topMasses = [169.5, 172.5, 173.5]
+        self.topMassUncertainty = 0.9
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
 
@@ -204,6 +208,8 @@ class XSectionConfig():
         self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
 
         self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
 
