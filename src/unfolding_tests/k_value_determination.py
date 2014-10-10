@@ -70,12 +70,29 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_fakes = None, h_data = No
     return best_k, hist_d_i.clone()
 
 def draw_d_i( d_i ):
-    global variable, output_folder, output_formats, test
+    global variable, output_folder, output_formats, test, k_values, k_values_crosscheck
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
-    fit_all_bins = TF1("fit_all_bins", 'expo', 0, d_i.nbins(0))
-    fit_exclude_first_bin = TF1("fit_exclude_first_bin", 'expo', 1, d_i.nbins(0))
+    fit_all_bins = TF1("fit_all_bins", 'expo', 0, d_i.nbins(0)-1)
+
+    fit_exclude_first_bin = TF1("fit_exclude_first_bin", 'expo', 1, d_i.nbins(0)-1)
+    fit_all_bins_plus_flat = TF1("fit_all_bins_plus_flat", 'TMath::Exp([0]*x+[1])+[2]', 0, d_i.nbins(0)-1)
+    fit_all_bins_plus_flat.SetParameter(0,-2.)
+    fit_all_bins_plus_flat.SetParameter(1,3.)
+    fit_all_bins_plus_flat.SetParameter(2,1.)
+    # fit_all_bins_plus_flat.SetParLimits(2,0.1,2.)    
+
+    fit_all_bins_plus_linear = TF1("fit_all_bins_plus_linear", 'TMath::Exp([0]*x+[1])+[2]+[3]*x', 0, d_i.nbins(0)-1)
+    fit_all_bins_plus_linear.SetParameter(0,-2.)
+    fit_all_bins_plus_linear.SetParameter(1,3.)
+    fit_all_bins_plus_linear.SetParameter(2,0.)
+    fit_all_bins_plus_linear.SetParameter(3,0.)
+    # fit_all_bins_plus_linear.SetParLimits(2,0.1,10.)   
+    fit_all_bins_plus_linear.SetParLimits(3,-10.,0.)
+    
     d_i.Fit(fit_all_bins, 'WWSQR')
     d_i.Fit(fit_exclude_first_bin, 'WWSQR')
+    d_i.Fit(fit_all_bins_plus_flat, 'WWSQR')
+    d_i.Fit(fit_all_bins_plus_linear, 'WWSQR')
 
     p0_all_bins = ufloat(fit_all_bins.GetParameter(0), fit_all_bins.GetParError(0))
     p1_all_bins = ufloat(fit_all_bins.GetParameter(1), fit_all_bins.GetParError(1))
@@ -85,17 +102,58 @@ def draw_d_i( d_i ):
     p1_exclude_first_bin = ufloat(fit_exclude_first_bin.GetParameter(1), fit_exclude_first_bin.GetParError(1))
     k_value_exclude_first_bin = -p0_exclude_first_bin / p1_exclude_first_bin # other way of estimation: crossing the d = 1 line by exponential
 
-    print 'Fitted f_all = $e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
-    print 'Best k-value for %s using exponential fitted to all bins crossing d=1 method: %.2f +- %.2f' % (variable, k_value_all_bins.nominal_value, k_value_all_bins.std_dev)
+    p0_fit_all_bins_plus_flat = ufloat(fit_all_bins_plus_flat.GetParameter(0), fit_all_bins_plus_flat.GetParError(0))
+    p1_fit_all_bins_plus_flat = ufloat(fit_all_bins_plus_flat.GetParameter(1), fit_all_bins_plus_flat.GetParError(1))
+    p2_fit_all_bins_plus_flat = ufloat(fit_all_bins_plus_flat.GetParameter(2), fit_all_bins_plus_flat.GetParError(2))
+    k_value_fit_all_bins_plus_flat = -1.0 / p0_fit_all_bins_plus_flat.nominal_value * ( p1_fit_all_bins_plus_flat.nominal_value - numpy.log( p2_fit_all_bins_plus_flat.nominal_value*0.1 ) )
+    print k_value_fit_all_bins_plus_flat
+    k_value_fit_all_bins_plus_flat = numpy.round(1+k_value_fit_all_bins_plus_flat,0)
+    
+    p0_fit_all_bins_plus_linear = ufloat(fit_all_bins_plus_linear.GetParameter(0), fit_all_bins_plus_linear.GetParError(0))
+    p1_fit_all_bins_plus_linear = ufloat(fit_all_bins_plus_linear.GetParameter(1), fit_all_bins_plus_linear.GetParError(1))
+    p2_fit_all_bins_plus_linear = ufloat(fit_all_bins_plus_linear.GetParameter(2), fit_all_bins_plus_linear.GetParError(2))
+    p3_fit_all_bins_plus_linear = ufloat(fit_all_bins_plus_linear.GetParameter(3), fit_all_bins_plus_linear.GetParError(3))
+    # k_value_fit_all_bins_plus_linear = -1.0 / p0_fit_all_bins_plus_linear.nominal_value * ( p1_fit_all_bins_plus_linear.nominal_value - numpy.log( p2_fit_all_bins_plus_linear.std_dev ) )
 
-    print 'p1_all_bins: %f +- %f ' % ( p1_all_bins.nominal_value, p1_all_bins.std_dev )
-    print 'p0_all_bins: %f +- %f ' % ( p0_all_bins.nominal_value, p0_all_bins.std_dev )
+    x = 1
+    y = numpy.exp( p0_fit_all_bins_plus_linear.nominal_value * x + p1_fit_all_bins_plus_linear.nominal_value )
+    while y > 0.1 * ( p2_fit_all_bins_plus_linear.nominal_value + p3_fit_all_bins_plus_linear.nominal_value*x):
+        x += 0.01
+        y = numpy.exp( p0_fit_all_bins_plus_linear.nominal_value * x + p1_fit_all_bins_plus_linear.nominal_value )
+        if x > 10: break
+    k_value_fit_all_bins_plus_linear = numpy.round(1+x,0)
 
-    print 'Fitted fit_exclude_first_bin = $e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
-    print 'Best k-value for %s using exponential fitted to all but 1st bin crossing d=1 method: %.2f +- %.2f' % (variable, k_value_exclude_first_bin.nominal_value, k_value_exclude_first_bin.std_dev)
+    # print 'Fitted f_all = $e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
+    # print 'Best k-value for %s using exponential fitted to all bins crossing d=1 method: %.2f +- %.2f' % (variable, k_value_all_bins.nominal_value, k_value_all_bins.std_dev)
 
-    print 'p1_exclude_first_bin: %f +- %f ' % ( p1_exclude_first_bin.nominal_value, p1_exclude_first_bin.std_dev )
-    print 'p0_exclude_first_bin: %f +- %f ' % ( p0_exclude_first_bin.nominal_value, p0_exclude_first_bin.std_dev )
+    # print 'p1_all_bins: %f +- %f ' % ( p1_all_bins.nominal_value, p1_all_bins.std_dev )
+    # print 'p0_all_bins: %f +- %f ' % ( p0_all_bins.nominal_value, p0_all_bins.std_dev )
+
+    # print 'Fitted fit_exclude_first_bin = $e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
+    # print 'Best k-value for %s using exponential fitted to all but 1st bin crossing d=1 method: %.2f +- %.2f' % (variable, k_value_exclude_first_bin.nominal_value, k_value_exclude_first_bin.std_dev)
+
+    # print 'p1_exclude_first_bin: %f +- %f ' % ( p1_exclude_first_bin.nominal_value, p1_exclude_first_bin.std_dev )
+    # print 'p0_exclude_first_bin: %f +- %f ' % ( p0_exclude_first_bin.nominal_value, p0_exclude_first_bin.std_dev )
+
+    # print 'Fitted fit_all_bins_plus_flat = $e^{%.2f \\times i + %.2f }$' % ( p1_fit_all_bins_plus_flat.nominal_value, p0_fit_all_bins_plus_flat.nominal_value )
+
+    print 'Fit exponential plus flat'
+    print 'p0_fit_all_bins_plus_flat: %f +- %f ' % ( p0_fit_all_bins_plus_flat.nominal_value, p0_fit_all_bins_plus_flat.std_dev )
+    print 'p1_fit_all_bins_plus_flat: %f +- %f ' % ( p1_fit_all_bins_plus_flat.nominal_value, p1_fit_all_bins_plus_flat.std_dev )
+    print 'p2_fit_all_bins_plus_flat: %f +- %f ' % ( p2_fit_all_bins_plus_flat.nominal_value, p2_fit_all_bins_plus_flat.std_dev )
+
+    print 'Fit exponential plus linear'
+    print 'p0_fit_all_bins_plus_linear: %f +- %f ' % ( p0_fit_all_bins_plus_linear.nominal_value, p0_fit_all_bins_plus_linear.std_dev )
+    print 'p1_fit_all_bins_plus_linear: %f +- %f ' % ( p1_fit_all_bins_plus_linear.nominal_value, p1_fit_all_bins_plus_linear.std_dev )
+    print 'p2_fit_all_bins_plus_linear: %f +- %f ' % ( p2_fit_all_bins_plus_linear.nominal_value, p2_fit_all_bins_plus_linear.std_dev )
+    print 'p3_fit_all_bins_plus_linear: %f +- %f ' % ( p3_fit_all_bins_plus_linear.nominal_value, p3_fit_all_bins_plus_linear.std_dev )
+
+    # print '============== Suggested k value : ',1+k_value_fit_all_bins_plus_flat, numpy.round(1+k_value_fit_all_bins_plus_flat,0)
+
+    k_values[variable] = k_value_fit_all_bins_plus_flat
+    k_values_crosscheck[variable] = k_value_fit_all_bins_plus_linear
+    print '============== ',variable,channel,k_value_fit_all_bins_plus_flat
+    print '=== Other ',x,y,k_value_fit_all_bins_plus_linear
 
     rplt.hist( d_i )
     plt.title( r'SVD unfolding $d_i$ for $' + variables_latex[variable] + '$', CMS.title )
@@ -103,19 +161,27 @@ def draw_d_i( d_i ):
     plt.ylabel( r'$d_i$', CMS.y_axis_title )
     axes = plt.axes()
 
-    x_all_bins = numpy.linspace(fit_all_bins.GetXmin(), fit_all_bins.GetXmax(), fit_all_bins.GetNpx()*4)#*4 for a very smooth curve
-    function_data_all_bins = numpy.frompyfunc(fit_all_bins.Eval, 1, 1)
-    plot(x_all_bins, function_data_all_bins(x_all_bins), axes=axes, color='red', linewidth=2)
+    # x_all_bins = numpy.linspace(fit_all_bins.GetXmin(), fit_all_bins.GetXmax(), fit_all_bins.GetNpx()*4)#*4 for a very smooth curve
+    # function_data_all_bins = numpy.frompyfunc(fit_all_bins.Eval, 1, 1)
+    # plot(x_all_bins, function_data_all_bins(x_all_bins), axes=axes, color='red', linewidth=2)
     
-    x_exclude_first_bin = numpy.linspace(fit_exclude_first_bin.GetXmin(), fit_exclude_first_bin.GetXmax(), fit_exclude_first_bin.GetNpx()*4)#*4 for a very smooth curve
-    function_data_exclude_first_bin = numpy.frompyfunc(fit_exclude_first_bin.Eval, 1, 1)
-    plot(x_exclude_first_bin, function_data_exclude_first_bin(x_exclude_first_bin), axes=axes, color='red', linewidth=2)
+    # x_exclude_first_bin = numpy.linspace(fit_exclude_first_bin.GetXmin(), fit_exclude_first_bin.GetXmax(), fit_exclude_first_bin.GetNpx()*4)#*4 for a very smooth curve
+    # function_data_exclude_first_bin = numpy.frompyfunc(fit_exclude_first_bin.Eval, 1, 1)
+    # plot(x_exclude_first_bin, function_data_exclude_first_bin(x_exclude_first_bin), axes=axes, color='red', linewidth=2)
 
-    #fill between fits
+    # #fill between fits
     x = numpy.arange(0, d_i.nbins(0), 0.1)
-    exp1 = numpy.exp( p1_all_bins.nominal_value*x + p0_all_bins.nominal_value )
-    exp2 = numpy.exp( p1_exclude_first_bin.nominal_value*x + p0_exclude_first_bin.nominal_value )
-    plt.fill_between(x, exp1, exp2, color='k', alpha=.5)
+    # exp1 = numpy.exp( p1_all_bins.nominal_value*x + p0_all_bins.nominal_value )
+    # exp2 = numpy.exp( p1_exclude_first_bin.nominal_value*x + p0_exclude_first_bin.nominal_value )
+    # plt.fill_between(x, exp1, exp2, color='k', alpha=.5)
+
+    x_all_bins_plus_flat = numpy.linspace(fit_all_bins_plus_flat.GetXmin(), fit_all_bins_plus_flat.GetXmax(), fit_all_bins_plus_flat.GetNpx()*4)#*4 for a very smooth curve
+    function_data_all_bins_plus_flat = numpy.frompyfunc(fit_all_bins_plus_flat.Eval, 1, 1)
+    plot(x_all_bins_plus_flat, function_data_all_bins_plus_flat(x_all_bins_plus_flat), axes=axes, color='green', linewidth=2)
+
+    x_all_bins_plus_linear = numpy.linspace(fit_all_bins_plus_linear.GetXmin(), fit_all_bins_plus_linear.GetXmax(), fit_all_bins_plus_linear.GetNpx()*4)#*4 for a very smooth curve
+    function_data_all_bins_plus_linear = numpy.frompyfunc(fit_all_bins_plus_linear.Eval, 1, 1)
+    plot(x_all_bins_plus_linear, function_data_all_bins_plus_linear(x_all_bins_plus_linear), axes=axes, color='blue', linewidth=2, linestyle = 'dashed')
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
@@ -130,14 +196,27 @@ def draw_d_i( d_i ):
     axes.set_ylim( ymin = min(value_range)/10 )
 
     text = 'Fit functions:' 
-    text += '\n$f_{all~bins} = e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
-    text += '\n$f_{excl.1st} = e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
-    axes.text(0.5, 0.8, text,
+    # text += '\n$f_{all~bins} = e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
+    # text += '\n$f_{excl.1st} = e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
+    text += '\n$f_{exp~plus~flat} = e^{%.2f \\times i + %.2f } + %.2f$' % ( p0_fit_all_bins_plus_flat.nominal_value, p1_fit_all_bins_plus_flat.nominal_value, p2_fit_all_bins_plus_flat.nominal_value )
+    text += '\n$f_{exp~plus~linear} = e^{%.2f \\times i + %.2f } + %.2f  %.2f \\times i$ ' % ( p0_fit_all_bins_plus_linear.nominal_value, p1_fit_all_bins_plus_linear.nominal_value, p2_fit_all_bins_plus_linear.nominal_value, p3_fit_all_bins_plus_linear.nominal_value )
+    axes.text(0.3, 0.8, text,
         verticalalignment='bottom', horizontalalignment='left',
         transform=axes.transAxes,
-        color='black', fontsize=40, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
-    
-    plt.axhline( y = 1, linewidth = 2, color = 'red', linestyle = 'dashed' )
+        color='black', fontsize=30, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
+
+    text = 'k value : %.1g (%.1g)' % ( k_value_fit_all_bins_plus_flat, k_value_fit_all_bins_plus_linear )
+    axes.text(0.3, 0.7, text,
+        verticalalignment='bottom', horizontalalignment='left',
+        transform=axes.transAxes,
+        color='black', fontsize=30, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
+
+    # Plot error band on flat component only
+    line = plt.axhline( y = p2_fit_all_bins_plus_flat.nominal_value, linewidth = 2, color = 'red', linestyle = 'dashed' )
+    # +/- 10%
+    plt.fill_between(x, 0.9*p2_fit_all_bins_plus_flat.nominal_value, 1.1*p2_fit_all_bins_plus_flat.nominal_value, color='k', alpha=.25)
+    # # +/- 1 sigma
+    # plt.fill_between(x, p2_fit_all_bins_plus_flat.nominal_value-p2_fit_all_bins_plus_flat.std_dev, p2_fit_all_bins_plus_flat.nominal_value+p2_fit_all_bins_plus_flat.std_dev, color='k', alpha=.25)
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -195,10 +274,17 @@ if __name__ == '__main__':
 
     taus_from_global_correlaton = {}
     taus_from_L_shape = {}
+    k_values_channel = {}
+    k_values_crosscheck_channel = {}
     for channel in ['electron', 'muon']:
         taus_from_global_correlaton[channel] = {}
         taus_from_L_shape[channel] = {}
+
+        k_values = {}
+        k_values_crosscheck = {}
+
         for variable in variables:
+            # if variable is 'MET' or variable is 'MT': continue
             print 'Doing variable', variable, 'in', channel, 'channel'
         
             h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
@@ -210,7 +296,7 @@ if __name__ == '__main__':
                                 ttbar_xsection = ttbar_xsection,
                                 luminosity = luminosity,
                                 load_fakes = load_fakes)
-            print 'h_fakes = ', h_fakes
+            # print 'h_fakes = ', h_fakes
             
             h_data = None
             if test == 'data':
@@ -238,5 +324,14 @@ if __name__ == '__main__':
             
             
             k, hist_di = get_k_from_d_i( h_truth, h_measured, h_response, h_fakes, h_data )
-            print 'Best k-value for %s using d_i >= 1 method: %d' % ( variable, k )
+            # print 'Best k-value for %s using d_i >= 1 method: %d' % ( variable, k )
             draw_d_i( hist_di )
+        k_values_channel[channel] = k_values
+        k_values_crosscheck_channel[channel] = k_values_crosscheck
+
+    for channel in k_values_channel:
+        print 'k-values for ',channel,centre_of_mass,'TeV'
+        for variable in k_values_channel[channel]:
+            print variable,k_values_channel[channel][variable]
+            if k_values_channel[channel][variable] != k_values_crosscheck_channel[channel][variable]:
+                print '!!! Crosscheck suggests :',k_values_crosscheck_channel[channel][variable]

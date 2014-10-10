@@ -5,7 +5,7 @@ from config.variable_binning import bin_edges
 from optparse import OptionParser
 from rootpy.plotting import Graph
 from rootpy import asrootpy
-from ROOT import TGraphAsymmErrors
+from ROOT import TGraphAsymmErrors, TGraph
 from matplotlib.ticker import FormatStrFormatter
 import rootpy.plotting.root2matplotlib as rplt
 
@@ -44,22 +44,26 @@ if __name__ == "__main__":
 	output_folder_base = options.output_folder + '/' + str(centre_of_mass) + 'TeV/' + variable + '/' + channel + '/'
 	make_folder_if_not_exists(output_folder_base)
 	output_formats = ['pdf']
+	input_folder = options.input_folder+'/' + str(centre_of_mass) + 'TeV/' + variable + '/35_input_toy_mc/'
+	print input_folder
 
 	bins = array('d', bin_edges[variable])
 	nbins = len(bins) - 1
 
-	kValues = sorted( getkValueRange( options.input_folder ) )
+	kValues = sorted( getkValueRange( input_folder ) )
 
 	sigmaForEachK = []
 
 	for k in kValues:
+		if k is 1:
+			continue
 
 		output_folder = output_folder_base + '/kv' + str(k) + '/'
 		make_folder_if_not_exists(output_folder)
 
 		print 'Producing unfolding pull plots for %s variable, k-value of %d, channel: %s. \nOutput folder: %s' % (variable, k, channel, output_folder)
 
-		files = glob(options.input_folder + '/k_value_' + str(k) + '/*_' + channel + '*_*.txt')
+		files = glob(input_folder + '/k_value_' + str(k) + '/*_' + channel + '*_*.txt')
 		if not files:
 		    sys.exit('No *.txt files found in input directory.')
 		
@@ -79,6 +83,7 @@ if __name__ == "__main__":
 		sigmaForEachK.append( [k,allBinsSigma, maxSigma, minSigma])
 		print 'All bins sigma :',allBinsFitResults.sigma
 		print 'Max/min sigma :',maxSigma,minSigma
+		print 'Spread :',maxSigma-minSigma
 		del pulls #deleting to make space in memory
 	print '\n'
 
@@ -88,13 +93,20 @@ if __name__ == "__main__":
 	sigmas = list( zip(*sigmaForEachK)[1] )
 	sigmaups = list( zip(*sigmaForEachK)[2] )
 	sigmadowns = list( zip(*sigmaForEachK)[3] )
+	spread = []
 
 	for i in range(0,len(sigmas)):
+		spread.append( ( sigmaups[i] - sigmadowns[i] ) / sigmas[i] )
 		sigmaups[i] = sigmaups[i] - sigmas[i]
 		sigmadowns[i] = sigmas[i] - sigmadowns[i]
 		kValuesup.append(0.5)
 		kValuesdown.append(0.5)
+	print spread
+	kValueChoice = spread.index(min(spread))
+	print kValueChoice
+
 	graph = asrootpy(TGraphAsymmErrors(len(sigmas), array('d',kValues), array('d',sigmas),array('d',kValuesdown), array('d',kValuesup), array('d',sigmadowns), array('d',sigmaups)))
+	graphSpread = asrootpy(TGraphAsymmErrors(len(sigmas), array('d',kValues), array('d',spread),array('d',kValuesdown), array('d',kValuesup), array('d',sigmadowns), array('d',sigmaups)))
 
 	# plot with matplotlib
 	plt.figure(figsize=(20, 16), dpi=200, facecolor='white')
@@ -111,6 +123,7 @@ if __name__ == "__main__":
 	ax0.xaxis.labelpad = 11
 	
 	rplt.errorbar(graph, xerr=True, emptybins=True, axes=ax0, marker = 'o', ms = 15, mew=3, lw = 2)
+	rplt.errorbar(graphSpread, xerr=False, yerr=False, axes=ax0, linestyle='-', marker = 's', ms = 10, mew=1, lw = 2)
 
 	for output_format in output_formats:
 		print output_folder_base
