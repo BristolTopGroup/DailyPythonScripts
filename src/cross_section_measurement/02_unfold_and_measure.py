@@ -399,9 +399,9 @@ if __name__ == '__main__':
     file_for_massup = File( measurement_config.unfolding_mass_up, 'read' )
 
     variable = options.variable
-    k_value_electron = measurement_config.k_values_electron[variable]
-    k_value_muon = measurement_config.k_values_muon[variable]
-    k_value_combined = measurement_config.k_values_combined[variable]
+    k_value_electron_central = measurement_config.k_values_electron[variable]
+    k_value_muon_central = measurement_config.k_values_muon[variable]
+    k_value_combined_central = measurement_config.k_values_combined[variable]
     load_fakes = options.load_fakes
     unfoldCfg.Hreco = options.Hreco
     method = options.unfolding_method
@@ -455,14 +455,31 @@ if __name__ == '__main__':
             met_type += 'JetEnDown'
             if met_type == 'PFMETJetEnDown':
                 met_type = 'patPFMetJetEnDown'
-        
+
+        # Choose k Value
+        k_value_electron = k_value_electron_central
+        k_value_muon = k_value_muon_central
+        k_value_combined = k_value_combined_central
+        if category == 'kValue_up':
+          k_value_electron = k_value_electron_central+1
+          k_value_muon = k_value_muon_central+1
+          k_value_combined = k_value_combined_central+1
+        elif category == 'kValue_down':         
+          k_value_electron = k_value_electron_central-1
+          if k_value_electron < 2 : k_value_electron = 2
+          k_value_muon = k_value_muon_central-1
+          if k_value_muon < 2 : k_value_muon = 2
+          k_value_combined = k_value_combined_central-1
+          if k_value_combined < 2 : k_value_combined = 2
+
         # read fit results from JSON
         electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
         muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
-        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics:
+        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics or category.find('kValue')>=0:
+
             electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
@@ -490,9 +507,9 @@ if __name__ == '__main__':
         else:
             unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
-        filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s.txt' % ( k_value_electron, category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s.txt' % ( k_value_electron_central, category, met_type )
         write_data_to_JSON( unfolded_normalisation_electron, filename )
-        filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s.txt' % ( k_value_muon, category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s.txt' % ( k_value_muon_central, category, met_type )
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
@@ -509,23 +526,23 @@ if __name__ == '__main__':
             else:
                 unfolded_normalisation_combined_higgs = combine_complex_results( unfolded_normalisation_electron_higgs, unfolded_normalisation_muon_higgs )
     
-            filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_electron, category, met_type )
+            filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_electron_central, category, met_type )
             write_data_to_JSON( unfolded_normalisation_electron_higgs, filename )
-            filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_muon, category, met_type )
+            filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_muon_central, category, met_type )
             write_data_to_JSON( unfolded_normalisation_muon_higgs, filename )
             filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s_Higgs.txt' % ( category, met_type )
             write_data_to_JSON( unfolded_normalisation_combined_higgs, filename )
 
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron )
-        calculate_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon )
+        calculate_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central )
+        calculate_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central )
         calculate_xsections( unfolded_normalisation_combined, category, 'combined' )
         
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined' )
         
         normalise_to_one = True
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron, normalise_to_one )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon, normalise_to_one )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central, normalise_to_one )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central, normalise_to_one )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', normalise_to_one )
