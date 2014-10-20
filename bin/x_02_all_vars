@@ -20,5 +20,5 @@ for var in MET HT ST MT WPT; do
     	wait;
 	fi
 done
-
+wait;
 echo "All done! Time to run x_03_all_vars."
