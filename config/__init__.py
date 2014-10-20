@@ -155,8 +155,6 @@ class XSectionConfig():
                  'JER_up':'_plusJER',
                  'LightJet_down':'_minusLightJet',
                  'LightJet_up':'_plusLightJet',
-                 'kValue_up' : '_pluskValue',
-                 'kValue_down' : '_minuskValue',
                   }
 
         # now fill in the centre of mass dependent values
@@ -172,6 +170,8 @@ class XSectionConfig():
         self.topMassUncertainty = 0.9
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
+
+        self.kValueSystematic = [ 'kValue_up', 'kValue_down']
 
         categories_and_prefixes = self.categories_and_prefixes
 
