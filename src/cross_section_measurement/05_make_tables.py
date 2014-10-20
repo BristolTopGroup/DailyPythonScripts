@@ -346,11 +346,6 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         for source in all_measurements:
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
-            if source.find('kVa')>=0:
-                print source
-                print abs_error
-                print relative_error
-                print '%.2f\n' % (relative_error*100)
             text = '%.2f' % (relative_error*100)
             if rows.has_key(source):
                 rows[source].append(text)
