@@ -425,6 +425,10 @@ if __name__ == '__main__':
     ttbar_mass_systematics = measurement_config.topMass_systematics
     categories.extend( measurement_config.topMass_systematics )
 
+    # Add k Value systematic
+    kValue_systematics = measurement_config.kValueSystematic
+    categories.extend( measurement_config.kValueSystematic )
+
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
@@ -478,8 +482,7 @@ if __name__ == '__main__':
         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
-        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics or category.find('kValue')>=0:
-
+        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics or category in kValue_systematics:
             electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
