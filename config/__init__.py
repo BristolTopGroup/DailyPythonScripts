@@ -155,7 +155,7 @@ class XSectionConfig():
                  'JER_up':'_plusJER',
                  'LightJet_down':'_minusLightJet',
                  'LightJet_up':'_plusLightJet',
-                  }
+                 }
 
         # now fill in the centre of mass dependent values
         # this position is crucial
