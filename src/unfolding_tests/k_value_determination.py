@@ -106,8 +106,12 @@ def draw_d_i( d_i ):
     p1_fit_all_bins_plus_flat = ufloat(fit_all_bins_plus_flat.GetParameter(1), fit_all_bins_plus_flat.GetParError(1))
     p2_fit_all_bins_plus_flat = ufloat(fit_all_bins_plus_flat.GetParameter(2), fit_all_bins_plus_flat.GetParError(2))
     k_value_fit_all_bins_plus_flat = -1.0 / p0_fit_all_bins_plus_flat.nominal_value * ( p1_fit_all_bins_plus_flat.nominal_value - numpy.log( p2_fit_all_bins_plus_flat.nominal_value*0.1 ) )
-    print k_value_fit_all_bins_plus_flat
-    k_value_fit_all_bins_plus_flat = numpy.round(1+k_value_fit_all_bins_plus_flat,0)
+    # Either round value to nearest integer, or pick the bin the value is in
+    # Chosen latter for now
+    # k_value_fit_all_bins_plus_flat = numpy.round(1+k_value_fit_all_bins_plus_flat,0)
+    k_value_fit_all_bins_plus_flat = 1+ int( k_value_fit_all_bins_plus_flat )
+    if k_value_fit_all_bins_plus_flat < 2:
+        k_value_fit_all_bins_plus_flat = 2
     
     p0_fit_all_bins_plus_linear = ufloat(fit_all_bins_plus_linear.GetParameter(0), fit_all_bins_plus_linear.GetParError(0))
     p1_fit_all_bins_plus_linear = ufloat(fit_all_bins_plus_linear.GetParameter(1), fit_all_bins_plus_linear.GetParError(1))
@@ -121,7 +125,12 @@ def draw_d_i( d_i ):
         x += 0.01
         y = numpy.exp( p0_fit_all_bins_plus_linear.nominal_value * x + p1_fit_all_bins_plus_linear.nominal_value )
         if x > 10: break
-    k_value_fit_all_bins_plus_linear = numpy.round(1+x,0)
+    # Either round value to nearest integer, or pick the bin the value is in
+    # Chosen latter for now
+    # k_value_fit_all_bins_plus_linear = numpy.round(1+x,0)
+    k_value_fit_all_bins_plus_linear = 1+int(x)
+    if k_value_fit_all_bins_plus_linear < 2:
+        k_value_fit_all_bins_plus_linear = 2
 
     # print 'Fitted f_all = $e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
     # print 'Best k-value for %s using exponential fitted to all bins crossing d=1 method: %.2f +- %.2f' % (variable, k_value_all_bins.nominal_value, k_value_all_bins.std_dev)
@@ -179,9 +188,9 @@ def draw_d_i( d_i ):
     function_data_all_bins_plus_flat = numpy.frompyfunc(fit_all_bins_plus_flat.Eval, 1, 1)
     plot(x_all_bins_plus_flat, function_data_all_bins_plus_flat(x_all_bins_plus_flat), axes=axes, color='green', linewidth=2)
 
-    x_all_bins_plus_linear = numpy.linspace(fit_all_bins_plus_linear.GetXmin(), fit_all_bins_plus_linear.GetXmax(), fit_all_bins_plus_linear.GetNpx()*4)#*4 for a very smooth curve
-    function_data_all_bins_plus_linear = numpy.frompyfunc(fit_all_bins_plus_linear.Eval, 1, 1)
-    plot(x_all_bins_plus_linear, function_data_all_bins_plus_linear(x_all_bins_plus_linear), axes=axes, color='blue', linewidth=2, linestyle = 'dashed')
+    # x_all_bins_plus_linear = numpy.linspace(fit_all_bins_plus_linear.GetXmin(), fit_all_bins_plus_linear.GetXmax(), fit_all_bins_plus_linear.GetNpx()*4)#*4 for a very smooth curve
+    # function_data_all_bins_plus_linear = numpy.frompyfunc(fit_all_bins_plus_linear.Eval, 1, 1)
+    # plot(x_all_bins_plus_linear, function_data_all_bins_plus_linear(x_all_bins_plus_linear), axes=axes, color='blue', linewidth=2, linestyle = 'dashed')
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
@@ -195,17 +204,19 @@ def draw_d_i( d_i ):
             del value_range[i]
     axes.set_ylim( ymin = min(value_range)/10 )
 
-    text = 'Fit functions:' 
+    text = 'Fit function:' 
     # text += '\n$f_{all~bins} = e^{%.2f \\times i + %.2f }$' % ( p1_all_bins.nominal_value, p0_all_bins.nominal_value )
     # text += '\n$f_{excl.1st} = e^{%.2f \\times i + %.2f }$' % ( p1_exclude_first_bin.nominal_value, p0_exclude_first_bin.nominal_value )
     text += '\n$f_{exp~plus~flat} = e^{%.2f \\times i + %.2f } + %.2f$' % ( p0_fit_all_bins_plus_flat.nominal_value, p1_fit_all_bins_plus_flat.nominal_value, p2_fit_all_bins_plus_flat.nominal_value )
-    text += '\n$f_{exp~plus~linear} = e^{%.2f \\times i + %.2f } + %.2f  %.2f \\times i$ ' % ( p0_fit_all_bins_plus_linear.nominal_value, p1_fit_all_bins_plus_linear.nominal_value, p2_fit_all_bins_plus_linear.nominal_value, p3_fit_all_bins_plus_linear.nominal_value )
+    # text += '\n$f_{exp~plus~linear} = e^{%.2f \\times i + %.2f } + %.2f  %.2f \\times i$ ' % ( p0_fit_all_bins_plus_linear.nominal_value, p1_fit_all_bins_plus_linear.nominal_value, p2_fit_all_bins_plus_linear.nominal_value, p3_fit_all_bins_plus_linear.nominal_value )
     axes.text(0.3, 0.8, text,
         verticalalignment='bottom', horizontalalignment='left',
         transform=axes.transAxes,
         color='black', fontsize=30, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
 
-    text = 'k value : %.1g (%.1g)' % ( k_value_fit_all_bins_plus_flat, k_value_fit_all_bins_plus_linear )
+    # text = 'k value : %.1g (%.1g)' % ( k_value_fit_all_bins_plus_flat, k_value_fit_all_bins_plus_linear )
+    text = 'k value : %.1g ' % ( k_value_fit_all_bins_plus_flat )
+
     axes.text(0.3, 0.7, text,
         verticalalignment='bottom', horizontalalignment='left',
         transform=axes.transAxes,
