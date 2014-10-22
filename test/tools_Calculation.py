@@ -61,7 +61,7 @@ class Test( unittest.TestCase ):
         purities = calculate_purities( self.best_case )
         self.assertEqual( len( purities ), self.n_bins_x, 'Invalid number of purity terms' )
         for p in purities:
-            self.assertEqual( p, 1, 'p-value is incorrect' )
+            self.assertEqual( p, 1 )
             
     def test_best_case_stability( self ):
         stabilities = calculate_stabilities( self.best_case )
@@ -75,8 +75,8 @@ class Test( unittest.TestCase ):
         
         # purities should always be above 0 and below 1
         for p in purities:
-            self.assertGreater( p, 0, 'p-value is incorrect' )
-            self.assertLess( p, 1, 'p-value is incorrect' )
+            self.assertGreater( p, 0 )
+            self.assertLess( p, 1 )
             
     def test_random_elipse_stability( self ):
         stabilities = calculate_stabilities( self.random_elipse )
@@ -84,24 +84,24 @@ class Test( unittest.TestCase ):
 
         # stabilities should always be above 0 and below 1
         for s in stabilities:
-            self.assertGreater( s, 0, 's-value is incorrect' )
-            self.assertLess( s, 0.5, 's-value is incorrect' )
+            self.assertGreater( s, 0 )
+            self.assertLess( s, 0.5 )
             
     def test_pre_calculated_purity( self ):
         purities = calculate_purities( self.pre_calculated )
         self.assertEqual( len( purities ), self.n_bins_x, 'Invalid number of purity terms' )
         for p in purities[1:-1]:
-            self.assertEqual( p, 1, 'p-value is incorrect' )
-        self.assertEqual( purities[0], 0.2, 'p-value is incorrect' )
-        self.assertEqual( purities[-1], 0.25, 'p-value is incorrect' )
+            self.assertEqual( p, 1 )
+        self.assertEqual( purities[0], 0.2 )
+        self.assertEqual( purities[-1], 0.25 )
             
     def test_pre_calculated_stability( self ):
         stabilities = calculate_stabilities( self.pre_calculated )
         self.assertEqual( len( stabilities ), self.n_bins_x, 'Invalid number of stability terms' )
         for s in stabilities[1:-1]:
-            self.assertEqual( s, 1, 's-value is incorrect' )
-        self.assertEqual( stabilities[0], 0.25, 's-value is incorrect' )
-        self.assertEqual( stabilities[-1], 0.2, 's-value is incorrect' )
+            self.assertEqual( s, 1 )
+        self.assertEqual( stabilities[0], 0.25 )
+        self.assertEqual( stabilities[-1], 0.2 )
         
     def test_decombine_result_default(self):
         N_signal = 100
