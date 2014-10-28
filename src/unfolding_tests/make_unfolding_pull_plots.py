@@ -35,6 +35,15 @@ from matplotlib import rc
 rc('font',**CMS.font)
 rc('text', usetex=True)
 
+class fitResults:
+    def __init__( self, A, Aerror, mean, meanError, sigma, sigmaError ):
+        self.A = A
+        self.Aerror = Aerror
+        self.mean = mean
+        self.meanError = meanError
+        self.sigma = sigma
+        self.sigmaError = sigmaError
+
 def get_data(files, subset = ''): 
     # this takes a LOT of memory, please use subset!!
     all_data = []
@@ -57,7 +66,7 @@ def drange(start, stop, step):
         yield r
         r += step
         
-def plot_pull(pulls, bin_index = None, n_bins = 1):
+def plot_pull(pulls, centre_of_mass, channel, variable, k_value, output_folder, output_formats, bin_index = None, n_bins = 1):
     min_x, max_x = min(pulls), max(pulls)
     abs_max = int(max(abs(min_x), max_x))
     n_x_bins = 2 * abs_max * 10  # bin width = 0.1
@@ -80,11 +89,14 @@ def plot_pull(pulls, bin_index = None, n_bins = 1):
 #    h_list = hist_to_value_error_tuplelist(h_pull)
 #    print h_list
 #    print len(hist_data), min(hist_data), max(hist_data)
+    fr = None
     if bin_index is None:
-        plot_h_pull(h_pull, stats = stats, name = 'pull_from_files_all_bins_stats_%d' % stats)
+        fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value, output_folder, output_formats, stats = stats, name = 'pull_from_files_all_bins_stats_%d' % stats)
     else:
-        plot_h_pull(h_pull, stats = stats, name = 'pull_from_files_bin_%d_stats_%d' % (bin_index, stats))
+        fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value, output_folder, output_formats, stats = stats, name = 'pull_from_files_bin_%d_stats_%d' % (bin_index, stats))
     
+    return fr
+
 def plot_pull_from_list(hist_data, hist_min_x,hist_max_x, hist_n_bins):
     stats = 19596500
     bin_width = (2.0 * hist_max_x) / hist_n_bins
@@ -95,8 +107,7 @@ def plot_pull_from_list(hist_data, hist_min_x,hist_max_x, hist_n_bins):
     h_pull = value_error_tuplelist_to_hist(hist_data, bin_edges)
     plot_h_pull(h_pull, stats = stats, name = 'pull_from_list' )    
 
-def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
-    global output_folder, output_formats, channel, centre_of_mass, k_value, variable
+def plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value, output_folder, output_formats, stats = 19596500, name = 'pull_test'):
     h_pull.Fit('gaus', 'WWSQ')
     fit_pull = h_pull.GetFunction('gaus')
     mean = (fit_pull.GetParameter(1), fit_pull.GetParError(1))
@@ -105,7 +116,9 @@ def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
     print 'A:', fit_pull.GetParameter(0), '+-', fit_pull.GetParError(0)
     print 'mean:', fit_pull.GetParameter(1), '+-', fit_pull.GetParError(1)
     print 'sigma:', fit_pull.GetParameter(2), '+-', fit_pull.GetParError(2)
-    
+
+    fr = fitResults( fit_pull.GetParameter(0), fit_pull.GetParError(0), fit_pull.GetParameter(1), fit_pull.GetParError(1), fit_pull.GetParameter(2), fit_pull.GetParError(2))
+
     plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
     axes = plt.axes()
     h_pull.SetMarkerSize(CMS.data_marker_size)
@@ -139,7 +152,9 @@ def plot_h_pull(h_pull, stats = 19596500, name = 'pull_test'):
     plt.tight_layout()  
     
     for save in output_formats:
-        plt.savefig(output_folder + name + '.' + save)        
+        plt.savefig(output_folder + name + '.' + save)
+
+    return fr
 
 def plot_difference(difference):
     global output_folder, output_formats
