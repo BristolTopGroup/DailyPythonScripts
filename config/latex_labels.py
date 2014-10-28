@@ -63,6 +63,8 @@ measurements_latex = {'unfolded': 'unfolded',
                         'Electron_up' : 'Electron efficiency $+1\sigma$',
                         'Muon_down' : 'Muon efficiency $-1\sigma$',
                         'Muon_up' : 'Muon efficiency $+1\sigma$',
+                        'kValue_up' : 'k Value $+1$',
+                        'kValue_down' : 'k Value $-1$',
                           }
 
 met_systematics_latex = {

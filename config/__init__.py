@@ -171,6 +171,8 @@ class XSectionConfig():
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
 
+        self.kValueSystematic = [ 'kValue_up', 'kValue_down']
+
         categories_and_prefixes = self.categories_and_prefixes
 
         self.general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}

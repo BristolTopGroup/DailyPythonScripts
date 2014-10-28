@@ -22,4 +22,5 @@ for var in MET HT ST MT WPT; do
 	fi
 done
 
+wait;
 echo "All done!"

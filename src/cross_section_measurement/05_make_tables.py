@@ -35,6 +35,9 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_topMass_errors.txt')
     normalised_xsection_topMass_errors = read_data_from_JSON( file_name )
 
+    file_name = file_template.replace('.txt', '_kValue_errors.txt')
+    normalised_xsection_kValue_errors = read_data_from_JSON( file_name )
+
     file_name = file_template.replace('.txt', '_PDF_errors.txt')
     normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
 
@@ -51,6 +54,7 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
 
@@ -58,6 +62,7 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
 
@@ -439,6 +444,10 @@ if __name__ == '__main__':
     # Add mass systematics
     ttbar_mass_systematics = measurement_config.topMass_systematics
     categories.extend( measurement_config.topMass_systematics )
+
+    # Add k value systematic
+    kValue_systematics = measurement_config.kValueSystematic
+    categories.extend( measurement_config.kValueSystematic )
 
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]

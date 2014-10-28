@@ -547,6 +547,10 @@ if __name__ == '__main__':
     # Add mass systematics
     ttbar_mass_systematics = measurement_config.topMass_systematics
     categories.extend( measurement_config.topMass_systematics )
+
+    # Add k value systematic
+    kValue_systematics = measurement_config.kValueSystematic
+    categories.extend( measurement_config.kValueSystematic )
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
