@@ -953,178 +953,172 @@ def is_true_lepton(mc_particle, pdg_id, channel):
         return False
 
 
-def do_tag_and_probe_analysis( tree, mode = 'data', channel = 'electron' ):
-    global centre_of_mass
-    print 'Performing the tag and probe analysis on %s, %d TeV' % (mode, centre_of_mass)
+def read_lepton_collections( event, mode = 'data', channel = 'electron' ):
     if mode == 'data':
         histograms = histograms_data
     else:
         histograms = histograms_mc
-    nEvents = 0
-    nEventsToConsider = 0
-    nTagEvents = 0
-    nProbeEvents = 0
-    nPassingProbeEvents = 0
-    for event in tree:
-        nEvents += 1
-        reco_leptons = []
-        hlt_leptons = []
-        mc_leptons = []
-        getVar = event.__getattr__
-        run_number = getVar('Event.Run')
-        # print 'Run number: ', run_number
-        histograms['btag_multiplicity'].Fill( get_N_bjets( event, channel ) )
-        reco_leptons_px = getVar(reco_leptons_collection + '.Px')
-        reco_leptons_py = getVar(reco_leptons_collection + '.Py')
-        reco_leptons_pz = getVar(reco_leptons_collection + '.Pz')
-        reco_leptons_E  = getVar(reco_leptons_collection + '.Energy')
-        reco_leptons_dxy = getVar(reco_leptons_collection + '.PrimaryVertexDXY')
+    reco_leptons = []
+    hlt_leptons = []
+    mc_leptons = []
+    getVar = event.__getattr__
+    run_number = getVar('Event.Run')
+    # print 'Run number: ', run_number
+    histograms['btag_multiplicity'].Fill( get_N_bjets( event, channel ) )
+    reco_leptons_px = getVar(reco_leptons_collection + '.Px')
+    reco_leptons_py = getVar(reco_leptons_collection + '.Py')
+    reco_leptons_pz = getVar(reco_leptons_collection + '.Pz')
+    reco_leptons_E  = getVar(reco_leptons_collection + '.Energy')
+    reco_leptons_dxy = getVar(reco_leptons_collection + '.PrimaryVertexDXY')
 
+    if channel == 'electron':
+        reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso03RhoEA')
+        reco_leptons_id = getVar(reco_leptons_collection + '.mvaTrigV0')
+        reco_leptons_passConversionVeto = getVar(reco_leptons_collection + '.passConversionVeto')
+        reco_leptons_innerHits = getVar(reco_leptons_collection + '.MissingHits')
+    else:
+        reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso04DeltaBeta')
+        reco_leptons_id = getVar(reco_leptons_collection + '.isPFMuon')
+        reco_leptons_chi2 = getVar(reco_leptons_collection+'.GlobalTrack.NormalizedChi2')
+        reco_leptons_dz = getVar(reco_leptons_collection + '.Vertex.DistZ')
+        reco_leptons_nValidMuonHits = getVar(reco_leptons_collection+'.GlobalTrack.NumberOfValidMuonHits')
+        reco_leptons_trackerLayers = getVar(reco_leptons_collection+'.InnerTrack.TrackerLayersWithMeasurement')
+        reco_leptons_validPixelLayers = getVar(reco_leptons_collection+'.InnerTrack.NumberOfValidPixelHits')
+        reco_leptons_matchedStations = getVar(reco_leptons_collection+'.NumberOfMatchedStations')
+        reco_leptons_isGlobalMuon = getVar(reco_leptons_collection+'.isGlobalMuon')
+
+    assert reco_leptons_px.size() == reco_leptons_py.size() == reco_leptons_pz.size() == reco_leptons_E.size()
+
+    # Get reco leptons and fill histograms for all reco leptons (not much selection)
+    for index in range(reco_leptons_E.size()):
+        reco_lepton = Particle(reco_leptons_px[index], reco_leptons_py[index], reco_leptons_pz[index], reco_leptons_E[index])
+        reco_lepton.set_isolation(reco_leptons_isolation[index])
+        reco_lepton.set_id(reco_leptons_id[index])
+        reco_lepton.set_dxy(reco_leptons_dxy[index])
         if channel == 'electron':
-            reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso03RhoEA')
-            reco_leptons_id = getVar(reco_leptons_collection + '.mvaTrigV0')
-            reco_leptons_passConversionVeto = getVar(reco_leptons_collection + '.passConversionVeto')
-            reco_leptons_innerHits = getVar(reco_leptons_collection + '.MissingHits')
+            reco_lepton.set_inner_hits(reco_leptons_innerHits[index])
+            reco_lepton.set_pass_conversion_veto(reco_leptons_passConversionVeto[index])
         else:
-            reco_leptons_isolation = getVar(reco_leptons_collection + '.PFRelIso04DeltaBeta')
-            reco_leptons_id = getVar(reco_leptons_collection + '.isPFMuon')
-            reco_leptons_chi2 = getVar(reco_leptons_collection+'.GlobalTrack.NormalizedChi2')
-            reco_leptons_dz = getVar(reco_leptons_collection + '.Vertex.DistZ')
-            reco_leptons_nValidMuonHits = getVar(reco_leptons_collection+'.GlobalTrack.NumberOfValidMuonHits')
-            reco_leptons_trackerLayers = getVar(reco_leptons_collection+'.InnerTrack.TrackerLayersWithMeasurement')
-            reco_leptons_validPixelLayers = getVar(reco_leptons_collection+'.InnerTrack.NumberOfValidPixelHits')
-            reco_leptons_matchedStations = getVar(reco_leptons_collection+'.NumberOfMatchedStations')
-            reco_leptons_isGlobalMuon = getVar(reco_leptons_collection+'.isGlobalMuon')
+            reco_lepton.set_chi2(reco_leptons_chi2[index])
+            reco_lepton.set_dz(reco_leptons_dz[index])
+            reco_lepton.set_n_valid_muon_hits(reco_leptons_nValidMuonHits[index])
+            reco_lepton.set_tracker_layers(reco_leptons_trackerLayers[index])
+            reco_lepton.set_valid_pixel_layers(reco_leptons_validPixelLayers[index])
+            reco_lepton.set_matched_stations(reco_leptons_matchedStations[index])
+            reco_lepton.set_is_global_muon(reco_leptons_isGlobalMuon[index])
+        reco_leptons.append(reco_lepton)
+        histograms['reco_lepton_pt'].Fill(reco_lepton.Pt())
+        histograms['reco_lepton_eta'].Fill(reco_lepton.Eta())
 
-        assert reco_leptons_px.size() == reco_leptons_py.size() == reco_leptons_pz.size() == reco_leptons_E.size()
+    # Reco lepton multiplicity
+    histograms['reco_lepton_multiplicity'].Fill(len(reco_leptons))
 
-        # Get reco leptons and fill histograms for all reco leptons (not much selection)
-        for index in range(reco_leptons_E.size()):
-            reco_lepton = Particle(reco_leptons_px[index], reco_leptons_py[index], reco_leptons_pz[index], reco_leptons_E[index])
-            reco_lepton.set_isolation(reco_leptons_isolation[index])
-            reco_lepton.set_id(reco_leptons_id[index])
-            reco_lepton.set_dxy(reco_leptons_dxy[index])
-            if channel == 'electron':
-                reco_lepton.set_inner_hits(reco_leptons_innerHits[index])
-                reco_lepton.set_pass_conversion_veto(reco_leptons_passConversionVeto[index])
+    # Get MC truth lepton collection
+    if mode == 'mc':
+        mc_particles_px = getVar(mc_genparticles_collection + '.Px')
+        mc_particles_py = getVar(mc_genparticles_collection + '.Py')
+        mc_particles_pz = getVar(mc_genparticles_collection + '.Pz')
+        mc_particles_E =  getVar(mc_genparticles_collection + '.Energy')
+        mc_particles_id = getVar(mc_genparticles_collection + '.PdgId')
+        assert mc_particles_px.size() == mc_particles_py.size() == mc_particles_pz.size() == mc_particles_E.size()
+        for index in range(mc_particles_px.size()):
+            mc_particle = Particle(mc_particles_px[index], mc_particles_py[index], mc_particles_pz[index], mc_particles_E[index])
+            if is_true_lepton(mc_particle, mc_particles_id[index], channel):
+                mc_leptons.append(mc_particle)
+                histograms['mc_lepton_pt'].Fill(mc_particle.Pt())
+                histograms['mc_lepton_eta'].Fill(mc_particle.Eta())
             else:
-                reco_lepton.set_chi2(reco_leptons_chi2[index])
-                reco_lepton.set_dz(reco_leptons_dz[index])
-                reco_lepton.set_n_valid_muon_hits(reco_leptons_nValidMuonHits[index])
-                reco_lepton.set_tracker_layers(reco_leptons_trackerLayers[index])
-                reco_lepton.set_valid_pixel_layers(reco_leptons_validPixelLayers[index])
-                reco_lepton.set_matched_stations(reco_leptons_matchedStations[index])
-                reco_lepton.set_is_global_muon(reco_leptons_isGlobalMuon[index])
-            reco_leptons.append(reco_lepton)
-            histograms['reco_lepton_pt'].Fill(reco_lepton.Pt())
-            histograms['reco_lepton_eta'].Fill(reco_lepton.Eta())
+                continue
+        histograms['mc_lepton_multiplicity'].Fill(len(mc_leptons))
 
-        # Reco lepton multiplicity
-        histograms['reco_lepton_multiplicity'].Fill(len(reco_leptons))
+    # Get HLT leptons and fill histograms for all hlt leptons
+    if options.doTrigger or options.doID:
+        hlt_leptons_px = getVar(trigger_object_lepton + '.Px')
+        hlt_leptons_py = getVar(trigger_object_lepton + '.Py')
+        hlt_leptons_pz = getVar(trigger_object_lepton + '.Pz')
+        hlt_leptons_E =  getVar(trigger_object_lepton + '.Energy')
+        assert hlt_leptons_px.size() == hlt_leptons_py.size() == hlt_leptons_pz.size() == hlt_leptons_E.size()
+        for index in range(hlt_leptons_px.size()):
+            hlt_lepton = Particle(hlt_leptons_px[index], hlt_leptons_py[index], hlt_leptons_pz[index], hlt_leptons_E[index])
+            hlt_leptons.append(hlt_lepton)
+            histograms['hlt_lepton_pt'].Fill(hlt_lepton.Pt())
+            histograms['hlt_lepton_eta'].Fill(hlt_lepton.Eta())
 
-        # Get MC truth lepton collection
-        if mode == 'mc':
-            mc_particles_px = getVar(mc_genparticles_collection + '.Px')
-            mc_particles_py = getVar(mc_genparticles_collection + '.Py')
-            mc_particles_pz = getVar(mc_genparticles_collection + '.Pz')
-            mc_particles_E =  getVar(mc_genparticles_collection + '.Energy')
-            mc_particles_id = getVar(mc_genparticles_collection + '.PdgId')
-            assert mc_particles_px.size() == mc_particles_py.size() == mc_particles_pz.size() == mc_particles_E.size()
-            for index in range(mc_particles_px.size()):
-                mc_particle = Particle(mc_particles_px[index], mc_particles_py[index], mc_particles_pz[index], mc_particles_E[index])
-                if is_true_lepton(mc_particle, mc_particles_id[index], channel):
-                    mc_leptons.append(mc_particle)
-                    histograms['mc_lepton_pt'].Fill(mc_particle.Pt())
-                    histograms['mc_lepton_eta'].Fill(mc_particle.Eta())
-                else:
-                    continue
-            histograms['mc_lepton_multiplicity'].Fill(len(mc_leptons))
+        # HLT lepton multiplicity
+        histograms['hlt_lepton_multiplicity'].Fill(len(hlt_leptons))
 
-        # Get HLT leptons and fill histograms for all hlt leptons
-        if options.doTrigger or options.doID:
-            hlt_leptons_px = getVar(trigger_object_lepton + '.Px')
-            hlt_leptons_py = getVar(trigger_object_lepton + '.Py')
-            hlt_leptons_pz = getVar(trigger_object_lepton + '.Pz')
-            hlt_leptons_E =  getVar(trigger_object_lepton + '.Energy')
-            assert hlt_leptons_px.size() == hlt_leptons_py.size() == hlt_leptons_pz.size() == hlt_leptons_E.size()
-            for index in range(hlt_leptons_px.size()):
-                hlt_lepton = Particle(hlt_leptons_px[index], hlt_leptons_py[index], hlt_leptons_pz[index], hlt_leptons_E[index])
-                hlt_leptons.append(hlt_lepton)
-                histograms['hlt_lepton_pt'].Fill(hlt_lepton.Pt())
-                histograms['hlt_lepton_eta'].Fill(hlt_lepton.Eta())
+    return reco_leptons, hlt_leptons, mc_leptons
 
-            # HLT lepton multiplicity
-            histograms['hlt_lepton_multiplicity'].Fill(len(hlt_leptons))
+def do_tag_and_probe_analysis( reco_leptons, hlt_leptons, mc_leptons, mode = 'data', channel = 'electron' ):
+    global centre_of_mass, nEventsToConsider, nTagEvents, nProbeEvents, nPassingProbeEvents
+    if mode == 'data':
+        histograms = histograms_data
+    else:
+        histograms = histograms_mc
 
-        if len(reco_leptons) == 1:
-            print 'Just one lepton in event!'
-            continue
+    if len(reco_leptons) == 1:
+        print 'Just one lepton in event!'
+        return
 
-        if len(reco_leptons) >= 2:
-            nEventsToConsider += 1
-            for tag_lepton in reco_leptons:
-                if passes_tag_selection( tag_lepton, hlt_leptons, match_to_trigger_object = options.doTrigger, channel = channel ):
-                    nTagEvents += 1
+    if len(reco_leptons) >= 2:
+        nEventsToConsider += 1
+        for tag_lepton in reco_leptons:
+            if passes_tag_selection( tag_lepton, hlt_leptons, match_to_trigger_object = options.doTrigger, channel = channel ):
+                nTagEvents += 1
 
-                    # Fill histograms for tag lepton
-                    histograms['tag_reco_lepton_pt'].Fill(tag_lepton.Pt())
-                    histograms['tag_reco_lepton_eta'].Fill(tag_lepton.Eta())
+                # Fill histograms for tag lepton
+                histograms['tag_reco_lepton_pt'].Fill(tag_lepton.Pt())
+                histograms['tag_reco_lepton_eta'].Fill(tag_lepton.Eta())
 
-                    tag_hlt_lepton = Particle(0, 0, 0, 0)
+                tag_hlt_lepton = Particle(0, 0, 0, 0)
+                if options.doTrigger:
+                    matched_index_signal_lepton, matched_delta_R_signal_lepton = match_four_momenta(tag_lepton, hlt_leptons)
+                    tag_hlt_lepton = hlt_leptons[matched_index_signal_lepton]
+                    histograms['tag_hlt_lepton_pt'].Fill(tag_hlt_lepton.Pt())
+                    histograms['tag_hlt_lepton_eta'].Fill(tag_hlt_lepton.Eta())
+
+                # pick the probe yielding best inv.mass with the tag
+                probe_lepton = reco_leptons[ best_Z_peak_probe_index(tag_lepton, reco_leptons) ]
+
+                if is_Z_event(tag_lepton, probe_lepton):
+                    # All probes
+                    passes_baseline_probe_selection = False
                     if options.doTrigger:
-                        matched_index_signal_lepton, matched_delta_R_signal_lepton = match_four_momenta(tag_lepton, hlt_leptons)
-                        tag_hlt_lepton = hlt_leptons[matched_index_signal_lepton]
-                        histograms['tag_hlt_lepton_pt'].Fill(tag_hlt_lepton.Pt())
-                        histograms['tag_hlt_lepton_eta'].Fill(tag_hlt_lepton.Eta())
+                        passes_baseline_probe_selection = passes_baseline_probe_selection_trigger(probe_lepton, channel)
+                    elif options.doID:
+                        passes_baseline_probe_selection = passes_baseline_probe_selection_ID_and_iso(probe_lepton, channel)
 
-                    # pick the probe yielding best inv.mass with the tag
-                    probe_lepton = reco_leptons[ best_Z_peak_probe_index(tag_lepton, reco_leptons) ]
+                    if passes_baseline_probe_selection:
+                        nProbeEvents += 1
+                        # histograms['probe_total_pt'].Fill(probe_lepton.Pt())
+                        # histograms['probe_total_eta'].Fill(probe_lepton.Eta())
+                        fill_Z_peak_histograms(tag_lepton, probe_lepton, mode = mode + '_total')
+                        if mode == 'mc':
+                            matched_index_mc_lepton, matched_delta_R_mc_lepton = match_four_momenta(probe_lepton, mc_leptons)
+                            if matched_delta_R_mc_lepton < 0.1:
+                                matched_mc_lepton = mc_leptons[matched_index_mc_lepton]
+                                histograms['mc_matched_lepton_isolation'].Fill(probe_lepton.isolation)
+                                histograms['mc_matched_lepton_ID'].Fill(probe_lepton.ID)
 
-                    if is_Z_event(tag_lepton, probe_lepton):
-                        # All probes
-                        passes_baseline_probe_selection = False
+                        # Passing probes
+                        passProbe = False
                         if options.doTrigger:
-                            passes_baseline_probe_selection = passes_baseline_probe_selection_trigger(probe_lepton, channel)
+                            matched_index_probe_lepton, matched_delta_R_probe_lepton = match_four_momenta(probe_lepton, hlt_leptons)
+                            if matched_delta_R_probe_lepton < 0.3:
+                                passProbe = True
                         elif options.doID:
-                            passes_baseline_probe_selection = passes_baseline_probe_selection_ID_and_iso(probe_lepton, channel)
+                            passProbe = passes_probe_ID_and_iso( probe_lepton )
 
-                        if passes_baseline_probe_selection:
-                            nProbeEvents += 1
-                            # histograms['probe_total_pt'].Fill(probe_lepton.Pt())
-                            # histograms['probe_total_eta'].Fill(probe_lepton.Eta())
-                            fill_Z_peak_histograms(tag_lepton, probe_lepton, mode = mode + '_total')
-                            if mode == 'mc':
-                                matched_index_mc_lepton, matched_delta_R_mc_lepton = match_four_momenta(probe_lepton, mc_leptons)
-                                if matched_delta_R_mc_lepton < 0.1:
-                                    matched_mc_lepton = mc_leptons[matched_index_mc_lepton]
-                                    histograms['mc_matched_lepton_isolation'].Fill(probe_lepton.isolation)
-                                    histograms['mc_matched_lepton_ID'].Fill(probe_lepton.ID)
-
-                            # Passing probes
-                            passProbe = False
+                        if passProbe:
+                            nPassingProbeEvents += 1
+                            # histograms['probe_passed_pt'].Fill(probe_lepton.Pt())
+                            # histograms['probe_passed_eta'].Fill(probe_lepton.Eta())
+                            fill_Z_peak_histograms(tag_lepton, probe_lepton, mode = mode + '_passed')
                             if options.doTrigger:
-                                matched_index_probe_lepton, matched_delta_R_probe_lepton = match_four_momenta(probe_lepton, hlt_leptons)
-                                if matched_delta_R_probe_lepton < 0.3:
-                                    passProbe = True
-                            elif options.doID:
-                                passProbe = passes_probe_ID_and_iso( probe_lepton )
-
-                            if passProbe:
-                                nPassingProbeEvents += 1
-                                # histograms['probe_passed_pt'].Fill(probe_lepton.Pt())
-                                # histograms['probe_passed_eta'].Fill(probe_lepton.Eta())
-                                fill_Z_peak_histograms(tag_lepton, probe_lepton, mode = mode + '_passed')
-                                if options.doTrigger:
-                                    probe_hlt_lepton = hlt_leptons[matched_index_probe_lepton]
-                                    histograms['probe_passed_hlt_pt'].Fill(probe_hlt_lepton.Pt())
-                                    histograms['probe_passed_hlt_eta'].Fill(probe_hlt_lepton.Eta())
-                                    histograms['tagProbe_passed_hlt_Z_peak'].Fill((probe_hlt_lepton.lorentz+tag_hlt_lepton.lorentz).M())
-
-    print 'Number of events :',nEvents
-    print 'Number of events with at least two reco leptons :',nEventsToConsider
-    print 'Number of events with a tag lepton :',nTagEvents
-    print 'Number of events with a probe lepton :',nProbeEvents
-    print 'Number of events with a passing probe lepton :',nPassingProbeEvents
+                                probe_hlt_lepton = hlt_leptons[matched_index_probe_lepton]
+                                histograms['probe_passed_hlt_pt'].Fill(probe_hlt_lepton.Pt())
+                                histograms['probe_passed_hlt_eta'].Fill(probe_hlt_lepton.Eta())
+                                histograms['tagProbe_passed_hlt_Z_peak'].Fill((probe_hlt_lepton.lorentz+tag_hlt_lepton.lorentz).M())
 
 if __name__ == '__main__':
     set_root_defaults( msg_ignore_level = 3001 )
@@ -1199,8 +1193,30 @@ if __name__ == '__main__':
 
     print 'Number of events in data tree: ', data_tree.GetEntries(), ' and MC tree: ', mc_tree.GetEntries()
 
-    do_tag_and_probe_analysis(data_tree, mode = 'data', channel = channel)
-    do_tag_and_probe_analysis(mc_tree, mode = 'mc', channel = channel)
+    for mode in ['data', 'mc']:
+        nEvents = 0
+        nEventsToConsider = 0
+        nTagEvents = 0
+        nProbeEvents = 0
+        nPassingProbeEvents = 0
+
+        if mode == 'data':
+            tree = data_tree
+        else:
+            tree = mc_tree
+
+        print 'Performing the tag and probe analysis on %s, %d TeV' % (mode, centre_of_mass)
+        for event in tree:
+            nEvents += 1
+            reco_leptons, hlt_leptons, mc_leptons = read_lepton_collections( event, mode, channel )
+            do_tag_and_probe_analysis(reco_leptons, hlt_leptons, mc_leptons, mode, channel)
+    
+        print 'Number of events :', nEvents
+        print 'Number of events with at least two reco leptons :', nEventsToConsider
+        print 'Number of events with a tag lepton :', nTagEvents
+        print 'Number of events with a probe lepton :', nProbeEvents
+        print 'Number of events with a passing probe lepton :', nPassingProbeEvents
+
     
     make_Z_peak_plots('data', channel)
     make_Z_peak_plots('mc', channel)
