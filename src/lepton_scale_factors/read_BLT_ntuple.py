@@ -13,7 +13,7 @@ from rootpy import asrootpy, ROOTError
 from optparse import OptionParser
 from copy import deepcopy
 import sys, math
-import code, pickle
+import pickle
 
 import matplotlib
 matplotlib.use('AGG')
@@ -177,7 +177,18 @@ def get_parameters(trigger_under_study):
     fit_function = ''    
     fit_range = [-9999, 9999]
     
-    if '_pt' in trigger_under_study:
+    if 'jet_pt' in trigger_under_study:
+        x_limits = [20, 100]
+        x_title = '$p_{\mathrm{T}}$(jet) [GeV]'
+        fit_function = "[0]*exp([1]*exp([2]*x))"
+        fit_range = [20, 100]
+    elif 'jet_eta' in trigger_under_study:
+        x_limits = [-3, 3]
+        x_title = '$\eta$(jet)'
+        # fit_function = '[0]*x*x + [1]*x + [2]'
+        fit_function = '[2]'
+        fit_range = [-3, 3]
+    elif '_pt' in trigger_under_study:
         x_limits = [20, 100]
         x_title = '$p_{\mathrm{T}}$(l) [GeV]'
         fit_function = "[0]*exp([1]*exp([2]*x))"
@@ -285,7 +296,7 @@ def make_efficiency_plot(pass_data, total_data, pass_mc, total_mc, trigger_under
 def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
                       fit_data, fit_mc, fit_SF, fit_function,
                       x_limits, x_title, y_title, save_as_name, channel):
-    global centre_of_mass 
+    global centre_of_mass, output_formats, output_folder
     # plot with matplotlib
     plt.figure(figsize=(16, 16), dpi=200, facecolor='white')
     gs = gridspec.GridSpec(2, 1, height_ratios=[5, 1]) 
@@ -430,8 +441,8 @@ def make_2D_efficiency_plot(hist_passed, hist_total, efficiency, channel = 'elec
         canvas.Print(output_folder + save_as_name + '_minus.' + output_format)
 
 def produce_pickle_files(hist_passed_data, hist_total_data, hist_passed_mc, hist_total_mc, channel = 'electron'):
-    global suffix, centre_of_mass
-    output_pickle = open( './' + channel + '_' + suffix + '_' + str(centre_of_mass) + 'TeV.pkl', 'wb' )
+    global suffix, centre_of_mass, output_pickle_folder
+    output_pickle = open( output_pickle_folder + '/' + channel + '_' + suffix + '_' + str(centre_of_mass) + 'TeV.pkl', 'wb' )
     dictionary = {}
     
     data_efficiency = Efficiency(hist_passed_data, hist_total_data)
@@ -532,7 +543,7 @@ def fit_Z_peak(histogram, save_as_name, channel, run_on = 'data'):
         model = RooAddPdf("model", "s+b", RooArgList(bw_cb_convolution, background), RooArgList(n_sig, n_bkg))
 
     # Fit model to data
-    model.fitTo(data_hist)
+    model.fitTo( data_hist, RooFit.PrintLevel(-1), RooFit.Verbose(False), RooFit.PrintEvalErrors(-1), RooFit.Warnings(False) )
 
     # Plot data and composite PDF overlaid
     m_range_frame = m_range.frame()
@@ -953,7 +964,7 @@ def is_true_lepton(mc_particle, pdg_id, channel):
         return False
 
 
-def read_lepton_collections( event, mode = 'data', channel = 'electron' ):
+def read_lepton_collections( event, reco_leptons_collection, mc_genparticles_collection, trigger_object_lepton, mode = 'data', channel = 'electron', doTrigger = 'False' ):
     if mode == 'data':
         histograms = histograms_data
     else:
@@ -1032,7 +1043,7 @@ def read_lepton_collections( event, mode = 'data', channel = 'electron' ):
         histograms['mc_lepton_multiplicity'].Fill(len(mc_leptons))
 
     # Get HLT leptons and fill histograms for all hlt leptons
-    if options.doTrigger or options.doID:
+    if doTrigger:
         hlt_leptons_px = getVar(trigger_object_lepton + '.Px')
         hlt_leptons_py = getVar(trigger_object_lepton + '.Py')
         hlt_leptons_pz = getVar(trigger_object_lepton + '.Pz')
@@ -1161,7 +1172,10 @@ if __name__ == '__main__':
         output_folder += '/electron/'
     else:
         output_folder += '/muon/'
+
+    output_pickle_folder = './pickle_files/'
     make_folder_if_not_exists(output_folder)
+    make_folder_if_not_exists(output_pickle_folder)
     output_formats = ['pdf']
 
     if channel == 'electron':
@@ -1208,7 +1222,8 @@ if __name__ == '__main__':
         print 'Performing the tag and probe analysis on %s, %d TeV' % (mode, centre_of_mass)
         for event in tree:
             nEvents += 1
-            reco_leptons, hlt_leptons, mc_leptons = read_lepton_collections( event, mode, channel )
+            reco_leptons, hlt_leptons, mc_leptons = read_lepton_collections( event, reco_leptons_collection,\
+                        mc_genparticles_collection, trigger_object_lepton, mode, channel, doTrigger = options.doTrigger )
             do_tag_and_probe_analysis(reco_leptons, hlt_leptons, mc_leptons, mode, channel)
     
         print 'Number of events :', nEvents
