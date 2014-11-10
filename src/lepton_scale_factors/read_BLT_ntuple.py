@@ -1222,6 +1222,32 @@ if __name__ == '__main__':
         print 'Performing the tag and probe analysis on %s, %d TeV' % (mode, centre_of_mass)
         for event in tree:
             nEvents += 1
+            run_number = event.__getattr__('Event.Run')
+
+            if centre_of_mass == 7:
+                if channel == 'electron':
+                    if run_number >= 160404 and run_number <= 165633:
+                        trigger_object_lepton = 'TriggerObjectElectronLeg'
+                    elif run_number >= 165970 and run_number <= 178380:
+                        trigger_object_lepton = 'TriggerObjectElectronIsoLeg'
+                    elif run_number >= 178420 and run_number <= 180252:
+                        trigger_object_lepton = 'TriggerObjectElectronIsoLeg'
+                elif channel == 'muon':
+                    if run_number >= 160404 and run_number <= 167913:
+                        trigger_object_lepton = 'TriggerObjectMuon1'
+                    elif run_number >= 170249 and run_number <= 173198:
+                        trigger_object_lepton = 'TriggerObjectMuon2'
+                    elif run_number >= 173236 and run_number < 190456:
+                        trigger_object_lepton = 'TriggerObjectMuon2p1'
+            if centre_of_mass == 8:
+                if channel == 'electron':
+                    trigger_object_lepton = 'TriggerObjectSingleElectron'
+                elif channel == 'muon':
+                    if run_number >= 190456 and run_number <= 193621:
+                        trigger_object_lepton = 'TriggerObjectMuon2012'
+                    elif run_number >= 193834 and run_number <= 209151:
+                        trigger_object_lepton = 'TriggerObjectMuon2012Rho'
+            
             reco_leptons, hlt_leptons, mc_leptons = read_lepton_collections( event, reco_leptons_collection,\
                         mc_genparticles_collection, trigger_object_lepton, mode, channel, doTrigger = options.doTrigger )
             do_tag_and_probe_analysis(reco_leptons, hlt_leptons, mc_leptons, mode, channel)
