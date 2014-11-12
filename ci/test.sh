@@ -35,4 +35,4 @@ time python test/tools_Fitting_RooFitFit.py
 time python test/tools_hist_utilities.py
 time python test/tools_Unfolding.py
 time python test/Integral_GetBinContent_consistency.py
-time python test/tools/calculate_normalised_xsection.py
+time python test/calculate_normalised_xsection.py
