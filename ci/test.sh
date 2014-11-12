@@ -18,7 +18,7 @@ time python -c 'import rootpy'
 # What if ROOT has already been initialized?
 time python -c 'from ROOT import kTRUE; import rootpy'
 
-# Give user write access to shared memory to make multiprocessing semaphares work
+# Give user write access to shared memory to make multiprocessing semaphores work
 # https://github.com/rootpy/rootpy/pull/176#issuecomment-13712313
 ls -la /dev/shm
 sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
@@ -35,3 +35,4 @@ time python test/tools_Fitting_RooFitFit.py
 time python test/tools_hist_utilities.py
 time python test/tools_Unfolding.py
 time python test/Integral_GetBinContent_consistency.py
+time python test/calculate_normalised_xsection.py

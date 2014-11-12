@@ -35,21 +35,14 @@ def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False):
         @param inputs: list of value-error pairs
         @param bin_widths: bin widths of the inputs
     """
-    result = []
-    add_result = result.append
-    
+    values = [ufloat( i[0], i[1] ) for i in inputs]
     normalisation = 0
-    for measurement, bin_width in zip(inputs, bin_widths):
-        value = ufloat(measurement[0], measurement[1])
-        
-        if normalise_to_one:
-            normalisation += value / bin_width
-        else:
-            normalisation += value
-    for measurement, bin_width in zip(inputs, bin_widths):
-        value = ufloat(measurement[0], measurement[1])
-        xsection = value / normalisation / bin_width
-        add_result((xsection.nominal_value, xsection.std_dev))   
+    if normalise_to_one:
+        normalisation = sum( [value / bin_width for value, bin_width in zip( values, bin_widths )] )
+    else:
+        normalisation = sum( values )
+    xsections = [( 1 / bin_width ) * value / normalisation for value, bin_width in zip( values, bin_widths )]
+    result = [(xsection.nominal_value, xsection.std_dev) for xsection in xsections]
     return result
 
 def decombine_result(combined_result, original_ratio):
