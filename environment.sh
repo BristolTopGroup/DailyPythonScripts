@@ -10,7 +10,9 @@ fi
 cd $base
 export PYTHONPATH=$PYTHONPATH:`pwd`
 
-if [ "$HOSTNAME" == "soolin.phy.bris.ac.uk" ]; then
+if [ ! -z "$CMSSW_BASE" ]; then
+	echo "CMSSW has been set up..."
+	echo "...giving priority to vpython."
     export PYTHONPATH=$vpython/lib/python2.7/site-packages:$PYTHONPATH
     export PYTHONPATH=$vpython/lib/python2.6/site-packages:$PYTHONPATH
 fi
