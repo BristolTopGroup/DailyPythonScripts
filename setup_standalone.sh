@@ -65,6 +65,9 @@ success $? dateutil
 echo "Installing PrettyTable"
 pip install PrettyTable &> /dev/null
 success $? PrettyTable
+echo "Installing nose unit test framework"
+pip install nose &> /dev/null
+success $? PrettyTable
 
 echo "Installing matplotlib"
 #Adding freetype and libpng library and include paths from CMSSW, specific to the version but should be ok for now.

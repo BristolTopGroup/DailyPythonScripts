@@ -25,14 +25,4 @@ sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
 #- sudo chmod a+w /dev/shm
 ls -la /dev/shm
 
-time python test/config_XSectionConfig.py
-time python test/cross_section_measurement_00_pick_bins.py
-time python test/fix_overflow.py
-time python test/tools_Calculation.py
-time python test/tools_Fitting_FitData.py
-time python test/tools_Fitting_Minuit.py
-time python test/tools_Fitting_RooFitFit.py
-time python test/tools_hist_utilities.py
-time python test/tools_Unfolding.py
-time python test/Integral_GetBinContent_consistency.py
-time python test/calculate_normalised_xsection.py
+time nosetests test/*.py
