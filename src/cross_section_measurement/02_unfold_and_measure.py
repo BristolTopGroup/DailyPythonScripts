@@ -298,6 +298,8 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
     else:
         filename = path_to_JSON + '/xsection_measurement_results/%s/%s/xsection_%s.txt' % ( channel, category, met_type )
 
+    if channel == "muon":
+        print "xsection_unfolded = ", xsection_unfolded
     write_data_to_JSON( xsection_unfolded, filename )
     
 def calculate_normalised_xsections( normalisation, category, channel, k_value = None, normalise_to_one = False ):

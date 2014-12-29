@@ -1,7 +1,3 @@
-#
-#    Run this script writing the output to a file: plots/fitchecks/correlation_<variable>.txt where variable=MET/HT/ST/MT/WPT.
-#    This output .txt file is then be used by the 98_fit_cross_checks.py script to extract the correlation coefficients from the fit.
-
 # general
 from __future__ import division
 from optparse import OptionParser
@@ -56,25 +52,58 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
         else:
             fit_variable_name_data = fit_variable_name
 
+#     print "variable  = ", variable
     for sample, file_name in input_files.iteritems():
+#         print "sample = ", sample
+#         print "filename = ", file_name
         if not file_name:
             continue
         h_fit_variable = None
+        h_fit_variable_VJets_specific_b_tag_bin = None
         if sample == 'data':
             h_fit_variable = get_histogram( file_name, fit_variable_name_data, b_tag_bin )
         elif sample == 'V+Jets':
-            # extracting the V+Jets template from its specific b-tag bin (>=0 by default) and scaling it to analysis b-tag bin
-            h_fit_variable = get_histogram( file_name, fit_variable_name, b_tag_bin )
-            if not '_bl' in fit_variable:
-                # this procedure is not valid for fit variables requiring at least one b-tag
-                h_fit_variable_VJets_specific_b_tag_bin = get_histogram( file_name, fit_variable_name, b_tag_bin_VJets )
-                try:
-                    scale = h_fit_variable.integral( overflow = True ) / h_fit_variable_VJets_specific_b_tag_bin.integral( overflow = True )
-                    h_fit_variable_VJets_specific_b_tag_bin.Scale( scale )
-                    h_fit_variable = h_fit_variable_VJets_specific_b_tag_bin
-                except:
-                    print 'WARNING: V+Jets template from ' + str( file_name ) + ', histogram ' + fit_variable_name + ' in ' + b_tag_bin_VJets + \
-                        ' b-tag bin is empty. Using central bin (' + b_tag_bin + '), integral = ' + str( h_fit_variable.Integral() )
+#             print "V+Jets"
+            for var_bin in variable_bins_ROOT[variable]:
+#                 print "bin = ", var_bin
+                temp_variable_name = fit_variable_name.replace(variable_bin, var_bin)
+#                 print "temp_variable_name = ", temp_variable_name
+                if h_fit_variable == None:
+#                     print "h_fit_variable was None, so adding first histogram to h_fit_variable."
+                    # extracting the inclusive V+Jets template across all bins from its specific b-tag bin (>=0 by default) and scaling it to analysis b-tag bin
+                    h_fit_variable = get_histogram( file_name, temp_variable_name, b_tag_bin )
+                else:
+#                     print "h_fit_variable was not None, so adding histogram to h_fit_variable."
+                    h_fit_variable += get_histogram( file_name, temp_variable_name, b_tag_bin )
+                    
+                if h_fit_variable.integral (overflow = True ) == 0:
+                    temp_b_tag_bin = translate_options['1m']
+#                     print 'WARNING: V+Jets template from ' + str( file_name ) + ', histogram ' + fit_variable_name + ' in ' + b_tag_bin_VJets + \
+#                              ' b-tag bin is empty. Using (', temp_b_tag_bin, '), integral = ' + str( h_fit_variable.Integral() )
+                    h_fit_variable = get_histogram( file_name, temp_variable_name, temp_b_tag_bin)
+    
+                h_fit_variable_for_scaling = get_histogram(file_name, fit_variable_name, b_tag_bin)
+#                 print "Numerator: h_fit_variable_for_scaling.integral (overflow = True )  = ", h_fit_variable_for_scaling.integral (overflow = True ) 
+#                 print "Denominator: h_fit_variable.integral( overflow = True ) = ", h_fit_variable.integral( overflow = True )
+                scale = h_fit_variable_for_scaling.integral (overflow = True ) / h_fit_variable.integral( overflow = True )
+                h_fit_variable.Scale(scale)
+
+#                 if not '_bl' in fit_variable:
+#                     # this procedure is not valid for fit variables requiring at least one b-tag
+#                     if h_fit_variable_VJets_specific_b_tag_bin == None:
+#                         print "h_fit_variable_VJets_specific_b_tag_bin was None, so adding first histogram to h_fit_variable."
+#                         h_fit_variable_VJets_specific_b_tag_bin = get_histogram( file_name, fit_variable_name, b_tag_bin_VJets )
+#                     else:
+#                         print "h_fit_variable_VJets_specific_b_tag_bin was not None, so adding histogram to h_fit_variable."
+#                         h_fit_variable_VJets_specific_b_tag_bin += get_histogram( file_name, fit_variable_name, b_tag_bin_VJets )
+#                     try:
+#                         scale = h_fit_variable.integral( overflow = True ) / h_fit_variable_VJets_specific_b_tag_bin.integral( overflow = True )
+#                         print "scale = ", scale
+#                         h_fit_variable_VJets_specific_b_tag_bin.Scale( scale )
+#                         h_fit_variable = h_fit_variable_VJets_specific_b_tag_bin
+#                     except:
+#                         print 'WARNING: V+Jets template from ' + str( file_name ) + ', histogram ' + fit_variable_name + ' in ' + b_tag_bin_VJets + \
+#                             ' b-tag bin is empty. Using central bin (' + b_tag_bin + '), integral = ' + str( h_fit_variable.Integral() )
         else:
             h_fit_variable = get_histogram( file_name, fit_variable_name, b_tag_bin )
         h_fit_variable.Rebin( rebin )
@@ -91,6 +120,7 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     
     histograms['QCD'] = adjust_overflow_to_limit( h_qcd,
                                                  boundaries[0], boundaries[1] )
+    
     # normalise histograms
     if not measurement_config.luminosity_scale == 1.0:
         for sample, histogram in histograms.iteritems():
@@ -109,7 +139,7 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
             for sample, histogram in histograms.iteritems():
                 if sample in source:
                     histogram.Scale( factor )
-
+#     print "End Of Function"
     return histograms
 
 def get_qcd_histograms( input_files, variable, variable_bin, channel,
@@ -329,6 +359,7 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
                 for fit_variable in fit_variables:
                     templates[fit_variable][sample].append( fit_data_collection.vectors( fit_variable )[sample] )
 
+#     print "results = ", results
     return results, initial_values, templates
 
 def write_fit_results_and_initial_values( channel, category, fit_results, initial_values, templates ):
@@ -376,7 +407,7 @@ if __name__ == '__main__':
                            " combination separated by commas" )
     parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
                       help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
-    parser.add_option( "--bjetbin-vjets", dest = "bjetbin_VJets", default = '0m',
+    parser.add_option( "--bjetbin-vjets", dest = "bjetbin_VJets", default = '2m',
                       help = "set b-jet multiplicity for V+Jets samples. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
     parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
                       help = "set MET type for analysis of MET, ST or MT" )
@@ -508,12 +539,12 @@ if __name__ == '__main__':
         TTJet_file = File( measurement_config.ttbar_category_templates[category] )
         SingleTop_file = File( measurement_config.SingleTop_category_templates[category] )
         VJets_file = File( measurement_config.VJets_category_templates[category] )
-        muon_QCD_MC_file = File( measurement_config.muon_QCD_MC_category_templates[category] )
+        muon_QCD_MC_file = File( measurement_config.muon_QCD_MC_category_templates['central'] )
         data_file_electron = File( measurement_config.data_electron_category_templates['central'] )
         data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
         if measurement_config.include_higgs:
             Higgs_file = File( measurement_config.higgs_category_templates[category] )
-
+ 
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
         if category in ['JES_up', 'JES_down']:  # these systematics affect the data as well
@@ -521,7 +552,7 @@ if __name__ == '__main__':
             data_file_muon.Close()
             data_file_electron = File( measurement_config.data_electron_category_templates[category] )
             data_file_muon = File( measurement_config.data_muon_category_templates[category] )
-
+ 
         if category == 'JES_up':
             met_type += 'JetEnUp'
             if met_type == 'PFMETJetEnUp':
@@ -530,10 +561,10 @@ if __name__ == '__main__':
             met_type += 'JetEnDown'
             if met_type == 'PFMETJetEnDown':
                 met_type = 'patPFMetJetEnDown'
-
+ 
         if verbose:
             print "\n" + category + "\n"
-
+ 
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -546,7 +577,7 @@ if __name__ == '__main__':
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
                       )
-
+ 
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -563,7 +594,7 @@ if __name__ == '__main__':
         write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
         write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
         last_systematic = category
-
+ 
         TTJet_file.Close()
         SingleTop_file.Close()
         VJets_file.Close()
@@ -572,7 +603,7 @@ if __name__ == '__main__':
         data_file_muon.Close()
         if Higgs_file:
             Higgs_file.Close()
-
+ 
     data_file_electron = File( measurement_config.data_electron_category_templates['central'] )
     data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
@@ -581,7 +612,7 @@ if __name__ == '__main__':
     muon_QCD_MC_file = File( measurement_config.muon_QCD_MC_category_templates['central'] )
     if measurement_config.include_higgs:
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
-
+ 
     for met_systematic in met_systematics_suffixes:
         if run_just_central: 
             continue
@@ -591,10 +622,10 @@ if __name__ == '__main__':
         category = met_type + met_systematic
         if 'PFMET' in met_type:
             category = category.replace( 'PFMET', 'patPFMet' )
-
+ 
         if verbose:
             print "\n" + met_systematic + "\n"
-
+ 
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -607,7 +638,7 @@ if __name__ == '__main__':
                       met_type = category,
                       b_tag_bin = b_tag_bin,
                       )
-
+ 
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -623,14 +654,14 @@ if __name__ == '__main__':
         write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
         write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
-
+ 
     # QCD systematic
     if not run_just_central:
         electron_control_region = measurement_config.electron_control_region_systematic
-    
+     
         if verbose:
             print "\nQCD shape systematic\n"
-    
+     
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
                           input_files = {
                                        'TTJet': TTJet_file,
@@ -643,7 +674,7 @@ if __name__ == '__main__':
                           met_type = met_type,
                           b_tag_bin = b_tag_bin,
                           )
-    
+     
         muon_control_region = measurement_config.muon_control_region_systematic
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
@@ -657,15 +688,15 @@ if __name__ == '__main__':
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
                       )
-    
+     
         systematic = 'QCD_shape'
         write_fit_results_and_initial_values( 'electron', systematic, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', systematic, fit_results_muon, initial_values_muon, templates_muon )
         write_fit_results( 'combined', systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
-
+ 
     electron_control_region = measurement_config.electron_control_region
     muon_control_region = measurement_config.muon_control_region
-
+ 
     # rate-changing systematics
     for systematic, shift in measurement_config.rate_changing_systematics.iteritems():
         if run_just_central:  # no systematics for closure test
@@ -676,10 +707,10 @@ if __name__ == '__main__':
                 factor = 1.0 + shift
             else:
                 factor = 1.0 - shift
-
+ 
             if verbose:
                 print "\n" + systematic + variation, factor, "\n"
-
+ 
             scale_factors = {}
             scale_factors[systematic + variation] = factor
             fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
@@ -695,7 +726,7 @@ if __name__ == '__main__':
                               b_tag_bin = b_tag_bin,
                               scale_factors = scale_factors
                               )
-
+ 
             fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                           input_files = {
                                        'TTJet': TTJet_file,
@@ -709,7 +740,7 @@ if __name__ == '__main__':
                           b_tag_bin = b_tag_bin,
                           scale_factors = scale_factors
                           )
-
+ 
             write_fit_results_and_initial_values( 'electron', systematic + variation, fit_results_electron, initial_values_electron, templates_electron )
             write_fit_results_and_initial_values( 'muon', systematic + variation, fit_results_muon, initial_values_muon, templates_muon )
             write_fit_results( 'combined', systematic + variation, combine_complex_results( fit_results_electron, fit_results_muon ) )

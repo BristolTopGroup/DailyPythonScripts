@@ -74,6 +74,7 @@ def summarise_systematics( list_of_central_measurements, dictionary_of_systemati
     up_errors = [0] * number_of_bins
 
     for bin_i in range( number_of_bins ):
+        print "bin_i = ", bin_i
         central_value = list_of_central_measurements[bin_i][0]  # 0 = value, 1 = error
         error_down, error_up = 0, 0
         
@@ -100,8 +101,13 @@ def summarise_systematics( list_of_central_measurements, dictionary_of_systemati
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, False )
             error_down = error_up
         else:
+            list_of_systematics_names = [systematic for systematic in dictionary_of_systematics.keys()]
+            print "list_of_systematics_names = ", list_of_systematics_names
             list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
+            print "list_of_systematics = ", list_of_systematics
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
+            if 'JER_down' in dictionary_of_systematics.keys():
+                print "error down  = ", error_down, "error_up = ", error_up
 
         down_errors[bin_i] = error_down
         up_errors[bin_i] = error_up
@@ -226,26 +232,54 @@ if __name__ == "__main__":
     other_uncertainties_list.extend( rate_changing_systematics_list )
 
     for channel in ['electron', 'muon', 'combined']:
+#    for channel in ['muon']:
+        print "channel = ", channel
         # read central measurement
         central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement( 'central', channel )
+        print "central_measurement = ", central_measurement
+        print "central_measurement_unfolded = ", central_measurement_unfolded
+        
         # read groups of systematics
         ttbar_generator_systematics, ttbar_generator_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_generator_systematics_list, channel = channel )
+        print "ttbar_generator_systematics = ", ttbar_generator_systematics
+        print "ttbar_generator_systematics_unfolded = ", ttbar_generator_systematics_unfolded
         # ttbar_ptreweight_systematic, ttbar_ptreweight_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_ptreweight_systematic_list, channel = channel )
         ttbar_hadronisation_systematic, ttbar_hadronisation_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_hadronisation_systematic_list, channel = channel )
+        print "ttbar_hadronisation_systematic = ", ttbar_hadronisation_systematic
+        print "ttbar_hadronisation_systematic_unfolded = ", ttbar_hadronisation_systematic_unfolded
         # top mass systematic
         ttbar_mass_systematic, ttbar_mass_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_mass_systematics_list, channel = channel )
+        print "ttbar_mass_systematic =", ttbar_mass_systematic
+        print "ttbar_mass_systematic_unfolded = ", ttbar_mass_systematic_unfolded
+        
         # k Value systematics
         kValue_systematic, kValue_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = kValue_systematic_list, channel = channel )
+        print "kValue_systematic = ", kValue_systematic
+        print "kValue_systematic_unfolded = ", kValue_systematic_unfolded
 
         pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = pdf_uncertainties, channel = channel )
+        print "pdf_systematics = ", pdf_systematics
+        print "pdf_systematics_unfolded = ", pdf_systematics_unfolded
 
         met_systematics, met_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = met_uncertainties_list, channel = channel )
+        print "met_systematics = ", met_systematics
+        print "met_systematics_unfolded = ", met_systematics_unfolded
+        
         other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = other_uncertainties_list, channel = channel )
+        print "other_systematics = ", other_systematics
+        print "other_systematics_unfolded = ", other_systematics_unfolded
+        
 
         # get the minimal and maximal deviation for each group of systematics
         # ttbar generator systematics (factorisation scale and matching threshold)
         ttbar_generator_min, ttbar_generator_max = summarise_systematics( central_measurement, ttbar_generator_systematics )
         ttbar_generator_min_unfolded, ttbar_generator_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_generator_systematics_unfolded )
+
+        print "\n\n"
+        print "ttbar_generator_min = ", ttbar_generator_min
+        print "ttbar_generator_max = ", ttbar_generator_max
+        print "ttbar_generator_min_unfolded = ", ttbar_generator_min_unfolded
+        print "ttbar_generator_max_unfolded = ", ttbar_generator_max_unfolded
 
         # ttbar theory systematics (pt reweighting and hadronisation)
         # ttbar_ptreweight_min, ttbar_ptreweight_max = summarise_systematics( central_measurement, ttbar_ptreweight_systematic )
@@ -253,9 +287,18 @@ if __name__ == "__main__":
         ttbar_hadronisation_min, ttbar_hadronisation_max = summarise_systematics( central_measurement, ttbar_hadronisation_systematic, hadronisation_systematic = True )
         ttbar_hadronisation_min_unfolded, ttbar_hadronisation_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_hadronisation_systematic_unfolded, hadronisation_systematic = True )
 
+        print "ttbar_hadronisation_min = ", ttbar_hadronisation_min
+        print "ttbar_hadronisation_max = ", ttbar_hadronisation_max
+        print "ttbar_hadronisation_min_unfolded = ", ttbar_hadronisation_min_unfolded
+        print  "ttbar_hadronisation_max_unfolded = ", ttbar_hadronisation_max_unfolded
+
         # Top mass systematic
         ttbar_mass_min, ttbar_mass_max = summarise_systematics( central_measurement, ttbar_mass_systematic, mass_systematic = True )
         ttbar_mass_min_unfolded, ttbar_mass_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_mass_systematic_unfolded, mass_systematic = True )
+        print "ttbar_mass_min = ", ttbar_mass_min
+        print "ttbar_mass_max = ", ttbar_mass_max
+        print "ttbar_mass_min_unfolded = ", ttbar_mass_min_unfolded
+        print "ttbar_mass_max_unfolded = ", ttbar_mass_max_unfolded
 
         # k Value systematic
         kValue_min, kValue_max = summarise_systematics( central_measurement, kValue_systematic, kValueSystematic = True)
@@ -264,6 +307,11 @@ if __name__ == "__main__":
         kValue_systematic['kValue_down'] = kValue_systematic['kValue_up']
         kValue_systematic_unfolded['kValue_down'] = kValue_systematic_unfolded['kValue_up']
 
+        print "kValue_min = ", kValue_min
+        print "kValue_max = ", kValue_max
+        print "kValue_min_unfolded = ", kValue_min_unfolded
+        print "kValue_max_unfolded = ", kValue_max_unfolded
+        
         # 45 PDFs
         pdf_min, pdf_max = summarise_systematics( central_measurement, pdf_systematics, pdf_calculation = True )
         pdf_min_unfolded, pdf_max_unfolded = summarise_systematics( central_measurement_unfolded, pdf_systematics_unfolded, pdf_calculation = True )
@@ -271,12 +319,38 @@ if __name__ == "__main__":
         # MET
         met_min, met_max = summarise_systematics( central_measurement, met_systematics )
         met_min_unfolded, met_max_unfolded = summarise_systematics( central_measurement_unfolded, met_systematics_unfolded )
+        print "met_min = ", met_min
+        print "met_max = ", met_max
+        print "met_min_unfolded = ", met_min_unfolded
+        print "met_max_unfolded = ", met_max_unfolded
 
         # other
         other_min, other_max = summarise_systematics( central_measurement, other_systematics )
         other_min_unfolded, other_max_unfolded = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
+        print "other_min = ", other_min
+        print "other_max = ", other_max
+        print "other_min_unfolded = ", other_min_unfolded
+        print "other_max_unfolded = ", other_max_unfolded
 
         # get the central measurement with fit, unfolding and systematic errors combined
+        print "\n\n"
+        print "channel = ", channel
+        print "central_measurement = ", central_measurement
+        print "ttbar_generator_min", ttbar_generator_min
+        print "ttbar_hadronisation_min = ", ttbar_hadronisation_min
+        print "ttbar_mass_min = ", ttbar_mass_min
+        print "kValue_min = ", kValue_min
+        print "pdf_min = ", pdf_min
+        print "met_min", met_min
+        print "other_min = ", other_min
+        print "ttbar_generator_max = ", ttbar_generator_max
+        print "ttbar_hadronisation_max = ", ttbar_hadronisation_max
+        print "ttbar_mass_max = ", ttbar_mass_max
+        print "kValue_max = ", kValue_max
+        print "pdf_max = ", pdf_max
+        print "met_max = ", met_max
+        print "other_max = ", other_max
+
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [ttbar_generator_min, #ttbar_ptreweight_min,
                                                                                                 ttbar_hadronisation_min,

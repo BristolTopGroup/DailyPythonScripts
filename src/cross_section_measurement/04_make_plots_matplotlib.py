@@ -317,6 +317,12 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     hist_data.visible = True
     if category == 'central':
         hist_data_with_systematics.visible = True
+        print "category = ", category
+        print "histname = ", histname, " channel = ", channel
+        print "hist_data_with_systematics = ", hist_data_with_systematics
+        print "axes = ", axes
+        print "len( histograms ) + 1 = ", len( histograms ) + 1
+       
         rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
     rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )
     rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
@@ -589,6 +595,13 @@ if __name__ == '__main__':
                 fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
                 make_template_plots( fit_templates, category, channel )
                 plot_fit_results( fit_results, category, channel )
+#                 #don't look for TTJets matchingup/down scaleup/down fit results because the fit is not carried out for these systematics, since they are theory systematics
+#                 if 'TTJets_matchingup' or 'TTJets_matchingdown' or 'TTJets_scaleup' or 'TTJets_scaledown' in category: 
+#                     continue
+#                 else:
+#                     fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
+#                     make_template_plots( fit_templates, category, channel )
+#                     plot_fit_results( fit_results, category, channel )
 
             # change back to original MET type
             met_type = translate_options[options.metType]

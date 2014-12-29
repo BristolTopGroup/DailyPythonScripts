@@ -135,21 +135,32 @@ def calculate_lower_and_upper_systematics(central_measurement, list_of_systemati
     '''
     negative_error = 0
     positive_error = 0
+    print "central_measurement = ", central_measurement
+    print "list_of_systematics = ", list_of_systematics
     for systematic in list_of_systematics:
         deviation = abs(systematic) - abs(central_measurement)
+        print "deviation = ", deviation
         
         if deviation > 0:
+            print "deviation > 0"
             positive_error += deviation**2
         else:
+            print "deviation < 0"
             negative_error += deviation**2
             
     negative_error = sqrt(negative_error)
     positive_error = sqrt(positive_error)
+    print "negative_error = ", negative_error
+    print "positive_error = ", positive_error
     
     if symmetrise_errors:
+        print "symmetrising errors"
         negative_error = max(negative_error, positive_error)
+        print "negative error = ", negative_error
         positive_error = max(negative_error, positive_error)
+        print "positive error = ", positive_error
     
+    print negative_error, positive_error
     return negative_error, positive_error
     
 def combine_errors_in_quadrature(list_of_errors):
