@@ -4,7 +4,7 @@ mkdir -p logs
 mkdir -p plots
 fit_var="absolute_eta,M3,angle_bl"
 nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
-N_JOBS=5
+N_JOBS=8
 
 i=0
 echo "Making fit variable plots"
@@ -12,9 +12,11 @@ nohup time python src/cross_section_measurement/make_fit_variable_plots.py -c 7 
 let i+=1
 nohup time python src/cross_section_measurement/make_fit_variable_plots.py -c 8 &> logs/make_fit_variable_plots_8TeV.log &
 let i+=1
-if (( $i % N_JOBS == 0 ))
+	if (( $i % N_JOBS == 0 ))
 then
 	echo "Waiting on the above to finish."
    	wait;
 fi
+
+wait;
 echo "make_fit_variable_plots all done!"
