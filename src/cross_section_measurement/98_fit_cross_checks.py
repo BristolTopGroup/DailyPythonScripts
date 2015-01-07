@@ -46,11 +46,13 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
     for variable_bin in variable_bins_ROOT[variable]:
         weights = {}
         if channel == 'electron':
+#             print "electron channel"
             #formula to calculate the number of lines below "central" to access in each loop
             number_of_lines_down = (variable_bins_ROOT[variable].index( variable_bin ) * 12)
 
             #Get QCD correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down )
+#             print "QCD matrix_line = ", matrix_line
             weights["QCD_QCD"] = matrix_line.split()[2]
             weights["QCD_SingleTop"] = matrix_line.split()[3]
             weights["QCD_TTJet"] = matrix_line.split()[4]
@@ -58,6 +60,7 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
             #Get SingleTop correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down + 1 )
+#             print "SingleTop matrix_line = ", matrix_line
             weights["SingleTop_QCD"] = matrix_line.split()[2]
             weights["SingleTop_SingleTop"] = matrix_line.split()[3]
             weights["SingleTop_TTJet"] = matrix_line.split()[4]
@@ -65,6 +68,7 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
             #Get TTJet correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down + 2 )
+#             print "TTJet matrix_line = ", matrix_line
             weights["TTJet_QCD"] = matrix_line.split()[2]
             weights["TTJet_SingleTop"] = matrix_line.split()[3]            
             weights["TTJet_TTJet"] = matrix_line.split()[4]
@@ -72,17 +76,22 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
             #Get V+Jets correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down + 3 )
+#             print "V+Jets matrix_line = ", matrix_line
             weights["V+Jets_QCD"] = matrix_line.split()[2]
             weights["V+Jets_SingleTop"] = matrix_line.split()[3]
             weights["V+Jets_TTJet"] = matrix_line.split()[4]
             weights["V+Jets_V+Jets"] = matrix_line.split()[5]
 
+#             print "weights = ", weights
+
         if channel == 'muon':
+#             print "muon channel"
             #formula to calculate the number of lines below "central" to access in each bin loop
             number_of_lines_down =  ( len( variable_bins_ROOT [variable] ) * 12 ) + ( variable_bins_ROOT[variable].index( variable_bin ) * 12 )
             
             #Get QCD correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down )
+#             print "QCD matrix_line = ", matrix_line
             weights["QCD_QCD"] = matrix_line.split()[2]
             weights["QCD_SingleTop"] = matrix_line.split()[3]
             weights["QCD_TTJet"] = matrix_line.split()[4]
@@ -90,6 +99,7 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
             #Get SingleTop correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down + 1 )
+#             print "SingleTop matrix_line = ", matrix_line
             weights["SingleTop_QCD"] = matrix_line.split()[2]
             weights["SingleTop_SingleTop"] = matrix_line.split()[3]
             weights["SingleTop_TTJet"] = matrix_line.split()[4]
@@ -97,6 +107,7 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
             #Get TTJet correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down + 2 )
+#             print "TTJet matrix_line = ", matrix_line
             weights["TTJet_QCD"] = matrix_line.split()[2]
             weights["TTJet_SingleTop"] = matrix_line.split()[3]
             weights["TTJet_TTJet"] = matrix_line.split()[4]
@@ -104,10 +115,13 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
             
             #Get V+Jets correlations
             matrix_line = linecache.getline( "logs/01_%s_fit_%dTeV_%s.log" % ( variable, CoM, fit_variables ), line_number + number_of_lines_down + 3 )
+#             print "V+Jets matrix_line = ", matrix_line
             weights["V+Jets_QCD"] = matrix_line.split()[2]
             weights["V+Jets_SingleTop"] = matrix_line.split()[3]
             weights["V+Jets_TTJet"] = matrix_line.split()[4]
             weights["V+Jets_V+Jets"] = matrix_line.split()[5]
+            
+#             print "weights = ", weights
 
         #Create histogram
         histogram_properties = Histogram_properties()
