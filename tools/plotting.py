@@ -33,6 +33,8 @@ class Histogram_properties:
     legend_location = 'best'
     set_log_y = False
     legend_columns = 1
+    has_ratio = False
+    ratio_y_limits = []
     
     def __init__( self ):
         pass
@@ -273,15 +275,19 @@ def make_shape_comparison_plot( shapes = [],
                                    make_ratio = False,
                                    alpha = 0.5,
                                    save_folder = 'plots/',
-                                   save_as = ['pdf', 'png'] ):
+                                   save_as = ['pdf', 'png'],
+                                   normalise_ratio_to_errors = False ):
     # make copies in order not to mess with existing histograms
     shapes_ = deepcopy(shapes)
     # normalise as we are comparing shapes
     for shape, colour in zip(shapes_, colours):
-        if shape.Integral() > 0:
-            shape.Scale( 1 / shape.Integral() )
+        integral = shape.Integral()
+        if integral > 0:
+            shape.Sumw2()
+            shape.Scale( 1 / integral )
         if fill_area:
             shape.fillcolor = colour
+            shape.fillstyle = 'solid'
             shape.legendstyle = 'F'
         else:
             shape.linecolor = colour
@@ -310,12 +316,34 @@ def make_shape_comparison_plot( shapes = [],
 
     plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
                prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
+    #add error bars
+    for shape in shapes_:
+        rplt.errorbar( shape, axes = axes, alpha = alpha)
+
     adjust_axis_limits(axes, histogram_properties)
     if make_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
 
-        ratio = shapes[0].Clone( 'ratio' )
-        ratio.Divide( shapes[1] )
+        ratio = shapes_[0].Clone( 'ratio' )
+        if normalise_ratio_to_errors:
+            # TODO
+            # this is a preliminary feature, use with care
+            for bin_i in range( 1, shapes_[0].nbins() ):
+                x_i = shapes_[0][bin_i].value
+                x_i_error = shapes_[0][bin_i].error
+                y_i = shapes_[1][bin_i].value
+                y_i_error = shapes_[1][bin_i].error
+                numerator = x_i - y_i
+                denominator = pow( pow( x_i_error, 2 ) + pow( y_i_error, 2 ), 0.5 )
+                if denominator == 0:
+                    ratio.SetBinContent(bin_i, 0.)
+                    ratio.SetBinError(bin_i, 0.)
+                else:
+                    ratio.SetBinContent(bin_i, numerator/denominator)
+                    ratio.SetBinError(bin_i, denominator)
+        else:
+            ratio.Divide( shapes_[1] )
+
         ratio.SetMarkerSize( 3 )
     
         ax1 = plt.subplot( gs[1] )
@@ -324,12 +352,17 @@ def make_shape_comparison_plot( shapes = [],
         ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
         ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
-        plt.ylabel( '(1)/(2)', CMS.y_axis_title )
+        if normalise_ratio_to_errors:
+            plt.ylabel( r'$\frac{1-2}{\sqrt{(\sigma_1)^2 + (\sigma_2)^2}}$', CMS.y_axis_title )
+        else:
+            plt.ylabel( '(1)/(2)', CMS.y_axis_title )
         rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
         if len( histogram_properties.x_limits ) == 2:
             ax1.set_xlim( xmin = histogram_properties.x_limits[0], 
                           xmax = histogram_properties.x_limits[1] )
-        ax1.set_ylim( ymin = -0.5, ymax = 4 )
+        if len( histogram_properties.ratio_y_limits ) == 2:
+            ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
+                      ymax = histogram_properties.ratio_y_limits[1] )
     
     if CMS.tight_layout:
         plt.tight_layout()
