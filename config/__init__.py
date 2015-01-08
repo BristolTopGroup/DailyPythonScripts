@@ -5,10 +5,10 @@ __all__ = [
 ]
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/'
-    known_centre_of_mass_energies = [7, 8]
+    current_analysis_path = '/storage/ec6821/AnalysisTools/CMSSW_7_3_0/src/atOutput/'
+    known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584}
+    luminosities = {13:5000}
     parameters = ['SingleTop_category_templates', 'SingleTop_file',
                   'VJets_category_templates', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -57,7 +57,9 @@ class XSectionConfig():
         self.__fill_defaults__()
 
     def __fill_defaults__( self ):
-        self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
+        # self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
+        self.path_to_files = self.current_analysis_path
+
         self.path_to_unfolding_histograms = self.path_to_files + 'unfolding/'
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
@@ -87,6 +89,7 @@ class XSectionConfig():
 
         # measurement script options
         self.translate_options = {
+                        'all':'',
                         '0':'0btag',
                         '1':'1btag',
                         '2':'2btags',
@@ -134,11 +137,13 @@ class XSectionConfig():
         self.middle = '_' + str( self.luminosity ) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
         middle = self.middle
 
-        self.data_file_muon = path_to_files + 'central/SingleMu' + middle + '.root'
+        self.data_file_muon = path_to_files + 'pretendData_Pythia8.root'
+        self.data_file_electron = path_to_files + 'pretendData_Pythia8.root'
+
         self.muon_QCD_file = path_to_files + 'QCD_data_mu.root'
-        self.SingleTop_file = path_to_files + 'central/SingleTop' + middle + '.root'
-        self.electron_QCD_MC_file = path_to_files + 'central/QCD_Electron' + middle + '.root'
-        self.muon_QCD_MC_file = path_to_files + 'central/QCD_Muon' + middle + '.root'
+        self.SingleTop_file = path_to_files + 'SingleTop.root'
+        self.electron_QCD_MC_file = path_to_files + 'QCD_Electron.root'
+        self.muon_QCD_MC_file = path_to_files + 'QCD_data_mu.root'
         self.higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
         self.categories_and_prefixes = {
@@ -158,11 +163,7 @@ class XSectionConfig():
                  }
 
         # now fill in the centre of mass dependent values
-        # this position is crucial
-        if self.centre_of_mass_energy == 7:
-            self.__fill_defaults_7TeV__()
-        if self.centre_of_mass_energy == 8:
-            self.__fill_defaults_8TeV__()
+        self.__fill_defaults_13TeV__()
 
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
@@ -175,13 +176,21 @@ class XSectionConfig():
 
         categories_and_prefixes = self.categories_and_prefixes
 
+        # self.general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
+        # self.ttbar_category_templates = {category: path_to_files + category + '/TTJet' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
+        # self.SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        # self.VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        # self.higgs_category_templates = {category: path_to_files + category + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        # self.electron_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Electron' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        # self.muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Muon' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
-        self.ttbar_category_templates = {category: path_to_files + category + '/TTJet' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
-        self.SingleTop_category_templates = {category: path_to_files + category + '/SingleTop' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
-        self.VJets_category_templates = {category: path_to_files + category + '/VJets' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
-        self.higgs_category_templates = {category: path_to_files + category + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
-        self.electron_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Electron' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
-        self.muon_QCD_MC_category_templates = {category: path_to_files + category + '/QCD_Muon' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.ttbar_category_templates = {category: path_to_files + 'TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root' for category, prefix in categories_and_prefixes.iteritems()}
+        self.SingleTop_category_templates = {category: path_to_files + '/SingleTop.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.VJets_category_templates = {category: path_to_files + '/VJets.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.higgs_category_templates = {category: path_to_files + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.electron_QCD_MC_category_templates = {category: path_to_files + '/QCD_Electron.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.muon_QCD_MC_category_templates = {category: path_to_files + '/QCD_Muon.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+
 
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,
@@ -233,63 +242,13 @@ class XSectionConfig():
 
         self.luminosity_scale = self.new_luminosity / self.luminosity
 
-    def __fill_defaults_7TeV__( self ):
+    def __fill_defaults_13TeV__( self ):
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = self.luminosity  # pb^-1
-        self.ttbar_xsection = 164  # pb
+        self.new_luminosity = 5000  # pb^-1
+        self.ttbar_xsection = 831.76  # pb
 
-        self.data_file_electron = path_to_files + 'central/ElectronHad' + middle + '.root'
-        self.rate_changing_systematics = {
-                        'luminosity': 0.022,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupSystematicErrors
-                        'SingleTop_cross_section': 0.3,
-                        'TTJet_cross_section': 0.15
-                         }
-
-        # optimal regularisation parameters
-        self.k_values_electron = {
-                   'MET' : 2,
-                   'HT' : 3,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 3
-                   }
-
-        self.k_values_muon = {
-                   'MET' : 2,
-                   'HT' : 3,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 3
-                   }
-        #keeping combined values for backward compatibility
-        self.k_values_combined = {
-                   'MET' : 0,
-                   'HT' : 0,
-                   'ST' : 0,
-                   'MT' : 0,
-                   'WPT' : 0
-                   }
-
-        self.categories_and_prefixes['PU_down'] = '_PU_64600mb'
-        self.categories_and_prefixes['PU_up'] = '_PU_71400mb'
-
-        self.special_muon_histogram = 'etaAbs_ge2j_data'
-
-        self.data_electron_category_templates = {'central': self.data_file_electron,
-                                    'JES_up': path_to_files + 'JES_up/ElectronHad' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/ElectronHad' + middle + self.categories_and_prefixes['JES_down'] + '.root'
-                                    }
-
-    def __fill_defaults_8TeV__( self ):
-        middle = self.middle
-        path_to_files = self.path_to_files
-
-        self.new_luminosity = 19712  # pb^-1
-        self.ttbar_xsection = 245.8  # pb
-
-        self.data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
         self.rate_changing_systematics = {
                         'luminosity': 0.026,  # https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
                         'SingleTop_cross_section': 0.034,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
