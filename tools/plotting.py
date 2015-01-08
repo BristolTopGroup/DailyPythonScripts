@@ -352,8 +352,6 @@ def make_shape_comparison_plot( shapes = [],
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
-        ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
-        ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         if normalise_ratio_to_errors:
             plt.ylabel( r'$\frac{1-2}{\sqrt{(\sigma_1)^2 + (\sigma_2)^2}}$', CMS.y_axis_title )
@@ -366,6 +364,13 @@ def make_shape_comparison_plot( shapes = [],
         if len( histogram_properties.ratio_y_limits ) == 2:
             ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
                       ymax = histogram_properties.ratio_y_limits[1] )
+        # dynamic tick placement
+        ticks = ax1.yaxis.get_ticklocs()
+        tick_min, tick_max = ticks[0], ticks[-1]
+        # limit to 3 ticks
+        tick_distance = abs(tick_max - tick_min)/4
+        ax1.yaxis.set_major_locator( MultipleLocator( tick_distance ) )
+        ax1.yaxis.set_minor_locator( MultipleLocator( tick_distance/2 ) )
     
     if CMS.tight_layout:
         plt.tight_layout()
