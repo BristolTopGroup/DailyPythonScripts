@@ -324,7 +324,7 @@ def make_shape_comparison_plot( shapes = [],
     if make_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
 
-        ratio = shapes[0].Clone( 'ratio' )
+        ratio = shapes_[0].Clone( 'ratio' )
         if normalise_ratio_to_errors:
             # TODO
             # this is a preliminary feature, use with care
@@ -342,7 +342,7 @@ def make_shape_comparison_plot( shapes = [],
                     ratio.SetBinContent(bin_i, numerator/denominator)
                     ratio.SetBinError(bin_i, denominator)
         else:
-            ratio.Divide( shapes[1] )
+            ratio.Divide( shapes_[1] )
 
         ratio.SetMarkerSize( 3 )
     
