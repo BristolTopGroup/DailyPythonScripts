@@ -35,9 +35,12 @@ class Histogram_properties:
     legend_columns = 1
     has_ratio = False
     ratio_y_limits = []
+    rebin = 1
     
-    def __init__( self ):
-        pass
+    def __init__( self, dictionary = {} ):
+        for name, value in dictionary.iteritems():
+            if hasattr( self, name ):
+                setattr( self, name, value )
 
 # prototype
 class Control_plot:
