@@ -502,7 +502,6 @@ if __name__ == '__main__':
         TTJet_file = File( measurement_config.ttbar_category_templates[category] )
         SingleTop_file = File( measurement_config.SingleTop_category_templates[category] )
         VJets_file = File( measurement_config.VJets_category_templates[category] )
-        muon_QCD_MC_file = File( measurement_config.muon_QCD_MC_category_templates['central'] )
         data_file_electron = File( measurement_config.data_electron_category_templates['central'] )
         data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
         if measurement_config.include_higgs:
@@ -561,7 +560,6 @@ if __name__ == '__main__':
         TTJet_file.Close()
         SingleTop_file.Close()
         VJets_file.Close()
-        muon_QCD_MC_file.Close()
         data_file_electron.Close()
         data_file_muon.Close()
         if Higgs_file:
@@ -572,7 +570,6 @@ if __name__ == '__main__':
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
     SingleTop_file = File( measurement_config.SingleTop_category_templates['central'] )
     VJets_file = File( measurement_config.VJets_category_templates['central'] )
-    muon_QCD_MC_file = File( measurement_config.muon_QCD_MC_category_templates['central'] )
     if measurement_config.include_higgs:
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
  
@@ -707,3 +704,4 @@ if __name__ == '__main__':
             write_fit_results_and_initial_values( 'electron', systematic + variation, fit_results_electron, initial_values_electron, templates_electron )
             write_fit_results_and_initial_values( 'muon', systematic + variation, fit_results_muon, initial_values_muon, templates_muon )
             write_fit_results( 'combined', systematic + variation, combine_complex_results( fit_results_electron, fit_results_muon ) )
+    
