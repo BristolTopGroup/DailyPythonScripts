@@ -16,7 +16,7 @@ git checkout AN-14-071_2nd_draft
 git submodule init && git submodule update
 
 # setup run:
-./setup_standalone.sh
+./setup.sh
 
 # setup environment (using virtualenv for python):
 source environment.sh
