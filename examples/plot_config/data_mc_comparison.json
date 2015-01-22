@@ -1,0 +1,47 @@
+{
+    "command": "compare-files", 
+    "files": [
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/SingleElectron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/QCD_Electron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/VJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/SingleTop_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    ],
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_2orMoreBtags"
+    ],
+    "labels": [
+        "data",
+        "QCD",
+        "W/Z + jets",
+        "single-top",
+        "$t\\bar{t}$"
+    ], 
+    "output_folder": "plots", 
+    "output_format": ["png"], 
+    "output_file": ["data_mc_test"],
+    "plot_type": "data_mc_comparison", 
+    "ratio_y_limits": [
+        [
+            0.8,
+            1.3
+        ]
+    ],
+    "title": [
+        "$E_T^{\\text{miss}}$ at $\\sqrt{s}$ = 8 TeV, e+jets"
+    ],
+    "x_axis_title": [
+        "$E_T^{\\text{miss}}$ [GeV]"
+    ],
+    "x_limits": [
+        [
+            0,
+            300
+        ]
+    ],
+    "y_axis_title": [
+        "events/5 GeV"
+    ],
+    "colours": ["black", "yellow", "green", "magenta", "red"],
+    "mc_error": [0.15]
+}

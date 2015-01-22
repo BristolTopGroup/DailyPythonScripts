@@ -1,0 +1,84 @@
+{
+    "command": "compare-files", 
+    "files": [
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/7TeV/central/WJets_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root", 
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/WJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    ], 
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_0orMoreBtag",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/HT_0orMoreBtag",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/ST_0orMoreBtag",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/WPT_0orMoreBtag",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/Transverse_Mass_0orMoreBtag",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/Electron/electron_AbsEta_0orMoreBtag",
+        "TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_0orMoreBtag",
+        "TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/HT_0orMoreBtag",
+        "TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/ST_0orMoreBtag",
+        "TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/WPT_0orMoreBtag",
+        "TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/Transverse_Mass_0orMoreBtag",
+        "TTbar_plus_X_analysis/MuPlusJets/Ref selection/Muon/muon_AbsEta_0orMoreBtag"
+    ], 
+    "labels": [
+        "8 TeV", 
+        "7 TeV"
+    ], 
+    "output_folder": "plots/WJets_comparison", 
+    "output_format": ["pdf"], 
+    "plot_type": "shape_comparison", 
+    "ratio_y_limits": [
+        [0.8, 1.3]
+    ], 
+    "title": [
+        "Comparison of W+Jets MC between $\\sqrt{s}$ = 7 and 8 TeV"
+    ], 
+    "x_axis_title": [
+        "$E_T^{\\text{miss}}$ [GeV]",
+        "$H_T$ [GeV]",
+        "$S_T$ [GeV]",
+        "$p_T(W)$ [GeV]",
+        "$M_T(W)$ [GeV]",
+        "$|\\eta(e)|$ [GeV]",
+		"$E_T^{\\text{miss}}$ [GeV]",
+        "$H_T$ [GeV]",
+        "$S_T$ [GeV]",
+        "$p_T(W)$ [GeV]",
+        "$M_T(W)$ [GeV]",
+        "$|\\eta(\\mu)|$ [GeV]"
+    ], 
+    "x_limits": [
+        [0, 300],
+        [120, 1000],
+        [150, 1000],
+        [0, 300],
+        [0, 150],
+        [0, 3],
+        [0, 300],
+        [120, 1000],
+        [150, 1000],
+        [0, 300],
+        [0, 150],
+        [0, 3]
+    ], 
+    "y_axis_title": [
+        "normalised to unit area"
+    ], 
+    "y_limits": [
+        [0, 0.09],
+        [0, 0.11],
+        [0, 0.09],
+        [0, 0.045],
+        [0, 0.09],
+        [0, 0.03],
+        [0, 0.09],
+        [0, 0.11],
+        [0, 0.09],
+        [0, 0.045],
+        [0, 0.09],
+        [0, 0.03]
+    ],
+    "rebin" : [
+    	1, 5, 5, 5, 5, 5,
+    	1, 5, 5, 5, 5, 5    	
+    ],
+    "colours": ["green", "yellow"]
+}

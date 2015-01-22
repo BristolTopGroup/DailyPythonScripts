@@ -35,9 +35,12 @@ class Histogram_properties:
     legend_columns = 1
     has_ratio = False
     ratio_y_limits = []
+    rebin = 1
     
-    def __init__( self ):
-        pass
+    def __init__( self, dictionary = {} ):
+        for name, value in dictionary.iteritems():
+            if hasattr( self, name ):
+                setattr( self, name, value )
 
 # prototype
 class Control_plot:
@@ -71,6 +74,7 @@ def make_data_mc_comparison_plot( histograms = [],
                                  show_stat_errors_on_mc = False,
                                  draw_vertical_line = 0,
                                  ):
+    save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
     histograms_ = deepcopy(histograms)     
     stack = HistStack()
@@ -203,6 +207,7 @@ def make_control_region_comparison( control_region_1, control_region_2,
 #                                   show_ratio = True,
                                    save_folder = 'plots/',
                                    save_as = ['pdf', 'png'] ):
+    save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
     control_region_1 = deepcopy( control_region_1 )
     control_region_2 = deepcopy( control_region_2 )
@@ -277,6 +282,7 @@ def make_shape_comparison_plot( shapes = [],
                                    save_folder = 'plots/',
                                    save_as = ['pdf', 'png'],
                                    normalise_ratio_to_errors = False ):
+    save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
     shapes_ = deepcopy(shapes)
     # normalise as we are comparing shapes
@@ -349,8 +355,6 @@ def make_shape_comparison_plot( shapes = [],
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
-        ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
-        ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         if normalise_ratio_to_errors:
             plt.ylabel( r'$\frac{1-2}{\sqrt{(\sigma_1)^2 + (\sigma_2)^2}}$', CMS.y_axis_title )
@@ -363,6 +367,13 @@ def make_shape_comparison_plot( shapes = [],
         if len( histogram_properties.ratio_y_limits ) == 2:
             ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
                       ymax = histogram_properties.ratio_y_limits[1] )
+        # dynamic tick placement
+        ticks = ax1.yaxis.get_ticklocs()
+        tick_min, tick_max = ticks[0], ticks[-1]
+        # limit to 3 ticks
+        tick_distance = abs(tick_max - tick_min)/4
+        ax1.yaxis.set_major_locator( MultipleLocator( tick_distance ) )
+        ax1.yaxis.set_minor_locator( MultipleLocator( tick_distance/2 ) )
     
     if CMS.tight_layout:
         plt.tight_layout()
@@ -378,7 +389,7 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
                                  draw_errorbar = False,
                                  draw_legend = True
                                  ):
-    
+    save_folder = check_save_folder(save_folder)
     histogram.SetTitle( histogram_label )
 #    histogram.SetMarkerSize(CMS.data_marker_size)
     # to be changed
@@ -442,7 +453,7 @@ def compare_measurements( models = {}, measurements = {},
             prescription as the models parameter.
         @param histogram_properties: a Histogram_properties object to describe the look of the histogram
     """
-    make_folder_if_not_exists(save_folder)
+    save_folder = check_save_folder(save_folder)
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     axes = plt.axes()
@@ -531,3 +542,15 @@ def get_best_max_y(histograms, include_error = True):
 
 def get_best_min_y(histograms, include_error = True):
     return min([histogram.min(include_error = include_error) for histogram in histograms])
+
+def check_save_folder(save_folder):
+    '''
+        Checks and fixes (if necessary) the save folder
+    '''
+    # save_folder should end with an '/'
+    if not save_folder.endswith('/'):
+        save_folder += '/'
+    # save_folder should exist
+    make_folder_if_not_exists(save_folder)
+    
+    return save_folder

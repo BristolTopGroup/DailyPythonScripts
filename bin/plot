@@ -1,0 +1,256 @@
+#!/usr/bin/env python
+'''
+plot <path to JSON config>
+
+Example:
+    plot examples/plot_config/w_jets_7_and_8_tev_comparison.json
+    NOTE: make sure the file paths are correct for your machine
+    
+Configuration keys
+========================================================================
+    command:
+        compare-files to compare the same histogram in different files
+        compare-hists to compare different histograms in the same file
+    files: 
+        list of ROOT files for input (>= 1)
+    
+    histograms: 
+        list of full histogram paths inside the files
+        
+    labels:
+        either enough labels for each file if command == compare-files or enough for each histogram if command == compare-hists
+    
+    output_folder:
+        folder to which the plots will be written to
+        
+    output_file: 
+        output file name; the default is the path of the histogram (command == compare-files) or the filename (compare-hists)
+        
+    x_limits:
+        min and max values for the x-axis
+    
+    y_limits:
+        min and max values for the y-axis
+    
+    ratio_y_limits:
+        min and max values for the y-axis of the ratio plot
+    
+    plot_type:
+        valid values are 'shape_comparison' or 'data_mc_comparison' 
+
+Example JSON config structure:
+========================================================================
+    {
+        "command": "compare-files", 
+        "files": [
+            "/storage/WJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root", 
+            "/storage/WJets_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+            ], 
+        "histograms": [
+            "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_0orMoreBtag"
+        ], 
+        "labels": [
+            "8 TeV", 
+            "7 TeV"
+        ], 
+        "output_file": "test", 
+        "output_folder": "plots", 
+        "output_format": "png", 
+        "plot_type": "shape_comparison", 
+        "ratio_y_limits": [
+            0.8, 
+            1.3
+        ], 
+        "title": "Comparison of W+Jets MC between $\\sqrt{s}$ = 7 and 8 TeV", 
+        "x_limits": [
+            0, 
+            300
+        ], 
+        "x_title": "$E_T^{\\text{miss}}$ [GeV]", 
+        "y_limits": [
+            0, 
+            0.09
+        ], 
+        "y_title": "normalised to unit area"
+    }
+    '''
+from optparse import OptionParser
+import sys
+from os.path import exists
+from tools.ROOT_utililities import set_root_defaults
+from tools.file_utilities import write_data_to_JSON, read_data_from_JSON
+from tools.HistSet import HistSet
+from copy import deepcopy
+
+supported_commands = ['compare-files', 'compare-hists']
+
+files = []
+histograms = []
+labels = []
+plot_options = {}
+global_options = ['files', 'histograms', 'labels', 'plot_type', 'output_folder',
+                  'output_format', 'command', 'data_index', 'normalise',
+                  'show_ratio', 'show_stat_errors_on_mc', 'colours']
+
+def main():
+    options, input_values_sets, json_input_files = parse_options()
+    if options.test:
+        input_values_sets = [setup_test_values()]
+        json_input_files = ['test.json']
+
+    for input_values, json_file in zip(input_values_sets, json_input_files):
+        print 'Processing', json_file
+        sets, plot_options = prepare_inputs( input_values )
+        for s, options in zip(sets, plot_options):
+            s.plot( options )
+
+def parse_options():
+    parser = OptionParser( __doc__ )
+    parser.add_option( "-t", "--test", dest = "test", action = "store_true",
+                      help = "Run with test values and write them to test.json" )
+    ( options, args ) = parser.parse_args()
+    
+    input_values_sets = []
+    json_input_files = []
+    add_set = input_values_sets.append
+    add_json_file = json_input_files.append
+    if not options.test:
+        for arg in args:
+            input_values = read_data_from_JSON(arg)
+            add_set(input_values)
+            add_json_file(arg)
+
+    return options, input_values_sets, json_input_files
+
+def check_and_fix_inputs( input_values ):
+    global files, histograms, labels, plot_options, supported_commands
+    
+    if not input_values['command'] in supported_commands:
+        _exit_( 'Command "%s" is not supported. Exiting ...' % input_values['command'] )
+    
+    if not input_values.has_key('files') or len(input_values['files']) == 0:
+        _exit_( 'No files have been defined.' )
+    else:
+        files = input_values['files']
+        for f in files:
+            # check if they exist
+            if not exists( f ):
+                return False, 'File "%s" does not exist' % f
+    if not input_values.has_key('histograms') or len(input_values['histograms']) == 0:
+        _exit_( 'No histograms have been defined.' )
+    else:
+        histograms = input_values['histograms']
+        # check if all are valid
+        
+    if not input_values.has_key('labels') or len(input_values['labels']) == 0:
+        _exit_( 'No labels have been defined.' )
+    else:
+        labels = input_values['labels']
+            
+    if not input_values.has_key('labels'):
+        _exit_( 'plot_type has not been defined.' )
+        
+    return input_values
+        
+def _exit_( msg ):
+    print msg
+    sys.exit()
+       
+       
+def prepare_inputs( input_values ):
+    input_values = check_and_fix_inputs( input_values )
+    global files, histograms, global_options
+
+    sets = group_by_command( input_values['command'] )
+
+    # now we have to group the plot options
+    plot_options = []
+    for i in range(len(sets)):
+        # first set them to input values
+        options = deepcopy(input_values)
+        for name, value in options.iteritems():
+            if not name in global_options:
+                # try and assign the first fitting
+                if len(value) >= i + 1:
+                    options[name] = value[i]
+                else:
+                    options[name] = value[0]
+        plot_options.append(options)
+
+    return sets, plot_options
+
+def group_by_command( command ):
+    '''
+        Selects the correct grouping. Whatever the command we would like to have
+        a tidy list of histogram sets. Each histogram set consists of a list of
+        file:histogra_path pairs
+    
+    '''
+    if command == 'compare-files':
+        return group_by_hist()
+    if command == 'compare-hists':
+        return group_by_file()
+    
+    return None
+
+def group_by_hist():
+    '''
+        This function should be used when comparing files.
+        For each histogram a set is created reading the histogram from different files.
+        Creates:
+        [{name:{f:h}, ...] where f = file and h = histogram path. The name is taken from the histogram path 
+    '''
+    global files, histograms, labels
+    hist_sets = []
+    for histogram in histograms:
+        name = histogram.replace( '/', '_' )
+        name = name.replace( ' ', '' )
+        hist_set = []
+        for f in files:
+            hist_set.append( ( f, histogram ) )
+        hist_sets.append( HistSet( name, hist_inputs = hist_set, output_hist_labels = labels ) )
+    return hist_sets
+
+def group_by_file():
+    '''
+        This function should be used when comparing histograms.
+        For each file a set is created reading different histograms.
+        Creates:
+        [{name:{f:h}, ...] where f = file and h = histogram path. The name is taken from the file name
+    '''
+    global files, histograms, labels
+    hist_sets = []
+    for f in files:
+        hist_set = []
+        name = f.split( '/' )[-1]
+        name = name.replace( '.root', '' )
+        for histogram in histograms:
+            hist_set.append( ( f, histogram ) )
+        hist_sets.append( HistSet( name, hist_inputs = hist_set, output_hist_labels = labels ) )
+    return hist_sets
+
+def setup_test_values():
+    test_values = {}
+    test_values['files'] = ['/storage/WJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root', '/storage/WJets_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root']
+    test_values['histograms'] = ['TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_0orMoreBtag']
+    test_values['labels'] = ['8 TeV', '7 TeV']
+    test_values['plot_type'] = 'shape_comparison'
+    test_values['x_limits'] = [[0,300]]
+    test_values['y_limits'] = [[0,0.09]]
+    test_values['ratio_y_limits'] = [[0.8, 1.3]]
+    test_values['title'] = ['Comparison of W+Jets MC between $\\sqrt{s}$ = 7 and 8 TeV']
+    test_values['output_folder'] = 'plots'
+    test_values['output_file'] = ['test']
+    test_values['output_format'] = ['png']
+    test_values['x_axis_title'] = ['$E_T^{\\text{miss}}$ [GeV]']
+    test_values['y_axis_title'] = ['normalised to unit area']
+    test_values['colours'] = ['green', 'yellow']
+    test_values['command'] = 'compare-files'
+    
+    write_data_to_JSON(test_values, 'test.json', indent = True)
+    
+    return test_values
+    
+if __name__ == '__main__':
+    set_root_defaults()
+    main()
