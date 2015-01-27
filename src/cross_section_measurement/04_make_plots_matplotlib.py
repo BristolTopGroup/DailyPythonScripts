@@ -13,7 +13,7 @@ value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_
 from math import sqrt
 # rootpy & matplotlib
 from ROOT import kRed, kGreen, kMagenta, kBlue, kBlack
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 import matplotlib as mpl
 from tools.plotting import get_best_max_y
 mpl.use( 'agg' )

@@ -7,7 +7,7 @@ from matplotlib.ticker import MultipleLocator
 import matplotlib.pyplot as plt
 
 from config import CMS
-from tools.ROOT_utililities import get_histograms_from_files, set_root_defaults
+from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
 
 from copy import deepcopy
 

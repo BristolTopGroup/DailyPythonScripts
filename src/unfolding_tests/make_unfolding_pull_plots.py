@@ -8,7 +8,7 @@ Created on 3 Mar 2013
 # but the fit is not saved :(
 # I could save the fit using EVAL ...
 from __future__ import division
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from optparse import OptionParser
 from glob import glob
 import sys

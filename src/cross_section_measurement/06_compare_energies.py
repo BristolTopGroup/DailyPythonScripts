@@ -18,7 +18,7 @@ from config import CMS
 from rootpy.plotting import Graph
 from ROOT import kRed, kMagenta, kBlue
 from matplotlib.ticker import MultipleLocator
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 
 output_formats = ['pdf', 'png']
 

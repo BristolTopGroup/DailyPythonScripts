@@ -1,6 +1,6 @@
 from config import CMS, XSectionConfig
 from optparse import OptionParser
-from tools.ROOT_utililities import get_histograms_from_files
+from tools.ROOT_utils import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 from tools.hist_utilities import prepare_histograms

@@ -16,7 +16,7 @@ different unfolding parameters k. Three kinds of tests are envisioned:
 from optparse import OptionParser
 from copy import deepcopy
 from ROOT import TH1F
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 import collections
 from rootpy.io import File
 

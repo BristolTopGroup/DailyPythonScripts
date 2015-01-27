@@ -12,7 +12,7 @@ from config import XSectionConfig
 from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import Minuit, RooFitFit, FitData, FitDataCollection
 from tools.file_utilities import write_data_to_JSON
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit
 from lib import closure_tests
 

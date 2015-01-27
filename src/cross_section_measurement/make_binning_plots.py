@@ -15,7 +15,7 @@ import matplotlib.cm as cm
 from config.latex_labels import b_tag_bins_latex, variables_latex
 from config.variable_binning import bin_edges
 from config import XSectionConfig
-from tools.ROOT_utililities import get_histogram_from_file
+from tools.ROOT_utils import get_histogram_from_file
 from tools.file_utilities import make_folder_if_not_exists
 
 from matplotlib import rc

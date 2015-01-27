@@ -1,7 +1,7 @@
 from config import CMS
-from tools.ROOT_utililities import get_histograms_from_files
+from tools.ROOT_utils import get_histograms_from_files
 
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 
 from make_control_region_plots import make_control_region_comparison
 from make_control_region_plots import make_control_region_data_mc_comparision

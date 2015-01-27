@@ -13,7 +13,7 @@ from tools.file_utilities import write_data_to_JSON, make_folder_if_not_exists
 from tools.Timer import Timer
 
 from time import clock, time
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from config import XSectionConfig
 
 def check_multiple_data_multiple_unfolding( input_file, method, channel ):

@@ -1,5 +1,5 @@
 from math import sqrt
-from tools.ROOT_utililities import get_histograms_from_files
+from tools.ROOT_utils import get_histograms_from_files
 from config import XSectionConfig
 
 cuts = None

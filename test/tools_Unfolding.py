@@ -9,7 +9,7 @@ import importlib
 from rootpy.io import File
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from tools.file_utilities import read_data_from_JSON
 from config.variable_binning import bin_edges
 

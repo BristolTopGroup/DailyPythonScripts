@@ -6,7 +6,7 @@ Created on 4 May 2013
 
 
 from config import CMS
-from tools.ROOT_utililities import get_histograms_from_files
+from tools.ROOT_utils import get_histograms_from_files
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 from tools.hist_utilities import prepare_histograms
                 

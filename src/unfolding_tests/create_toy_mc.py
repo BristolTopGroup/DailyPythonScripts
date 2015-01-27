@@ -20,7 +20,7 @@ from tools.file_utilities import make_folder_if_not_exists
 from rootpy.io import File
 from ROOT import TH1F
 from config import XSectionConfig
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 
 def main():
     set_root_defaults()
