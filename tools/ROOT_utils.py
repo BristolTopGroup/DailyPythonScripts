@@ -8,22 +8,16 @@ from rootpy.io import File
 from ROOT import gROOT
 gcd = gROOT.cd
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations
+from config.summations_common import b_tag_bins_exclusive
 
 def get_histogram_from_file( histogram_path, input_file ):
-    current_btag = b_tag_bins_inclusive[0]
-    found_btag = False
-    
-    for b_tag in b_tag_bins_inclusive:
-        if b_tag in histogram_path:
-            current_btag = b_tag
-            found_btag = True
-            break
+    current_btag, found_btag = find_btag(histogram_path)
     
     root_file = File( input_file )
     get_histogram = root_file.Get
     
     
-    if not found_btag:
+    if not found_btag or not current_btag in b_tag_summations.keys():
         root_histogram = get_histogram( histogram_path )
         if not is_valid_histogram( root_histogram, histogram_path, input_file ):
             return
@@ -52,7 +46,6 @@ def is_valid_histogram( histogram, histogram_name, file_name ):
         return False
     return True
 
-
 # Reads a single histogram from each given rootFile
 # and returns a dictionary with the same naming as 'files'
 def get_histogram_dictionary( histogram_path, files = {} ):
@@ -71,17 +64,10 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
         histograms[sample] = {}
         
         for histogram_path in histogram_paths:
-            current_btag = b_tag_bins_inclusive[0]
-            found_btag = False
-            
-            for b_tag in b_tag_bins_inclusive:
-                if b_tag in histogram_path:
-                    current_btag = b_tag
-                    found_btag = True
-                    break
+            current_btag, found_btag = find_btag(histogram_path)
             
             root_histogram = None
-            if not found_btag:
+            if not found_btag or not current_btag in b_tag_summations.keys():
                 root_histogram = get_histogram( histogram_path )
                 if not is_valid_histogram( root_histogram, histogram_path, input_file ):
                     return
@@ -107,13 +93,6 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
         root_file.Close()
     return histograms
 
-def root_file_mkdir( root_file, directory ):
-    pointer_to_directory = root_file.Get( directory )
-    if not pointer_to_directory:
-        root_file.mkdir( directory )  # if directory = a/b/c this will only return a, but make complete path
-        pointer_to_directory = root_file.Get( directory )
-    return pointer_to_directory
-    
 def get_histogram_info_tuple( histogram_in_path ):
     histogram_name = histogram_in_path.split( '/' )[-1]
     directory = ''.join( histogram_in_path.rsplit( histogram_name, 1 )[:-1] )
@@ -126,3 +105,50 @@ def set_root_defaults( set_batch = True, msg_ignore_level = 1001 ):
     gROOT.SetBatch( set_batch )
     # ignore warnings
     gROOT.ProcessLine( 'gErrorIgnoreLevel = %d;' % msg_ignore_level )
+
+def root_mkdir(file_handle, path):
+    '''
+        Equivalent to mkdir -p but for ROOT files.
+        Will create all the directories necessary to complete the given path
+        @param file_handle: file handle to an open ROOT file with write acccess
+        @param path: the path to be written to the ROOT file
+    '''
+    file_handle.cd()
+
+    directories = []
+    if '/' in path:
+        directories = path.split('/')
+    else:
+        directories = [path]
+
+    current_dir = ''
+    for directory in directories:
+        if current_dir == '':
+            current_dir = directory
+        else:
+            current_dir = current_dir + '/' + directory
+        if root_exists(file_handle, current_dir):
+            continue
+        file_handle.mkdir(current_dir)
+
+def root_exists(file_handle, path):
+    pointer_to_directory = None
+    try:
+        pointer_to_directory = file_handle.GetDirectory( path )
+    except:
+        return False
+    return not (pointer_to_directory is None)
+
+def find_btag( histogram_path ):
+    '''
+        function to determine if the histogram path contains a valid b-tag
+        multiplicity identifier (as specified in config.summations_common)
+        Returns (found b-tag, True) or (default b-tag, False)
+    '''
+    for b_tag in b_tag_bins_inclusive:
+        if b_tag in histogram_path:
+            return b_tag, True
+    for b_tag in b_tag_bins_exclusive:
+        if b_tag in histogram_path:
+            return b_tag, True
+    return b_tag_bins_inclusive[0], False
