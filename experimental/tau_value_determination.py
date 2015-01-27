@@ -163,7 +163,7 @@ def draw_l_shape( l_shape, best_tau, x_value, y_value, channel, variable ):
         plt.savefig( 'plots/tau_from_L_shape_%s_channel_%s_MC.png' % ( channel, variable ) )
 
 def get_data_histogram( channel, variable, met_type ):
-    fit_result_input = '../../data/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_result_input = 'data_single_var_fit/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
@@ -189,11 +189,12 @@ if __name__ == '__main__':
     set_root_defaults()
     use_data = True
     input_file_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
+    input_file_8Tev = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/unfolding/unfolding_TTJets_8TeV_asymmetric.root'
     met_type = 'patType1CorrectedPFMet'
     
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)
-    variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
+    variables = ['MET']#, 'WPT', 'MT' , 'ST', 'HT']
     centre_of_mass = 8
     ttbar_xsection = 225.2
     luminosity = 19712
