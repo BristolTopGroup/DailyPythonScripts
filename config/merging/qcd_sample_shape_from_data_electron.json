@@ -1,0 +1,23 @@
+{
+  "data_file": "/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/SingleElectron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+  "mc_file": "/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/QCD_Electron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+  "subtract_other_samples": {
+    "VJets": "/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/VJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+    "TTJet": "/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+    "SingleTop": "/storage/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/SingleTop_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+  },
+  "histogram_path": "TTbar_plus_X_analysis/EPlusJets/Ref selection/",
+  "normalisation_keyword_in_path": "Ref selection",
+  "shape_keyword_in_path": "QCDConversions",
+  "shape_btag": "0btag",
+  "shape_btag_for_exceptions": "1btag",
+  "shape_btag_exceptions": ["angle_bl", "M_bl"],
+  "remove_for_shape": ["_reweighted"],
+  "ignore_subpaths": [
+    "GenMET",
+    "JetRes",
+    "Vertices",
+    "Ref selection/Jets"
+    ],
+  "output_file": "QCD_Electron_from_conversions.root"
+}
