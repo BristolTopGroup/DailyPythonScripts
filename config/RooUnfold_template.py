@@ -4,7 +4,7 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 availablemethods = [
-#                     'RooUnfoldTUnfold', # not working under ROOT 6
+                    'RooUnfoldTUnfold',
                     'RooUnfoldBayes',
                     'RooUnfoldSvd',
                     'RooUnfoldBinByBin',
