@@ -6,7 +6,7 @@ from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
 from tools.hist_utilities import prepare_histograms
-from tools.ROOT_utililities import get_histograms_from_files, set_root_defaults
+from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
 
 def get_fitted_normalisation( variable, channel ):
     global path_to_JSON, category, met_type

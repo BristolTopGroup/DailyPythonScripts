@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from ROOT import TEfficiency, TGraphAsymmErrors, TF1, TLegend, TLatex
 from array import array
 from config import CMS
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 

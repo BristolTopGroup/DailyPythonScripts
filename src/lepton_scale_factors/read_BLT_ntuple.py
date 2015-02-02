@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import FormatStrFormatter, MultipleLocator
 from rootpy.plotting import Hist, Hist2D, Canvas, Efficiency
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from tools.file_utilities import make_folder_if_not_exists
 from tools.hist_utilities import hist_to_value_error_tuplelist
 from tools.plotting import make_plot, Histogram_properties

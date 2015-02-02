@@ -18,7 +18,7 @@ from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, \
 make_folder_if_not_exists
 from copy import deepcopy
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 
 def unfold_results( results, category, channel, k_value, h_truth, h_measured, h_response, h_fakes, method ):
     global variable, path_to_JSON, options

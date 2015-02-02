@@ -3,7 +3,7 @@ from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex
 from config.variable_binning import bin_edges, variable_bins_ROOT
 from config import XSectionConfig
-from tools.ROOT_utililities import get_histograms_from_files
+from tools.ROOT_utils import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
 from tools.plotting import Histogram_properties, make_control_region_comparison
 from tools.hist_utilities import value_error_tuplelist_to_hist, rebin_asymmetric

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from ROOT import TGraphAsymmErrors, TF1
 from array import array
 from config import CMS
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 import matplotlib.cm as cm
 from matplotlib.ticker import FormatStrFormatter
 

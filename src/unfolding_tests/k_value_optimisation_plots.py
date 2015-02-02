@@ -14,7 +14,7 @@ from optparse import OptionParser
 from rootpy.io import File
 import matplotlib
 from copy import deepcopy
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 
 from tools.file_utilities import make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, get_fit_results_histogram

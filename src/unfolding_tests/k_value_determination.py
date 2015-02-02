@@ -29,7 +29,7 @@ from copy import deepcopy
 
 from tools.file_utilities import make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, get_fit_results_histogram
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from config.variable_binning import bin_edges
 from config import CMS, XSectionConfig
