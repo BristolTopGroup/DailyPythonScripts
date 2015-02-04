@@ -25,8 +25,8 @@ class Histogram_properties:
     title = "Test"
     x_axis_title = "I am the x-axis"
     y_axis_title = "I am the y-axis"
-    x_limits = []
-    y_limits = []
+    x_limits = [] #[min, max]
+    y_limits = [] #[min, max]
     mc_error = 0.
     mc_errors_label = 'MC uncertainty'
     normalise = False
@@ -34,7 +34,7 @@ class Histogram_properties:
     set_log_y = False
     legend_columns = 1
     has_ratio = False
-    ratio_y_limits = []
+    ratio_y_limits = [] #[min, max]
     rebin = 1
     
     def __init__( self, dictionary = {} ):
@@ -184,14 +184,23 @@ def make_data_mc_comparison_plot( histograms = [],
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
-        ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
-        ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         plt.ylabel( 'data/MC', CMS.y_axis_title )
         rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
         if len( x_limits ) == 2:
             ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
-        ax1.set_ylim( ymin = 0, ymax = 2 )
+        if len( histogram_properties.ratio_y_limits ) == 2:
+            ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
+                      ymax = histogram_properties.ratio_y_limits[1] )
+
+        # dynamic tick placement
+        ticks = ax1.yaxis.get_ticklocs()
+        tick_min, tick_max = ticks[0], ticks[-1]
+        # limit to 3 ticks
+        tick_distance = abs(tick_max - tick_min)/4
+        ax1.yaxis.set_major_locator( MultipleLocator( tick_distance ) )
+        ax1.yaxis.set_minor_locator( MultipleLocator( tick_distance/2 ) )
+
 
     if CMS.tight_layout:
         plt.tight_layout()
