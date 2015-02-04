@@ -586,6 +586,10 @@ if __name__ == '__main__':
                     met_type = 'patPFMetJetEnDown'
             
             if not channel == 'combined':
+                #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
+                #in the unfolding process with BLT unfolding files.
+                if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:
+                    continue
                 fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
                 make_template_plots( fit_templates, category, channel )
                 plot_fit_results( fit_results, category, channel )
