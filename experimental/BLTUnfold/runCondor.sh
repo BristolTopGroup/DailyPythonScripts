@@ -19,10 +19,13 @@ eval `scramv1 runtime -sh`
 . environment.sh
 rm -r unfolding
 mkdir unfolding
-python experimental/BLTUnfold/runJobsCrab.py -j $1
+time python experimental/BLTUnfold/runJobsCrab.py -j $1
 
+echo "Unfolding folder contents:"
 ls unfolding
 tar -cf unfolding.$2.$1.tar unfolding
 mv unfolding.$2.$1.tar ../../../
+echo "DailyPythonScripts folder contents:"
 ls
+echo "Base folder contents:"
 ls ../../../
