@@ -12,12 +12,10 @@ import subprocess
 import time
 
 parser = OptionParser("Merge histogram files on DICE")
-parser.add_option("-n", dest="jobNumber", default=-1,
-                  type='int',
+parser.add_option("-n", dest="jobNumber", default=-1, type='int',
                   help="Specify which job number to run")
-parser.add_option("-c", dest="com",
-                  type='int',
-                  help="Specify com")
+parser.add_option("-c", dest="com", type='int',
+                  help="Specify centre of mass energy")
 parser.add_option("--listJobs", dest="listJobs", action='store_true', default=False,
                   help="Just list the jobs to run and the total number of jobs")
 (options, _) = parser.parse_args()
@@ -27,7 +25,7 @@ if options.jobNumber < 0:
     sys.exit()
 
 if options.com != 7 and options.com != 8:
-    print "Com must be 7 or 8 TeV"
+    print "Centre of mass must be 7 or 8 TeV"
     print "You've chosen",options.com
     sys.exit()
 
@@ -58,34 +56,30 @@ print path_to_AN_folder_hdfs
 # Make list of all samples to be merged
 allJobs = []
 for category in config.categories_and_prefixes.keys():
-    if category is not 'central':
-      continue
     for sample, input_samples in sample_summations.iteritems():
         # Only consider these samples
-        if not sample in ['QCD_Electron', 'QCD_Muon']:
-          continue
-        # if not sample in ['WJets', 'DYJets', 'VJets-matchingup',
-        #                   'VJets-matchingdown', 'VJets-scaleup',
-        #                   'VJets-scaledown','QCD_Electron', 
-        #                   'QCD_Muon', 'VJets',
-        #                   'SingleTop']: #
-        #     continue
+        if not sample in ['WJets', 'DYJets', 'VJets-matchingup',
+                          'VJets-matchingdown', 'VJets-scaleup',
+                          'VJets-scaledown','QCD_Electron', 
+                          'QCD_Muon', 'VJets',
+                          'SingleTop']: #
+            continue
         # Only consider these samples for central
-        # if sample in ['WJets', 'DYJets', 'VJets-matchingup',
-        #               'VJets-matchingdown', 'VJets-scaleup',
-        #               'VJets-scaledown']:
-        #               if category is not 'central':
-        #                 continue
+        if sample in ['WJets', 'DYJets', 'VJets-matchingup',
+                      'VJets-matchingdown', 'VJets-scaleup',
+                      'VJets-scaledown']:
+                      if category is not 'central':
+                        continue
         allJobs.append( [category, sample, input_samples])
 
 
 if options.listJobs:
   print allJobs
-  print 'Total number of jobs for com ',options.com,':',len(allJobs)
+  print 'Total number of jobs for centre of mass ',options.com,':',len(allJobs)
   sys.exit()
   
 if options.jobNumber > (len(allJobs)-1):
-    print 'Job number',options.jobNumber,' too large'
+    print 'Job number',options.jobNumber,'too large'
     print 'Total number of possible jobs :',len(allJobs)
     print 'Largest possible job number : ',len(allJobs)-1
     sys.exit()
@@ -115,7 +109,7 @@ else :
 # Now move output file to hdfs
 # Check if file already exists on hdfs
 if os.path.exists( output_file_hdfs ):
-  print "Output file on hdfs all ready exists.  Removing and replacing with new version."
+  print "Output file on hdfs already exists.  Removing and replacing with new version."
   command = 'hadoop fs -rm -skipTrash ' + output_file_hdfs.split('/hdfs')[-1]
   p = subprocess.Popen(command, shell=True)
   p.wait()
