@@ -291,11 +291,11 @@ def clean_control_region(histograms = {},
             data_hist -= histogram
     # next make sure there are no negative events
     if fix_to_zero:
-        for bin_i, y in enumerate(data_hist.y()):
+        for bin_i, y in enumerate(data_hist.y(overflow=True)):
             if y < 0:
-                data_hist.SetBinContent(bin_i + 1, 0)
+                data_hist.SetBinContent(bin_i, 0)
                 # add the difference to 0 to the existing error
-                data_hist.SetBinError(bin_i, data_hist.GetBinError(bin_i + 1) + abs(y))
+                data_hist.SetBinError(bin_i, data_hist.GetBinError(bin_i) + abs(y))
     return data_hist
 
 def adjust_overflow_to_limit(histogram, x_min, x_max):
