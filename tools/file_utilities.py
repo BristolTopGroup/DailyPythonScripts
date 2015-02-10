@@ -91,11 +91,24 @@ def find_duplicate_CRAB_output_files(job_files):
             seen.append(job)
     return duplicates
 
-def merge_ROOT_files(file_list, output_file, compression = 7):
+def merge_ROOT_files(file_list, output_file, compression = 7, waitToFinish=False ):
     input_files = ' '.join(file_list)
     output_log_file = output_file.replace(".root", ".log")
-    command = 'nice -n 19 hadd -f%d %s %s >& %s &' %(compression, output_file, input_files, output_log_file)
-    subprocess.Popen(command, shell=True)
+
+    if waitToFinish:
+        # command = 'hadd -f%d %s %s >& %s' %(compression, output_file, input_files, output_log_file)
+        command = 'hadd -f%d %s %s' %(compression, output_file, input_files)
+    else:
+        command = 'nice -n 19 hadd -f%d %s %s >& %s &' %(compression, output_file, input_files, output_log_file)
+
+    p = subprocess.Popen(command, shell=True)
+
+    if waitToFinish:
+        print 'Waiting to finish merging...'
+        p.wait()
+
+
+
 
 def get_process_from_file(file_in_path):
     file_name = file_in_path.split('/')[-1]

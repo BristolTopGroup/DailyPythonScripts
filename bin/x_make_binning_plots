@@ -4,7 +4,7 @@ mkdir -p logs
 mkdir -p plots
 fit_var="absolute_eta,M3,angle_bl"
 nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
-N_JOBS=8
+N_JOBS=6
 
 i=0
 echo "Making binning plots"

@@ -85,8 +85,10 @@ def data_covariance_matrix( data ):
     return cov_matrix
 
 def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
-    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_mcatnlo, file_for_ptreweight, files_for_pdfs
+    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_ptreweight, files_for_pdfs
     global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
+    if centre_of_mass == 8:
+        global file_for_mcatnlo
     global file_for_matchingdown, file_for_matchingup, file_for_scaledown, file_for_scaleup
     global file_for_massdown, file_for_massup
     global ttbar_generator_systematics, ttbar_theory_systematics, pdf_uncertainties
@@ -164,7 +166,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
                                                 )
-    h_truth_MCATNLO, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_mcatnlo,
+    if centre_of_mass == 8:
+        h_truth_MCATNLO, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_mcatnlo,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -224,7 +227,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
     MADGRAPH_ptreweight_results = hist_to_value_error_tuplelist( h_truth_ptreweight )
     POWHEG_PYTHIA_results = hist_to_value_error_tuplelist( h_truth_POWHEG_PYTHIA )
     POWHEG_HERWIG_results = hist_to_value_error_tuplelist( h_truth_POWHEG_HERWIG )
-    MCATNLO_results = hist_to_value_error_tuplelist( h_truth_MCATNLO )
+    if centre_of_mass == 8:
+        MCATNLO_results = hist_to_value_error_tuplelist( h_truth_MCATNLO )
     
     matchingdown_results = hist_to_value_error_tuplelist( h_truth_matchingdown )
     matchingup_results = hist_to_value_error_tuplelist( h_truth_matchingup )
@@ -242,7 +246,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                 method
                                                 )
         
-    normalisation_unfolded = {
+    if centre_of_mass == 8:
+        normalisation_unfolded = {
                               'TTJet_measured' : TTJet_fit_results,
                               'TTJet_unfolded' : TTJet_fit_results_unfolded,
                               'MADGRAPH': MADGRAPH_results,
@@ -257,7 +262,21 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                               'scaledown': scaledown_results,
                               'scaleup': scaleup_results
                               }
-    
+    else:
+        normalisation_unfolded = {
+                              'TTJet_measured' : TTJet_fit_results,
+                              'TTJet_unfolded' : TTJet_fit_results_unfolded,
+                              'MADGRAPH': MADGRAPH_results,
+                              'MADGRAPH_ptreweight': MADGRAPH_ptreweight_results,
+                              # other generators
+                              'POWHEG_PYTHIA': POWHEG_PYTHIA_results,
+                              'POWHEG_HERWIG': POWHEG_HERWIG_results,
+                              # systematics
+                              'matchingdown': matchingdown_results,
+                              'matchingup': matchingup_results,
+                              'scaledown': scaledown_results,
+                              'scaleup': scaleup_results
+                              }
     return normalisation_unfolded
     
 def calculate_xsections( normalisation, category, channel, k_value = None ):
@@ -272,19 +291,34 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
     MADGRAPH_ptreweight_xsection = calculate_xsection( normalisation['MADGRAPH_ptreweight'], luminosity, branching_ratio )  # L in pb1
     POWHEG_PYTHIA_xsection = calculate_xsection( normalisation['POWHEG_PYTHIA'], luminosity, branching_ratio )  # L in pb1
     POWHEG_HERWIG_xsection = calculate_xsection( normalisation['POWHEG_HERWIG'], luminosity, branching_ratio )  # L in pb1
-    MCATNLO_xsection = calculate_xsection( normalisation['MCATNLO'], luminosity, branching_ratio )  # L in pb1
+    if centre_of_mass == 8:
+        MCATNLO_xsection = calculate_xsection( normalisation['MCATNLO'], luminosity, branching_ratio )  # L in pb1
     matchingdown_xsection = calculate_xsection( normalisation['matchingdown'], luminosity, branching_ratio )  # L in pb1
     matchingup_xsection = calculate_xsection( normalisation['matchingup'], luminosity, branching_ratio )  # L in pb1
     scaledown_xsection = calculate_xsection( normalisation['scaledown'], luminosity, branching_ratio )  # L in pb1
     scaleup_xsection = calculate_xsection( normalisation['scaleup'], luminosity, branching_ratio )  # L in pb1
     
-    xsection_unfolded = {'TTJet_measured' : TTJet_xsection,
+    if centre_of_mass == 8:
+        xsection_unfolded = {'TTJet_measured' : TTJet_xsection,
                          'TTJet_unfolded' : TTJet_xsection_unfolded,
                          'MADGRAPH': MADGRAPH_xsection,
                          'MADGRAPH_ptreweight': MADGRAPH_ptreweight_xsection,
                          'POWHEG_PYTHIA': POWHEG_PYTHIA_xsection,
                          'POWHEG_HERWIG': POWHEG_HERWIG_xsection,
                          'MCATNLO': MCATNLO_xsection,
+                         # systematics
+                         'matchingdown': matchingdown_xsection,
+                         'matchingup': matchingup_xsection,
+                         'scaledown': scaledown_xsection,
+                         'scaleup': scaleup_xsection
+                         }
+    else:
+        xsection_unfolded = {'TTJet_measured' : TTJet_xsection,
+                         'TTJet_unfolded' : TTJet_xsection_unfolded,
+                         'MADGRAPH': MADGRAPH_xsection,
+                         'MADGRAPH_ptreweight': MADGRAPH_ptreweight_xsection,
+                         'POWHEG_PYTHIA': POWHEG_PYTHIA_xsection,
+                         'POWHEG_HERWIG': POWHEG_HERWIG_xsection,
                          # systematics
                          'matchingdown': matchingdown_xsection,
                          'matchingup': matchingup_xsection,
@@ -308,19 +342,34 @@ def calculate_normalised_xsections( normalisation, category, channel, k_value = 
     MADGRAPH_ptreweight_normalised_xsection = calculate_normalised_xsection( normalisation['MADGRAPH_ptreweight'], bin_widths[variable], normalise_to_one )
     POWHEG_PYTHIA_normalised_xsection = calculate_normalised_xsection( normalisation['POWHEG_PYTHIA'], bin_widths[variable], normalise_to_one )
     POWHEG_HERWIG_normalised_xsection = calculate_normalised_xsection( normalisation['POWHEG_HERWIG'], bin_widths[variable], normalise_to_one )
-    MCATNLO_normalised_xsection = calculate_normalised_xsection( normalisation['MCATNLO'], bin_widths[variable], normalise_to_one )
+    if centre_of_mass == 8:
+        MCATNLO_normalised_xsection = calculate_normalised_xsection( normalisation['MCATNLO'], bin_widths[variable], normalise_to_one )
     matchingdown_normalised_xsection = calculate_normalised_xsection( normalisation['matchingdown'], bin_widths[variable], normalise_to_one )
     matchingup_normalised_xsection = calculate_normalised_xsection( normalisation['matchingup'], bin_widths[variable], normalise_to_one )
     scaledown_normalised_xsection = calculate_normalised_xsection( normalisation['scaledown'], bin_widths[variable], normalise_to_one )
     scaleup_normalised_xsection = calculate_normalised_xsection( normalisation['scaleup'], bin_widths[variable], normalise_to_one )
     
-    normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
+    if centre_of_mass == 8:
+        normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
                            'TTJet_unfolded' : TTJet_normalised_xsection_unfolded,
                            'MADGRAPH': MADGRAPH_normalised_xsection,
                            'MADGRAPH_ptreweight': MADGRAPH_ptreweight_normalised_xsection,
                            'POWHEG_PYTHIA': POWHEG_PYTHIA_normalised_xsection,
                            'POWHEG_HERWIG': POWHEG_HERWIG_normalised_xsection,
                            'MCATNLO': MCATNLO_normalised_xsection,
+                           # systematics
+                           'matchingdown': matchingdown_normalised_xsection,
+                           'matchingup': matchingup_normalised_xsection,
+                           'scaledown': scaledown_normalised_xsection,
+                           'scaleup': scaleup_normalised_xsection
+                           }
+    else:
+        normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
+                           'TTJet_unfolded' : TTJet_normalised_xsection_unfolded,
+                           'MADGRAPH': MADGRAPH_normalised_xsection,
+                           'MADGRAPH_ptreweight': MADGRAPH_ptreweight_normalised_xsection,
+                           'POWHEG_PYTHIA': POWHEG_PYTHIA_normalised_xsection,
+                           'POWHEG_HERWIG': POWHEG_HERWIG_normalised_xsection,
                            # systematics
                            'matchingdown': matchingdown_normalised_xsection,
                            'matchingup': matchingup_normalised_xsection,
@@ -386,7 +435,8 @@ if __name__ == '__main__':
     file_for_unfolding = File( measurement_config.unfolding_madgraph, 'read' )
     file_for_powheg_pythia = File( measurement_config.unfolding_powheg_pythia, 'read' )
     file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
-    file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
+    if centre_of_mass == 8:
+        file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
     file_for_ptreweight = File ( measurement_config.unfolding_ptreweight, 'read' )
     files_for_pdfs = { 'PDFWeights_%d' % index : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 1, 45 ) }
         

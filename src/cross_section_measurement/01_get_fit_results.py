@@ -246,6 +246,10 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
         if options.enable_constraints:
             fit_data_collection.set_normalisation_constraints( {'QCD': 2.0, 'V+Jets': 0.5} )
 
+#         print "fit_data_collection = ", fit_data_collection
+#         print "fit_data = ", fit_data
+# #         print "len(fit_data) = ", len(fit_data)
+#         print "fit_data_collection.fit_variable = ", fit_data_collection.fit_data
         if use_fitter == 'RooFit':
             fitter = RooFitFit( fit_data_collection )
         elif use_fitter == 'Minuit':
@@ -323,6 +327,8 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
                     templates[fit_variable][sample].append( fit_data_collection.vectors( fit_variable )[sample] )
 
 #     print "results = ", results
+        del fit_data_collection
+        del fitter
     return results, initial_values, templates
 
 def write_fit_results_and_initial_values( channel, category, fit_results, initial_values, templates ):
@@ -391,7 +397,7 @@ if __name__ == '__main__':
                       help = "Just run the central measurement" )
     parser.add_option( '--disable-constraints', dest = "enable_constraints", 
                        action = "store_false", default=True,
-                       help = "Do not make a combined template from TTbar and single top" )
+                       help = "Do not constrain QCD and VJets templates." )
 
     translate_options = {
                         '0':'0btag',
@@ -454,6 +460,14 @@ if __name__ == '__main__':
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
 
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
+
+    #Using 8 TeV VJets systematic samples for 7 TeV so need to scale: 
+    #vjets ratio = sigma(7TeV)*lumi(7TeV)/(sigma(8TeV)*lumi(8TeV))
+    vjets_ratio = ( 31314 * 5050 ) / ( 36257.2 * 19584 )
+    scale_factors = {}
+    if measurement_config.centre_of_mass_energy == 7:
+        scale_factors['V+Jets'] = vjets_ratio
+    
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
         if run_just_central:  # no systematics for closure test
@@ -472,27 +486,33 @@ if __name__ == '__main__':
                       variable = variable,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
+                      scale_factors = scale_factors,
                       )
 
-        fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
-                      input_files = {
-                                   'TTJet': TTJet_file,
-                                   'SingleTop': SingleTop_file,
-                                   'V+Jets': VJets_file,
-                                   'data': data_file_muon,
-                                   'Higgs' : Higgs_file,
-                                   },
-                      variable = variable,
-                      met_type = met_type,
-                      b_tag_bin = b_tag_bin,
-                      )
+#         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
+#                       input_files = {
+#                                    'TTJet': TTJet_file,
+#                                    'SingleTop': SingleTop_file,
+#                                    'V+Jets': VJets_file,
+#                                    'data': data_file_muon,
+#                                    'Higgs' : Higgs_file,
+#                                    },
+#                       variable = variable,
+#                       met_type = met_type,
+#                       b_tag_bin = b_tag_bin,
+#                       scale_factors = scale_factors,
+#                       )
 
         write_fit_results_and_initial_values( 'electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron )
-        write_fit_results_and_initial_values( 'muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon )
-        write_fit_results( 'combined', vjets_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
+#         write_fit_results_and_initial_values( 'muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon )
+#         write_fit_results( 'combined', vjets_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
         VJets_file.Close()
 
+    #reset template back to central
     VJets_file = File( measurement_config.VJets_category_templates['central'] )
+    del scale_factors
+    import sys
+    sys.exit()
 
     # central measurement and the rest of the systematics
     last_systematic = ''

@@ -210,7 +210,7 @@ class Minuit():
         #            =  1  verbose
         #            =  2  additional output giving intermediate results.
         #            =  3  maximum output, showing progress of minimizations.
-        gMinuit.SetPrintLevel( -1 )
+        gMinuit.SetPrintLevel( 3 )
 
         # Error definition: 1 for chi-squared, 0.5 for negative log likelihood
         # SETERRDEF<up>: Sets the value of UP (default value= 1.), defining parameter errors.
@@ -287,7 +287,7 @@ class Minuit():
 #         results['contour'] = [gMinuit.Contour(100, 0, 1)]
 #         gMinuit.SetErrorDef(4)
 #         results['contour'].append(gMinuit.Contour(100, 0, 1))
-
+        del gMinuit
         self.results = results
 
     def logLikelihood( self, nParameters, gin, f, par, iflag ):
