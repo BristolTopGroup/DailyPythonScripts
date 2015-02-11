@@ -454,6 +454,13 @@ if __name__ == '__main__':
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
 
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
+    # Using 8 TeV VJets systematic samples for 7 TeV so need to scale:
+    # vjets ratio = sigma(7TeV)*lumi(7TeV)/(sigma(8TeV)*lumi(8TeV))
+    vjets_ratio = ( 31314 * 5050 ) / ( 36257.2 * 19584 )
+    scale_factors = {}
+    if measurement_config.centre_of_mass_energy == 7:
+        scale_factors['V+Jets'] = vjets_ratio
+
     # matching/scale up/down systematics for V+Jets
     for systematic in generator_systematics:
         if run_just_central:  # no systematics for closure test
@@ -472,6 +479,7 @@ if __name__ == '__main__':
                       variable = variable,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
+                      scale_factors = scale_factors,
                       )
 
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
@@ -485,6 +493,7 @@ if __name__ == '__main__':
                       variable = variable,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
+                      scale_factors = scale_factors,
                       )
 
         write_fit_results_and_initial_values( 'electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron )
@@ -492,7 +501,9 @@ if __name__ == '__main__':
         write_fit_results( 'combined', vjets_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
         VJets_file.Close()
 
+    # reset template back to central
     VJets_file = File( measurement_config.VJets_category_templates['central'] )
+    del scale_factors
 
     # central measurement and the rest of the systematics
     last_systematic = ''
@@ -704,4 +715,4 @@ if __name__ == '__main__':
             write_fit_results_and_initial_values( 'electron', systematic + variation, fit_results_electron, initial_values_electron, templates_electron )
             write_fit_results_and_initial_values( 'muon', systematic + variation, fit_results_muon, initial_values_muon, templates_muon )
             write_fit_results( 'combined', systematic + variation, combine_complex_results( fit_results_electron, fit_results_muon ) )
-    
+
