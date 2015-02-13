@@ -74,19 +74,27 @@ def copyEventFilterHist( inputFile, outputFile ):
 
 fileNames = {
              '8TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_MassiveBinDECAY_TuneZ2star_8TeV/TTJets_nTuple_53X_mc_merged.root',
-                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/TTJets-scaleup_nTuple_53X_mc_merged.root',
-                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/TTJets-scaledown_nTuple_53X_mc_merged.root',
-                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/TTJets-matchingup_nTuple_53X_mc_merged.root',
-                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/TTJets-matchingdown_nTuple_53X_mc_merged.root',
-                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_CT10_TuneZ2star_8TeV-powheg-tauola/TTJets_nTuple_53X_mc_merged.root',
-                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_CT10_AUET2_8TeV-powheg-herwig/TTJets_nTuple_53X_mc_merged.root',
-                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TT_8TeV-mcatnlo/TTJets_nTuple_53X_mc_merged.root',
+                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_central_8.root',
+                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_scaleup_8.root',
+                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_scaledown_8.root',
+                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingup_8.root',
+                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingdown_8.root',
+                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TT_powhegPythia_8.root',
+                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TT_powhegHerwig_8.root',
+                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_mcatnlo_8.root',
+                   'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_mass1695_8.root',
+                   'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_mass1735_8.root',
                 },
              '7TeV' : {
-                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/TTJets_nTuple_53X_mc_merged.root',
-                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_scaledown_TuneZ2star_7TeV-madgraph-tauola/TTJets-scaledown_nTuple_53X_mc_merged.root',
-                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_MSDecays_scaleup_TuneZ2star_7TeV-madgraph-tauola/TTJets-scaleup_nTuple_53X_mc_merged.root',
+                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_central.root',
+                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_scaledown.root',
+                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_scaleup.root',
+                       'matchingdown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingdown.root',
+                       'matchingup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingup.root',
+                       'massdown' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_mass1695.root',
+                       'massup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_mass1735.root',
+                       'powheg' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TT_powheg_pythia.root',
+                       'powhegherwig' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TT_powheg_herwig.root',
                        }
              }
 
@@ -177,14 +185,8 @@ def main():
                 # Variable names in tree
                 genSelection = '( unfolding.GenSelection == 1 )'
                 genWeight = '( unfolding.puWeight )'
-                # PU weights dodgy for 7 TeV, but should be v. close to 1
-                if options.is7TeVData:
-                    genWeight = '( 1 )'
                 offlineSelection = '( unfolding.OfflineSelection == 1 )'
                 offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
-                # PU weights dodgy for 7 TeV, but should be v. close to 1
-                if options.is7TeVData:
-                    offlineWeight = '( unfolding.bTagWeight )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
                 genVariable = 'unfolding.gen'+variable
                 recoVariable = 'unfolding.reco'+variable
@@ -204,7 +206,8 @@ def main():
                     pass
                                 
                 # Scale factors
-                scaleFactor = getScaleFactor( options.is7TeVData, channel.channelName )
+                # scaleFactor = getScaleFactor( options.is7TeVData, channel.channelName )
+                scaleFactor = '( unfolding.leptonWeight )'
                 offlineWeight += ' * '+scaleFactor
 
                 # Histograms to fill
