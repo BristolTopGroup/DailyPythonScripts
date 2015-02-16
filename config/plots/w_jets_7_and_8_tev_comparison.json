@@ -1,8 +1,8 @@
 {
     "command": "compare-files", 
-    "files": [
-        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/7TeV/central/WJets_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root", 
-        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/central/WJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    "files": [ 
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/WJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/central/WJets_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
     ], 
     "histograms": [
         "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_0orMoreBtag",

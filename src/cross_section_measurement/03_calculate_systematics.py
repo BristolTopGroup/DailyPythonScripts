@@ -231,7 +231,7 @@ if __name__ == "__main__":
     other_uncertainties_list.extend( rate_changing_systematics_list )
 
     for channel in ['electron', 'muon', 'combined']:
-        print "channel = ", channel
+#         print "channel = ", channel
         # read central measurement
         central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement( 'central', channel )
         
