@@ -13,7 +13,7 @@ from config import CMS
 from matplotlib.patches import Rectangle
 from copy import deepcopy
 import matplotlib.gridspec as gridspec
-from matplotlib.ticker import MultipleLocator
+from matplotlib.ticker import MultipleLocator, FixedLocator
 from itertools import cycle
 
 from matplotlib import rc
@@ -194,13 +194,7 @@ def make_data_mc_comparison_plot( histograms = [],
                       ymax = histogram_properties.ratio_y_limits[1] )
 
         # dynamic tick placement
-        ticks = ax1.yaxis.get_ticklocs()
-        tick_min, tick_max = ticks[0], ticks[-1]
-        # limit to 3 ticks
-        tick_distance = abs(tick_max - tick_min)/4
-        ax1.yaxis.set_major_locator( MultipleLocator( tick_distance ) )
-        ax1.yaxis.set_minor_locator( MultipleLocator( tick_distance/2 ) )
-
+        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -265,8 +259,8 @@ def make_control_region_comparison( control_region_1, control_region_2,
     ax1 = plt.subplot( gs[1] )
     ax1.minorticks_on()
     ax1.grid( True, 'major', linewidth = 1 )
-    ax1.yaxis.set_major_locator( MultipleLocator( 1.0 ) )
-    ax1.yaxis.set_minor_locator( MultipleLocator( 0.5 ) )
+    # dynamic tick placement
+    adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
     set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
     plt.ylabel( '(1)/(2)', CMS.y_axis_title )
     rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
@@ -377,12 +371,7 @@ def make_shape_comparison_plot( shapes = [],
             ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
                       ymax = histogram_properties.ratio_y_limits[1] )
         # dynamic tick placement
-        ticks = ax1.yaxis.get_ticklocs()
-        tick_min, tick_max = ticks[0], ticks[-1]
-        # limit to 3 ticks
-        tick_distance = abs(tick_max - tick_min)/4
-        ax1.yaxis.set_major_locator( MultipleLocator( tick_distance ) )
-        ax1.yaxis.set_minor_locator( MultipleLocator( tick_distance/2 ) )
+        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
     
     if CMS.tight_layout:
         plt.tight_layout()
@@ -563,3 +552,16 @@ def check_save_folder(save_folder):
     make_folder_if_not_exists(save_folder)
     
     return save_folder
+
+def adjust_ratio_ticks( axis, n_ticks = 3 ):
+    # dynamic tick placement
+    ticks = axis.get_ticklocs()
+    tick_min, tick_max = ticks[0], ticks[-1]
+    # limit to 3 ticks
+    tick_distance = abs( tick_max - tick_min ) / ( n_ticks + 1 )
+    includes_one = tick_max > 1 and tick_min < 1
+    if includes_one:
+        axis.set_major_locator( FixedLocator( [tick_min + tick_distance/2, 1, tick_max - tick_distance/2] ) )
+    else:
+        axis.set_major_locator( MultipleLocator( tick_distance ) )
+        axis.set_minor_locator( MultipleLocator( tick_distance / 2 ) )
