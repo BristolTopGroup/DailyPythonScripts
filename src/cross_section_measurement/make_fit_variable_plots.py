@@ -103,8 +103,9 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                       fit_variable_distribution, qcd_fit_variable_distribution,
                       title, save_path ):
     global fit_variable_properties, b_tag_bin, save_as, b_tag_bin_ctl
+    histograms_ = deepcopy(histograms)
     mc_uncertainty = 0.10
-    prepare_histograms( histograms, rebin = fit_variable_properties[fit_variable]['rebin'], scale_factor = measurement_config.luminosity_scale )
+    prepare_histograms( histograms_, rebin = fit_variable_properties[fit_variable]['rebin'], scale_factor = measurement_config.luminosity_scale )
     
     histogram_properties = Histogram_properties()
     histogram_properties.x_axis_title = fit_variable_properties[fit_variable]['x-title']
@@ -113,20 +114,20 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
 
     histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
     histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
-#     qcd_from_data = histograms['data'][qcd_fit_variable_distribution].Clone()
+#     qcd_from_data = histograms_['data'][qcd_fit_variable_distribution].Clone()
     # clean against other processes
-    histograms_for_cleaning = {'data':histograms['data'][qcd_fit_variable_distribution],
-                               'V+Jets':histograms['V+Jets'][qcd_fit_variable_distribution],
-                               'SingleTop':histograms['SingleTop'][qcd_fit_variable_distribution],
-                               'TTJet':histograms['TTJet'][qcd_fit_variable_distribution]}
+    histograms_for_cleaning = {'data':histograms_['data'][qcd_fit_variable_distribution],
+                               'V+Jets':histograms_['V+Jets'][qcd_fit_variable_distribution],
+                               'SingleTop':histograms_['SingleTop'][qcd_fit_variable_distribution],
+                               'TTJet':histograms_['TTJet'][qcd_fit_variable_distribution]}
     qcd_from_data = clean_control_region( histograms_for_cleaning, subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
     
     
-    histograms_to_draw = [histograms['data'][qcd_fit_variable_distribution],
-                          histograms['QCD'][qcd_fit_variable_distribution],
-                          histograms['V+Jets'][qcd_fit_variable_distribution],
-                          histograms['SingleTop'][qcd_fit_variable_distribution],
-                          histograms['TTJet'][qcd_fit_variable_distribution]]
+    histograms_to_draw = [histograms_['data'][qcd_fit_variable_distribution],
+                          histograms_['QCD'][qcd_fit_variable_distribution],
+                          histograms_['V+Jets'][qcd_fit_variable_distribution],
+                          histograms_['SingleTop'][qcd_fit_variable_distribution],
+                          histograms_['TTJet'][qcd_fit_variable_distribution]]
     
     histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin_ctl]
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_QCDConversions' % b_tag_bin_ctl
@@ -138,7 +139,7 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                                  )
     
     histograms_to_draw = [qcd_from_data,
-                          histograms['QCD'][qcd_fit_variable_distribution],
+                          histograms_['QCD'][qcd_fit_variable_distribution],
                           ]
     
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_QCDConversions_subtracted' % b_tag_bin_ctl
@@ -152,14 +153,15 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                                   )
     
     # scale QCD to predicted
-    n_qcd_predicted_mc = histograms['QCD'][fit_variable_distribution].Integral()
+    n_qcd_predicted_mc = histograms_['QCD'][fit_variable_distribution].Integral()
     n_qcd_fit_variable_distribution = qcd_from_data.Integral()
     if not n_qcd_fit_variable_distribution == 0:
         qcd_from_data.Scale( 1.0 / n_qcd_fit_variable_distribution * n_qcd_predicted_mc )
     
-    histograms_to_draw = [histograms['data'][fit_variable_distribution], qcd_from_data,
-                          histograms['V+Jets'][fit_variable_distribution],
-                          histograms['SingleTop'][fit_variable_distribution], histograms['TTJet'][fit_variable_distribution]]
+    histograms_to_draw = [histograms_['data'][fit_variable_distribution], qcd_from_data,
+                          histograms_['V+Jets'][fit_variable_distribution],
+                          histograms_['SingleTop'][fit_variable_distribution], 
+                          histograms_['TTJet'][fit_variable_distribution]]
     
     histogram_properties.title = title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_' + b_tag_bin
@@ -175,10 +177,10 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_' + b_tag_bin + '_templates'
     # change histogram order for better visibility
-    histograms_to_draw = [histograms['TTJet'][fit_variable_distribution] + histograms['SingleTop'][fit_variable_distribution], 
-                          histograms['TTJet'][fit_variable_distribution],
-                          histograms['SingleTop'][fit_variable_distribution],
-                          histograms['V+Jets'][fit_variable_distribution],
+    histograms_to_draw = [histograms_['TTJet'][fit_variable_distribution] + histograms_['SingleTop'][fit_variable_distribution], 
+                          histograms_['TTJet'][fit_variable_distribution],
+                          histograms_['SingleTop'][fit_variable_distribution],
+                          histograms_['V+Jets'][fit_variable_distribution],
                           qcd_from_data]
     histogram_lables = ['QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet'], samples_latex['TTJet'] + ' + ' + 'Single-Top']
     histogram_lables.reverse()
