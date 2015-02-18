@@ -90,7 +90,7 @@ labels = []
 plot_options = {}
 global_options = ['files', 'histograms', 'labels', 'plot_type', 'output_folder',
                   'output_format', 'command', 'data_index', 'normalise',
-                  'show_ratio', 'show_stat_errors_on_mc', 'colours']
+                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix']
 
 def main():
     options, input_values_sets, json_input_files = parse_options()
@@ -160,8 +160,10 @@ def _exit_( msg ):
 def prepare_inputs( input_values ):
     input_values = check_and_fix_inputs( input_values )
     global files, histograms, global_options
-
     sets = group_by_command( input_values['command'] )
+    if input_values.has_key('name_prefix'):
+        for s in sets:
+            s.name = input_values['name_prefix'] + s.name
 
     # now we have to group the plot options
     plot_options = []
