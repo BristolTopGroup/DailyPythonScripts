@@ -7,13 +7,14 @@
 *.root
 *.out
 *.o
+*.tar*
 *~
 .DS_Store
 #data, plots and tables potentially include non-approved data == don't make them public
 **/data*/*
 data
 tables
-**/plots*/*
+plots*/*
 **/tables*/*
 src/cross_section_measurement/data/
 src/unfolding_tests/plots/
