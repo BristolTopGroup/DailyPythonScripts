@@ -1,7 +1,7 @@
 from rootpy.tree import Tree
 from rootpy.plotting import Hist, Hist2D, Canvas
 from rootpy.io import root_open, File
-from rootpy.interactive import wait
+#from rootpy.interactive import wait
 from optparse import OptionParser
 
 from config.variable_binning import bin_edges
@@ -27,21 +27,23 @@ def setup_canvas():
 
 # Top pt weight
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
-def topPtWeight( is7TeV ):
+def topPtWeight( centreOfMassEnergy ):
     
-    if is7TeV:
+    if centreOfMassEnergy == 7:
         return 'sqrt( exp(0.174-0.00137*unfolding.hadronicTopPt) * exp(0.174-0.00137*unfolding.leptonicTopPt) )'
-    else:
+    elif centreOfMassEnergy == 8:
         return 'sqrt( exp(0.159-0.00141*unfolding.hadronicTopPt) * exp(0.159-0.00141*unfolding.leptonicTopPt) )'
+    else:
+        print "Error: unrecognised centre of mass energy."
 
 # Get the lepton scale factors
-def getScaleFactor( is7TeV, channelName ):
-    if is7TeV:
+def getScaleFactor( centreOfMassEnergy, channelName ):
+    if centreOfMassEnergy == 7:
         if channelName is 'ePlusJets':
             return '(1)'
         else:
             return convertScaleFactorsToString(muon7TeVScaleFactors)
-    else:
+    elif centreOfMassEnergy == 8:
         if channelName is 'ePlusJets':
             return convertScaleFactorsToString(electron8TeVScaleFactors)
         else:
@@ -74,27 +76,27 @@ def copyEventFilterHist( inputFile, outputFile ):
 
 fileNames = {
              '8TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_central_8.root',
-                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_scaleup_8.root',
-                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_scaledown_8.root',
-                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingup_8.root',
-                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingdown_8.root',
-                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TT_powhegPythia_8.root',
-                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/TT_powhegHerwig_8.root',
-                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_mcatnlo_8.root',
-                   'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_mass1695_8.root',
-                   'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/BLT/TTJets_mass1735_8.root',
+                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_central_8TeV.root',
+                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
+                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
+                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
+                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
+                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
+                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
+                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
+                   'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_8TeV.root',
+                   'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_8TeV.root',
                 },
              '7TeV' : {
-                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_central.root',
-                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_scaledown.root',
-                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_scaleup.root',
-                       'matchingdown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingdown.root',
-                       'matchingup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_matchingup.root',
-                       'massdown' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_mass1695.root',
-                       'massup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TTJets_mass1735.root',
-                       'powheg' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TT_powheg_pythia.root',
-                       'powhegherwig' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/TT_powheg_herwig.root',
+                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_central_7TeV.root',
+                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_7TeV.root',
+                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_7TeV.root',
+                       'matchingdown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_7TeV.root',
+                       'matchingup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_7TeV.root',
+                       'massdown' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_7TeV.root',
+                       'massup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_7TeV.root',
+                       'powheg' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_7TeV.root',
+                       'powhegherwig' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_7TeV.root',
                        }
              }
 
@@ -107,7 +109,7 @@ def main():
     
     parser = OptionParser()
     parser.add_option('--topPtReweighting', action='store_true', dest='applyTopPtReweighting', default=False )
-    parser.add_option('--is7TeV', action='store_true', dest='is7TeVData', default=False )
+    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', default=8 )
     parser.add_option('-p', '--pdfWeight', type='int', dest='pdfWeight', default=0 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
@@ -117,21 +119,20 @@ def main():
 
     (options, _) = parser.parse_args()
 
-
-
     # Input file name
     file_name = 'crap.root'
-    if options.is7TeVData:
+    if int(options.centreOfMassEnergy) == 7:
         file_name = fileNames['7TeV'][options.sample]
-    else:
+    elif int(options.centreOfMassEnergy) == 8:
         file_name = fileNames['8TeV'][options.sample]
-    
+    else:
+        print "Error: Unrecognised centre of mass energy."
+
     # Output file name
     outputFileName = 'crap.root'
     outputFileDir = 'unfolding/'
-    energySuffix = '8TeV'
-    if options.is7TeVData:
-        energySuffix = '7TeV'
+
+    energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
         
     if options.applyTopPtReweighting:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
@@ -193,7 +194,7 @@ def main():
 
                 # Weights derived from variables in tree
                 if options.applyTopPtReweighting:
-                    ptWeight = topPtWeight( options.is7TeVData )
+                    ptWeight = topPtWeight( int(options.centreOfMassEnergy) )
                     offlineWeight += ' * '+ptWeight
                     genWeight += ' * '+ptWeight
                     pass
@@ -206,7 +207,7 @@ def main():
                     pass
                                 
                 # Scale factors
-                # scaleFactor = getScaleFactor( options.is7TeVData, channel.channelName )
+                # scaleFactor = getScaleFactor( options.centreOfMassEnergy, channel.channelName )
                 scaleFactor = '( unfolding.leptonWeight )'
                 offlineWeight += ' * '+scaleFactor
 

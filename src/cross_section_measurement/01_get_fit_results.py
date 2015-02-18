@@ -68,7 +68,12 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
                     h_fit_variable += get_histogram( file_name, temp_variable_name, b_tag_bin )
                     
             h_fit_variable_for_scaling = get_histogram(file_name, fit_variable_name, b_tag_bin)
-            scale = h_fit_variable_for_scaling.integral (overflow = True ) / h_fit_variable.integral( overflow = True )
+            n_vjets_in_bin = h_fit_variable_for_scaling.integral (overflow = True )
+            n_vjets_in_template = h_fit_variable.integral( overflow = True )
+            # prevent empty templates
+            if n_vjets_in_bin < 0.1:
+                n_vjets_in_bin = 0.1
+            scale = n_vjets_in_bin/n_vjets_in_template
             h_fit_variable.Scale(scale)
         else:
             h_fit_variable = get_histogram( file_name, fit_variable_name, b_tag_bin )
@@ -81,7 +86,6 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
 
     if h_qcd.Integral() < 0.1:
         h_qcd.Scale( 0.1/h_qcd.Integral() )
-        pass
     
     histograms['QCD'] = adjust_overflow_to_limit( h_qcd,
                                                  boundaries[0], boundaries[1] )
@@ -391,7 +395,7 @@ if __name__ == '__main__':
                       help = "Just run the central measurement" )
     parser.add_option( '--disable-constraints', dest = "enable_constraints", 
                        action = "store_false", default=True,
-                       help = "Do not make a combined template from TTbar and single top" )
+                       help = "Do not constrain QCD and VJets templates." )
 
     translate_options = {
                         '0':'0btag',
