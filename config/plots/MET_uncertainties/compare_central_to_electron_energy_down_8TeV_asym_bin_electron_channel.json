@@ -1,0 +1,46 @@
+{
+	"class": "PlotConfig",
+    "command": "compare-hists", 
+    "files": [ 
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/SingleElectron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    ], 
+    "file-aliases": [
+    	"TTJet",
+        "data"
+     ],
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_2orMoreBtags",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMetElectronEnDown/MET_2orMoreBtags"
+    ], 
+    "labels": [
+        "central", 
+        "electron energy down"
+    ], 
+    "output_folder": "plots/MET_uncertainties", 
+    "output_format": ["pdf"], 
+    "name_prefix": "compare_central_MET_to_electron_energy_down_asym_bins_electron_channel_",
+    "plot_type": "shape_comparison", 
+    "ratio_y_limits": [
+        [0.95, 1.05]
+    ], 
+    "title": [
+        "Comparison of $E_T^{\\text{miss}}$ (central, electron energy down) $\\sqrt{s}$ = 8 TeV"
+    ], 
+    "x_axis_title": [
+         "$E_T^{\\text{miss}}$ [GeV]"
+    ], 
+    "x_limits": [
+        [0, 300]
+    ], 
+    "y_axis_title": [
+        "normalised to unit area /(5 GeV)"
+    ], 
+    "y_limits": [
+        [0, 0.4]
+    ],
+    "rebin" : [
+    	[0.0, 27.0, 52.0, 87.0, 130.0, 172.0, 300]	
+    ],
+    "colours": ["green", "yellow"]
+}
