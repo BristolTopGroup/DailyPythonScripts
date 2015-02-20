@@ -11,12 +11,12 @@ import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 from array import array
 from rootpy import asrootpy
-
+import numpy as np
 if __name__ == '__main__':
     bins = array('d', [0, 25, 45, 70, 100, 1000])
     nbins = len(bins) - 1
     
-    inputFile = File('data/unfolding_merged_sub1.root', 'read')
+    inputFile = File('/storage/TopQuarkGroup/unfolding/unfolding_merged_sub1.root', 'read')
     h_truth_finebinned = inputFile.unfoldingAnalyserElectronChannel.truth
     h_truth = asrootpy(inputFile.unfoldingAnalyserElectronChannel.truth.Rebin(nbins, 'truth_new', bins))
     print 'old:', get_bin_centers(bins)
@@ -39,16 +39,21 @@ if __name__ == '__main__':
     
     h_truth_finebinned.SetFillStyle(0)
     h_truth_finebinned.Smooth(500)
+    x,y = list(h_truth_finebinned.x()), list(h_truth_finebinned.y())
+    bin_edges = np.array(list(h_truth_finebinned.xedges()))
+    bincenters = 0.5*(bin_edges[1:]+bin_edges[:-1])
     g_truth = Graph(h_truth)
 #    g_truth_new = Graph(len(h_truth), h_truth_new)
     g_truth_new.SetLineColor('red')
     g_truth_new.SetMarkerColor('red')
     h_truth_finebinned.axis().SetRange(0, 1000)
+    h_truth_finebinned.linecolor = 'orange'
     plt.figure(figsize=(16, 10), dpi=100)
     axes = plt.axes()
     rplt.errorbar(g_truth_new, label=r'corrected', emptybins=False)
     rplt.errorbar(g_truth, label=r'bin centre', emptybins=False)
-    rplt.hist(h_truth_finebinned, label=r'MC', stacked=False)
+    # rplt.hist(h_truth_finebinned, label=r'MC', stacked=False)
+    plt.plot(bincenters, y, '-')
     axes.set_xlim([0,300])
     plt.xlabel('$E_{\mathrm{T}}^{miss}$')
     plt.ylabel('Events')
