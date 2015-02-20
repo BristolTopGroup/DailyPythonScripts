@@ -43,24 +43,18 @@ class Histogram_properties:
                 setattr( self, name, value )
 
 # prototype
-class Control_plot:
-    lumi = 5050
-    rebin = 1
-    histogram_properties = Histogram_properties()
-    channel = 'combined'
-    b_tag_bin = '2orMoreBtags'
+class PlotConfig:
+    '''
+        Class to read a JSON file and extract information from it.
+        It creates HistSets and plot_options, essentiall replacing the main
+        functionality of the bin/plot script.
+    '''
+    general_options = ['files', 'histograms', 'labels', 'plot_type', 'output_folder',
+                  'output_format', 'command', 'data_index', 'normalise',
+                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix']
     
-    def __init__( self, control_region, qcd_control_region, histogram_files, **kwargs ):
-        self.control_region = control_region
-        self.qcd_control_region = qcd_control_region
-        self.histogram_files = histogram_files
-        
-        self.b_tag_bin = kwargs.pop( 'b_tag_bin', self.b_tag_bin )
-        self.lumi = kwargs.pop( 'lumi', self.lumi )
-        self.rebin = kwargs.pop( 'rebin', self.rebin )
-        self.histogram_properties = kwargs.pop( 'histogram_properties', self.histogram_properties )
-        self.channel = kwargs.pop( 'channel', self.channel )
-
+    def __init__( self, config_file, **kwargs ):
+        self.config_file = config_file
 
 def make_data_mc_comparison_plot( histograms = [],
                                  histogram_lables = [],
@@ -289,7 +283,8 @@ def make_shape_comparison_plot( shapes = [],
     # make copies in order not to mess with existing histograms
     shapes_ = deepcopy(shapes)
     # normalise as we are comparing shapes
-    for shape, colour in zip(shapes_, colours):
+    for shape, colour, label in zip(shapes_, colours, names):
+        shape.SetTitle(label)
         integral = shape.Integral()
         if integral > 0:
             shape.Sumw2()
