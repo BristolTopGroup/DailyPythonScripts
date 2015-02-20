@@ -279,7 +279,7 @@ def get_unfold_histogram_tuple(
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
                 load_fakes = False,
-                scale_to_lumi = False,
+                scale_to_lumi = True,
                 ):
     folder = None
     h_truth = None
