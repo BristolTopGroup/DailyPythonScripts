@@ -7,6 +7,8 @@ import sys
 from tools.plotting import Histogram_properties, make_shape_comparison_plot,\
     make_data_mc_comparison_plot
 from ROOT_utils import get_histogram_from_file
+import types
+from tools.hist_utilities import conditional_rebin
 
 class HistSet():
     '''
@@ -36,8 +38,13 @@ class HistSet():
         histogram_properties = Histogram_properties(plot_options)
         histogram_properties.name = file_name
         if plot_options.has_key('rebin') and plot_options['rebin'] > 1:
-            for hist in self.histograms:
-                hist.Rebin(plot_options['rebin'])
+            rebin = plot_options['rebin']
+            is_list = isinstance(rebin, types.ListType)
+            for i,hist in enumerate(self.histograms):
+                if is_list:
+                    self.histograms[i] = conditional_rebin(hist, rebin)
+                else:
+                    hist.rebin(rebin)
         
         colours = ['green', 'yellow', 'magenta', 'red', 'black']
         if plot_options.has_key('colours'):

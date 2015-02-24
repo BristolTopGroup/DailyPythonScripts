@@ -13,6 +13,9 @@ Configuration keys
         compare-hists to compare different histograms in the same file
     files: 
         list of ROOT files for input (>= 1)
+        
+    file-aliases:
+        list of aliases for files. Used for naming in case command=='compare-hists'.
     
     histograms: 
         list of full histogram paths inside the files
@@ -77,7 +80,7 @@ Example JSON config structure:
 from optparse import OptionParser
 import sys
 from os.path import exists
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 from tools.file_utilities import write_data_to_JSON, read_data_from_JSON
 from tools.HistSet import HistSet
 from copy import deepcopy
@@ -85,12 +88,13 @@ from copy import deepcopy
 supported_commands = ['compare-files', 'compare-hists']
 
 files = []
+file_aliases = []
 histograms = []
 labels = []
 plot_options = {}
-global_options = ['files', 'histograms', 'labels', 'plot_type', 'output_folder',
+global_options = ['files', 'file-aliases', 'histograms', 'labels', 'plot_type', 'output_folder',
                   'output_format', 'command', 'data_index', 'normalise',
-                  'show_ratio', 'show_stat_errors_on_mc', 'colours']
+                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix']
 
 def main():
     options, input_values_sets, json_input_files = parse_options()
@@ -123,7 +127,7 @@ def parse_options():
     return options, input_values_sets, json_input_files
 
 def check_and_fix_inputs( input_values ):
-    global files, histograms, labels, plot_options, supported_commands
+    global files, file_aliases, histograms, labels, plot_options, supported_commands
     
     if not input_values['command'] in supported_commands:
         _exit_( 'Command "%s" is not supported. Exiting ...' % input_values['command'] )
@@ -136,6 +140,14 @@ def check_and_fix_inputs( input_values ):
             # check if they exist
             if not exists( f ):
                 return False, 'File "%s" does not exist' % f
+    if not input_values.has_key('file-aliases') or len(input_values['file-aliases']) == 0:
+        for f in files:
+            name = f.split( '/' )[-1]
+            name = name.replace( '.root', '' )
+            file_aliases.append(name)
+    else:
+        file_aliases = input_values['file-aliases']
+            
     if not input_values.has_key('histograms') or len(input_values['histograms']) == 0:
         _exit_( 'No histograms have been defined.' )
     else:
@@ -160,8 +172,10 @@ def _exit_( msg ):
 def prepare_inputs( input_values ):
     input_values = check_and_fix_inputs( input_values )
     global files, histograms, global_options
-
     sets = group_by_command( input_values['command'] )
+    if input_values.has_key('name_prefix'):
+        for s in sets:
+            s.name = input_values['name_prefix'] + s.name
 
     # now we have to group the plot options
     plot_options = []
@@ -218,12 +232,10 @@ def group_by_file():
         Creates:
         [{name:{f:h}, ...] where f = file and h = histogram path. The name is taken from the file name
     '''
-    global files, histograms, labels
+    global files, file_aliases, histograms, labels
     hist_sets = []
-    for f in files:
+    for f,name in zip(files, file_aliases):
         hist_set = []
-        name = f.split( '/' )[-1]
-        name = name.replace( '.root', '' )
         for histogram in histograms:
             hist_set.append( ( f, histogram ) )
         hist_sets.append( HistSet( name, hist_inputs = hist_set, output_hist_labels = labels ) )
