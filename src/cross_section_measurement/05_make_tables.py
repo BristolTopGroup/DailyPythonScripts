@@ -74,7 +74,7 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
 
     printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += '%% Fit sesults for %s variable, %s channel, met type %s \n' % (variable, channel, met_type)
+    printout += '%% Fit results for %s variable, %s channel, met type %s \n' % (variable, channel, met_type)
     printout += '%% ' + '=' * 60
     printout += '\n'
 
@@ -323,7 +323,10 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     else:
         printout += '(%s channel).}\n' % channel
     printout += '\\label{tab:%s_systematics_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
-    printout += '\\resizebox{\\columnwidth}{!} {\n'
+    if variable == 'MT':
+        printout += '\\resizebox*{!}{\\textheight} {\n'
+    else:
+        printout += '\\resizebox{\\columnwidth}{!} {\n'
     printout += '\\begin{tabular}{l' + 'r'*len(bins) + '}\n'
     printout += '\\hline\n'
     
@@ -435,7 +438,12 @@ if __name__ == '__main__':
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/'
     
-    categories = deepcopy(measurement_config.categories_and_prefixes.keys())
+    #remove btag mistagging rate systematic - new btagging method has only one, all-inclusive sytematic
+    categories_and_prefixes = measurement_config.categories_and_prefixes
+    del categories_and_prefixes['LightJet_down']
+    del categories_and_prefixes['LightJet_up']
+
+    categories = deepcopy(categories_and_prefixes.keys())
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     categories.extend(ttbar_generator_systematics)
@@ -445,9 +453,9 @@ if __name__ == '__main__':
     ttbar_mass_systematics = measurement_config.topMass_systematics
     categories.extend( measurement_config.topMass_systematics )
 
-    # Add k value systematic
-    kValue_systematics = measurement_config.kValueSystematic
-    categories.extend( measurement_config.kValueSystematic )
+    # Add k value systematic - commented out for now because we have decided to remove the k value systematic from the error tables.
+    #kValue_systematics = measurement_config.kValueSystematic
+    #categories.extend( measurement_config.kValueSystematic )
 
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
