@@ -420,7 +420,23 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         # p1 = plt.Rectangle((0, 0), 1, 1, fc="yellow")
         # p2 = plt.Rectangle((0, 0), 1, 1, fc="0.75") 
         # plt.legend([p1, p2], ['Stat. $\\oplus$ Syst.', 'Stat.'], loc = 'upper left', prop = {'size':20})
-        ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+        if variable == 'MET':
+            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+#             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        if variable == 'MT':
+            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'HT' or variable == 'ST':
+            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'WPT':
+            ax1.set_ylim( ymin = 0.75, ymax = 1.5 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
+
 
     if CMS.tight_layout:
         plt.tight_layout()
