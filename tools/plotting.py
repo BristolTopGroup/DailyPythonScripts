@@ -178,6 +178,8 @@ def make_data_mc_comparison_plot( histograms = [],
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
+        # Add horizontal line at y=1 on ratio plot
+        ax1.axhline(y=1, linewidth = 1)
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         plt.ylabel( 'data/MC', CMS.y_axis_title )
         rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
