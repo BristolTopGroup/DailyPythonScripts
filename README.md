@@ -20,19 +20,21 @@ git submodule init && git submodule update
 
 # setup environment (using virtualenv for python):
 source environment.sh
+
+# make sure matplotlib is up to date (should return 1.3.1 or above):
+python -c 'import matplotlib; print matplotlib.__version__'
 ```
 
 If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
 
 ```
 # install CMSSW and setup environment:
+scram p -n CMSSW_6_2_12_DailyPythonScripts CMSSW_6_2_12
+cd CMSSW_6_2_12_DailyPythonScripts/src/
 cmsenv
 
-# install DailyPythonScripts according to the recipe above, or if done already, setup the vpython environment:
-source environment.sh
+# then install DailyPythonScripts according to the recipe above
 
-# make sure matplotlib is up to date (should return 1.3.1 or above):
-python -c 'import matplotlib; print matplotlib.__version__'
 ```
 
 Dependencies
@@ -63,19 +65,26 @@ tools/* - available modules
 Instructions for ttbar differential cross-section analysis
 ==================
 
-- Run experimental/BLTUnfold/merge_unfolding_jobs.sh to merge BLT unfolding files CRAB outputs
-- Move merged files to e.g.: /hdfs/TopQuarkGroup/mc/<7> or <8> TeV/v11/NoSkimUnfolding/BLT/
-- run produceUnfoldingJobs.py with finebinning option turned on on central sample only (run locally on soolin): ```python produceUnfoldingJobs.py -c=7 -f --sample=central```
-- Move fine binned unfolding /hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/<7> or <8> TeV/unfolding/
-- Run the src/cross_section_measurement/00_pick_bins.py script to find new binning.
-- Modify config/variable_binning (and TTbar_plus_X_analyser.cpp in AnalysisSoftware) with new binning
-- Run python experimental/BLTUnfold/runJobsCrab.py with the last few lines commented out and printing the number of jobs.
-- Update 'queue' in experimental/BLTUnfold/submitBLTUnfold.description with the outputted number of jobs
-- tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts (tar file should be <=100MB)
-- Run experimental/BLTUnfold/produceUnfoldingHistogram.py script on merged files using HTCondor by submitting submitBLTUnfold.description to convert unfolding files to our binning
-- Move new files to /hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/<7> or <8> TeV/unfolding/
+Merge CRAB output unfolding files
+- Run ```experimental/BLTUnfold/merge_unfolding_jobs.sh``` to merge BLT unfolding CRAB output files
+- Move merged files to e.g.: ```/hdfs/TopQuarkGroup/mc/7TeV``` or ```8TeV/v11/NoSkimUnfolding/BLT/```
 
-- Run final measurement scripts in bin/:
+Calculate binning (if needed)
+- run ```produceUnfoldingJobs.py``` with finebinning option turned on, on central sample only (run locally on soolin): ```python produceUnfoldingJobs.py -c=7 -f --sample=central```
+- Move fine binned unfolding file to ```/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV``` or ```8TeV/unfolding/```
+- Run the ```src/cross_section_measurement/00_pick_bins.py``` script to find new binning.
+- Modify ```config/variable_binning``` (and TTbar_plus_X_analyser.cpp in AnalysisSoftware) with new binning
+
+Create new asymmetric unfolding files 
+- Run ```python experimental/BLTUnfold/runJobsCrab.py``` with the last few lines commented out and uncommenting the line ```print len(jobs)``` to print the number of jobs.
+- Update 'queue' in ```experimental/BLTUnfold/submitBLTUnfold.description``` with the outputted number of jobs
+- ```tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts``` (tar file should be <=100MB)
+- Run ```experimental/BLTUnfold/produceUnfoldingHistogram.py``` script on merged files using HTCondor: ```condor_submit submitBLTUnfold.description``` to convert unfolding files to our binning. Check progress using ```condor_q your_username```
+- Once all jobs have finished, untar output files: ```tar -xf *.tar
+- Output root files should be in a folder called ```unfolding```. Move these new files to ```/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV``` or ```8TeV/unfolding/```
+
+Run final measurement scripts in bin/:
+```
 x_01_all_vars
 x_02_all_vars
 x_03_all_vars
@@ -86,4 +95,5 @@ x_99_QCD_cross_checks
 x_make_binning_plots
 x_make_control_plots
 x_make_fit_variable_plots
+```
 (script AN-14-071 runs all of these scripts automatically if you are confident everything will run smoothly(!))
