@@ -338,7 +338,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kGreen )
             elif 'MADGRAPH_ptreweight' in key:
-                hist.linestyle = 'solid'
+                hist.linestyle = 'dashed'
                 hist.SetLineColor( kBlack )
             elif 'MADGRAPH' in key:
                 hist.linestyle = 'solid'
