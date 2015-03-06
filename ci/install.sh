@@ -20,7 +20,7 @@ time sudo apt-get update -qq
 
 # Install the dependencies we need
 time sudo apt-get -qq install clang-${CLANG_VERSION} libclang-${CLANG_VERSION}-dev gcc-4.8 g++-4.8
-time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX}
+time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX} libboost-dev
 # matplotlib and PyTables are not available for Python 3 as packages from the main repo yet.
 if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then 
 	time sudo apt-get install -qq python-matplotlib python-tables; 
@@ -82,7 +82,8 @@ if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
 	echo "Building RooUnfold"
 	cd $base/external/RooUnfold/
-	make -j4
+	cmake CMakeLists.txt
+	make
 	#remove tmp folder
 	rm -fr $base/external/RooUnfold/tmp
 	mv $base/external/RooUnfold/libRooUnfold.so $base/external/lib/.
@@ -92,7 +93,7 @@ if [ ! -d "$base/external/lib" ]; then
 
 	echo "Building TopAnalysis"
 	cd $base/external/TopAnalysis/
-	make -j4
+	make
 	# remove tmp folder
 	rm -fr $base/external/TopAnalysis/tmp
 	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
