@@ -88,6 +88,7 @@ if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
 	echo "Building RooUnfold"
 	cd $base/external/RooUnfold/
+	cmake CMakeLists.txt
 	make -j4
 	success $? RooUnfold
 	#remove tmp folder
