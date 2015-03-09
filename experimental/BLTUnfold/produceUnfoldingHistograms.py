@@ -64,40 +64,20 @@ def convertScaleFactorsToString( scaleFactors ):
     sfString += ')'
     return sfString
 
-def copyEventFilterHist( inputFile, outputFile ):
-    eventFilter = inputFile.Get('EventFilter/EventCounter')
-    outputFile.cd()
-    eventFilterOutputDir = outputFile.mkdir('EventFilter')
-    eventFilterOutputDir.cd()
-    eventFilter.Write()
-    inputFile.cd()
-    pass
-
 
 fileNames = {
-             '8TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_central_8TeV.root',
-                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
-                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
-                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
-                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
-                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
-                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
-                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
-                   'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_8TeV.root',
-                   'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_8TeV.root',
+             '13TeV' : {
+                    'central' : '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/tree_TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root',
+                   #  'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
+                   #  'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
+                   #  'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
+                   #  'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
+                   #  'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
+                   #  'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
+                   #  'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
+                   # 'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_8TeV.root',
+                   # 'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_8TeV.root',
                 },
-             '7TeV' : {
-                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_central_7TeV.root',
-                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_7TeV.root',
-                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_7TeV.root',
-                       'matchingdown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_7TeV.root',
-                       'matchingup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_7TeV.root',
-                       'massdown' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_7TeV.root',
-                       'massup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_7TeV.root',
-                       'powheg' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_7TeV.root',
-                       'powhegherwig' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_7TeV.root',
-                       }
              }
 
 channels = [
@@ -109,7 +89,7 @@ def main():
     
     parser = OptionParser()
     parser.add_option('--topPtReweighting', action='store_true', dest='applyTopPtReweighting', default=False )
-    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', default=8 )
+    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', default=13 )
     parser.add_option('-p', '--pdfWeight', type='int', dest='pdfWeight', default=0 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
@@ -121,10 +101,8 @@ def main():
 
     # Input file name
     file_name = 'crap.root'
-    if int(options.centreOfMassEnergy) == 7:
-        file_name = fileNames['7TeV'][options.sample]
-    elif int(options.centreOfMassEnergy) == 8:
-        file_name = fileNames['8TeV'][options.sample]
+    if int(options.centreOfMassEnergy) == 13:
+        file_name = fileNames['13TeV'][options.sample]
     else:
         print "Error: Unrecognised centre of mass energy."
 
@@ -140,12 +118,12 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, options.pdfWeight )
     elif options.sample != 'central':
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
+    elif options.fineBinned :
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
 
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
-        
-        copyEventFilterHist( f, out )
         
         for channel in channels:
             if options.debug and channel.channelName != 'muPlusJets' : continue
@@ -153,7 +131,9 @@ def main():
             print 'Channel : ',channel.channelName
 
             # Get the tree
-            tree = f.Get(channel.treeName+'/'+channel.channelName+'Tree')
+            tree = f.Get("TTbar_plus_X_analysis/Unfolding/Unfolding")
+
+            print "Number of entries in tree : ", tree.GetEntries()
 
             # Keep record of pdf weight
             if options.pdfWeight != 0:
@@ -184,13 +164,25 @@ def main():
                 outputDir = out.mkdir('unfolding_'+variable+'_analyser_'+channel.outputDirName+'_channel'+metSuffix)
 
                 # Variable names in tree
-                genSelection = '( unfolding.GenSelection == 1 )'
-                genWeight = '( unfolding.puWeight )'
-                offlineSelection = '( unfolding.OfflineSelection == 1 )'
-                offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
+                genSelection = ''
+                if channel.channelName is 'muPlusJets' :
+                    genSelection = '( isSemiLeptonicMuon == 1 && passesEventSelection == 1 )'
+                elif channel.channelName is 'ePlusJets' :
+                    genSelection = '( isSemiLeptonicElectron == 1 && passesEventSelection == 1 )'
+
+                genWeight = '( 1 )'
+                # genWeight = '( unfolding.puWeight )'
+                offlineSelection = ''
+                if channel.channelName is 'muPlusJets' :
+                    offlineSelection = '( passSelection == 1 )'
+                elif channel.channelName is 'ePlusJets' :               
+                    offlineSelection = '( passSelection == 0 )'
+
+                # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
+                offlineWeight = '( 1 )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
-                genVariable = 'unfolding.gen'+variable
-                recoVariable = 'unfolding.reco'+variable
+                genVariable = 'pseudo'+variable
+                recoVariable = variable
 
                 # Weights derived from variables in tree
                 if options.applyTopPtReweighting:
@@ -205,11 +197,11 @@ def main():
                     offlineWeight += ' * '+pdfWeight
                     genWeight += ' * '+pdfWeight
                     pass
-                                
+
                 # Scale factors
                 # scaleFactor = getScaleFactor( options.centreOfMassEnergy, channel.channelName )
-                scaleFactor = '( unfolding.leptonWeight )'
-                offlineWeight += ' * '+scaleFactor
+                # scaleFactor = '( unfolding.leptonWeight )'
+                # offlineWeight += ' * '+scaleFactor
 
                 # Histograms to fill
                 # 1D histograms

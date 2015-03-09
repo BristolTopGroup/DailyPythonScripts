@@ -61,12 +61,14 @@ def main():
     n_min = 100
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
-    
+    bin_choices = {}
+
     for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
         histogram_information = get_histograms( variable )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
-        
+
+        bin_choices[variable] = best_binning        
         print 'The best binning for', variable, 'is:'
         print 'bin edges =', best_binning
         print 'N_bins    =', len( best_binning ) - 1
@@ -80,9 +82,14 @@ def main():
             print_latex_table(info, variable, best_binning)
         print '=' * 120  
 
+    print '=' * 120
+    print 'For config/variable_binning.py'
+    print '=' * 120
+    for variable in bin_choices:
+        print '\''+variable+'\' : '+str(bin_choices[variable])+','
+
 def get_histograms( variable ):
-    config_7TeV = XSectionConfig( 7 )
-    config_8TeV = XSectionConfig( 8 )
+    config = XSectionConfig( 13 )
     
     path_electron = ''
     path_muon = ''
@@ -104,30 +111,25 @@ def get_histograms( variable ):
         path_muon = 'unfolding_WPT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
         
     histogram_information = [
-                {'file': config_7TeV.unfolding_madgraph_raw,
-                 'CoM': 7,
+                {'file': config.unfolding_madgraph_raw,
+                 'CoM': 13,
                  'path':path_electron,
                  'channel':'electron'},
-                {'file':config_7TeV.unfolding_madgraph_raw,
-                 'CoM': 7,
+                {'file':config.unfolding_madgraph_raw,
+                 'CoM': 13,
                  'path':path_muon,
                  'channel':'muon'},
-                {'file':config_8TeV.unfolding_madgraph_raw,
-                 'CoM': 8,
-                 'path':path_electron,
-                 'channel':'electron'},
-                {'file':config_8TeV.unfolding_madgraph_raw,
-                 'CoM': 8,
-                 'path':path_muon,
-                 'channel':'muon'},
-                   ]
+                 ]
     
+
     for histogram in histogram_information:
         f = File( histogram['file'] )
         # scale to lumi
-        nEvents = f.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
-        config = XSectionConfig( histogram['CoM'] )
-        lumiweight = config.ttbar_xsection * config.new_luminosity / nEvents
+        # nEvents = f.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+        # config = XSectionConfig( histogram['CoM'] )
+        # lumiweight = config.ttbar_xsection * config.new_luminosity / nEvents
+
+        lumiweight = 1
 
         histogram['hist'] = f.Get( histogram['path'] ).Clone()
         histogram['hist'].Scale( lumiweight )

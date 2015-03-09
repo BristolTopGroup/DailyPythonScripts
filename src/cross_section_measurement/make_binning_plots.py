@@ -78,8 +78,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/binning/',
                       help = "set path to save plots" )
-    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
-                      help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
+    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
+                      help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
 
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig(options.CoM)
