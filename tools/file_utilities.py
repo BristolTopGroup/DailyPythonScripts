@@ -8,6 +8,7 @@ import os
 import json
 import glob
 from rootpy.io import File
+from rootpy.io import root_open
 import subprocess
 
 def make_folder_if_not_exists(folder):
@@ -113,3 +114,9 @@ def get_process_from_file(file_in_path):
     file_name = file_in_path.split('/')[-1]
     process_name = file_name.split('_')[0]
     return process_name
+
+def saveHistogramsToROOTFile( data, mcStack, fileName ):
+    with root_open(fileName, 'recreate') as outputFile:
+        data.Write('Data')
+        mcStack.Write('MC')
+
