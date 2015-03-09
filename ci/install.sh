@@ -4,7 +4,7 @@
 # The behavior of the script is controlled by environment variabled defined
 # in the .travis.yml in the top level folder of the project.
 
-#set -e
+set -e
 
 # Check if we are running Python 2 or 3. This is needed for the apt-get package names
 if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then 
@@ -19,8 +19,8 @@ wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
 time sudo apt-get update -qq
 
 # Install the dependencies we need
-time sudo apt-get -qq install clang-${CLANG_VERSION} libclang-${CLANG_VERSION}-dev gcc-4.8 g++-4.8
-time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX} libboost-dev
+time sudo apt-get -qq install clang-${CLANG_VERSION} libclang-${CLANG_VERSION}-dev gcc-4.8 g++-4.8 libboost-dev
+time sudo apt-get install -qq python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX}
 # matplotlib and PyTables are not available for Python 3 as packages from the main repo yet.
 if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then 
 	time sudo apt-get install -qq python-matplotlib python-tables; 
@@ -53,23 +53,23 @@ export base=`pwd`
 # package list from FinalStateAnalysis 
 # (https://github.com/uwcms/FinalStateAnalysis/blob/master/recipe/install_python.sh)
 echo "Installing yolk"
-time sudo pip install -U yolk
+time pip install -U yolk
 echo "Installing ipython"
-time sudo pip install -U ipython
+time pip install -U ipython
 echo "Installing termcolor"
-time sudo pip install -U termcolor
+time pip install -U termcolor
 echo "Installing uncertainties <-- awesome error propagation"
-time sudo pip install -U uncertainties
+time pip install -U uncertainties
 echo "Install progressbar"
-time sudo pip install -U progressbar
+time pip install -U progressbar
 echo "Installing argparse"
-time sudo pip install -U argparse
+time pip install -U argparse
 echo "Installing pudb <-- interactive debugging"
-time sudo pip install -U pudb
+time pip install -U pudb
 echo "Installing dateutil"
-time sudo pip install python-dateutil
+time pip install python-dateutil
 echo "Installing PrettyTable"
-time sudo pip install PrettyTable
+time pip install PrettyTable
 
 echo "Installing rootpy"
 time pip install --user -e $base/external/rootpy
