@@ -67,7 +67,7 @@ class Unfolding:
                 if self.k_value > 0:
                     self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
                 else:
-                    if self.tau > 0:
+                    if self.tau >= 0:
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
             elif self.method == 'RooUnfoldTUnfold':
                 self.unfoldObject = RooUnfoldTUnfold ( self.unfoldResponse, data )
@@ -266,7 +266,6 @@ def get_unfold_histogram_tuple(
         
         h_truth = asrootpy( folder.truth.Clone() )
         h_measured = asrootpy( folder.measured.Clone() )
-
         # response matrix is always without fakes
         # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
         # or manually for TSVDUnfold
