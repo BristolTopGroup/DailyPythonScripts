@@ -37,7 +37,13 @@ def get_histogram_from_file( histogram_path, input_file ):
             root_histogram.Add( hist )
     
     gcd()
-    histogram = root_histogram.Clone()
+    histogram = None
+    # change from float to double
+    if root_histogram.TYPE == 'F':
+        histogram = root_histogram.empty_clone(type='D')
+        histogram.Add(root_histogram)
+    else:
+        histogram = root_histogram.Clone()
     root_file.Close()
     return histogram 
     
