@@ -139,7 +139,7 @@ def check_and_fix_inputs( input_values ):
         for f in files:
             # check if they exist
             if not exists( f ):
-                return False, 'File "%s" does not exist' % f
+                _exit_( 'File "%s" does not exist' % f )
     if not input_values.has_key('file-aliases') or len(input_values['file-aliases']) == 0:
         for f in files:
             name = f.split( '/' )[-1]
