@@ -5,6 +5,8 @@ Created on 3 May 2013
 '''
 import matplotlib as mpl
 from tools.file_utilities import make_folder_if_not_exists
+from tkFont import names
+from tools.hist_utilities import get_histogram_ratios, spread_x
 mpl.use('agg')
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -291,13 +293,13 @@ def make_shape_comparison_plot( shapes = [],
         if integral > 0:
             shape.Sumw2()
             shape.Scale( 1 / integral )
+        shape.fillcolor = colour
+        shape.linecolor = colour
+        shape.markercolor = colour
+        shape.legendstyle = 'F'
         if fill_area:
-            shape.fillcolor = colour
             shape.fillstyle = 'solid'
-            shape.legendstyle = 'F'
         else:
-            shape.linecolor = colour
-            shape.legendstyle = 'F'
             shape.linewidth = 5
             
     if not histogram_properties.y_limits:
@@ -319,39 +321,24 @@ def make_shape_comparison_plot( shapes = [],
     handles, labels = axes.get_legend_handles_labels()
     for i,name in enumerate(names):
         labels.insert(i, name)
+        
+    # always fill legends
+    if not fill_area:
+        for handle in handles:
+            handle.set_fill(True)
+            handle.set_facecolor(handle.get_edgecolor())
 
     plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
                prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
     #add error bars
-    for shape in shapes_:
-        rplt.errorbar( shape, axes = axes, alpha = alpha)
+    graphs = spread_x(shapes_, list(shapes_[0].xedges()))
+    for graph in graphs:
+        rplt.errorbar( graph, axes = axes, xerr = False,)
 
     adjust_axis_limits(axes, histogram_properties)
     if make_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
-
-        ratio = shapes_[0].Clone( 'ratio' )
-        if normalise_ratio_to_errors:
-            # TODO
-            # this is a preliminary feature, use with care
-            for bin_i in range( 1, shapes_[0].nbins() ):
-                x_i = shapes_[0][bin_i].value
-                x_i_error = shapes_[0][bin_i].error
-                y_i = shapes_[1][bin_i].value
-                y_i_error = shapes_[1][bin_i].error
-                numerator = x_i - y_i
-                denominator = pow( pow( x_i_error, 2 ) + pow( y_i_error, 2 ), 0.5 )
-                if denominator == 0:
-                    ratio.SetBinContent(bin_i, 0.)
-                    ratio.SetBinError(bin_i, 0.)
-                else:
-                    ratio.SetBinContent(bin_i, numerator/denominator)
-                    ratio.SetBinError(bin_i, denominator)
-        else:
-            ratio.Divide( shapes_[1] )
-
-        ratio.SetMarkerSize( 3 )
-    
+        ratios = get_histogram_ratios(shapes_[0], shapes_[1:], normalise_ratio_to_errors)
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
@@ -360,7 +347,9 @@ def make_shape_comparison_plot( shapes = [],
             plt.ylabel( r'$\frac{1-2}{\sqrt{(\sigma_1)^2 + (\sigma_2)^2}}$', CMS.y_axis_title )
         else:
             plt.ylabel( '(1)/(2)', CMS.y_axis_title )
-        rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+        for ratio in ratios:
+            ratio.SetMarkerSize( 2 )
+            rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
         if len( histogram_properties.x_limits ) == 2:
             ax1.set_xlim( xmin = histogram_properties.x_limits[0], 
                           xmax = histogram_properties.x_limits[1] )
