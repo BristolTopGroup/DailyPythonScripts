@@ -94,7 +94,8 @@ labels = []
 plot_options = {}
 global_options = ['files', 'file-aliases', 'histograms', 'labels', 'plot_type', 'output_folder',
                   'output_format', 'command', 'data_index', 'normalise',
-                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix']
+                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix',
+                  'fill_area', 'alpha']
 
 def main():
     options, input_values_sets, json_input_files = parse_options()
