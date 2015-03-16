@@ -166,9 +166,9 @@ def main():
                 # Variable names in tree
                 genSelection = ''
                 if channel.channelName is 'muPlusJets' :
-                    genSelection = '( isSemiLeptonicMuon == 1 && passesEventSelection == 1 )'
+                    genSelection = '( isSemiLeptonicMuon && passesEventSelection )'
                 elif channel.channelName is 'ePlusJets' :
-                    genSelection = '( isSemiLeptonicElectron == 1 && passesEventSelection == 1 )'
+                    genSelection = '( isSemiLeptonicElectron && passesEventSelection )'
 
                 genWeight = '( 1 )'
                 # genWeight = '( unfolding.puWeight )'
