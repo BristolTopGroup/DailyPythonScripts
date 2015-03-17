@@ -65,6 +65,10 @@ class Unfolding:
                 self.unfoldObject = RooUnfoldBinByBin     ( self.unfoldResponse, self.data )
             elif self.method == 'RooUnfoldInvert':
                 self.unfoldObject = RooUnfoldInvert     ( self.unfoldResponse, self.data )
+            elif self.method == 'RooUnfoldTUnfold':
+                self.unfoldObject = RooUnfoldTUnfold ( self.unfoldResponse, data )
+                if self.tau >= 0:
+                    self.unfoldObject.FixTau( self.tau )
             elif self.method == 'RooUnfoldSvd':
                 self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
             elif self.method == 'RooUnfoldTUnfold':
