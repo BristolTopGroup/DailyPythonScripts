@@ -5,15 +5,16 @@ __all__ = [
 ]
 
 class XSectionConfig():
-    current_analysis_path = '/storage/ec6821/AnalysisTools/CMSSW_7_3_0/src/atOutput/'
+    current_analysis_path = '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:5000}
-    parameters = ['SingleTop_category_templates', 'SingleTop_file',
-                  'VJets_category_templates', 'analysis_types',
+    parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
+                  'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
                   'centre_of_mass_energy', 'current_analysis_path',
                   'data_file_electron', 'data_file_muon',
+                  'data_file_electron_trees', 'data_file_muon_trees',
                   'data_muon_category_templates', 'electron_QCD_MC_file',
                   'electron_control_region',
                   'electron_control_region_systematic',
@@ -21,6 +22,7 @@ class XSectionConfig():
                   'fit_variable_bin_width',
                   'fit_variable_unit',
                   'general_category_templates',
+                  'general_category_templates_trees',
                   'generator_systematic_vjets_templates',
                   'generator_systematics',
                   'higgs_category_templates', 'higgs_file',
@@ -35,6 +37,7 @@ class XSectionConfig():
                   'rate_changing_systematics',
                   'rebin', 'special_muon_histogram', 'translate_options',
                   'ttbar_category_templates',
+                  'ttbar_category_templates_trees',
                   'ttbar_theory_systematic_prefix', 'ttbar_xsection',
                   'unfolding_madgraph', 'unfolding_madgraph_raw',
                   'unfolding_matching_down', 'unfolding_matching_down_raw',
@@ -140,6 +143,9 @@ class XSectionConfig():
         self.data_file_muon = path_to_files + 'pretendData_Pythia8.root'
         self.data_file_electron = path_to_files + 'pretendData_Pythia8.root'
 
+        self.data_file_muon_trees = path_to_files + 'pretendData_tree.root'
+        self.data_file_electron_trees = path_to_files + 'pretendData_tree.root'
+
         self.muon_QCD_file = path_to_files + 'QCD_data_mu.root'
         self.SingleTop_file = path_to_files + 'SingleTop.root'
         self.electron_QCD_MC_file = path_to_files + 'QCD_Electron.root'
@@ -191,6 +197,12 @@ class XSectionConfig():
         self.electron_QCD_MC_category_templates = {category: path_to_files + '/QCD_Electron.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.muon_QCD_MC_category_templates = {category: path_to_files + '/QCD_Muon.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
 
+        self.general_category_templates_trees = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
+        self.ttbar_category_templates_trees = {category: path_to_files + '/tree_TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root' for category, prefix in categories_and_prefixes.iteritems()}
+        self.SingleTop_category_templates_trees = {category: path_to_files + '/SingleTop_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.VJets_category_templates_trees = {category: path_to_files + '/VJets_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.electron_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Electron_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.muon_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Muon_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
 
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,

@@ -5,6 +5,7 @@ Created on 19 Jan 2013
 '''
 from rootpy.logger import logging
 from rootpy.io import File
+from rootpy.plotting import Hist
 from ROOT import gROOT
 gcd = gROOT.cd
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations
@@ -90,6 +91,30 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
             histograms[sample][histogram_path] = root_histogram.Clone()
             if verbose and nHistograms % 5000 == 0:
                 print 'Read', nHistograms, 'histograms'
+        root_file.Close()
+    return histograms
+
+# Reads a list of histograms from each given file
+def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'EventWeight', selection = '', files = {}, verbose = False, nBins = 40, xMin = 0, xMax = 100 ):
+    histograms = {}
+    nHistograms = 0
+    for sample, input_file in files.iteritems():
+        root_file = File( input_file )
+        get_tree = root_file.Get
+        histograms[sample] = {}
+        
+        for tree in trees:
+
+            currentTree = get_tree( tree )
+            root_histogram = Hist( nBins, xMin, xMax)
+            currentTree.Draw(branch, weightBranch, hist = root_histogram)
+
+            if not is_valid_histogram( root_histogram, tree, input_file):
+                return
+            gcd()
+            nHistograms += 1
+            histograms[sample][tree] = root_histogram.Clone()
+
         root_file.Close()
     return histograms
 

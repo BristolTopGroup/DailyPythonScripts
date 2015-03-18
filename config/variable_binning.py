@@ -12,6 +12,15 @@ bin_edges = {
              'WPT':[0.0, 27.0, 52.0, 78.0, 105.0, 134.0, 166.0, 200.0, 237.0, 300]
              }
 
+control_plots_bins = {
+  'NJets' : [i + 0.5 for i in range ( 4 - 1, 13 + 1 )],
+  'pt' : [i * 15 for i in range ( 0,40 )],  
+  'NBJets' : [i + 0.5 for i in range ( 2 - 1, 6 + 1 )],
+  'NPV' : [i for i in range ( 0,60 + 1 )],
+  'relIso_03_deltaBeta' : [i for i in range ( 0,2 + 1 )],
+  'relIso_04_deltaBeta' : [i for i in range ( 0,2 + 1 )],
+}
+
 # should we want separate binning for different centre of mass energies
 # we can put the logic here, maybe as a function:
 # get_variable_binning(centre_of_mass_energy, combined = False)
