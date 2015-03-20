@@ -93,7 +93,7 @@ def get_histograms( variable ):
     
     path_electron = ''
     path_muon = ''
-    histogram_name = 'response_without_fakes'
+    histogram_name = 'responseVis_without_fakes'
     if variable == 'MET':
         path_electron = 'unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
         path_muon = 'unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
