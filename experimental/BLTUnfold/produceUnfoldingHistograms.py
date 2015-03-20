@@ -165,10 +165,13 @@ def main():
 
                 # Variable names in tree
                 genSelection = ''
+                genSelectionVis = ''
                 if channel.channelName is 'muPlusJets' :
-                    genSelection = '( isSemiLeptonicMuon && passesEventSelection )'
+                    genSelection = '( isSemiLeptonicMuon )'
+                    genSelectionVis = '( isSemiLeptonicMuon && passesGenEventSelection )'
                 elif channel.channelName is 'ePlusJets' :
-                    genSelection = '( isSemiLeptonicElectron && passesEventSelection )'
+                    genSelection = '( isSemiLeptonicElectron )'
+                    genSelectionVis = '( isSemiLeptonicElectron && passesGenEventSelection )'
 
                 genWeight = '( 1 )'
                 # genWeight = '( unfolding.puWeight )'
@@ -181,6 +184,7 @@ def main():
                 # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
                 offlineWeight = '( 1 )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
+                fakeSelectionVis = '( ' + offlineSelection+"&&!"+genSelectionVis +' ) '
                 genVariable = 'pseudo'+variable
                 recoVariable = variable
 
@@ -206,25 +210,32 @@ def main():
                 # Histograms to fill
                 # 1D histograms
                 truth = Hist( bin_edges[variable], name='truth')
+                truthVis = Hist( bin_edges[variable], name='truthVis')
                 measured = Hist( bin_edges[variable], name='measured')
                 fake = Hist( bin_edges[variable], name='fake')
                 
                 # 2D histograms
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
-                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')      
+                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')
+
+                responseVis_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_without_fakes')
+                responseVis_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_only_fakes')
 
                 if options.fineBinned:
                     minVar = bin_edges[variable][0]
                     maxVar = bin_edges[variable][-1]
                     nBins = int(maxVar - minVar)
                     truth = Hist( nBins, minVar, maxVar, name='truth')
+                    truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
                     measured = Hist( nBins, minVar, maxVar, name='measured')
                     fake = Hist( nBins, minVar, maxVar, name='fake')
                     response = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
                     response_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
                     response_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes')
-                    
+                    responseVis_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_without_fakes')
+                    responseVis_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_only_fakes')
+
                 # Some interesting histograms
                 puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                  
@@ -232,12 +243,16 @@ def main():
                 # 1D
                 if not options.donothing:
                     tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
+                    tree.Draw(genVariable,genWeight+'*'+genSelectionVis,hist=truthVis)
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
                     # 2D
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+offlineSelection,hist=response)
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=response_only_fakes)
+
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes)
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes)
 
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
@@ -246,11 +261,15 @@ def main():
                 # Output histgorams to file
                 outputDir.cd()
                 truth.Write()
+                truthVis.Write()
                 measured.Write()
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()
                 response_only_fakes.Write()
+                responseVis_without_fakes.Write()
+                responseVis_only_fakes.Write()
+
                 if options.extraHists:
                     puOffline.Write()
                 pass
