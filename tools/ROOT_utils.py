@@ -95,11 +95,16 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
     return histograms
 
 # Reads a list of histograms from each given file
-def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'EventWeight', selection = '', files = {}, verbose = False, nBins = 40, xMin = 0, xMax = 100 ):
+def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'EventWeight', selection = '1', files = {}, verbose = False, nBins = 40, xMin = 0, xMax = 100, ignoreUnderflow = True ):
     histograms = {}
     nHistograms = 0
+
+    # Setup selection and weight string for ttree draw
+    weightAndSelection = '( %s ) * ( %s )' % ( weightBranch, selection )
+
     for sample, input_file in files.iteritems():
         root_file = File( input_file )
+
         get_tree = root_file.Get
         histograms[sample] = {}
         
@@ -107,10 +112,15 @@ def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'Event
 
             currentTree = get_tree( tree )
             root_histogram = Hist( nBins, xMin, xMax)
-            currentTree.Draw(branch, weightBranch, hist = root_histogram)
+            currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
 
             if not is_valid_histogram( root_histogram, tree, input_file):
                 return
+
+            # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
+            if ignoreUnderflow:
+                root_histogram.SetBinContent(0, 0)
+
             gcd()
             nHistograms += 1
             histograms[sample][tree] = root_histogram.Clone()

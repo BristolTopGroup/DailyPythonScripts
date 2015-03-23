@@ -150,22 +150,28 @@ class XSectionConfig():
         self.SingleTop_file = path_to_files + 'SingleTop.root'
         self.electron_QCD_MC_file = path_to_files + 'QCD_Electron.root'
         self.muon_QCD_MC_file = path_to_files + 'QCD_data_mu.root'
+
+        self.SingleTop_tree_file = path_to_files + 'SingleTop_tree.root'
+        self.muon_QCD_tree_file = path_to_files + 'QCD_Muon_tree.root'
+        self.electron_QCD_MC_tree_file = path_to_files + 'QCD_Electron_tree.root'
+        self.muon_QCD_MC_tree_file = path_to_files + 'QCD_Muon_tree.root'
+
         self.higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
         self.categories_and_prefixes = {
                  'central':'',
-                 'Electron_down':'_minusElectron',
-                 'Electron_up':'_plusElectron',
-                 'Muon_down':'_minusMuon',
-                 'Muon_up':'_plusMuon',
-                 'BJet_down':'_minusBJet',
-                 'BJet_up':'_plusBjet',
-                 'JES_down':'_minusJES',
-                 'JES_up':'_plusJES',
-                 'JER_down':'_minusJER',
-                 'JER_up':'_plusJER',
-                 'LightJet_down':'_minusLightJet',
-                 'LightJet_up':'_plusLightJet',
+                 # 'Electron_down':'_minusElectron',
+                 # 'Electron_up':'_plusElectron',
+                 # 'Muon_down':'_minusMuon',
+                 # 'Muon_up':'_plusMuon',
+                 # 'BJet_down':'_minusBJet',
+                 # 'BJet_up':'_plusBjet',
+                 # 'JES_down':'_minusJES',
+                 # 'JES_up':'_plusJES',
+                 # 'JER_down':'_minusJER',
+                 # 'JER_up':'_plusJER',
+                 # 'LightJet_down':'_minusLightJet',
+                 # 'LightJet_up':'_plusLightJet',
                  }
 
         # now fill in the centre of mass dependent values
@@ -206,8 +212,14 @@ class XSectionConfig():
 
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,
-                                    'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    # 'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    # 'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    }
+
+        self.data_muon_category_templates_trees = {
+                                    'central': self.data_file_muon_trees,
+                                    # 'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    # 'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
 
         self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -236,13 +248,15 @@ class XSectionConfig():
 
         self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
 
-        self.histogram_path_templates = {
-                           'MET' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MET_Analysis/%s_bin_%s/%s',
-                           'HT' : 'TTbar_plus_X_analysis/%s/Ref selection/Binned_HT_Analysis/HT_bin_%s/%s',
-                           'ST': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_ST_Analysis/ST_with_%s_bin_%s/%s',
-                           'MT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_MT_Analysis/MT_with_%s_bin_%s/%s',
-                           'WPT': 'TTbar_plus_X_analysis/%s/Ref selection/Binned_WPT_Analysis/WPT_with_%s_bin_%s/%s'
-                           }
+        self.tree_path_templates = {
+                                    'electron' : 'TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables',
+                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/FitVariables'
+                                    }
+
+        self.tree_path_control_templates = {
+                                    'electron' : 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/FitVariables',
+                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets/FitVariables'
+                                    }
 
         self.electron_control_region = 'QCDConversions'
         self.electron_control_region_systematic = 'QCD non iso e+jets'
@@ -292,16 +306,20 @@ class XSectionConfig():
                    'WPT' : 0
                    }
 
-        self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
-        self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
+        # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
+        # self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
 
         self.special_muon_histogram = 'muon_AbsEta_0btag'
 
         self.data_electron_category_templates = {'central': self.data_file_electron,
-                                    'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    # 'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    # 'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
 
+        self.data_electron_category_templates_trees = {'central': self.data_file_electron_trees,
+                                    # 'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    # 'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    }
 fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
                       'absolute_eta_angle_bl',
                       'absolute_eta_M3',

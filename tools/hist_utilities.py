@@ -323,8 +323,8 @@ def adjust_overflow_to_limit(histogram, x_min, x_max):
     histogram_.SetBinContent(underflow_bin, underflow)
     histogram_.SetBinError(underflow_bin, underflow_error)
     histogram_.SetBinContent(overflow_bin, overflow)
-    histogram_.SetBinError(overflow_bin, overflow_error)     
-        
+    histogram_.SetBinError(overflow_bin, overflow_error)
+
     return histogram_
 
 def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
