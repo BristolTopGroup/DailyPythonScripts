@@ -10,6 +10,7 @@ from ROOT import TGraphAsymmErrors
 from array import array
 from itertools import izip
 from rootpy.plotting.hist import Hist2D
+from config.variable_binning import variable_bins_ROOT
 import random
 import string
 from copy import deepcopy
@@ -111,9 +112,9 @@ def prepare_histograms( histograms, rebin = 1, scale_factor = 1.,
                 if sample == 'V+Jets':
                     histogram.Scale( normalisation['V+Jets'][0] / histogram.Integral() )
                     scale_histogram_errors( histogram, normalisation['V+Jets'][1] )
-                if sample == 'QCD':
-                    histogram.Scale( normalisation['QCD'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['QCD'][1] )
+                # if sample == 'QCD':
+                #     histogram.Scale( normalisation['QCD'][0] / histogram.Integral() )
+                #     scale_histogram_errors( histogram, normalisation['QCD'][1] )
 
 def rebin_asymmetric( histogram, bins ):
     bin_array = array( 'd', bins )
@@ -326,6 +327,47 @@ def adjust_overflow_to_limit(histogram, x_min, x_max):
     histogram_.SetBinError(overflow_bin, overflow_error)
 
     return histogram_
+
+def get_fitted_normalisation( variable, channel, path_to_JSON, category, met_type ):
+    '''
+    This function now gets the error on the fit correctly, so that it can be applied if the --normalise_to_fit option is used 
+    '''
+    fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
+
+    N_fit_ttjet = [0, 0]
+    N_fit_singletop = [0, 0]
+    N_fit_vjets = [0, 0]
+    N_fit_qcd = [0, 0]
+
+    bins = variable_bins_ROOT[variable]
+    for bin_i, _ in enumerate( bins ):
+        # central values
+        N_fit_ttjet[0] += fit_results['TTJet'][bin_i][0]
+        N_fit_singletop[0] += fit_results['SingleTop'][bin_i][0]
+        N_fit_vjets[0] += fit_results['V+Jets'][bin_i][0]
+        N_fit_qcd[0] += fit_results['QCD'][bin_i][0]
+
+        # errors
+        N_fit_ttjet[1] += fit_results['TTJet'][bin_i][1]
+        N_fit_singletop[1] += fit_results['SingleTop'][bin_i][1]
+        N_fit_vjets[1] += fit_results['V+Jets'][bin_i][1]
+        N_fit_qcd[1] += fit_results['QCD'][bin_i][1]
+
+    fitted_normalisation = {
+                'TTJet': N_fit_ttjet,
+                'SingleTop': N_fit_singletop,
+                'V+Jets': N_fit_vjets,
+                'QCD': N_fit_qcd
+                }
+    return fitted_normalisation
+
+def get_normalisation_error( normalisation ):
+    total_normalisation = 0.
+    total_error = 0.
+    for _, number in normalisation.iteritems():
+        total_normalisation += number[0]
+        total_error += number[1]
+    return total_error / total_normalisation
 
 def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
                                centre_of_mass = 8,

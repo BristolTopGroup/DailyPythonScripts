@@ -5,50 +5,10 @@ from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
-from tools.hist_utilities import prepare_histograms
+from tools.hist_utilities import prepare_histograms, get_fitted_normalisation, get_normalisation_error
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
-
-def get_fitted_normalisation( variable, channel ):
-    '''
-    This function now gets the error on the fit correctly, so that it can be applied if the --normalise_to_fit option is used 
-    '''
-    global path_to_JSON, category, met_type
-    # fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
-
-    N_fit_ttjet = [0, 0]
-    N_fit_singletop = [0, 0]
-    N_fit_vjets = [0, 0]
-    N_fit_qcd = [0, 0]
-
-    # bins = variable_bins_ROOT[variable]
-    # for bin_i, _ in enumerate( bins ):
-    #     # central values
-    #     N_fit_ttjet[0] += fit_results['TTJet'][bin_i][0]
-    #     N_fit_singletop[0] += fit_results['SingleTop'][bin_i][0]
-    #     N_fit_vjets[0] += fit_results['V+Jets'][bin_i][0]
-    #     N_fit_qcd[0] += fit_results['QCD'][bin_i][0]
-
-    #     # errors
-    #     N_fit_ttjet[1] += fit_results['TTJet'][bin_i][1]
-    #     N_fit_singletop[1] += fit_results['SingleTop'][bin_i][1]
-    #     N_fit_vjets[1] += fit_results['V+Jets'][bin_i][1]
-    #     N_fit_qcd[1] += fit_results['QCD'][bin_i][1]
-
-    fitted_normalisation = {
-                'TTJet': N_fit_ttjet,
-                'SingleTop': N_fit_singletop,
-                'V+Jets': N_fit_vjets,
-                'QCD': N_fit_qcd
-                }
-    return fitted_normalisation
     
-def get_normalisation_error( normalisation ):
-    total_normalisation = 0.
-    total_error = 0.
-    for _, number in normalisation.iteritems():
-        total_normalisation += number[0]
-        total_error += number[1]
-    return total_error / total_normalisation
+
 
 if __name__ == '__main__':
     set_root_defaults()

@@ -26,6 +26,7 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     histograms = {}
 
     tree = measurement_config.tree_path_templates[channel]
+    control_tree = measurement_config.tree_path_control_templates[channel]
     print variable, fit_variable
 
     # fit_variable_name = ''
@@ -62,6 +63,8 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
 
     # Get inclusive template for these (i.e. don't split up fit variable in bins of MET or whatever)
     input_files_inclusive = { sample : input_files[sample] for sample in ['V+Jets', 'QCD'] }
+    # Get control templates for QCD only, and inclusive
+    input_files_control = { sample : input_files[sample] for sample in ['QCD'] }
 
     print selection, fit_variable
 
@@ -72,6 +75,7 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
  
     histograms_exclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = 'EventWeight', files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
     histograms_inclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files_inclusive, nBins = nBins, xMin = xMin, xMax = xMax )
+    histograms_control = get_histograms_from_trees( trees = [control_tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files_control, nBins = nBins, xMin = xMin, xMax = xMax )
 
     # Put all histograms into one dictionary
     histograms = {}
@@ -86,7 +90,11 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
         for d in histograms_inclusive[histogram]:
             histograms_inclusive[histogram] = histograms_inclusive[histogram][d].Clone()
 
-    histograms['QCD'] = get_inclusive_histogram( histograms_inclusive['QCD'], histograms['QCD'] )
+    for histogram in histograms_control:
+        for d in histograms_control[histogram]:
+            histograms_control[histogram] = histograms_control[histogram][d].Clone()
+
+    histograms['QCD'] = get_inclusive_histogram( histograms_control['QCD'], histograms['QCD'] )
     histograms['V+Jets'] = get_inclusive_histogram( histograms_inclusive['V+Jets'], histograms['V+Jets'] )
     
     # normalise histograms
@@ -338,7 +346,8 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
                 for fit_variable in fit_variables:
                     templates[fit_variable][sample].append( fit_data_collection.vectors( fit_variable )[sample] )
 
-#     print "results = ", results
+    # print results
+    print "results = ", results
     return results, initial_values, templates
 
 def write_fit_results_and_initial_values( channel, category, fit_results, initial_values, templates ):
@@ -554,6 +563,7 @@ if __name__ == '__main__':
         if verbose:
             print "\n" + category + "\n"
  
+        print 'Electron'
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -567,6 +577,7 @@ if __name__ == '__main__':
                       b_tag_bin = b_tag_bin,
                       )
  
+        print 'Muon'
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -581,7 +592,7 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
-        write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
+        # write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
         last_systematic = category
  
         # TTJet_file.Close()

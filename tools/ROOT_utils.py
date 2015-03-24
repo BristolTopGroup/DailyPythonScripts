@@ -110,6 +110,7 @@ def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'Event
         
         for tree in trees:
 
+            # print sample, tree, input_file
             currentTree = get_tree( tree )
             root_histogram = Hist( nBins, xMin, xMax)
             currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
@@ -120,6 +121,7 @@ def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'Event
             # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
             if ignoreUnderflow:
                 root_histogram.SetBinContent(0, 0)
+                root_histogram.SetBinError(0,0)
 
             gcd()
             nHistograms += 1
