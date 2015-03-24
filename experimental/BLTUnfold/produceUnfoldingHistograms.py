@@ -224,7 +224,7 @@ def main():
 
                 if options.fineBinned:
                     minVar = bin_edges[variable][0]
-                    maxVar = bin_edges[variable][-1]
+                    maxVar = max( tree.GetMaximum(genVariable), tree.GetMaximum(recoVariable) )
                     nBins = int(maxVar - minVar)
                     truth = Hist( nBins, minVar, maxVar, name='truth')
                     truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
