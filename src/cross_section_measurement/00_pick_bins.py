@@ -46,6 +46,7 @@ from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config.variable_binning import bin_edges as old_binning
 from config import XSectionConfig
+from optparse import OptionParser
 
 def main():
     '''
@@ -54,6 +55,12 @@ def main():
     Step 3: Check if it is true for all other histograms. If not back to step 2
     Step 4: Repeat step 2 & 3 until no mo bins can be created
     '''
+
+    parser = OptionParser()
+    parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
+                      help = "Consider visible phase space or not" )
+    ( options, args ) = parser.parse_args()
+
     p_min = 0.5
     s_min = 0.5
     # we also want the statistical error to be larger than 5%
@@ -64,7 +71,7 @@ def main():
     bin_choices = {}
 
     for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
-        histogram_information = get_histograms( variable )
+        histogram_information = get_histograms( variable, options )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
 
@@ -88,12 +95,17 @@ def main():
     for variable in bin_choices:
         print '\''+variable+'\' : '+str(bin_choices[variable])+','
 
-def get_histograms( variable ):
+def get_histograms( variable, options ):
     config = XSectionConfig( 13 )
     
     path_electron = ''
     path_muon = ''
-    histogram_name = 'responseVis_without_fakes'
+    histogram_name = ''
+    if options.visiblePhaseSpace:
+        histogram_name = 'responseVis_without_fakes'
+    else :
+        histogram_name = 'response_without_fakes'
+
     if variable == 'MET':
         path_electron = 'unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
         path_muon = 'unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name

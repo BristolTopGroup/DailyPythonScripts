@@ -80,18 +80,27 @@ if __name__ == '__main__':
                       help = "set path to save plots" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
                       help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
+    parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
+                      help = "Consider visible phase space or not" )
 
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig(options.CoM)
 
     output_formats = ['pdf']
-    output_folder = options.output_folder
-    make_folder_if_not_exists( options.output_folder )
+    output_folder = options.output_folder + '/fullPhaseSpace/'
+    if options.visiblePhaseSpace:
+        output_folder = options.output_folder + '/visiblePhaseSpace/'
+    make_folder_if_not_exists( output_folder )
 
     #hist_file = measurement_config.central_general_template % ( 'TTJet' )
     hist_file = measurement_config.unfolding_madgraph_raw
     
-    histogram_name = 'responseVis_without_fakes'
+    histogram_name = ''
+    if options.visiblePhaseSpace:
+        histogram_name = 'responseVis_without_fakes'
+    else :
+        histogram_name = 'response_without_fakes'
+
     histogram_templates = {
                            'MET': 'unfolding_MET_analyser_%s_channel_patType1CorrectedPFMet/%s',
                            'HT' : 'unfolding_HT_analyser_%s_channel/%s',
