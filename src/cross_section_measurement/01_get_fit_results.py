@@ -13,7 +13,7 @@ from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import Minuit, RooFitFit, FitData, FitDataCollection
 from tools.file_utilities import write_data_to_JSON
 from tools.ROOT_utils import set_root_defaults, get_histograms_from_trees
-from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit
+from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit, get_data_derived_qcd
 from lib import closure_tests
 
 def get_histograms( channel, input_files, variable, met_type, variable_bin,
@@ -99,7 +99,7 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     histograms.update(histograms_exclusive)
 
     # Get QCD distribution from data
-    histograms['QCD'] = get_qcd_histograms(histograms_control_inclusive, histograms_exclusive['QCD'])
+    histograms['QCD'] = get_data_derived_qcd(histograms_control_inclusive, histograms_exclusive['QCD'])
     histograms['V+Jets'] = get_inclusive_histogram( histograms_inclusive['V+Jets'], histograms['V+Jets'] )
     
     # normalise histograms
@@ -132,108 +132,6 @@ def get_inclusive_histogram( inclusive_hist, exclusive_hist ):
     inclusive_hist.Scale(scale)
 
     return inclusive_hist
-
-def get_qcd_histograms( control_hists, qcd_exclusive_hist ):
-    '''
-    Retrieves the data-driven QCD template and normalises it to MC prediction.
-    It uses the inclusive template (across all variable bins) and removes other processes
-    before normalising the QCD template.
-    '''
-
-    dataDerived_qcd = clean_control_region( control_hists, subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
-    normalisation_QCDdata = dataDerived_qcd.integral( overflow = True )
-    normalisation_exclusive = qcd_exclusive_hist.integral( overflow = True )
-
-    scale = 1.
-    if not normalisation_QCDdata == 0: 
-        if not normalisation_exclusive == 0:
-            scale = 1 / normalisation_QCDdata * normalisation_exclusive
-        else:
-            scale = 1 / normalisation_QCDdata
-    dataDerived_qcd.Scale( scale )
-    return dataDerived_qcd
-
-# def get_qcd_histograms( input_files, variable, variable_bin, channel,
-#                                             fit_variable_hist_name, rebin = 1 ):
-#     '''
-#     Retrieves the data-driven QCD template and normalises it to MC prediction.
-#     It uses the inclusive template (across all variable bins) and removes other processes
-#     before normalising the QCD template.
-#     '''
-#     global electron_QCD_MC_file, muon_QCD_MC_file, analysis_type, \
-#            electron_control_region, muon_control_region, b_tag_bin
-
-#     control_region = ''
-#     control_region_btag = '0btag'
-#     if 'M_bl' in fit_variable_hist_name or 'angle_bl' in fit_variable_hist_name:
-#         control_region_btag = '1orMoreBtag'
-#     qcd_file = ''
-#     samples = ['data', 'V+Jets', 'SingleTop', 'TTJet']
-
-#     if channel == 'electron':
-#         control_region = electron_control_region
-#         qcd_file = electron_QCD_MC_file
-#     if channel == 'muon':
-#         control_region = muon_control_region
-#         qcd_file = muon_QCD_MC_file
-#     inclusive_control_region_hists = {}
-
-#     for var_bin in variable_bins_ROOT[variable]:
-#         hist_name = fit_variable_hist_name.replace( variable_bin, var_bin )
-
-#         control_region_hist_name = hist_name.replace( 'Ref selection',
-#                                                             control_region )
-#         for sample in samples:
-#             if not inclusive_control_region_hists.has_key( sample ):
-#                 inclusive_control_region_hists[sample] = get_histogram( 
-#                                                         input_files[sample],
-#                                                         control_region_hist_name,
-#                                                         control_region_btag,
-#                                                                    )
-#             else:
-#                 inclusive_control_region_hists[sample] += get_histogram( 
-#                                                         input_files[sample],
-#                                                         control_region_hist_name,
-#                                                         control_region_btag,
-#                                                                    )
-#     for sample in samples:
-#         inclusive_control_region_hists[sample].Rebin( rebin )
-
-#     inclusive_control_region_hists['data'] = clean_control_region( inclusive_control_region_hists,
-#                           subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
-#     # now apply proper normalisation
-#     QCD_normalisation_factor = 1
-#     signal_region_mc = get_histogram( qcd_file, fit_variable_hist_name, b_tag_bin )
-#     n_mc = signal_region_mc.Integral()
-#     n_control = inclusive_control_region_hists['data'].Integral()
-#     if not n_control == 0:  # scale to MC prediction
-#         if not n_mc == 0:
-#             QCD_normalisation_factor = 1 / n_control * n_mc
-#         else:
-#             QCD_normalisation_factor = 1 / n_control
-#     inclusive_control_region_hists['data'].Scale( QCD_normalisation_factor )
-
-#     return inclusive_control_region_hists['data']
-
-# def get_histogram( input_file, tree, branch, b_tag_bin = '' ):
-#     if not input_file:
-#         return None
-
-#     # b_tag_bin_sum_rules = b_tag_summations
-#     histogram = None
-
-#     histogram = get_histograms_from_trees( trees = [tree], branch = branch, weightBranch = 'EventWeight', selection = '', files = {'this' : input_file}, nBins = 40, xMin = 0, xMax = 100 )
-#     # if b_tag_bin in b_tag_bin_sum_rules.keys():  # summing needed
-#     #     b_tag_bins_to_sum = b_tag_bin_sum_rules[b_tag_bin]
-#     #     histogram = input_file.Get( histogram_path + '_' + b_tag_bins_to_sum[0] ).Clone()
-#     #     for bin_i in b_tag_bins_to_sum[1:]:
-#     #         histogram += input_file.Get( histogram_path + '_' + bin_i )
-#     # else:
-#     #     if b_tag_bin == '':
-#     #         histogram = input_file.Get( histogram_path )
-#     #     else:
-#     #         histogram = input_file.Get( histogram_path + '_' + b_tag_bin )
-#     return histogram.Clone()
 
 def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type, b_tag_bin, scale_factors = None ):
     '''

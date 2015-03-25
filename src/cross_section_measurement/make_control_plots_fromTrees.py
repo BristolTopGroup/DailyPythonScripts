@@ -5,7 +5,7 @@ from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
-from tools.hist_utilities import prepare_histograms, get_fitted_normalisation, get_normalisation_error
+from tools.hist_utilities import prepare_histograms, get_fitted_normalisation, get_normalisation_error, get_data_derived_qcd
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults, get_histograms_from_trees
 
 channels = [
@@ -86,12 +86,15 @@ if __name__ == '__main__':
     for channel in channels:
         print channel
         control_region = ''
+        fitted_normalisation = {}
         if channel == 'EPlusJets':
             control_region = 'QCD non iso e+jets'
             histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
+            fitted_normalisation = normalisations_electron
         elif channel == 'MuPlusJets':
             control_region = 'QCD non iso mu+jets'
             histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
+            fitted_normalisation = normalisations_muon
 
         # Variables for diff xsec
         for var in [ 'MET', 'HT', 'ST', 'WPT', 'MT' ]:
@@ -107,6 +110,9 @@ if __name__ == '__main__':
             nBins = 40
 
             histograms = get_histograms_from_trees( trees = [signalTree, controlTree], branch = var, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
+
+            histogram_dataDerivedQCD = get_data_derived_qcd( { h : histograms[h][controlTree] for h in ['data','TTJet','SingleTop','V+Jets','QCD']}, histograms['QCD'][signalTree])
+
             for sample in histograms:
                 signalNorm = histograms[sample][signalTree].integral( overflow = True )
                 controlNorm = histograms[sample][controlTree].integral( overflow = True )
@@ -116,12 +122,12 @@ if __name__ == '__main__':
             prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
 
             if normalise_to_fit:
-                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron[var] )
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = fitted_normalisation[var] )
             else:
                 prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
 
             histograms_to_draw = [histograms['data'][signalTree],
-                                  histograms['QCD'][controlTree],
+                                  histogram_dataDerivedQCD,
                                   histograms['V+Jets'][signalTree],
                                   histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
             histogram_lables = ['data', 'QCD', 
@@ -141,6 +147,7 @@ if __name__ == '__main__':
             eventsPerBin = (xMax - xMin) / nBins
             histogram_properties.x_axis_title = '%s [GeV]' % ( variables_latex[var] )
             histogram_properties.y_axis_title = 'Events/(%.2g GeV)' % (eventsPerBin)
+            histogram_properties.y_limits = [0, histograms['data'][signalTree].GetMaximum() * 1.3 ]
             # histogram_properties.set_log_y = True
 
           

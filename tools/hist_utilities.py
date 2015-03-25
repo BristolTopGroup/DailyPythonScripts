@@ -361,6 +361,26 @@ def get_fitted_normalisation( variable, channel, path_to_JSON, category, met_typ
                 }
     return fitted_normalisation
 
+def get_data_derived_qcd( control_hists, qcd_exclusive_hist ):
+    '''
+    Retrieves the data-driven QCD template and normalises it to MC prediction.
+    It uses the inclusive template (across all variable bins) and removes other processes
+    before normalising the QCD template.
+    '''
+
+    dataDerived_qcd = clean_control_region( control_hists, subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
+    normalisation_QCDdata = dataDerived_qcd.integral( overflow = True )
+    normalisation_exclusive = qcd_exclusive_hist.integral( overflow = True )
+
+    scale = 1.
+    if not normalisation_QCDdata == 0: 
+        if not normalisation_exclusive == 0:
+            scale = 1 / normalisation_QCDdata * normalisation_exclusive
+        else:
+            scale = 1 / normalisation_QCDdata
+    dataDerived_qcd.Scale( scale )
+    return dataDerived_qcd
+
 def get_normalisation_error( normalisation ):
     total_normalisation = 0.
     total_error = 0.
