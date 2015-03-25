@@ -62,9 +62,9 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
 
 
     # Get inclusive template for these (i.e. don't split up fit variable in bins of MET or whatever)
-    input_files_inclusive = { sample : input_files[sample] for sample in ['V+Jets', 'QCD'] }
-    # Get control templates for QCD only, and inclusive
-    input_files_control = { sample : input_files[sample] for sample in ['QCD'] }
+    input_files_inclusive = { sample : input_files[sample] for sample in ['V+Jets'] }
+    # # Get control templates for QCD only, and inclusive
+    # input_files_control = input_files
 
     print selection, fit_variable
 
@@ -73,28 +73,33 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     xMax = bins[-1]
     nBins = len(bins) -1   
  
+    # Get necessary histograms
+    # Signal, binned by e.g. MET, HT etc.
     histograms_exclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = 'EventWeight', files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
+    # Signal, not binned.  For V+Jets template
     histograms_inclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files_inclusive, nBins = nBins, xMin = xMin, xMax = xMax )
-    histograms_control = get_histograms_from_trees( trees = [control_tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files_control, nBins = nBins, xMin = xMin, xMax = xMax )
-
-    # Put all histograms into one dictionary
-    histograms = {}
-    histograms.update(histograms_exclusive)
+    # Control, not binned.  For QCD template
+    histograms_control_inclusive = get_histograms_from_trees( trees = [control_tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
 
     # Currently needed, as get_histograms_from_trees returns the histograms as part of a more complicated structure
-    for histogram in histograms:
-        for d in histograms[histogram]:
-            histograms[histogram] = histograms[histogram][d].Clone()
+    for histogram in histograms_exclusive:
+        for d in histograms_exclusive[histogram]:
+            histograms_exclusive[histogram] = histograms_exclusive[histogram][d].Clone()
 
     for histogram in histograms_inclusive:
         for d in histograms_inclusive[histogram]:
             histograms_inclusive[histogram] = histograms_inclusive[histogram][d].Clone()
 
-    for histogram in histograms_control:
-        for d in histograms_control[histogram]:
-            histograms_control[histogram] = histograms_control[histogram][d].Clone()
+    for histogram in histograms_control_inclusive:
+        for d in histograms_control_inclusive[histogram]:
+            histograms_control_inclusive[histogram] = histograms_control_inclusive[histogram][d].Clone()
 
-    histograms['QCD'] = get_inclusive_histogram( histograms_control['QCD'], histograms['QCD'] )
+    # Put all histograms into one dictionary
+    histograms = {}
+    histograms.update(histograms_exclusive)
+
+    # Get QCD distribution from data
+    histograms['QCD'] = get_qcd_histograms(histograms_control_inclusive, histograms_exclusive['QCD'])
     histograms['V+Jets'] = get_inclusive_histogram( histograms_inclusive['V+Jets'], histograms['V+Jets'] )
     
     # normalise histograms
@@ -128,67 +133,87 @@ def get_inclusive_histogram( inclusive_hist, exclusive_hist ):
 
     return inclusive_hist
 
-def get_qcd_histograms( input_files, variable, variable_bin, channel,
-                                            fit_variable_hist_name, rebin = 1 ):
+def get_qcd_histograms( control_hists, qcd_exclusive_hist ):
     '''
     Retrieves the data-driven QCD template and normalises it to MC prediction.
     It uses the inclusive template (across all variable bins) and removes other processes
     before normalising the QCD template.
     '''
-    global electron_QCD_MC_file, muon_QCD_MC_file, analysis_type, \
-           electron_control_region, muon_control_region, b_tag_bin
 
-    control_region = ''
-    control_region_btag = '0btag'
-    if 'M_bl' in fit_variable_hist_name or 'angle_bl' in fit_variable_hist_name:
-        control_region_btag = '1orMoreBtag'
-    qcd_file = ''
-    samples = ['data', 'V+Jets', 'SingleTop', 'TTJet']
+    dataDerived_qcd = clean_control_region( control_hists, subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
+    normalisation_QCDdata = dataDerived_qcd.integral( overflow = True )
+    normalisation_exclusive = qcd_exclusive_hist.integral( overflow = True )
 
-    if channel == 'electron':
-        control_region = electron_control_region
-        qcd_file = electron_QCD_MC_file
-    if channel == 'muon':
-        control_region = muon_control_region
-        qcd_file = muon_QCD_MC_file
-    inclusive_control_region_hists = {}
-
-    for var_bin in variable_bins_ROOT[variable]:
-        hist_name = fit_variable_hist_name.replace( variable_bin, var_bin )
-
-        control_region_hist_name = hist_name.replace( 'Ref selection',
-                                                            control_region )
-        for sample in samples:
-            if not inclusive_control_region_hists.has_key( sample ):
-                inclusive_control_region_hists[sample] = get_histogram( 
-                                                        input_files[sample],
-                                                        control_region_hist_name,
-                                                        control_region_btag,
-                                                                   )
-            else:
-                inclusive_control_region_hists[sample] += get_histogram( 
-                                                        input_files[sample],
-                                                        control_region_hist_name,
-                                                        control_region_btag,
-                                                                   )
-    for sample in samples:
-        inclusive_control_region_hists[sample].Rebin( rebin )
-
-    inclusive_control_region_hists['data'] = clean_control_region( inclusive_control_region_hists,
-                          subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
-    # now apply proper normalisation
-    QCD_normalisation_factor = 1
-    signal_region_mc = get_histogram( qcd_file, fit_variable_hist_name, b_tag_bin )
-    n_mc = signal_region_mc.Integral()
-    n_control = inclusive_control_region_hists['data'].Integral()
-    if not n_control == 0:  # scale to MC prediction
-        if not n_mc == 0:
-            QCD_normalisation_factor = 1 / n_control * n_mc
+    scale = 1.
+    if not normalisation_QCDdata == 0: 
+        if not normalisation_exclusive == 0:
+            scale = 1 / normalisation_QCDdata * normalisation_exclusive
         else:
-            QCD_normalisation_factor = 1 / n_control
-    inclusive_control_region_hists['data'].Scale( QCD_normalisation_factor )
+            scale = 1 / normalisation_QCDdata
+    dataDerived_qcd.Scale( scale )
+    return dataDerived_qcd
 
-    return inclusive_control_region_hists['data']
+# def get_qcd_histograms( input_files, variable, variable_bin, channel,
+#                                             fit_variable_hist_name, rebin = 1 ):
+#     '''
+#     Retrieves the data-driven QCD template and normalises it to MC prediction.
+#     It uses the inclusive template (across all variable bins) and removes other processes
+#     before normalising the QCD template.
+#     '''
+#     global electron_QCD_MC_file, muon_QCD_MC_file, analysis_type, \
+#            electron_control_region, muon_control_region, b_tag_bin
+
+#     control_region = ''
+#     control_region_btag = '0btag'
+#     if 'M_bl' in fit_variable_hist_name or 'angle_bl' in fit_variable_hist_name:
+#         control_region_btag = '1orMoreBtag'
+#     qcd_file = ''
+#     samples = ['data', 'V+Jets', 'SingleTop', 'TTJet']
+
+#     if channel == 'electron':
+#         control_region = electron_control_region
+#         qcd_file = electron_QCD_MC_file
+#     if channel == 'muon':
+#         control_region = muon_control_region
+#         qcd_file = muon_QCD_MC_file
+#     inclusive_control_region_hists = {}
+
+#     for var_bin in variable_bins_ROOT[variable]:
+#         hist_name = fit_variable_hist_name.replace( variable_bin, var_bin )
+
+#         control_region_hist_name = hist_name.replace( 'Ref selection',
+#                                                             control_region )
+#         for sample in samples:
+#             if not inclusive_control_region_hists.has_key( sample ):
+#                 inclusive_control_region_hists[sample] = get_histogram( 
+#                                                         input_files[sample],
+#                                                         control_region_hist_name,
+#                                                         control_region_btag,
+#                                                                    )
+#             else:
+#                 inclusive_control_region_hists[sample] += get_histogram( 
+#                                                         input_files[sample],
+#                                                         control_region_hist_name,
+#                                                         control_region_btag,
+#                                                                    )
+#     for sample in samples:
+#         inclusive_control_region_hists[sample].Rebin( rebin )
+
+#     inclusive_control_region_hists['data'] = clean_control_region( inclusive_control_region_hists,
+#                           subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
+#     # now apply proper normalisation
+#     QCD_normalisation_factor = 1
+#     signal_region_mc = get_histogram( qcd_file, fit_variable_hist_name, b_tag_bin )
+#     n_mc = signal_region_mc.Integral()
+#     n_control = inclusive_control_region_hists['data'].Integral()
+#     if not n_control == 0:  # scale to MC prediction
+#         if not n_mc == 0:
+#             QCD_normalisation_factor = 1 / n_control * n_mc
+#         else:
+#             QCD_normalisation_factor = 1 / n_control
+#     inclusive_control_region_hists['data'].Scale( QCD_normalisation_factor )
+
+#     return inclusive_control_region_hists['data']
 
 # def get_histogram( input_file, tree, branch, b_tag_bin = '' ):
 #     if not input_file:
