@@ -69,7 +69,7 @@ def main():
      
     bin_choices = {}
 
-    for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
+    for variable in ['leptonPt','leptonEta','bPt','bEta','MET', 'HT', 'ST', 'MT', 'WPT']:
         histogram_information = get_histograms( variable, options )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
@@ -116,7 +116,19 @@ def get_histograms( variable, options ):
     elif variable == 'WPT':
         path_electron = 'unfolding_WPT_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
         path_muon = 'unfolding_WPT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
-        
+    elif variable == 'leptonEta':
+        path_electron = 'unfolding_leptonEta_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_leptonEta_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
+    elif variable == 'leptonPt':
+        path_electron = 'unfolding_leptonPt_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_leptonPt_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
+    elif variable == 'bEta':
+        path_electron = 'unfolding_bEta_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_bEta_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
+    elif variable == 'bPt':
+        path_electron = 'unfolding_bPt_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
+        path_muon = 'unfolding_bPt_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
+
     histogram_information = [
                 {'file': config.unfolding_madgraph_raw,
                  'CoM': 13,

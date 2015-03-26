@@ -64,6 +64,16 @@ def convertScaleFactorsToString( scaleFactors ):
     sfString += ')'
     return sfString
 
+def getGenVariable( recoVariable ):
+    if recoVariable is 'leptonEta':
+        return 'pseudoLepton_eta'
+    elif recoVariable is ('leptonPt'):
+        return 'pseudoLepton_pT'
+    elif recoVariable is 'bEta':
+        return 'pseudoB_eta'
+    elif recoVariable is 'bPt':
+        return 'pseudoB_pT'
+    else : return 'pseudo'+recoVariable
 
 fileNames = {
              '13TeV' : {
@@ -185,8 +195,9 @@ def main():
                 offlineWeight = '( 1 )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
                 fakeSelectionVis = '( ' + offlineSelection+"&&!"+genSelectionVis +' ) '
-                genVariable = 'pseudo'+variable
+
                 recoVariable = variable
+                genVariable = getGenVariable( recoVariable )
 
                 # Weights derived from variables in tree
                 if options.applyTopPtReweighting:
@@ -226,6 +237,12 @@ def main():
                     minVar = bin_edges[variable][0]
                     maxVar = max( tree.GetMaximum(genVariable), tree.GetMaximum(recoVariable) )
                     nBins = int(maxVar - minVar)
+
+                    if variable is 'leptonEta' or variable is 'bEta':
+                        maxVar = 2.5
+                        minVar = -2.5
+                        nBins = 1000
+
                     truth = Hist( nBins, minVar, maxVar, name='truth')
                     truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
                     measured = Hist( nBins, minVar, maxVar, name='measured')

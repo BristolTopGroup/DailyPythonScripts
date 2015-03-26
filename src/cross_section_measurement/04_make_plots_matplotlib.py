@@ -32,10 +32,10 @@ def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, k_values, met_type
     
     filename = ''
-    if category in met_uncertainties and variable == 'HT':
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
-    else:
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+    # if category in met_uncertainties and variable == 'HT':
+    #     filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
+    # else:
+    filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     if channel == 'combined':
         filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
@@ -55,30 +55,32 @@ def read_xsection_measurement_results( category, channel ):
     if category == 'central':
         # true distributions
         h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
-        h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
-        h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
-        h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
-        h_normalised_xsection_MCATNLO = None
-        if measurement_config.centre_of_mass_energy == 8:
-            h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
-        h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
-        h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
-        h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
-        h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
+        # h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
+        # h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
+        # h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
+        # h_normalised_xsection_MCATNLO = None
+        # if measurement_config.centre_of_mass_energy == 8:
+        #     h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
+        # h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
+        # h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
+        # h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
+        # h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
         
         histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
-                                                                'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
-                                                                'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG} )
-        if measurement_config.centre_of_mass_energy == 8:
-            histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
+                                                                # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
+                                                                # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
+                                                                # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
+                                                                })
+        # if measurement_config.centre_of_mass_energy == 8:
+        #     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
         
         histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                  'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
-                                                                  'matchingdown': h_normalised_xsection_mathchingdown,
-                                                                  'matchingup': h_normalised_xsection_mathchingup,
-                                                                  'scaledown': h_normalised_xsection_scaledown,
-                                                                  'scaleup': h_normalised_xsection_scaleup} )
+                                                                  # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
+                                                                  # 'matchingdown': h_normalised_xsection_mathchingdown,
+                                                                  # 'matchingup': h_normalised_xsection_mathchingup,
+                                                                  # 'scaledown': h_normalised_xsection_scaledown,
+                                                                  # 'scaleup': h_normalised_xsection_scaleup}
+                                                                  })
         
         file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type
         if channel == 'combined':
@@ -114,6 +116,7 @@ def read_xsection_measurement_results( category, channel ):
 def read_fit_templates_and_results_as_histograms( category, channel ):
     global path_to_JSON, variable, met_type
     templates = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt' )
+
     data_values = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt' )['data']
     fit_results = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
     fit_variables = templates.keys()
@@ -561,7 +564,7 @@ def get_unit_string(fit_variable):
 if __name__ == '__main__':
     set_root_defaults()
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/',
+    parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
                   help = "set path to JSON files" )
     parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/',
                   help = "set path to save plots" )
@@ -571,8 +574,8 @@ if __name__ == '__main__':
                       help = "set MET type used in the analysis of MET, ST or MT" )
     parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
                   help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
-    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
-                      help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
+    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
+                      help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
     parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
                       help = """Draws additional plots like the comparison of different 
                       systematics to the central result.""" )
@@ -604,39 +607,38 @@ if __name__ == '__main__':
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    categories.extend( ttbar_generator_systematics )
-    categories.extend( vjets_generator_systematics )
+    # categories.extend( ttbar_generator_systematics )
+    # categories.extend( vjets_generator_systematics )
 
-    # Add mass systematics
+    # # Add mass systematics
     ttbar_mass_systematics = measurement_config.topMass_systematics
-    categories.extend( measurement_config.topMass_systematics )
+    # categories.extend( measurement_config.topMass_systematics )
 
-    # Add k value systematic
+    # # Add k value systematic
     kValue_systematics = measurement_config.kValueSystematic
-    categories.extend( measurement_config.kValueSystematic )
+    # categories.extend( measurement_config.kValueSystematic )
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
-    pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
-    pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
-    pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
-    pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
-    # all MET uncertainties except JES as this is already included
-    met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    new_uncertainties = ['QCD_shape']
-    rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
-    rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
+    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
+    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
+    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
+    # pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
+    # # all MET uncertainties except JES as this is already included
+    # met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    # new_uncertainties = ['QCD_shape']
+    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
 
     all_measurements = deepcopy( categories )
-    all_measurements.extend( pdf_uncertainties )
-    all_measurements.extend( met_uncertainties )
-    all_measurements.extend( new_uncertainties )
+    # all_measurements.extend( pdf_uncertainties )
+    # all_measurements.extend( met_uncertainties )
+    # all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
     for channel in ['electron', 'muon', 'combined']:
         for category in all_measurements:
-            if not category == 'central' and not options.draw_systematics:
+            if not category == 'central' and not options.additional_plots:
                 continue
-            if variable == 'HT' and category in met_uncertainties:
-                continue
+            # if variable == 'HT' and category in met_uncertainties:
+            #     continue
             # setting up systematic MET for JES up/down samples for reading fit templates
             met_type = translate_options[options.metType]
             if category == 'JES_up':
@@ -665,10 +667,10 @@ if __name__ == '__main__':
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
     
             make_plots( histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators' )
-            make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
+            # make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
-    
+
         if options.additional_plots:
             plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
             

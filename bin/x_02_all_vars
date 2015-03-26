@@ -1,24 +1,16 @@
 #!/bin/bash
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
-fit_var="absolute_eta,M3,angle_bl"
+fit_var="M3,angle_bl"
 nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
 N_JOBS=6
 
 echo "Using the fit variable(s): $fit_var"
 
 i=0
-for var in MET HT ST MT WPT; do
+for var in MET HT ST WPT; do
 	echo "Unfolding distribution: $var"
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 7 -p data/$nice_fit_var &> logs/02_${var}_unfold_7TeV_${nice_fit_var}.log &
-	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
-	
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 8 -p data/$nice_fit_var &> logs/02_${var}_unfold_8TeV_${nice_fit_var}.log &
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 13 -p data/$nice_fit_var &> logs/02_${var}_unfold_13TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

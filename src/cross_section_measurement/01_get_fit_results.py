@@ -17,7 +17,9 @@ from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit,
 from lib import closure_tests
 
 def get_histograms( channel, input_files, variable, met_type, variable_bin,
-                   b_tag_bin, rebin = 1, fit_variable = 'absolute_eta',
+                   b_tag_bin, 
+                   treePrefix, weightBranch,
+                   rebin = 1, fit_variable = 'absolute_eta',
                    scale_factors = None ):
     global b_tag_bin_VJets, fit_variables
     global electron_control_region, muon_control_region
@@ -25,9 +27,12 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     boundaries = measurement_config.fit_boundaries[fit_variable]
     histograms = {}
 
-    tree = measurement_config.tree_path_templates[channel]
+    tree = measurement_config.tree_path_templates[channel] + treePrefix
     control_tree = measurement_config.tree_path_control_templates[channel]
-    print variable, fit_variable
+
+    fullWeight = 'EventWeight'
+    if weightBranch != '' :
+        fullWeight += ' * %s' % weightBranch
 
     # fit_variable_name = ''
     # fit_variable_name_data = ''
@@ -71,15 +76,15 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     bins = fit_variable_bin_edges[fit_variable]
     xMin = bins[0]
     xMax = bins[-1]
-    nBins = len(bins) -1   
+    nBins = len(bins) -1
  
     # Get necessary histograms
     # Signal, binned by e.g. MET, HT etc.
-    histograms_exclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = 'EventWeight', files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
+    histograms_exclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = fullWeight, files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
     # Signal, not binned.  For V+Jets template
-    histograms_inclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files_inclusive, nBins = nBins, xMin = xMin, xMax = xMax )
+    histograms_inclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, weightBranch = fullWeight, files = input_files_inclusive, nBins = nBins, xMin = xMin, xMax = xMax )
     # Control, not binned.  For QCD template
-    histograms_control_inclusive = get_histograms_from_trees( trees = [control_tree], branch = fit_variable, weightBranch = 'EventWeight', files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
+    histograms_control_inclusive = get_histograms_from_trees( trees = [control_tree], branch = fit_variable, weightBranch = fullWeight, files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
 
     # Currently needed, as get_histograms_from_trees returns the histograms as part of a more complicated structure
     for histogram in histograms_exclusive:
@@ -110,16 +115,19 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
             histogram.Scale( measurement_config.luminosity_scale )
 
     # # apply normalisation scale factors for rate-changing systematics
-    # if scale_factors:
-    #     for source, factor in scale_factors.iteritems():
-    #         if 'luminosity' in source:
-    #             for sample, histogram in histograms.iteritems():
-    #                 if sample == 'data':
-    #                     continue
-    #                 histogram.Scale( factor )
-    #         for sample, histogram in histograms.iteritems():
-    #             if sample in source:
-    #                 histogram.Scale( factor )
+    if scale_factors:
+        for source, factor in scale_factors.iteritems():
+            for sample, histogram in histograms.iteritems():
+                if 'luminosity' in source:
+                    if sample is 'data':
+                        # Skip data for luminosity systematic
+                        continue
+                    else:
+                        histogram.Scale( factor )
+                # For cross section systematics, only change normalisation of relevant sample
+                elif sample in source :
+                    histogram.Scale( factor )
+
     return histograms
 
 def get_inclusive_histogram( inclusive_hist, exclusive_hist ):
@@ -133,7 +141,7 @@ def get_inclusive_histogram( inclusive_hist, exclusive_hist ):
 
     return inclusive_hist
 
-def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type, b_tag_bin, scale_factors = None ):
+def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type, b_tag_bin, treePrefix, weightBranch, scale_factors = None ):
     '''
     Retrieves the number of ttbar events from fits to one or more distribution
     (fit_variables) for each bin in the variable.
@@ -160,6 +168,8 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
                                         rebin = measurement_config.rebin[fit_variable],
                                         fit_variable = fit_variable,
                                         scale_factors = scale_factors,
+                                        treePrefix = treePrefix,
+                                        weightBranch = weightBranch,
                                         )
             # create data sets
             h_fit_variable_signal = None
@@ -270,7 +280,8 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
                     templates[fit_variable][sample].append( fit_data_collection.vectors( fit_variable )[sample] )
 
     # print results
-    print "results = ", results
+    # print "results = ", results
+    # print 'templates = ',templates
     return results, initial_values, templates
 
 def write_fit_results_and_initial_values( channel, category, fit_results, initial_values, templates ):
@@ -333,7 +344,7 @@ if __name__ == '__main__':
     parser.add_option( '--closure_test_type', dest = "closure_test_type", default = 'simple',
                       help = "Type of closure test (relative normalisation):" + '|'.join( closure_tests.keys() ) )
     parser.add_option( '--no_combined_signal', dest = "make_combined_signal", 
-                       action = "store_false", default=True,
+                       action = "store_false", default=False,
                        help = "Do not make a combined template from TTbar and single top" )
     parser.add_option( '--test', dest = "test", action = "store_true",
                       help = "Just run the central measurement" )
@@ -453,18 +464,45 @@ if __name__ == '__main__':
     VJets_file = measurement_config.VJets_category_templates_trees['central']
     del scale_factors
 
+
+    allCategories = categories_and_prefixes
+    allCategories.update( measurement_config.rate_changing_systematics )
+
     # central measurement and the rest of the systematics
     last_systematic = ''
-    for category, prefix in categories_and_prefixes.iteritems():
+    for category, prefix in allCategories.iteritems():
         if run_just_central and not category == 'central': 
             continue
-        TTJet_file = measurement_config.ttbar_category_templates_trees[category]
-        SingleTop_file = measurement_config.SingleTop_category_templates_trees[category]
-        VJets_file = measurement_config.VJets_category_templates_trees[category]
-        QCD_muon_file = measurement_config.muon_QCD_MC_category_templates_trees[category]
-        QCD_electron_file = measurement_config.electron_QCD_MC_category_templates_trees[category]
-        data_file_electron = measurement_config.data_electron_category_templates_trees['central']
-        data_file_muon = measurement_config.data_muon_category_templates_trees['central']
+
+        print 'Doing category :',category
+        # Will want to use central template for rate changing systematic
+        categoryForTemplates = category
+
+        # For JES, use different tree
+        # For other systematics and central, use different weights
+        treePrefix = ''
+        weightBranch = ''
+        if category in ['JES_up', 'JES_down']:
+            treePrefix = prefix
+        elif category not in measurement_config.rate_changing_systematics:
+            weightBranch = prefix
+
+        # Changes for rate changing systematics
+        scaleFactor = {}
+        if category in ['luminosity_up', 'TTJet_cross_section_up', 'SingleTop_cross_section_up']:
+            scaleFactor[category] = 1.0 + prefix
+            categoryForTemplates = 'central'
+        elif category in ['luminosity_down', 'TTJet_cross_section_down', 'SingleTop_cross_section_down']:
+            scaleFactor[category] = 1.0 - prefix
+            categoryForTemplates = 'central'
+
+        TTJet_file = measurement_config.ttbar_category_templates_trees[categoryForTemplates]
+        SingleTop_file = measurement_config.SingleTop_category_templates_trees[categoryForTemplates]
+        VJets_file = measurement_config.VJets_category_templates_trees[categoryForTemplates]
+        QCD_muon_file = measurement_config.muon_QCD_MC_category_templates_trees[categoryForTemplates]
+        QCD_electron_file = measurement_config.electron_QCD_MC_category_templates_trees[categoryForTemplates]
+        data_file_electron = measurement_config.data_electron_category_templates_trees
+        data_file_muon = measurement_config.data_muon_category_templates_trees
  
         # # Setting up systematic MET for JES up/down samples
         # met_type = translate_options[options.metType]
@@ -498,6 +536,9 @@ if __name__ == '__main__':
                       variable = variable,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
+                      treePrefix = treePrefix,
+                      weightBranch = weightBranch,
+                      scale_factors = scaleFactor,
                       )
  
         print 'Muon'
@@ -512,6 +553,9 @@ if __name__ == '__main__':
                       variable = variable,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
+                      treePrefix = treePrefix,
+                      weightBranch = weightBranch,
+                      scale_factors = scaleFactor,
                       )
         write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
@@ -526,8 +570,10 @@ if __name__ == '__main__':
         # if Higgs_file:
         #     Higgs_file.Close()
  
-    data_file_electron = File( measurement_config.data_electron_category_templates_trees['central'] )
-    data_file_muon = File( measurement_config.data_muon_category_templates_trees['central'] )
+
+
+    data_file_electron = File( measurement_config.data_electron_category_templates_trees )
+    data_file_muon = File( measurement_config.data_muon_category_templates_trees )
     TTJet_file = File( measurement_config.ttbar_category_templates_trees['central'] )
     SingleTop_file = File( measurement_config.SingleTop_category_templates_trees['central'] )
     VJets_file = File( measurement_config.VJets_category_templates_trees['central'] )
@@ -616,51 +662,5 @@ if __name__ == '__main__':
     # electron_control_region = measurement_config.electron_control_region
     # muon_control_region = measurement_config.muon_control_region
  
-    # # rate-changing systematics
-    # for systematic, shift in measurement_config.rate_changing_systematics.iteritems():
-    #     if run_just_central:  # no systematics for closure test
-    #         continue
-    #     factor = 1.0
-    #     for variation in ['+', '-']:
-    #         if variation == '+':
-    #             factor = 1.0 + shift
-    #         else:
-    #             factor = 1.0 - shift
- 
-    #         if verbose:
-    #             print "\n" + systematic + variation, factor, "\n"
- 
-    #         scale_factors = {}
-    #         scale_factors[systematic + variation] = factor
-    #         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
-    #                           input_files = {
-    #                                        'TTJet': TTJet_file,
-    #                                        'SingleTop': SingleTop_file,
-    #                                        'V+Jets': VJets_file,
-    #                                        'data': data_file_electron,
-    #                                        'Higgs' : Higgs_file,
-    #                                        },
-    #                           variable = variable,
-    #                           met_type = met_type,
-    #                           b_tag_bin = b_tag_bin,
-    #                           scale_factors = scale_factors
-    #                           )
- 
-    #         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
-    #                       input_files = {
-    #                                    'TTJet': TTJet_file,
-    #                                    'SingleTop': SingleTop_file,
-    #                                    'V+Jets': VJets_file,
-    #                                    'data': data_file_muon,
-    #                                    'Higgs' : Higgs_file,
-    #                                    },
-    #                       variable = variable,
-    #                       met_type = met_type,
-    #                       b_tag_bin = b_tag_bin,
-    #                       scale_factors = scale_factors
-    #                       )
- 
-            # write_fit_results_and_initial_values( 'electron', systematic + variation, fit_results_electron, initial_values_electron, templates_electron )
-            # write_fit_results_and_initial_values( 'muon', systematic + variation, fit_results_muon, initial_values_muon, templates_muon )
-            # write_fit_results( 'combined', systematic + variation, combine_complex_results( fit_results_electron, fit_results_muon ) )
+    
 
