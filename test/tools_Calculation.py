@@ -76,7 +76,8 @@ class Test( unittest.TestCase ):
         # purities should always be above 0 and below ~0.5
         for p in purities:
             self.assertGreater( p, 0 )
-            self.assertLess( p, 0.5 )
+            # allow for 10% error due to randomness
+            self.assertLess( p, 0.5 + 0.05)
             
     def test_random_elipse_stability( self ):
         stabilities = calculate_stabilities( self.random_elipse )
@@ -85,7 +86,8 @@ class Test( unittest.TestCase ):
         # stabilities should always be above 0 and below ~0.6
         for s in stabilities:
             self.assertGreater( s, 0 )
-            self.assertLess( s, 0.6 )
+            # allow for 10% error due to randomness
+            self.assertLess( s, 0.6 + 0.06)
             
     def test_pre_calculated_purity( self ):
         purities = calculate_purities( self.pre_calculated )
