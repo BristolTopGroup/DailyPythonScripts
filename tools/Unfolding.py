@@ -46,7 +46,7 @@ class Unfolding:
         self.unfoldResponse = None
         self.verbose = verbose
         self.tau = float(tau)
-        self.k_value = k_value 
+        self.k_value = int(k_value)
         self.n_toy = n_toy
         self.Bayes_n_repeat = Bayes_n_repeat
         self.Hreco = Hreco
@@ -148,6 +148,8 @@ class Unfolding:
             raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( self.method ) )
 
     def unfold( self, data ):
+        if data is None:
+            raise ValueError('Data histogram is None')
         have_zeros = [value == 0 for value,_ in hist_to_value_error_tuplelist( data )]
         if not False in have_zeros:
             raise ValueError('Data histograms contains only zeros')
