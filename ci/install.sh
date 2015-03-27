@@ -52,24 +52,8 @@ export base=`pwd`
 
 # package list from FinalStateAnalysis 
 # (https://github.com/uwcms/FinalStateAnalysis/blob/master/recipe/install_python.sh)
-echo "Installing yolk"
-time pip install -U yolk
-echo "Installing ipython"
-time pip install -U ipython
-echo "Installing termcolor"
-time pip install -U termcolor
 echo "Installing uncertainties <-- awesome error propagation"
 time pip install -U uncertainties
-echo "Install progressbar"
-time pip install -U progressbar
-echo "Installing argparse"
-time pip install -U argparse
-echo "Installing pudb <-- interactive debugging"
-time pip install -U pudb
-echo "Installing dateutil"
-time pip install python-dateutil
-echo "Installing PrettyTable"
-time pip install PrettyTable
 echo "Installing tabulate (latex table printing, etc)"
 pip install tabulate
 
