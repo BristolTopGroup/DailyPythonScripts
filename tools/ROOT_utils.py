@@ -5,8 +5,7 @@ Created on 19 Jan 2013
 '''
 from rootpy.logger import logging
 from rootpy.io import File
-from rootpy.plotting import Hist
-from ROOT import gROOT
+from ROOT import gROOT, TH1F
 gcd = gROOT.cd
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations
 from config.summations_common import b_tag_bins_exclusive
@@ -148,6 +147,8 @@ def set_root_defaults( set_batch = True, msg_ignore_level = 1001 ):
     gROOT.SetBatch( set_batch )
     # ignore warnings
     gROOT.ProcessLine( 'gErrorIgnoreLevel = %d;' % msg_ignore_level )
+    # turn of the stupid ROOT pointer handling, seriously
+    TH1F.AddDirectory(False)
 
 def root_mkdir(file_handle, path):
     '''
