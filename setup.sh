@@ -67,7 +67,10 @@ pip install PrettyTable &> /dev/null
 success $? PrettyTable
 echo "Installing nose unit test framework"
 pip install nose &> /dev/null
-success $? PrettyTable
+success $? nose
+echo "Installing tabulate (latex table printing, etc)"
+pip install tabulate &> /dev/null
+success $? tabulate
 
 echo "Installing matplotlib"
 #Adding freetype and libpng library and include paths from CMSSW, specific to the version but should be ok for now.
