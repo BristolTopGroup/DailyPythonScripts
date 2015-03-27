@@ -44,7 +44,6 @@ from rootpy import asrootpy
 from rootpy.io import File
 from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
-from config.variable_binning import bin_edges as old_binning
 from config import XSectionConfig
 
 def main():
@@ -73,10 +72,6 @@ def main():
         print '-' * 120
         print 'The corresponding purities and stabilities are:'
         for info in histogram_information:
-#             old_hist = rebin_2d( info['hist'], old_binning[variable], old_binning[variable] )
-#             old_purities = calculate_purities( old_hist.Clone() )
-#             old_stabilities = calculate_stabilities( old_hist.Clone() ) 
-#             print_console(info, old_purities, old_stabilities, print_old = True)
             print_latex_table(info, variable, best_binning)
         print '=' * 120  
 
