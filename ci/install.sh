@@ -70,6 +70,8 @@ echo "Installing dateutil"
 time pip install python-dateutil
 echo "Installing PrettyTable"
 time pip install PrettyTable
+echo "Installing tabulate (latex table printing, etc)"
+pip install tabulate
 
 echo "Installing rootpy"
 time pip install --user -e $base/external/rootpy
