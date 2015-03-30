@@ -12,6 +12,7 @@ class Test( unittest.TestCase ):
     def setUp( self ):
         self.config_7TeV = XSectionConfig( centre_of_mass_energy = 7 )
         self.config_8TeV = XSectionConfig( centre_of_mass_energy = 8 )
+        self.config_13TeV = XSectionConfig( centre_of_mass_energy = 13 )
         
     def test_current_analysis_path( self ):
         self.assertTrue( XSectionConfig.current_analysis_path.endswith( '/' ) )
@@ -24,7 +25,8 @@ class Test( unittest.TestCase ):
         
         self.assertTrue( '7TeV' in self.config_7TeV.path_to_files )
         self.assertTrue( '8TeV' in self.config_8TeV.path_to_files )
-        
+        self.assertTrue( '13TeV' in self.config_13TeV.path_to_files )
+
         unfolding_files = ['unfolding_powheg_pythia_raw', 'unfolding_powheg_herwig_raw', 'unfolding_mcatnlo_raw', 'unfolding_scale_down_raw', 'unfolding_scale_up_raw', 'unfolding_matching_down_raw', 'unfolding_matching_up_raw', ]
         for u_file in unfolding_files:
             full_path = getattr(self.config_7TeV, u_file)

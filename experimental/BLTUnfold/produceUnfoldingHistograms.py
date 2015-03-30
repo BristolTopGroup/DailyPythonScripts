@@ -108,7 +108,7 @@ def main():
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'unfolding/'
+    outputFileDir = 'unfolding/%sTeV/' & options.centreOfMassEnergy
 
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
         
