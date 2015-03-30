@@ -9,11 +9,12 @@ This script creates
  - d_i plots with fits for k values
  
 What it needs:
- - a quadruplet  histograms:
+ - a set of four histograms:
    - truth: quantity at generator level
    - gen_vs_reco: quantity after selection, generated vs reco
    - measured: measured (reco) quantity including fakes (background)
    - data
+For example config files, please have a look at config/unfolding/*.json
    
 usage:
     python get_best_regularisation.py config.json
