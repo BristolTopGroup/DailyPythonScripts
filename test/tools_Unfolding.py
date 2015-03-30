@@ -92,7 +92,7 @@ class Test( unittest.TestCase ):
         tau_unfolding_object.unfold(data)
         # next we need to get the actual RooUnfold object
         tau = tau_unfolding_object.Impl().kToTau(self.k_value)
-        self.assertAlmostEqual(tau, 19.175, delta = 0.001)
+        self.assertAlmostEqual(tau, 19., delta = 1)
 
 if __name__ == "__main__":
     set_root_defaults()
