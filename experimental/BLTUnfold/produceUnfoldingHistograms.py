@@ -64,40 +64,20 @@ def convertScaleFactorsToString( scaleFactors ):
     sfString += ')'
     return sfString
 
-def copyEventFilterHist( inputFile, outputFile ):
-    eventFilter = inputFile.Get('EventFilter/EventCounter')
-    outputFile.cd()
-    eventFilterOutputDir = outputFile.mkdir('EventFilter')
-    eventFilterOutputDir.cd()
-    eventFilter.Write()
-    inputFile.cd()
-    pass
-
 
 fileNames = {
-             '8TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_central_8TeV.root',
-                    'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
-                    'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
-                    'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
-                    'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
-                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
-                    'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
-                    'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
-                   'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_8TeV.root',
-                   'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_8TeV.root',
+             '13TeV' : {
+                    'central' : '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/tree_TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root',
+                   #  'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
+                   #  'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
+                   #  'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
+                   #  'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
+                   #  'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
+                   #  'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
+                   #  'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
+                   # 'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_8TeV.root',
+                   # 'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_8TeV.root',
                 },
-             '7TeV' : {
-                       'central' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_central_7TeV.root',
-                       'scaledown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_7TeV.root',
-                       'scaleup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_7TeV.root',
-                       'matchingdown' :'/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_7TeV.root',
-                       'matchingup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_7TeV.root',
-                       'massdown' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_7TeV.root',
-                       'massup' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_7TeV.root',
-                       'powheg' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_7TeV.root',
-                       'powhegherwig' : '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_7TeV.root',
-                       }
              }
 
 channels = [
@@ -109,7 +89,7 @@ def main():
     
     parser = OptionParser()
     parser.add_option('--topPtReweighting', action='store_true', dest='applyTopPtReweighting', default=False )
-    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', default=8 )
+    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', default=13 )
     parser.add_option('-p', '--pdfWeight', type='int', dest='pdfWeight', default=0 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
@@ -121,16 +101,14 @@ def main():
 
     # Input file name
     file_name = 'crap.root'
-    if int(options.centreOfMassEnergy) == 7:
-        file_name = fileNames['7TeV'][options.sample]
-    elif int(options.centreOfMassEnergy) == 8:
-        file_name = fileNames['8TeV'][options.sample]
+    if int(options.centreOfMassEnergy) == 13:
+        file_name = fileNames['13TeV'][options.sample]
     else:
         print "Error: Unrecognised centre of mass energy."
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'unfolding/'
+    outputFileDir = 'unfolding/%sTeV/' & options.centreOfMassEnergy
 
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
         
@@ -140,12 +118,12 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, options.pdfWeight )
     elif options.sample != 'central':
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
+    elif options.fineBinned :
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
 
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
-        
-        copyEventFilterHist( f, out )
         
         for channel in channels:
             if options.debug and channel.channelName != 'muPlusJets' : continue
@@ -153,7 +131,9 @@ def main():
             print 'Channel : ',channel.channelName
 
             # Get the tree
-            tree = f.Get(channel.treeName+'/'+channel.channelName+'Tree')
+            tree = f.Get("TTbar_plus_X_analysis/Unfolding/Unfolding")
+
+            print "Number of entries in tree : ", tree.GetEntries()
 
             # Keep record of pdf weight
             if options.pdfWeight != 0:
@@ -184,13 +164,29 @@ def main():
                 outputDir = out.mkdir('unfolding_'+variable+'_analyser_'+channel.outputDirName+'_channel'+metSuffix)
 
                 # Variable names in tree
-                genSelection = '( unfolding.GenSelection == 1 )'
-                genWeight = '( unfolding.puWeight )'
-                offlineSelection = '( unfolding.OfflineSelection == 1 )'
-                offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
+                genSelection = ''
+                genSelectionVis = ''
+                if channel.channelName is 'muPlusJets' :
+                    genSelection = '( isSemiLeptonicMuon )'
+                    genSelectionVis = '( isSemiLeptonicMuon && passesGenEventSelection )'
+                elif channel.channelName is 'ePlusJets' :
+                    genSelection = '( isSemiLeptonicElectron )'
+                    genSelectionVis = '( isSemiLeptonicElectron && passesGenEventSelection )'
+
+                genWeight = '( 1 )'
+                # genWeight = '( unfolding.puWeight )'
+                offlineSelection = ''
+                if channel.channelName is 'muPlusJets' :
+                    offlineSelection = '( passSelection == 1 )'
+                elif channel.channelName is 'ePlusJets' :               
+                    offlineSelection = '( passSelection == 0 )'
+
+                # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
+                offlineWeight = '( 1 )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
-                genVariable = 'unfolding.gen'+variable
-                recoVariable = 'unfolding.reco'+variable
+                fakeSelectionVis = '( ' + offlineSelection+"&&!"+genSelectionVis +' ) '
+                genVariable = 'pseudo'+variable
+                recoVariable = variable
 
                 # Weights derived from variables in tree
                 if options.applyTopPtReweighting:
@@ -205,34 +201,41 @@ def main():
                     offlineWeight += ' * '+pdfWeight
                     genWeight += ' * '+pdfWeight
                     pass
-                                
+
                 # Scale factors
                 # scaleFactor = getScaleFactor( options.centreOfMassEnergy, channel.channelName )
-                scaleFactor = '( unfolding.leptonWeight )'
-                offlineWeight += ' * '+scaleFactor
+                # scaleFactor = '( unfolding.leptonWeight )'
+                # offlineWeight += ' * '+scaleFactor
 
                 # Histograms to fill
                 # 1D histograms
                 truth = Hist( bin_edges[variable], name='truth')
+                truthVis = Hist( bin_edges[variable], name='truthVis')
                 measured = Hist( bin_edges[variable], name='measured')
                 fake = Hist( bin_edges[variable], name='fake')
                 
                 # 2D histograms
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
-                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')      
+                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')
+
+                responseVis_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_without_fakes')
+                responseVis_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_only_fakes')
 
                 if options.fineBinned:
                     minVar = bin_edges[variable][0]
-                    maxVar = bin_edges[variable][-1]
+                    maxVar = max( tree.GetMaximum(genVariable), tree.GetMaximum(recoVariable) )
                     nBins = int(maxVar - minVar)
                     truth = Hist( nBins, minVar, maxVar, name='truth')
+                    truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
                     measured = Hist( nBins, minVar, maxVar, name='measured')
                     fake = Hist( nBins, minVar, maxVar, name='fake')
                     response = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
                     response_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
                     response_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes')
-                    
+                    responseVis_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_without_fakes')
+                    responseVis_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_only_fakes')
+
                 # Some interesting histograms
                 puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                  
@@ -240,12 +243,16 @@ def main():
                 # 1D
                 if not options.donothing:
                     tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
+                    tree.Draw(genVariable,genWeight+'*'+genSelectionVis,hist=truthVis)
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
                     # 2D
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+offlineSelection,hist=response)
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=response_only_fakes)
+
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes)
+                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes)
 
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
@@ -254,11 +261,15 @@ def main():
                 # Output histgorams to file
                 outputDir.cd()
                 truth.Write()
+                truthVis.Write()
                 measured.Write()
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()
                 response_only_fakes.Write()
+                responseVis_without_fakes.Write()
+                responseVis_only_fakes.Write()
+
                 if options.extraHists:
                     puOffline.Write()
                 pass

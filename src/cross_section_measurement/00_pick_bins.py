@@ -46,6 +46,7 @@ from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config.variable_binning import bin_edges as old_binning
 from config import XSectionConfig
+from optparse import OptionParser
 
 def main():
     '''
@@ -54,6 +55,12 @@ def main():
     Step 3: Check if it is true for all other histograms. If not back to step 2
     Step 4: Repeat step 2 & 3 until no mo bins can be created
     '''
+
+    parser = OptionParser()
+    parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
+                      help = "Consider visible phase space or not" )
+    ( options, args ) = parser.parse_args()
+
     p_min = 0.5
     s_min = 0.5
     # we also want the statistical error to be larger than 5%
@@ -61,12 +68,14 @@ def main():
     n_min = 100
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
-    
+    bin_choices = {}
+
     for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
-        histogram_information = get_histograms( variable )
+        histogram_information = get_histograms( variable, options )
         
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
-        
+
+        bin_choices[variable] = best_binning        
         print 'The best binning for', variable, 'is:'
         print 'bin edges =', best_binning
         print 'N_bins    =', len( best_binning ) - 1
@@ -80,13 +89,23 @@ def main():
             print_latex_table(info, variable, best_binning)
         print '=' * 120  
 
-def get_histograms( variable ):
-    config_7TeV = XSectionConfig( 7 )
-    config_8TeV = XSectionConfig( 8 )
+    print '=' * 120
+    print 'For config/variable_binning.py'
+    print '=' * 120
+    for variable in bin_choices:
+        print '\''+variable+'\' : '+str(bin_choices[variable])+','
+
+def get_histograms( variable, options ):
+    config = XSectionConfig( 13 )
     
     path_electron = ''
     path_muon = ''
-    histogram_name = 'response_without_fakes'
+    histogram_name = ''
+    if options.visiblePhaseSpace:
+        histogram_name = 'responseVis_without_fakes'
+    else :
+        histogram_name = 'response_without_fakes'
+
     if variable == 'MET':
         path_electron = 'unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
         path_muon = 'unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
@@ -104,30 +123,25 @@ def get_histograms( variable ):
         path_muon = 'unfolding_WPT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
         
     histogram_information = [
-                {'file': config_7TeV.unfolding_madgraph_raw,
-                 'CoM': 7,
+                {'file': config.unfolding_madgraph_raw,
+                 'CoM': 13,
                  'path':path_electron,
                  'channel':'electron'},
-                {'file':config_7TeV.unfolding_madgraph_raw,
-                 'CoM': 7,
+                {'file':config.unfolding_madgraph_raw,
+                 'CoM': 13,
                  'path':path_muon,
                  'channel':'muon'},
-                {'file':config_8TeV.unfolding_madgraph_raw,
-                 'CoM': 8,
-                 'path':path_electron,
-                 'channel':'electron'},
-                {'file':config_8TeV.unfolding_madgraph_raw,
-                 'CoM': 8,
-                 'path':path_muon,
-                 'channel':'muon'},
-                   ]
+                 ]
     
+
     for histogram in histogram_information:
         f = File( histogram['file'] )
         # scale to lumi
-        nEvents = f.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
-        config = XSectionConfig( histogram['CoM'] )
-        lumiweight = config.ttbar_xsection * config.new_luminosity / nEvents
+        # nEvents = f.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
+        # config = XSectionConfig( histogram['CoM'] )
+        # lumiweight = config.ttbar_xsection * config.new_luminosity / nEvents
+
+        lumiweight = 1
 
         histogram['hist'] = f.Get( histogram['path'] ).Clone()
         histogram['hist'].Scale( lumiweight )

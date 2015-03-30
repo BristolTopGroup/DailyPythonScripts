@@ -1,0 +1,77 @@
+{
+    "command": "compare-files", 
+    "files": [
+        "/storage/ec6821/AnalysisTools/CMSSW_7_3_0/src/atOutput/TTJets_Madgraph_PU4bx50_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root",
+        "/storage/ec6821/AnalysisTools/CMSSW_7_3_0/src/atOutput/TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root"
+    ],
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/W Bosons/hadronicWMass",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/W Bosons/jetPt",
+        "TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex"
+    ],
+    "labels": [
+        "Madgraph PU4bx50",
+        "Madgraph PU20bx25"
+    ], 
+    "output_folder": "plots/13TeV", 
+    "output_format": ["pdf"], 
+    "plot_type": "shape_comparison", 
+    "ratio_y_limits": [
+        [
+            0.8,
+            1.3
+        ],
+        [
+            0.8,
+            1.3
+        ],
+        [
+        0.8,
+        1.3
+        ]
+    ],
+    "title": [
+        "$M_{jj}$ at $\\sqrt{s}$ = 13 TeV, e+jets",
+        "N Reco Vertices at $\\sqrt{s}$ = 13 TeV, e+jets"
+    ],
+    "x_axis_title": [
+        "$M_{jj}$ [GeV]",
+        "$p^{jet}_{t0}$ [GeV]",
+        "$N Vertices$"
+    ],
+    "x_limits": [
+        [
+            0,
+            300
+        ],
+        [
+            30,
+            300
+        ],
+        [
+        0,
+        35
+        ]
+    ],
+    "y_limits": [
+    [
+        0,
+        0.04
+    ],
+    [
+        0,
+        0.15
+    ],
+    [
+        0,
+        0.3
+    ]
+    ],
+    "y_axis_title": [
+        "events/5 GeV",
+        "events/X GeV",
+        "events"
+    ],
+    "colours": ["cadetblue", "yellow"],
+    "rebin":[ 5, 5, 1 ]
+}
