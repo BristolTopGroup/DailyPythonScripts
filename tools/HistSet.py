@@ -27,13 +27,21 @@ class HistSet():
         '''
             Plots the stored histograms based on the plot options
         '''
+        # defaults
         file_name = self.name
+        alpha = 0.5
+        fill_area = True
         if plot_options.has_key('output_file'):
             file_name = plot_options['output_file']
         output_format = plot_options['output_format'] 
         output_folder = plot_options['output_folder']
         
         plot_type = plot_options['plot_type']
+        
+        if plot_options.has_key('fill_area'):
+            fill_area = plot_options['fill_area']
+        if plot_options.has_key('alpha'):
+            alpha = plot_options['alpha']
         
         histogram_properties = Histogram_properties(plot_options)
         histogram_properties.name = file_name
@@ -55,9 +63,9 @@ class HistSet():
                                        names = self.labels,
                                        colours = colours,
                                        histogram_properties = histogram_properties,
-                                       fill_area = True,
+                                       fill_area = fill_area,
                                        make_ratio = True,
-                                       alpha = 0.5,
+                                       alpha = alpha,
                                        save_folder = output_folder,
                                        save_as = output_format )
         elif plot_type == 'data_mc_comparison':

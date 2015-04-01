@@ -150,6 +150,7 @@ def spread_x( histograms, bin_edges ):
     graphs = []
     for histogram, x_coordinates in zip( histograms, x_locations ):
         g = Graph( histogram )
+        copy_style(copy_from = histogram, copy_to = g)
         for i, ( x, y ) in enumerate( zip( x_coordinates, histogram.y() ) ):
             g.SetPoint( i, x, y )
         
@@ -339,6 +340,49 @@ def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges )
     return h_data
 
+def get_histogram_ratios(nominator, denominators, normalise_ratio_to_errors = False):
+    ratios = []
+    for denom in denominators:
+        ratio =  nominator.Clone()
+        if normalise_ratio_to_errors:
+            # TODO
+            # this is a preliminary feature, use with care
+            for bin_i in range( 1, nominator.nbins() ):
+                x_i = nominator[bin_i].value
+                x_i_error = nominator[bin_i].error
+                y_i = denom[bin_i].value
+                y_i_error = denom[bin_i].error
+                numerator = x_i - y_i
+                denominator = pow( pow( x_i_error, 2 ) + pow( y_i_error, 2 ), 0.5 )
+                if denominator == 0:
+                    ratio.SetBinContent(bin_i, 0.)
+                    ratio.SetBinError(bin_i, 0.)
+                else:
+                    ratio.SetBinContent(bin_i, numerator/denominator)
+                    ratio.SetBinError(bin_i, denominator)
+        else:
+            ratio.Divide( denom )
+        if len(denominators) > 1:
+            ratio.linecolor = denom.linecolor
+            ratio.fillcolor = denom.fillcolor
+        ratios.append(ratio)
+    return ratios
+
+def copy_style(copy_from, copy_to):
+    # colours
+    copy_to.linecolor = copy_from.linecolor
+    copy_to.markercolor = copy_from.markercolor
+    copy_to.fillcolor = copy_from.fillcolor
+    # style
+    copy_to.markerstyle = copy_from.markerstyle
+    copy_to.linestyle = copy_from.linestyle
+    copy_to.fillstyle = copy_from.fillstyle
+    # size
+    copy_to.markersize = copy_from.markersize
+    copy_to.linesize = copy_from.markersize
+    # legend
+    copy_to.legendstyle  = copy_from.legendstyle
+    
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
                              ( 0.012830288388947605, 0.0010071677178938234 ),
