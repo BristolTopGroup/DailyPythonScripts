@@ -24,6 +24,9 @@ from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.ROOT_utililities import set_root_defaults
+# from examples.Bin_Centers import nbins
+from config import XSectionConfig
+used_k = 2
 
 font = {'family' : 'normal',
         'weight' : 'normal',
@@ -38,28 +41,59 @@ def drange( start, stop, step ):
         r += step
 
 def get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data = None ):
-    tau_0 = 1e-7
-    tau_max = 0.2
-    number_of_iterations = 10000
+    global used_k
+    # this gives 9.97e-05 with TUnfold
+    tau_0 = 1
+    tau_max = 100
+    number_of_iterations = int(100)
+    n_toy = int(1000)
 #     tau_step = ( tau_max - tau_0 ) / number_of_iterations
     
     optimal_tau = 0
     minimal_rho = 9999
-    bias_scale = 0.
+#     bias_scale = 0.
     
     unfolding = Unfolding( h_truth,
                                   h_measured,
                                   h_response,
-                                  method = 'RooUnfoldTUnfold',
-                                  tau = tau_0 )
+                                  method = 'RooUnfoldSvd',
+                                  tau = tau_0,
+				  k_value = -1, )
+    data = None
     if h_data:
-        unfolding.unfold( h_data )
+        data = h_data 
     else:  # closure test
-        unfolding.unfold( h_measured )
+        data = h_measured 
+    unfolding.unfold( data )
+    # get unfolding object
+    tau_svd_unfold = unfolding.Impl()
+    # get covariance matrix
+    cov = tau_svd_unfold.get_data_covariance_matrix(data)
     # cache functions and save time in the loop
-    Unfold = unfolding.unfoldObject.Impl().DoUnfold
-    GetRho = unfolding.unfoldObject.Impl().GetRhoI   
-    
+    SetTau = tau_svd_unfold.SetTau
+    GetCovMatrix = tau_svd_unfold.GetUnfoldCovMatrix
+    GetRho = tau_svd_unfold.get_global_correlation
+
+    n_bins = h_data.nbins()
+    print 'k to tau'
+    to_return = None
+    for k in range(2, n_bins + 1):
+        tau_from_k = tau_svd_unfold.kToTau(k)
+        SetTau( tau_from_k )
+        cov_matrix = GetCovMatrix(cov, n_toy, 1)
+        rho = GetRho(cov_matrix, data)
+        if k == used_k:
+            to_return = (tau_from_k, rho)
+            print 'k =', k, ', tau = ', tau_from_k, ', rho = ', rho,  '<-- currently used'
+        else:
+            print 'k =', k, ', tau = ', tau_from_k, ', rho = ', rho
+    #print 'used k (=%d) to tau' % used_k
+    tau_from_k = tau_svd_unfold.kToTau(used_k)
+    #SetTau( tau_from_k )
+    #cov_matrix = GetCovMatrix(cov, 10, 1)
+    #rho_from_tau_from_k = GetRho(cov_matrix, data)
+    #print "tau from k", tau_from_k
+    #print 'rho for tau from used k', rho_from_tau_from_k
     # create lists
     tau_values = []
     rho_values = []
@@ -67,8 +101,9 @@ def get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data = N
     add_rho = rho_values.append
 #     for current_tau in drange(tau_0, tau_max, tau_step):
     for current_tau in get_tau_range( tau_0, tau_max, number_of_iterations ):
-        Unfold( current_tau, h_data, bias_scale )
-        current_rho = GetRho( TH1F() )
+        SetTau( current_tau )
+        cov_matrix = GetCovMatrix(cov, n_toy, 1)
+        current_rho = GetRho(cov_matrix, data)
         
         add_tau( current_tau )
         add_rho( current_rho )
@@ -76,10 +111,12 @@ def get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data = N
         if current_rho < minimal_rho:
             minimal_rho = current_rho
             optimal_tau = current_tau
-      
-    return optimal_tau, minimal_rho, tau_values, rho_values
+    del unfolding
+    print 'optimal tau = %.2f' % optimal_tau
+    return optimal_tau, minimal_rho, tau_values, rho_values, to_return
 
-def draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable ):
+def draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable, tau_from_k ):
+    global centre_of_mass
     plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
     plt.plot( tau_values, rho_values )
     plt.xscale('log')
@@ -89,15 +126,23 @@ def draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable
     ax = plt.axes()
     ax.annotate( r"$\tau = %.3g$" % tau,
             xy = ( tau, rho ), xycoords = 'data',
-            xytext = ( 0.0010, 0.5 ), textcoords = 'data',
+            xytext = ( tau*0.9, rho*1.15 ), textcoords = 'data',
+            arrowprops = dict( arrowstyle = "fancy,head_length=0.4,head_width=0.4,tail_width=0.4",
+                            connectionstyle = "arc3" ),
+            size = 40,
+            )
+    
+    ax.annotate( r"$\tau_{k} = %.3g$" % tau_from_k[0],
+            xy = ( tau_from_k[0], tau_from_k[1] ), xycoords = 'data',
+            xytext = ( tau_from_k[0], tau_from_k[1]*0.9 ), textcoords = 'data',
             arrowprops = dict( arrowstyle = "fancy,head_length=0.4,head_width=0.4,tail_width=0.4",
                             connectionstyle = "arc3" ),
             size = 40,
             )
     if use_data:
-        plt.savefig( 'plots/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( channel, variable ) )    
+        plt.savefig( 'plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable ) )    
     else:
-        plt.savefig( 'plots/tau_from_global_correlation_%s_channel_%s_MC.png' % ( channel, variable ) )
+        plt.savefig( 'plots/%dTeV/tau_from_global_correlation_%s_channel_%s_MC.png' % ( centre_of_mass, channel, variable ) )
 
 def get_tau_from_L_shape( h_truth, h_measured, h_response, h_data = None ):
     
@@ -163,7 +208,7 @@ def draw_l_shape( l_shape, best_tau, x_value, y_value, channel, variable ):
         plt.savefig( 'plots/tau_from_L_shape_%s_channel_%s_MC.png' % ( channel, variable ) )
 
 def get_data_histogram( channel, variable, met_type ):
-    fit_result_input = '../../data/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_result_input = 'data/absolute_eta_M3_angle_bl/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
@@ -186,25 +231,41 @@ def get_tau_range( tau_min, tau_max, number_of_points ):
     return result;
     
 if __name__ == '__main__':
+    used_k = 2
     set_root_defaults()
     use_data = True
-    input_file_8Tev = '/storage/TopQuarkGroup/mc/8TeV/NoSkimUnfolding/v10/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/unfolding_v10_Summer12_DR53X-PU_S10_START53_V7C-v1_NoSkim/TTJets_nTuple_53X_mc_merged_001.root'
+    input_files = {
+                   7 : '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root',
+                   8 : '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/unfolding/unfolding_TTJets_8TeV_asymmetric.root',
+                   }
     met_type = 'patType1CorrectedPFMet'
     
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)
-    variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
+    variables = [ 
+		'MET', 
+		'WPT', 
+		'MT' , 
+		'ST', 
+		'HT'
+		]
     centre_of_mass = 8
-    ttbar_xsection = 225.2
-    luminosity = 19712
-    input_file = File( input_file_8Tev )
+    measurement_config = XSectionConfig(centre_of_mass)
+    ttbar_xsection = measurement_config.ttbar_xsection
+    luminosity = measurement_config.luminosity
+    input_file = File(input_files[centre_of_mass])
     
-    taus_from_global_correlaton = {}
-    taus_from_L_shape = {}
-    for channel in ['electron', 'muon']:
-        taus_from_global_correlaton[channel] = {}
-        taus_from_L_shape[channel] = {}
-        for variable in variables:
+#     taus_from_global_correlaton = {}
+#     taus_from_L_shape = {}
+    for variable in variables:
+#         taus_from_global_correlaton[channel] = {}
+#         taus_from_L_shape[channel] = {}
+        for channel in ['electron', 'muon']:
+            if channel == 'electron':
+                used_k = measurement_config.k_values_electron[variable]
+            if channel == 'muon':
+                used_k = measurement_config.k_values_muon[variable]
+                
             print 'Doing variable"', variable, '" in', channel, '-channel'
         
             h_truth, h_measured, h_response, _ = get_unfold_histogram_tuple( 
@@ -223,9 +284,9 @@ if __name__ == '__main__':
                 h_data = deepcopy( h_measured )
                 
             
-            tau, rho, tau_values, rho_values = get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data )
-            draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable )
+            tau, rho, tau_values, rho_values, tau_from_k = get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data )
+            draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable, tau_from_k )
             
-            tau, l_curve, x, y = get_tau_from_L_shape( h_truth, h_measured, h_response, h_data )
-            draw_l_shape( l_curve, tau, x, y, channel, variable )
+            #tau, l_curve, x, y = get_tau_from_L_shape( h_truth, h_measured, h_response, h_data )
+            #draw_l_shape( l_curve, tau, x, y, channel, variable )
         
