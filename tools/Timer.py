@@ -1,5 +1,6 @@
 
 from time import time
+import datetime 
 
 class Timer():
 
@@ -11,3 +12,7 @@ class Timer():
     
     def restart(self):
         self.start_time =  time()
+
+def nice_date_now():
+    return datetime.datetime.now().strftime("%H.%M_%d.%m.%y")
+    

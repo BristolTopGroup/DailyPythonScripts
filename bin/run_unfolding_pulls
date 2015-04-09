@@ -1,0 +1,202 @@
+#!/usr/bin/env python
+from optparse import OptionParser
+from subprocess import call, Popen
+import shlex
+from string import Template
+from tools.Timer import nice_date_now
+from config.variable_binning import bin_edges
+
+def main():
+    call( ['mkdir', '-p', 'logs'] )
+    options, _ = get_parameters()
+    if options.run_tests:
+        test()
+        return    
+    
+    if options.run_crab:
+        # run crab stuff
+        config_file, workdir = create_crab_configuration(options.crab_version, 
+                                                         options.use_git)
+        call(['run_crab', 
+              '-c %d' % options.crab_version, 
+              '-f %s' % config_file,
+              '-w %s' % workdir,
+              '-d 1',
+              'prepare',
+              ]
+             )
+        
+    else:
+        if options.job_number == -1:
+            run_everything_locally()
+        else:
+            run_job( options.job_number, dry_run= options.dry_run, tar_output=options.tar_output )
+
+def get_parameters():
+    parser = OptionParser()
+    parser.add_option( "--crab-version", dest = "crab_version", default = 2,
+                       type = int,
+                      help = "set the CRAB version you want to use." )
+    parser.add_option( "--run-crab", dest = "run_crab",
+                       action = "store_true",
+                      help = "Run jobs with CRAB instead of locally (you need a valid grid certificate for this" )
+    parser.add_option( "--use-tar", dest = "use_git",
+                       action = "store_false", default=True,
+                      help = "Use tar fo everything instead of git." )
+    parser.add_option( "--test", dest = "run_tests",
+                       action = "store_true",
+                      help = "Run script tests" )
+    parser.add_option( "--dry-run", dest = "dry_run",
+                       action = "store_true",
+                      help = "Run script without running the command. Prints command, creates output file." )
+    parser.add_option( "--tar_output", dest = "tar_output",
+                       action = "store_true",
+                      help = "Creates an archive (output.tar.gz) of the output" )
+    parser.add_option( '-j', "--job_number", dest = "job_number", default = -1,
+                       type = int,
+                      help = "set the job number to run. Default=-1 (run everything)" )
+    options, args = parser.parse_args()
+    return options, args
+
+
+def job_parameters( job_number ):
+    # merge all parameters into one big list of tuples
+    parameters = []
+    for channel in channels:
+        for energy in energies:
+            for variable in variables:
+                for offset_data in offsets:
+                    for offset_mc in offsets:
+                        for k in k_values[variable]:
+                            parameters.append( ( offset_mc, offset_data, variable, energy, channel, k ) )
+    if job_number - 1 < len( parameters ):
+        return parameters[job_number - 1]
+    else:
+        return None, None, None, None, None, None
+    
+def run_everything_locally():
+#     for job_number in range(1, total_jobs + 1):
+#         run_job(job_number, nohup)
+    # for now
+    call(['do_pulls_workflow'])
+
+def run_job( job_number , nohup = False, dry_run = False, tar_output = False ):
+    offset_mc, offset_data, variable, energy, channel, k = job_parameters( job_number )
+    input_file = "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_4th_draft/toy_mc/toy_mc_%(variable)s_N_300_%(energy)dTeV.root" % {'variable': variable, 'energy':energy}
+    script_options = "--offset_toy_mc=%d --offset_toy_data=%d" % ( offset_mc, offset_data )
+    parameters = {'variable': variable,
+                  'energy':energy,
+                  'options' : script_options,
+                  'channel': channel,
+                  'job_number': job_number,
+                  'k':k,
+                  'input_file' : input_file,
+                  'n_toy': n_toy,
+                  }
+    output_file_path = "logs/pull_%(variable)s_kv%(k)d_%(channel)s_%(job_number)d_%(energy)dTeV.log" % parameters
+    output_file = open(output_file_path, 'w+')
+    command = "time python src/unfolding_tests/create_unfolding_pull_data.py -v %(variable)s -k %(k)d -f %(input_file)s -n %(n_toy)d %(options)s -c %(channel)s -s %(energy)d" % parameters
+    args = shlex.split(command)
+    print 'Executing:'
+    print command
+    if not dry_run:
+        p = Popen(args, stdout=output_file)
+        p.wait()
+    else:
+        print 'Just a dry-run!'
+        output_file.write('Just a dry-run!\n')
+    output_file.flush()
+    output_file.close()
+    
+    if tar_output:
+        output_folder = 'data/pull_data/%(energy)dTeV/%(variable)s/%(n_toy)d_input_toy_mc/k_value_%(k)d' % parameters
+        # create folder if it does not exist (i.e. dry-run)
+        call(['mkdir', '-p', output_folder])
+        call(['tar','czf', 'output.tar.gz', output_folder, output_file_path])
+    
+
+def test():
+    print 'Total number of jobs:', total_jobs
+    
+    print 'Testing No. 1'
+    offset_mc, offset_data, variable, energy, channel, k = job_parameters( 1 )
+    assert( offset_mc == 0 )
+    assert( offset_data == 0 )
+    assert( variable == 'MET' )
+    assert( energy == 7 )
+    assert( channel == 'electron' )
+    assert( k == 2 )
+    
+    print 'Testing No. 2'
+    offset_mc, offset_data, variable, energy, channel, k = job_parameters( 2 )
+    assert( offset_mc == 0 )
+    assert( offset_data == 0 )
+    assert( variable == 'MET' )
+    assert( energy == 7 )
+    assert( channel == 'electron' )
+    assert( k == 3 )
+    
+    print 'Testing No. 40'
+    offset_mc, offset_data, variable, energy, channel, k = job_parameters( 40 )
+    assert( offset_mc == 35 )
+    assert( offset_data == 70 )
+    assert( variable == 'MET' )
+    assert( energy == 7 )
+    assert( channel == 'electron' )
+    assert( k == 6 )
+
+def create_crab_configuration(crab_version, use_git = True):
+    template_file = open('templates/crab%d_config.txt' % crab_version, 'r')
+    template_string = template_file.read()
+    if use_git:
+        # no additional files needed
+        template_string = template_string.replace('additional_input_files = $additional_files', '')
+    else:
+        template_string = template_string.replace('$additional_files', 'DailyPythonScripts.tar.gz')
+    template = Template(template_string)
+    template_file.close()
+    
+    workdir = 'crab_unfolding_pulls_' + nice_date_now()
+    
+    script_path = 'bin/run_unfolding_pulls'
+    final_string = template.substitute(output_file = 'output.tar.gz', 
+                        script_path = script_path, 
+                        workdir = workdir, 
+                        n_jobs = total_jobs,  
+                        output_tar = 'output.tar.gz' )
+    
+    crab_config = ''
+    if crab_version == 2:
+        crab_config = workdir + '.cfg'
+    if crab_version == 3:
+        crab_config = workdir + '.py'
+    
+    crab_file = open(crab_config, 'w+')
+    crab_file.write(final_string)
+    crab_file.close()
+    
+    return crab_config, workdir
+
+def k_value_range(variable):
+    n_bins = len(bin_edges[variable]) -1
+    k_range = [x for x in range (2, n_bins + 1)]
+    return k_range
+
+
+
+if __name__ == '__main__':
+    offsets = [0, 35, 70]
+    variables = ['MET', 'HT', 'ST', 'WPT', 'MT']
+    energies = [7, 8]
+    channels = ( 'electron', 'muon' )
+    k_values = {}
+    for variable in variables:
+        k_values[variable] = k_value_range(variable)
+    n_toy = 35
+    # offsets are twice because they are for data and for MC
+    total_jobs = len( offsets ) * len( offsets ) * len( variables ) * len( energies ) * len( channels )
+    N_CONCURRENT_JOBS=4
+    current_processes = []
+    
+    main()
+

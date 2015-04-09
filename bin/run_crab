@@ -1,0 +1,166 @@
+#!/bin/bash
+# Wrapper script to be used with any DailyPythonScript
+# It has two modes of operations
+# - create CRAB task and submit it (argument prepare)
+# - run the script (1st argument run, 2nd argument (python) script path 
+#
+# The following information is required:
+#  - CRAB version to use (-c)
+#  - crab configuration (created from templates/crab<version>_config.txt) (-f)
+# optional information:
+#  - github URL (default = https://github.com/BristolTopGroup/DailyPythonScripts.git) (-u)
+#  - github branch (-b)
+#
+# Furthermore each scripts needs to have the parameters:
+# - 'job_number' with short 'j'
+# - the flag 'tar_output'
+#
+
+usage() { echo "to be defined" 1>&2; exit 1; }
+
+setup_crab() {
+	crab_version=$1
+	crab_config=$2
+	workdir=$3
+	use_git=$4
+	
+	# cd into CMSSW/src
+	cd ..
+	if [[ $use_git == 0 ]]; then
+		tar czf DailyPythonScripts.tar.gz DailyPythonScripts
+	fi
+	if [[ $crab_version == 2 ]]; then
+		echo "Using CRAB version 2"
+		source /cvmfs/cms.cern.ch/crab/crab.sh
+		crab -create -cfg DailyPythonScripts/$crab_config
+		crab -submit -c $workdir
+	fi
+	
+	if [[ $crab_version == 3 ]]; then
+		echo "Using CRAB version 3"
+		source /cvmfs/cms.cern.ch/crab3/crab.sh
+	fi
+	exit 1;
+}
+
+setup_DPS() {
+	#first paramter is debug
+	debug=$1
+	use_git=$2
+	github_url=$3
+	github_branch=$4
+	# Some checks
+	if [[ $debug == 1 ]]; then
+		ls
+	fi
+	cd src
+	if [[ $debug == 1 ]]; then
+		ls
+		hostname
+		which git
+		echo $PATH
+		ls /hdfs/
+	
+		# CMSSW stuff
+		echo $SCRAM_ARCH
+		echo $VO_CMS_SW_DIR
+	fi
+		. $VO_CMS_SW_DIR/cmsset_default.sh
+		cmsenv
+	if [[ $debug == 1 ]]; then
+		which root
+		which python
+	fi
+	
+	if [[ $debug == 1 ]]; then
+		ls -trlh
+		echo $PYTHONPATH
+	fi
+	rm -fr DailyPythonScripts
+	# Checkout and setup DailyPythonScripts
+	# CRAB does not transfer everything in the folder :(
+	if [[ $use_git == 1 ]]; then
+		git clone $github_url -b $github_branch
+		cd DailyPythonScripts
+		git submodule init && git submodule update
+		./setup_standalone.sh
+	else
+		tar xzf ../DailyPythonScripts.tar.gz
+		cd DailyPythonScripts
+	fi
+	source environment.sh
+	
+	if [[ $debug == 1 ]]; then
+		echo $PYTHONPATH
+		which python
+		ls -trlh environment.sh
+	fi
+	
+	exit 1;
+}
+
+
+crab_version=
+config_file=
+script=
+workdir=
+github_url="https://github.com/BristolTopGroup/DailyPythonScripts.git"
+github_branch="master"
+dry_run=0
+debug=0
+use_github=1
+while getopts ":c:f:a:w:b:u:d:g:" opt;
+do
+    case "$opt" in
+    c) crab_version=${OPTARG}
+      ;;
+	f) config_file=${OPTARG}
+	;;
+	w) workdir=${OPTARG}
+	;;
+	b) github_branch=${OPTARG}
+	;;
+	u) github_url=${OPTARG}
+	;;
+	n) dry_run=1
+	;;
+	d) debug=1
+	;;
+	g) use_git=1
+	;;
+    *)		# unknown flag
+      	  echo >&2 \
+	  "usage: to be defined"
+	  exit 1;;
+    esac
+done
+shift $((OPTIND-1))
+echo "======================================="
+echo "crab_version = $crab_version"
+echo "config_file = $config_file"
+echo "workdir = $workdir"
+echo "github_url = $github_url"
+echo "github_branch = $github_branch"
+echo "dry_run = $dry_run"
+echo "use_github = $use_github"
+echo $1
+if [[ $1 == 'prepare' ]]; then
+	echo 'Preparing CRAB setup'
+	setup_crab $crab_version $config_file $workdir $use_git
+fi
+
+# when running with CRAB the job number will always be first:
+# /usr/bin/time -f "%U %S %P" -o cpu_timing.txt $executable run_crab $NJob $AdditionalArgs > executable.out 2>&1
+# where executable == source in the CMSSW.sh script (what runs on the remote machine)
+if [[ $2 == 'run' ]]; then
+	if [[ $dry_run == 0 ]]; then
+		echo 'Setting DPS' 
+		setup_DPS 1 $use_github $github_url $github_branch
+		echo "Running script $3"
+		time python $3 --dry-run -j $1 
+	fi
+	echo "Running script $3"
+	time python $3 --dry-run -j 40 
+fi
+
+

@@ -1,0 +1,31 @@
+# required information:
+# additional input files (files not on /hdfs and not on github)
+# script to be executed
+# number of jobs
+# working directory
+# output file (if multiple, please tar)
+[CRAB]
+jobtype = cmssw
+use_server = 0
+scheduler = remoteGlidein
+
+[CMSSW]
+# default = output.tar
+output_file = $output_tar
+datasetpath=None
+pset=None
+number_of_jobs=$n_jobs
+allow_NonProductionCMSSW = 1
+
+[USER]
+script_exe = DailyPythonScripts/bin/run_crab 
+script_arguments = run,$script_path
+ui_working_dir = $workdir
+copy_data = 0
+return_data = 1
+additional_input_files = $additional_files
+
+[GRID]
+se_white_list=T2_UK_SGrid_Bristol
+additional_jdl_parameters = +DESIRED_Gatekeepers="lcgce01.phy.bris.ac.uk:2811/nordugrid-GE-queue"
+data_location_override=lcgce01.phy.bris.ac.uk
