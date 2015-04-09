@@ -2,33 +2,12 @@ from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex
 from config.variable_binning import variable_bins_ROOT
 from config import XSectionConfig
-from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from tools.file_utilities import make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
 from tools.hist_utilities import prepare_histograms
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
-
-def get_fitted_normalisation( variable, channel ):
-    '''
-    This function now gets the error on the fit correctly, so that it can be applied if the --normalise_to_fit option is used 
-    '''
-    global path_to_JSON, category, met_type
-    fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
-    
-    fitted_normalisation = {}
-    
-    for sample, fit_result in fit_results.iteritems():
-        total_value = 0
-        total_error = 0
-        for result in fit_result:
-            value = result[0]
-            error = result[1]
-            total_value += value
-            total_error += error
-        if total_error > total_value:
-            total_error = total_value
-        fitted_normalisation[sample] = (total_value, total_error)
-    return fitted_normalisation
+from src.cross_section_measurement.lib import get_fitted_normalisation
     
 def get_normalisation_error( normalisation ):
     total_normalisation = 0.
@@ -87,18 +66,18 @@ if __name__ == '__main__':
 
     # getting normalisations
     normalisations_electron = {
-            'MET':get_fitted_normalisation( 'MET', 'electron' ),
-            'HT':get_fitted_normalisation( 'HT', 'electron' ),
-            'ST':get_fitted_normalisation( 'ST', 'electron' ),
-            'MT':get_fitted_normalisation( 'MT', 'electron' ),
-            'WPT':get_fitted_normalisation( 'WPT', 'electron' )
+            'MET': get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, met_type ),
+            'HT':  get_fitted_normalisation( 'HT', 'electron', path_to_JSON, category, met_type ),
+            'ST':  get_fitted_normalisation( 'ST', 'electron', path_to_JSON, category, met_type ),
+            'MT':  get_fitted_normalisation( 'MT', 'electron', path_to_JSON, category, met_type ),
+            'WPT': get_fitted_normalisation( 'WPT', 'electron', path_to_JSON, category, met_type )
             }
     normalisations_muon = {
-            'MET':get_fitted_normalisation( 'MET', 'muon' ),
-            'HT':get_fitted_normalisation( 'HT', 'muon' ),
-            'ST':get_fitted_normalisation( 'ST', 'muon' ),
-            'MT':get_fitted_normalisation( 'MT', 'muon' ),
-            'WPT':get_fitted_normalisation( 'WPT', 'muon' )
+            'MET': get_fitted_normalisation( 'MET', 'muon', path_to_JSON, category, met_type ),
+            'HT':  get_fitted_normalisation( 'HT', 'muon', path_to_JSON, category, met_type ),
+            'ST':  get_fitted_normalisation( 'ST', 'muon', path_to_JSON, category, met_type ),
+            'MT':  get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, met_type ),
+            'WPT': get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
             }
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
     e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, 'e+jets, $\geq$ 4 jets' )

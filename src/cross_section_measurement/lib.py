@@ -178,3 +178,25 @@ def convert_unfolding_histograms( file_name,
     output.close()  
     secs = file_start.elapsed_time()
     print 'File %s converted in %d seconds' % (file_name, secs)
+    
+def get_fitted_normalisation( variable, channel, path_to_JSON, category, met_type ):
+    '''
+    This function now gets the error on the fit correctly, so that it can be applied if the --normalise_to_fit option is used 
+    '''
+    fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
+    
+    fitted_normalisation = {}
+    
+    for sample, fit_result in fit_results.iteritems():
+        total_value = 0
+        total_error = 0
+        for result in fit_result:
+            value = result[0]
+            error = result[1]
+            total_value += value
+            total_error += error
+        if total_error > total_value:
+            total_error = total_value
+        fitted_normalisation[sample] = (total_value, total_error)
+    return fitted_normalisation
+    
