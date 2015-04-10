@@ -16,6 +16,14 @@ variables_latex = {
                        'MT': 'M^{\mathrm{W}}_{\mathrm{T}}',
                        'WPT': 'p^\mathrm{W}_{\mathrm{T}}'}
 
+control_plots_latex = {
+                       'NJets': '$N_{Jets}$',
+                       'NBJets': '$N_{B Jets}$',
+                       'pt' : '$p_{T}$',
+                       'relIso_03_deltaBeta' : "RelIso",
+                       'relIso_04_deltaBeta' : "RelIso",
+                       }
+
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
                         'MADGRAPH': '$t\\bar{t}$ (MadGraph+Pythia)',
@@ -97,4 +105,12 @@ fit_variables_latex = {
                        'M3' : r'$M3$',
                        'M_bl' : r'$M(b,l)$',
                        'angle_bl' : r'angle$(b,l)$',
+                       }
+
+
+fit_variables_units_latex = {
+                       'absolute_eta' : '',
+                       'M3' : 'GeV',
+                       'M_bl' : 'GeV',
+                       'angle_bl' : '',
                        }

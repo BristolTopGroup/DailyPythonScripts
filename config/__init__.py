@@ -6,14 +6,17 @@ __all__ = [
 
 class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/'
-    known_centre_of_mass_energies = [7, 8]
+    known_centre_of_mass_energies = [7, 8, 13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584}
+    luminosities = {7:5050, 8:19584, 13:5000}
     parameters = ['SingleTop_category_templates', 'SingleTop_file',
-                  'VJets_category_templates', 'analysis_types',
+                  'SingleTop_category_templates_trees',
+                  'VJets_category_templates', 'VJets_category_templates_trees',
+                  'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
                   'centre_of_mass_energy', 'current_analysis_path',
                   'data_file_electron', 'data_file_muon',
+                  'data_file_electron_trees', 'data_file_muon_trees',
                   'data_muon_category_templates', 'electron_QCD_MC_file',
                   'electron_control_region',
                   'electron_control_region_systematic',
@@ -87,6 +90,7 @@ class XSectionConfig():
 
         # measurement script options
         self.translate_options = {
+                        'all': '',
                         '0':'0btag',
                         '1':'1btag',
                         '2':'2btags',
@@ -156,6 +160,23 @@ class XSectionConfig():
                  'LightJet_down':'_minusLightJet',
                  'LightJet_up':'_plusLightJet',
                  }
+        
+        # new Run 2 parameters
+        self.general_category_templates_trees = {}
+        self.ttbar_category_templates_trees = {}
+        self.SingleTop_category_templates_trees = {}
+        self.VJets_category_templates_trees = {}
+        self.electron_QCD_MC_category_templates_trees = {}
+        self.muon_QCD_MC_category_templates_trees = {}
+        
+        self.data_muon_category_templates_trees = {}
+        self.data_file_muon_trees = ''
+        self.data_file_electron_trees = ''
+
+        self.SingleTop_tree_file = ''
+        self.muon_QCD_tree_file = ''
+        self.electron_QCD_MC_tree_file = ''
+        self.muon_QCD_MC_tree_file = ''
 
         # now fill in the centre of mass dependent values
         # this position is crucial
@@ -163,6 +184,8 @@ class XSectionConfig():
             self.__fill_defaults_7TeV__()
         if self.centre_of_mass_energy == 8:
             self.__fill_defaults_8TeV__()
+        if self.centre_of_mass_energy == 13:
+            self.__fill_defaults_13TeV__()
 
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
@@ -327,6 +350,115 @@ class XSectionConfig():
         self.special_muon_histogram = 'muon_AbsEta_0btag'
 
         self.data_electron_category_templates = {'central': self.data_file_electron,
+                                    'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    }
+        
+    def __fill_defaults_13TeV__( self ):
+        self.current_analysis_path = '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/'
+        self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
+        self.path_to_unfolding_histograms = '/storage/ec6821/DailyPythonScripts/CMSSW_7_4_0_pre7/src/DailyPythonScripts/unfolding/' + str( self.centre_of_mass_energy ) + 'TeV/'
+        
+        path_to_files = self.path_to_files
+        self.new_luminosity = 5000  # pb^-1
+        self.ttbar_xsection = 831.76  # pb
+        
+        self.data_file_muon = path_to_files + 'pretendData_Pythia8.root'
+        self.data_file_electron = path_to_files + 'pretendData_Pythia8.root'
+        
+        self.data_file_muon_trees = path_to_files + 'pretendData_tree.root'
+        self.data_file_electron_trees = path_to_files + 'pretendData_tree.root'
+        
+        self.SingleTop_file = path_to_files + 'SingleTop.root'
+        self.electron_QCD_MC_file = path_to_files + 'QCD_Electron.root'
+        self.muon_QCD_MC_file = path_to_files + 'QCD_data_mu.root'
+
+        self.SingleTop_tree_file = path_to_files + 'SingleTop_tree.root'
+        self.muon_QCD_tree_file = path_to_files + 'QCD_Muon_tree.root'
+        self.electron_QCD_MC_tree_file = path_to_files + 'QCD_Electron_tree.root'
+        self.muon_QCD_MC_tree_file = path_to_files + 'QCD_Muon_tree.root'
+        
+        self.categories_and_prefixes = {
+                    'central':'',
+                    'JES_down':'_minusJES',
+                    'JES_up':'_plusJES',
+                    }
+        categories_and_prefixes = self.categories_and_prefixes
+        middle = self.middle
+        
+        self.ttbar_category_templates = {
+                category: path_to_files + 'TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root' for category in categories_and_prefixes.keys()
+                }
+        
+        self.SingleTop_category_templates = {category: path_to_files + '/SingleTop.root' for category in categories_and_prefixes.keys()}
+        self.VJets_category_templates = {category: path_to_files + '/VJets.root' for category in categories_and_prefixes.keys()}
+        self.higgs_category_templates = {category: path_to_files + '/TTH_Inclusive_M-125' + middle + prefix + '.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.electron_QCD_MC_category_templates = {category: path_to_files + '/QCD_Electron.root' for category in categories_and_prefixes.keys()}
+        self.muon_QCD_MC_category_templates = {category: path_to_files + '/QCD_Muon.root' for category in categories_and_prefixes.keys()}
+
+        self.general_category_templates_trees = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
+        self.ttbar_category_templates_trees = {category: path_to_files + '/tree_TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root' for category in categories_and_prefixes.keys()}
+        self.SingleTop_category_templates_trees = {category: path_to_files + '/SingleTop_tree.root' for category in categories_and_prefixes.keys()}
+        self.VJets_category_templates_trees = {category: path_to_files + '/VJets_tree.root' for category in categories_and_prefixes.keys()}
+        self.electron_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Electron_tree.root' for category in categories_and_prefixes.keys()}
+        self.muon_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Muon_tree.root' for category in categories_and_prefixes.keys()}
+        
+        self.data_muon_category_templates_trees = {
+                                    'central': self.data_file_muon_trees,
+                                    'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    }
+        self.tree_path_templates = {
+                                    'electron' : 'TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables',
+                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/FitVariables'
+                                    }
+
+        self.tree_path_control_templates = {
+                                    'electron' : 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/FitVariables',
+                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets/FitVariables'
+                                    }
+        
+        
+        
+        self.rate_changing_systematics = {
+                        'luminosity': 0.026,  # https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
+                        'SingleTop_cross_section': 0.034,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
+                        'TTJet_cross_section': 0.043
+                         }
+
+        # optimal regularisation parameters
+        self.k_values_electron = {
+                   'MET' : 3,
+                   'HT' : 3,
+                   'ST' : 4,
+                   'MT' : 2,
+                   'WPT' : 3
+                   }
+
+        self.k_values_muon = {
+                   'MET' : 3,
+                   'HT' : 3,
+                   'ST' : 4,
+                   'MT' : 2,
+                   'WPT' : 3
+                   }
+        #keeping combined values for backward compatibility
+        self.k_values_combined = {
+                   'MET' : 0,
+                   'HT' : 0,
+                   'ST' : 0,
+                   'MT' : 0,
+                   'WPT' : 0
+                   }
+
+        self.special_muon_histogram = 'muon_AbsEta_0btag'
+
+        self.data_electron_category_templates = {'central': self.data_file_electron,
+                                    'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
+                                    'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    }
+
+        self.data_electron_category_templates_trees = {'central': self.data_file_electron_trees,
                                     'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
                                     'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
