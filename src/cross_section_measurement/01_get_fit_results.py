@@ -13,7 +13,8 @@ from tools.Calculation import decombine_result, combine_complex_results
 from tools.Fitting import Minuit, RooFitFit, FitData, FitDataCollection
 from tools.file_utilities import write_data_to_JSON
 from tools.ROOT_utils import set_root_defaults
-from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit
+from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit,\
+    get_data_derived_qcd
 from lib import closure_tests
 
 def get_histograms( channel, input_files, variable, met_type, variable_bin,
@@ -156,20 +157,12 @@ def get_qcd_histograms( input_files, variable, variable_bin, channel,
     for sample in samples:
         inclusive_control_region_hists[sample].Rebin( rebin )
 
-    inclusive_control_region_hists['data'] = clean_control_region( inclusive_control_region_hists,
-                          subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
-    # now apply proper normalisation
-    QCD_normalisation_factor = 1
+    # first change for merge with Run 2
     signal_region_mc = get_histogram( qcd_file, fit_variable_hist_name, b_tag_bin )
-    n_mc = signal_region_mc.Integral()
-    n_control = inclusive_control_region_hists['data'].Integral()
-    if not n_control == 0:  # scale to MC prediction
-        if not n_mc == 0:
-            QCD_normalisation_factor = 1 / n_control * n_mc
-        else:
-            QCD_normalisation_factor = 1 / n_control
-    inclusive_control_region_hists['data'].Scale( QCD_normalisation_factor )
-
+    inclusive_control_region_hists['data'] = get_data_derived_qcd(
+                                                inclusive_control_region_hists, 
+                                                signal_region_mc)
+    
     return inclusive_control_region_hists['data']
 
 def get_histogram( input_file, histogram_path, b_tag_bin = '' ):

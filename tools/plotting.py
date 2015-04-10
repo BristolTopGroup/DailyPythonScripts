@@ -5,8 +5,8 @@ Created on 3 May 2013
 '''
 import matplotlib as mpl
 from tools.file_utilities import make_folder_if_not_exists
-from tkFont import names
 from tools.hist_utilities import get_histogram_ratios, spread_x
+from tools.file_utilities import saveHistogramsToROOTFile
 mpl.use('agg')
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -198,7 +198,10 @@ def make_data_mc_comparison_plot( histograms = [],
         plt.tight_layout()
     
     for save in save_as:
-        plt.savefig( save_folder + histogram_properties.name + '.' + save )
+        if save == 'root':
+            saveHistogramsToROOTFile( data, stack,save_folder + histogram_properties.name + '.' + save )
+        else:
+            plt.savefig( save_folder + histogram_properties.name + '.' + save )
 
     plt.close()
         

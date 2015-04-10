@@ -382,6 +382,26 @@ def copy_style(copy_from, copy_to):
     copy_to.linesize = copy_from.markersize
     # legend
     copy_to.legendstyle  = copy_from.legendstyle
+
+def get_data_derived_qcd( control_hists, qcd_exclusive_hist ):
+    '''
+    Retrieves the data-driven QCD template and normalises it to MC prediction.
+    It uses the inclusive template (across all variable bins) and removes other processes
+    before normalising the QCD template.
+    '''
+
+    dataDerived_qcd = clean_control_region( control_hists, subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
+    normalisation_QCDdata = dataDerived_qcd.integral( overflow = True )
+    normalisation_exclusive = qcd_exclusive_hist.integral( overflow = True )
+
+    scale = 1.
+    if not normalisation_QCDdata == 0: 
+        if not normalisation_exclusive == 0:
+            scale = 1 / normalisation_QCDdata * normalisation_exclusive
+        else:
+            scale = 1 / normalisation_QCDdata
+    dataDerived_qcd.Scale( scale )
+    return dataDerived_qcd
     
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
