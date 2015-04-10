@@ -117,6 +117,8 @@ def get_process_from_file(file_in_path):
 
 def saveHistogramsToROOTFile( data, mcStack, fileName ):
     with root_open(fileName, 'recreate') as outputFile:
+        outputFile.cd()
         data.Write('Data')
         mcStack.Write('MC')
+        outputFile.Write()
 

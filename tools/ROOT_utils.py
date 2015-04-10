@@ -5,6 +5,7 @@ Created on 19 Jan 2013
 '''
 from rootpy.logger import logging
 from rootpy.io import File
+from rootpy.plotting import Hist
 from ROOT import gROOT, TH1F
 gcd = gROOT.cd
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations
@@ -160,3 +161,39 @@ def find_btag( histogram_path ):
         if b_tag in histogram_path:
             return b_tag, True
     return b_tag_bins_inclusive[0], False
+
+# Reads a list of histograms from each given file
+def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'EventWeight', selection = '1', files = {}, verbose = False, nBins = 40, xMin = 0, xMax = 100, ignoreUnderflow = True ):
+    histograms = {}
+    nHistograms = 0
+
+    # Setup selection and weight string for ttree draw
+    weightAndSelection = '( %s ) * ( %s )' % ( weightBranch, selection )
+
+    for sample, input_file in files.iteritems():
+        root_file = File( input_file )
+
+        get_tree = root_file.Get
+        histograms[sample] = {}
+        
+        for tree in trees:
+
+            # print sample, tree, input_file
+            currentTree = get_tree( tree )
+            root_histogram = Hist( nBins, xMin, xMax)
+            currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
+
+            if not is_valid_histogram( root_histogram, tree, input_file):
+                return
+
+            # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
+            if ignoreUnderflow:
+                root_histogram.SetBinContent(0, 0)
+                root_histogram.SetBinError(0,0)
+
+            gcd()
+            nHistograms += 1
+            histograms[sample][tree] = root_histogram.Clone()
+
+        root_file.Close()
+    return histograms
