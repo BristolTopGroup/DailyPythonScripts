@@ -5,7 +5,6 @@ Created on 3 May 2013
 '''
 import matplotlib as mpl
 from tools.file_utilities import make_folder_if_not_exists
-from tkFont import names
 from tools.hist_utilities import get_histogram_ratios, spread_x
 mpl.use('agg')
 import matplotlib.pyplot as plt
