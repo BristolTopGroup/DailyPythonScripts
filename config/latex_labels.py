@@ -98,3 +98,18 @@ fit_variables_latex = {
                        'M_bl' : r'$M(b,l)$',
                        'angle_bl' : r'angle$(b,l)$',
                        }
+
+typical_systematics_latex = {"typical_systematics_electron": "Trigger efficiency \& electron selection",
+                      "typical_systematics_muon": "Trigger efficiency \& muon selection",
+                      "typical_systematics_btagging": "btagging",
+                      "typical_systematics_JES": "Jet Energy Scale",
+                      "typical_systematics_JER": "Jet Energy Resolution",
+                      "typical_systematics_PU": "pileup",
+                      "typical_systematics_hadronisation": "hadronisation",
+                      "typical_systematics_QCD_shape": "QCD shape",
+                      "typical_systematics_PDF": "PDF uncertainties",
+                      "typical_systematics_top_mass": "top mass",
+                      "typical_systematics_theoretical": "Theoretical systematics",
+                      'typical_systematics_background_other': 'Background (other)',
+                      'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties'
+                      }
