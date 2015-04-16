@@ -28,45 +28,48 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_with_errors.txt')
     normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
-    normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
+    ###file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
+    ###normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_MET_errors.txt')
-    normalised_xsection_MET_errors = read_data_from_JSON( file_name )
+    ###file_name = file_template.replace('.txt', '_MET_errors.txt')
+    ###normalised_xsection_MET_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_topMass_errors.txt')
-    normalised_xsection_topMass_errors = read_data_from_JSON( file_name )
+    ###file_name = file_template.replace('.txt', '_topMass_errors.txt')
+    ###normalised_xsection_topMass_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_kValue_errors.txt')
-    normalised_xsection_kValue_errors = read_data_from_JSON( file_name )
+    ###file_name = file_template.replace('.txt', '_kValue_errors.txt')
+    ###normalised_xsection_kValue_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_PDF_errors.txt')
-    normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
+    ###file_name = file_template.replace('.txt', '_PDF_errors.txt')
+    ###normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
 
     file_name = file_template.replace('.txt', '_other_errors.txt')
     normalised_xsection_other_errors = read_data_from_JSON( file_name )
 
-    file_name = file_template.replace('.txt', '_new_errors.txt')
-    normalised_xsection_new_errors = read_data_from_JSON( file_name )
+    ###file_name = file_template.replace('.txt', '_new_errors.txt')
+    ###normalised_xsection_new_errors = read_data_from_JSON( file_name )
     
     normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
                                                 'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded']})
     
-    normalised_xsection_measured_errors = normalised_xsection_ttbar_generator_errors['TTJet_measured']
-    normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
+    normalised_xsection_measured_errors = normalised_xsection_other_errors['TTJet_measured']
 
-    normalised_xsection_unfolded_errors = normalised_xsection_ttbar_generator_errors['TTJet_unfolded']
-    normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
+    ### normalised_xsection_measured_errors = normalised_xsection_ttbar_generator_errors['TTJet_measured']
+    ### normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
+    ### normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
+    ### normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
+    ### normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
+    ### normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
+    ### normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
+
+    normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
+    ### normalised_xsection_unfolded_errors = normalised_xsection_ttbar_generator_errors['TTJet_unfolded']
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
 
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
@@ -546,7 +549,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
 
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option("-p", "--path", dest="path", default='data/',
+    parser.add_option("-p", "--path", dest="path", default='data/M3_angle_bl',
                   help="set path to JSON files")
     parser.add_option("-o", "--output_folder", dest="output_folder", default='tables/',
                   help="set path to save tables")
@@ -556,8 +559,8 @@ if __name__ == '__main__':
                       help="set MET type used in the analysis of MET-dependent variables")
     parser.add_option("-b", "--bjetbin", dest="bjetbin", default='2m',
                   help="set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m")
-    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
-                      help="set the centre of mass energy for analysis. Default = 8 [TeV]")
+    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
+                      help="set the centre of mass energy for analysis. Default = 13 [TeV]")
     parser.add_option("-a", "--additional-tables", action="store_true", dest="additional_tables",
                       help="creates a set of tables for each systematic (in addition to central result).")
 
@@ -584,34 +587,32 @@ if __name__ == '__main__':
     
     #remove btag mistagging rate systematic - new btagging method has only one, all-inclusive sytematic
     categories_and_prefixes = measurement_config.categories_and_prefixes
-    del categories_and_prefixes['LightJet_down']
-    del categories_and_prefixes['LightJet_up']
+    ### del categories_and_prefixes['LightJet_down']
+    ### del categories_and_prefixes['LightJet_up']
 
     categories = deepcopy(categories_and_prefixes.keys())
-    ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    categories.extend(ttbar_generator_systematics)
-    categories.extend(vjets_generator_systematics)
 
-    # Add mass systematics
-    ttbar_mass_systematics = measurement_config.topMass_systematics
-    categories.extend( measurement_config.topMass_systematics )
+    ### ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    ### vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    ### categories.extend(ttbar_generator_systematics)
+    ### categories.extend(vjets_generator_systematics)
 
-    # Add k value systematic - commented out for now because we have decided to remove the k value systematic from the error tables.
-    #kValue_systematics = measurement_config.kValueSystematic
-    #categories.extend( measurement_config.kValueSystematic )
+    ### # Add mass systematics
+    ### ttbar_mass_systematics = measurement_config.topMass_systematics
+    ### categories.extend( measurement_config.topMass_systematics )
 
-    # all MET uncertainties except JES as this is already included, and only if variable is not HT, since MET is not used in HT
-    if not variable == "HT":
-        met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    
-    new_uncertainties = ['hadronisation', 'ptreweight_max', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
-    rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
-    rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
+    ### Add k value systematic - commented out for now because we have decided to remove the k value systematic from the error tables.
+    ###kValue_systematics = measurement_config.kValueSystematic
+    ###categories.extend( measurement_config.kValueSystematic )
+
+    ### # all MET uncertainties except JES as this is already included
+    ### met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    ### new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
+    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
     all_measurements = deepcopy(categories)
-    if not variable == "HT":
-        all_measurements.extend(met_uncertainties)
-    all_measurements.extend(new_uncertainties)
+    ### all_measurements.extend(met_uncertainties)
+    ### all_measurements.extend(new_uncertainties)
+
     all_measurements.extend(rate_changing_systematics)
 
     for channel in ['electron', 'muon', 'combined']:                        

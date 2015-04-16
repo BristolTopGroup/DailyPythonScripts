@@ -44,6 +44,7 @@ class XSectionConfig():
                   'unfolding_matching_up', 'unfolding_matching_up_raw',
                   'unfolding_mass_down', 'unfolding_mass_up',
                   'unfolding_mcatnlo', 'unfolding_mcatnlo_raw',
+                  'unfolding_pythia8', 'unfolding_pythia8_raw',
                   'unfolding_powheg_pythia', 'unfolding_powheg_pythia_raw',
                   'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
                   'unfolding_scale_down', 'unfolding_scale_down_raw',
@@ -235,6 +236,8 @@ class XSectionConfig():
         self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegherwig.root' % self.centre_of_mass_energy
         self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_mcatnlo.root' % self.centre_of_mass_energy
         self.unfolding_ptreweight_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_withTopPtReweighting.root' % self.centre_of_mass_energy
+        self.unfolding_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pythia8.root' % self.centre_of_mass_energy
+
 
         self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaledown.root' % self.centre_of_mass_energy
         self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleup.root' % self.centre_of_mass_energy
@@ -246,6 +249,7 @@ class XSectionConfig():
         self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mcatnlo = self.unfolding_mcatnlo_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_ptreweight = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting.root' % self.centre_of_mass_energy
+        self.unfolding_pythia8 = self.unfolding_pythia8_raw.replace( '.root', '_asymmetric.root' )
 
         self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )

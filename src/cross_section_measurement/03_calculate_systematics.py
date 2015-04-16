@@ -169,7 +169,7 @@ if __name__ == "__main__":
     3) 
     '''
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/',
+    parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
                   help = "set path to JSON files" )
     parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
                   help = "set variable to plot (MET, HT, ST, MT)" )
@@ -197,7 +197,9 @@ if __name__ == "__main__":
                 }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/M3_angle_bl/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results/'
+    path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results/'
+    print options.path
+    print path_to_JSON
     symmetrise_errors = options.symmetrise_errors
     
     ### # set up lists for systematics

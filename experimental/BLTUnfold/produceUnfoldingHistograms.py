@@ -77,7 +77,8 @@ def getGenVariable( recoVariable ):
 
 fileNames = {
              '13TeV' : {
-                    'central' : '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/tree_TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root',
+                    'central' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/TTJets_tree.root',
+                    'pythia8' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/TTJets_Pythia8_tree.root',
                    #  'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
                    #  'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
                    #  'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
@@ -118,7 +119,7 @@ def main():
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'unfolding/%sTeV/' & options.centreOfMassEnergy
+    outputFileDir = 'unfolding/%sTeV/' % options.centreOfMassEnergy
 
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
         

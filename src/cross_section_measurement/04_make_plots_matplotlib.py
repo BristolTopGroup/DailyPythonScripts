@@ -55,24 +55,27 @@ def read_xsection_measurement_results( category, channel ):
     if category == 'central':
         # true distributions
         h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
-        # h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
-        # h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
-        # h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
-        # h_normalised_xsection_MCATNLO = None
-        # if measurement_config.centre_of_mass_energy == 8:
-        #     h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
-        # h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
-        # h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
-        # h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
-        # h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
+        ### h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
+        ### h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
+        ### h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
+        ### h_normalised_xsection_MCATNLO = None
+        ### if measurement_config.centre_of_mass_energy == 8:
+        ###     h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
+        ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
+        ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
+        ### h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
+        ### h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
         
+        h_normalised_xsection_pythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['pythia8'], bin_edges[variable] )
+
         histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
-                                                                # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
-                                                                # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
+                                                                     'pythia8':h_normalised_xsection_pythia8,
+        ###                                                         # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
+        ###                                                         # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
+        ###                                                         # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
                                                                 })
-        # if measurement_config.centre_of_mass_energy == 8:
-        #     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
+        ### if measurement_config.centre_of_mass_energy == 8:
+        ###     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
         
         histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
                                                                   # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
@@ -85,17 +88,17 @@ def read_xsection_measurement_results( category, channel ):
         file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type
         if channel == 'combined':
             file_template = file_template.replace( 'kv' + str( k_values[channel] ), '' )
-#         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
-        normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
+        normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
+        ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
 
         # a rootpy.Graph with asymmetric errors!
-        h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_measured'],
-                                                                bin_edges[variable] )
-        h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'],
-                                                                bin_edges[variable] )
+        ### h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
+        ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_measured'],
+        ###                                                         bin_edges[variable] )
+        ### h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded = value_errors_tuplelist_to_graph( 
+        ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'],
+        ###                                                         bin_edges[variable] )
         
         h_normalised_xsection_with_systematics_but_without_generator = value_errors_tuplelist_to_graph( 
                                                                 normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_measured'],
@@ -105,9 +108,11 @@ def read_xsection_measurement_results( category, channel ):
                                                                 bin_edges[variable] )
         
         
-        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
-        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
-        
+        # histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
+        # histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
+        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
+        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
+
         histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
         histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
     
@@ -361,7 +366,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             elif 'matchingup' in key:
                 hist.linestyle = 'verylongdashdot'
                 hist.linecolor = 'orange'
-            elif 'MCATNLO'  in key or 'scaleup' in key:
+            elif 'MCATNLO'  in key or 'pythia8' in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor( kMagenta + 3 )
             rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
@@ -667,7 +672,7 @@ if __name__ == '__main__':
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
     
             make_plots( histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators' )
-            # make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
+            make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
