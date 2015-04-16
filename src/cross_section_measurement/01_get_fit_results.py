@@ -104,8 +104,8 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
     histograms.update(histograms_exclusive)
 
     # Get QCD distribution from data
-    histograms['QCD'] = get_data_derived_qcd(histograms_control_inclusive, histograms_exclusive['QCD'])
-    histograms['V+Jets'] = get_inclusive_histogram( histograms_inclusive['V+Jets'], histograms['V+Jets'] )
+    # histograms['QCD'] = get_data_derived_qcd(histograms_control_inclusive, histograms_exclusive['QCD'])
+    # histograms['V+Jets'] = get_inclusive_histogram( histograms_inclusive['V+Jets'], histograms['V+Jets'] )
     
     # normalise histograms
     if not measurement_config.luminosity_scale == 1.0:

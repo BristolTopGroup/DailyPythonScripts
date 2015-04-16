@@ -43,6 +43,14 @@ if __name__ == '__main__':
         output_folder = '%s/before_fit/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
     make_folder_if_not_exists(output_folder)
 
+    outputDirForVariables = output_folder + '/Variables/'
+    make_folder_if_not_exists(outputDirForVariables)
+    if not normalise_to_fit:
+        outputDirForFitVariables = output_folder + '/FitVariables/'
+        make_folder_if_not_exists(outputDirForFitVariables)
+        outputDirForOtherControl = output_folder + '/Control/'
+        make_folder_if_not_exists(outputDirForOtherControl)
+
     # Central or whatever
     category = options.category
     
@@ -82,7 +90,6 @@ if __name__ == '__main__':
     # Title in muon channel
     mu_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, '#mu+jets, $\geq$ 4 jets' )
 
-
     for channel in channels:
         print channel
         control_region = ''
@@ -117,7 +124,7 @@ if __name__ == '__main__':
                 signalNorm = histograms[sample][signalTree].integral( overflow = True )
                 controlNorm = histograms[sample][controlTree].integral( overflow = True )
                 if signalNorm < 1. : signalNorm = 1.
-                if controlNorm < 0.1 : contorlNorm = 1.
+                if controlNorm < 0.1 : controlNorm = 1.
                 histograms[sample][controlTree].Scale( signalNorm / controlNorm )
             prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
 
@@ -128,6 +135,7 @@ if __name__ == '__main__':
 
             histograms_to_draw = [histograms['data'][signalTree],
                                   histogram_dataDerivedQCD,
+                                  # histograms['QCD'][signalTree],
                                   histograms['V+Jets'][signalTree],
                                   histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
             histogram_lables = ['data', 'QCD', 
@@ -153,7 +161,7 @@ if __name__ == '__main__':
           
             histogram_properties.name += '_with_ratio'
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder, show_ratio = True )
+                                         histogram_properties, save_folder = outputDirForVariables, show_ratio = True )
 
         if normalise_to_fit : continue
         # Fit variables (inclusive)
@@ -161,18 +169,27 @@ if __name__ == '__main__':
             print '--->',var
             signal_region = 'Ref selection'
             signalTree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % ( channel, signal_region )
+            controlTree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % ( channel, control_region )
 
             bins = fit_variable_bin_edges[var]
             xMin = bins[0]
             xMax = bins[-1]
             nBins = len(bins) -1
             
-            histograms = get_histograms_from_trees( trees = [signalTree], branch = var, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
+            histograms = get_histograms_from_trees( trees = [signalTree, controlTree], branch = var, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
+            histogram_dataDerivedQCD = get_data_derived_qcd( { h : histograms[h][controlTree] for h in ['data','TTJet','SingleTop','V+Jets','QCD']}, histograms['QCD'][signalTree])
 
+            for sample in histograms:
+                signalNorm = histograms[sample][signalTree].integral( overflow = True )
+                controlNorm = histograms[sample][controlTree].integral( overflow = True )
+                if signalNorm < 1. : signalNorm = 1.
+                if controlNorm < 0.1 : controlNorm = 1.
+                histograms[sample][controlTree].Scale( signalNorm / controlNorm )
             prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
             
             histograms_to_draw = [histograms['data'][signalTree], 
-                                  histograms['QCD'][signalTree],
+                                  # histograms['QCD'][signalTree],
+                                  histogram_dataDerivedQCD,
                                   histograms['V+Jets'][signalTree],
                                   histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
             histogram_lables = ['data', 'QCD', 
@@ -198,7 +215,7 @@ if __name__ == '__main__':
                 histogram_properties.y_axis_title = 'Events/(%.2g)' % eventsPerBin             
             histogram_properties.name += '_with_ratio'
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder, show_ratio = True )
+                                         histogram_properties, save_folder = outputDirForFitVariables, show_ratio = True )
 
 
         # Jet control plots
@@ -240,4 +257,4 @@ if __name__ == '__main__':
 
             histogram_properties.name += '_with_ratio'
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder, show_ratio = True )
+                                         histogram_properties, save_folder = outputDirForOtherControl, show_ratio = True )
