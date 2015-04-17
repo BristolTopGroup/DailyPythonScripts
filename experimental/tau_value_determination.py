@@ -23,7 +23,7 @@ from config.variable_binning import bin_edges
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
-from tools.ROOT_utililities import set_root_defaults
+from tools.ROOT_utils import set_root_defaults
 # from examples.Bin_Centers import nbins
 from config import XSectionConfig
 used_k = 2
@@ -44,7 +44,7 @@ def get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data = N
     global used_k
     # this gives 9.97e-05 with TUnfold
     tau_0 = 1
-    tau_max = 100
+    tau_max = 1000
     number_of_iterations = int(100)
     n_toy = int(1000)
 #     tau_step = ( tau_max - tau_0 ) / number_of_iterations
@@ -139,6 +139,7 @@ def draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable
                             connectionstyle = "arc3" ),
             size = 40,
             )
+    print 'Writing to ','plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable )
     if use_data:
         plt.savefig( 'plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable ) )    
     else:
@@ -208,9 +209,11 @@ def draw_l_shape( l_shape, best_tau, x_value, y_value, channel, variable ):
         plt.savefig( 'plots/tau_from_L_shape_%s_channel_%s_MC.png' % ( channel, variable ) )
 
 def get_data_histogram( channel, variable, met_type ):
-    fit_result_input = 'data/absolute_eta_M3_angle_bl/8TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
+    fit_result_input = 'data/M3_angle_bl/13TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
+    print fit_data
+    print bin_edges[variable]
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
     return h_data
 
@@ -237,19 +240,20 @@ if __name__ == '__main__':
     input_files = {
                    7 : '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root',
                    8 : '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_5th_draft/8TeV/unfolding/unfolding_TTJets_8TeV_asymmetric.root',
+                   13 : 'unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root',
                    }
     met_type = 'patType1CorrectedPFMet'
     
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)
     variables = [ 
-		'MET', 
-		'WPT', 
-		'MT' , 
+		# 'MET', 
+		# 'WPT', 
+		# 'MT' , 
 		'ST', 
 		'HT'
 		]
-    centre_of_mass = 8
+    centre_of_mass = 13
     measurement_config = XSectionConfig(centre_of_mass)
     ttbar_xsection = measurement_config.ttbar_xsection
     luminosity = measurement_config.luminosity
@@ -266,7 +270,7 @@ if __name__ == '__main__':
             if channel == 'muon':
                 used_k = measurement_config.k_values_muon[variable]
                 
-            print 'Doing variable"', variable, '" in', channel, '-channel'
+            print 'Doing variable"', variable, '" in', channel, 'channel'
         
             h_truth, h_measured, h_response, _ = get_unfold_histogram_tuple( 
                                 inputfile = input_file,
@@ -284,7 +288,9 @@ if __name__ == '__main__':
                 h_data = deepcopy( h_measured )
                 
             
+            print 'Getting tau'
             tau, rho, tau_values, rho_values, tau_from_k = get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data )
+            print 'Drawing'
             draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable, tau_from_k )
             
             #tau, l_curve, x, y = get_tau_from_L_shape( h_truth, h_measured, h_response, h_data )
