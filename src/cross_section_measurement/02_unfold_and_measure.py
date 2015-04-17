@@ -20,10 +20,10 @@ make_folder_if_not_exists
 from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
 
-def unfold_results( results, category, channel, k_value, h_truth, h_measured, h_response, h_fakes, method ):
+def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method ):
     global variable, path_to_JSON, options
     h_data = value_error_tuplelist_to_hist( results, bin_edges[variable] )
-    unfolding = Unfolding( h_truth, h_measured, h_response, h_fakes, method = method, k_value = k_value )
+    unfolding = Unfolding( h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
     
     # turning off the unfolding errors for systematic samples
     if not category == 'central':
@@ -33,44 +33,44 @@ def unfold_results( results, category, channel, k_value, h_truth, h_measured, h_
         
     h_unfolded_data = unfolding.unfold( h_data )
     
-    if options.write_unfolding_objects:
-        # export the D and SV distributions
-        SVD_path = path_to_JSON + '/unfolding_objects/' + channel + '/kv_' + str( k_value ) + '/'
-        make_folder_if_not_exists( SVD_path )
-        if method == 'TSVDUnfold':
-            SVDdist = File( SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate' )
-            directory = SVDdist.mkdir( 'SVDdist' )
-            directory.cd()
-            unfolding.unfoldObject.GetD().Write()
-            unfolding.unfoldObject.GetSV().Write()
-            #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
-            SVDdist.Close()
-        else:
-            SVDdist = File( SVD_path + method + '_SVDdistributions_Hreco' + str( unfoldCfg.Hreco ) + '_' + category + '.root', 'recreate' )
-            directory = SVDdist.mkdir( 'SVDdist' )
-            directory.cd()
-            unfolding.unfoldObject.Impl().GetD().Write()
-            unfolding.unfoldObject.Impl().GetSV().Write()
-            h_truth.Write()
-            h_measured.Write()
-            h_response.Write()
-            #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
-            SVDdist.Close()
-    
-        # export the whole unfolding object if it doesn't exist
-        if method == 'TSVDUnfold':
-            unfolding_object_file_name = SVD_path + method + '_unfoldingObject_' + category + '.root'
-        else:
-            unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str( unfoldCfg.Hreco ) + '_' + category + '.root'
-        if not os.path.isfile( unfolding_object_file_name ):
-            unfoldingObjectFile = File( unfolding_object_file_name, 'recreate' )
-            directory = unfoldingObjectFile.mkdir( 'unfoldingObject' )
-            directory.cd()
-            if method == 'TSVDUnfold':
-                unfolding.unfoldObject.Write()
-            else:
-                unfolding.unfoldObject.Impl().Write()
-            unfoldingObjectFile.Close()
+    ### if options.write_unfolding_objects:
+    ###     # export the D and SV distributions
+    ###     SVD_path = path_to_JSON + '/unfolding_objects/' + channel + '/kv_' + str( k_value ) + '/'
+    ###     make_folder_if_not_exists( SVD_path )
+    ###     if method == 'TSVDUnfold':
+    ###         SVDdist = File( SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate' )
+    ###         directory = SVDdist.mkdir( 'SVDdist' )
+    ###         directory.cd()
+    ###         unfolding.unfoldObject.GetD().Write()
+    ###         unfolding.unfoldObject.GetSV().Write()
+    ###         #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
+    ###         SVDdist.Close()
+    ###     else:
+    ###         SVDdist = File( SVD_path + method + '_SVDdistributions_Hreco' + str( unfoldCfg.Hreco ) + '_' + category + '.root', 'recreate' )
+    ###         directory = SVDdist.mkdir( 'SVDdist' )
+    ###         directory.cd()
+    ###         unfolding.unfoldObject.Impl().GetD().Write()
+    ###         unfolding.unfoldObject.Impl().GetSV().Write()
+    ###         h_truth.Write()
+    ###         h_measured.Write()
+    ###         h_response.Write()
+    ###         #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
+    ###         SVDdist.Close()
+
+    ###     # export the whole unfolding object if it doesn't exist
+    ###     if method == 'TSVDUnfold':
+    ###         unfolding_object_file_name = SVD_path + method + '_unfoldingObject_' + category + '.root'
+    ###     else:
+    ###         unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str( unfoldCfg.Hreco ) + '_' + category + '.root'
+    ###     if not os.path.isfile( unfolding_object_file_name ):
+    ###         unfoldingObjectFile = File( unfolding_object_file_name, 'recreate' )
+    ###         directory = unfoldingObjectFile.mkdir( 'unfoldingObject' )
+    ###         directory.cd()
+    ###         if method == 'TSVDUnfold':
+    ###             unfolding.unfoldObject.Write()
+    ###         else:
+    ###             unfolding.unfoldObject.Impl().Write()
+    ###         unfoldingObjectFile.Close()
     
     del unfolding
     return hist_to_value_error_tuplelist( h_unfolded_data )
@@ -84,7 +84,7 @@ def data_covariance_matrix( data ):
         cov_matrix.SetBinContent( bin_i + 1, bin_i + 1, error * error )
     return cov_matrix
 
-def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
+def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value ):
     global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_ptreweight, files_for_pdfs
     global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
     if centre_of_mass == 8:
@@ -251,7 +251,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
     TTJet_fit_results_unfolded = unfold_results( TTJet_fit_results,
                                                 category,
                                                 channel,
-                                                k_value,
+                                                tau_value,
                                                 h_truth,
                                                 h_measured,
                                                 h_response,
@@ -279,7 +279,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
     normalisation_unfolded['pythia8'] = pythia8_results
     return normalisation_unfolded
     
-def calculate_xsections( normalisation, category, channel, k_value = None ):
+def calculate_xsections( normalisation, category, channel ):
     global variable, met_type, path_to_JSON
     # calculate the x-sections
     branching_ratio = 0.15
@@ -317,16 +317,16 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
     # if centre_of_mass == 8:
     #     xsection_unfolded['MCATNLO'] =  MCATNLO_xsection
         
-    if k_value:
-        filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/xsection_%s.txt' % ( channel, k_value, category, met_type )
-    elif not channel == 'combined':
-        raise ValueError( 'Invalid k-value for variable %s, channel %s, category %s.' % ( variable, channel, category ) )
-    else:
-        filename = path_to_JSON + '/xsection_measurement_results/%s/%s/xsection_%s.txt' % ( channel, category, met_type )
+    ### if k_value:
+    ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/xsection_%s.txt' % ( channel, k_value, category, met_type )
+    ### elif not channel == 'combined':
+    ###     raise ValueError( 'Invalid k-value for variable %s, channel %s, category %s.' % ( variable, channel, category ) )
+    ### else:
+    filename = path_to_JSON + '/xsection_measurement_results/%s/%s/xsection_%s.txt' % ( channel, category, met_type )
 
     write_data_to_JSON( xsection_unfolded, filename )
     
-def calculate_normalised_xsections( normalisation, category, channel, k_value = None, normalise_to_one = False ):
+def calculate_normalised_xsections( normalisation, category, channel, normalise_to_one = False ):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one )
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection( normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one )
@@ -360,10 +360,10 @@ def calculate_normalised_xsections( normalisation, category, channel, k_value = 
     # if centre_of_mass == 8:
     #     normalised_xsection['MCATNLO'] = MCATNLO_normalised_xsection
     
-    if not channel == 'combined':
-        filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
-    else:
-        filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
+    ### if not channel == 'combined':
+    ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
+    ### else:
+    filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
     
     if normalise_to_one:
         filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
@@ -441,6 +441,10 @@ if __name__ == '__main__':
     k_value_electron_central = measurement_config.k_values_electron[variable]
     k_value_muon_central = measurement_config.k_values_muon[variable]
     k_value_combined_central = measurement_config.k_values_combined[variable]
+
+    tau_value_electron = measurement_config.tau_values_electron[variable]
+    tau_value_muon = measurement_config.tau_values_muon[variable]
+
     load_fakes = options.load_fakes
     unfoldCfg.Hreco = options.Hreco
     method = options.unfolding_method
@@ -551,25 +555,25 @@ if __name__ == '__main__':
         unfolded_normalisation_electron = {}
         unfolded_normalisation_muon = {}
 
-        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', k_value_electron )
-        filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s.txt' % ( k_value_electron_central, category, met_type )
+        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron )
+        filename = path_to_JSON + '/xsection_measurement_results/electron/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_electron, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central, True )
+        calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', True )
 
-        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', k_value_muon )
-        filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s.txt' % ( k_value_muon_central, category, met_type )
+        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon )
+        filename = path_to_JSON + '/xsection_measurement_results/muon/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central, True )
+        calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', True )
 
-        # if combine_before_unfolding:
-        #     unfolded_normalisation_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
-        # else:
+        # # if combine_before_unfolding:
+        # #     unfolded_normalisation_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
+        # # else:
         unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
         filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )

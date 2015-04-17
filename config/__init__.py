@@ -28,6 +28,7 @@ class XSectionConfig():
                   'higgs_category_templates', 'higgs_file',
                   'include_higgs',
                   'k_values_combined', 'k_values_electron', 'k_values_muon',
+                  'tau_values_electron', 'tau_values_muons',
                   'known_centre_of_mass_energies', 'luminosities',
                   'luminosity', 'luminosity_scale', 'met_systematics_suffixes',
                   'muon_QCD_MC_category_templates', 'muon_QCD_MC_file',
@@ -410,6 +411,20 @@ class XSectionConfig():
                    'MT' : 0,
                    'WPT' : 0
                    }
+
+        self.tau_values_electron = {
+                   'MET' : 21.54,
+                   'HT' : 20.09,
+                   'ST' : 17.48,
+                   'WPT' : 20.09
+        }
+
+        self.tau_values_muon = {
+                   'MET' : 305.39,
+                   'HT' : 141.75,
+                   'ST' : 114.98,
+                   'WPT' : 215.44     
+        }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
         # self.categories_and_prefixes['PU_up'] = '_PU_72765mb'

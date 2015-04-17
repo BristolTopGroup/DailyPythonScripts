@@ -12,12 +12,10 @@ import os.path
 from numpy import median
 
 def read_xsection_measurement_results_with_errors(channel):
-    global path_to_JSON, variable, k_values, met_type
+    global path_to_JSON, variable, met_type
     category = 'central'
 
-    file_template = path_to_JSON + '/' + variable +  '/xsection_measurement_results/' + channel + '/kv' + str(k_values[channel]) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
-    if channel == 'combined':
-        file_template = file_template.replace('kv' + str(k_values[channel]), '')
+    file_template = path_to_JSON + '/' + variable +  '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
 
     file_name = file_template
     normalised_xsection_unfolded = read_data_from_JSON( file_name )
@@ -237,10 +235,10 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
         print printout
 
 def print_xsections(xsections, channel, toFile = True, print_before_unfolding = False):
-    global output_folder, variable, k_values, met_type, b_tag_bin
+    global output_folder, variable, met_type, b_tag_bin
     printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += '%% Results for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
+    printout += '%% Results for %s variable, %s channel, met type %s, %s b-tag region\n' % (variable, channel, met_type, b_tag_bin)
     if print_before_unfolding:
         printout += '%% BEFORE UNFOLDING\n'
     printout += '%% ' + '=' * 60
@@ -308,12 +306,12 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
         print printout
 
 def print_error_table(central_values, errors, channel, toFile = True, print_before_unfolding = False):
-    global output_folder, variable, k_values, met_type, b_tag_bin, all_measurements
+    global output_folder, variable, met_type, b_tag_bin, all_measurements
     bins = variable_bins_ROOT[variable]
 
     printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += '%% Systematics table for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
+    printout += '%% Systematics table for %s variable, %s channel, met type %s, %s b-tag region\n' % (variable, channel, met_type, b_tag_bin)
     if print_before_unfolding:
         printout += '%% BEFORE UNFOLDING\n'
     printout += '%% ' + '=' * 60
@@ -577,10 +575,7 @@ if __name__ == '__main__':
     output_folder = options.output_folder
     if not output_folder.endswith('/'):
         output_folder += '/'
-    k_values = {'electron' : measurement_config.k_values_electron[variable],
-                'muon' : measurement_config.k_values_muon[variable],
-                'combined' : 'None'
-                }
+
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/'

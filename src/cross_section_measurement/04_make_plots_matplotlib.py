@@ -29,16 +29,10 @@ setup_matplotlib()
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
-    global path_to_JSON, variable, k_values, met_type
+    global path_to_JSON, variable, met_type
     
     filename = ''
-    # if category in met_uncertainties and variable == 'HT':
-    #     filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
-    # else:
-    filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
-
-    if channel == 'combined':
-        filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
+    filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
         
@@ -85,9 +79,8 @@ def read_xsection_measurement_results( category, channel ):
                                                                   # 'scaleup': h_normalised_xsection_scaleup}
                                                                   })
         
-        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type
-        if channel == 'combined':
-            file_template = file_template.replace( 'kv' + str( k_values[channel] ), '' )
+        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type
+
         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
         ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
@@ -296,7 +289,7 @@ def get_cms_labels( channel ):
     
     
 def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
-    global variable, k_values
+    global variable
     
     channel = 'electron'
     if 'electron' in histname:
@@ -485,9 +478,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category
     make_folder_if_not_exists( path )
     for output_format in output_formats:
-        filename = path + '/' + histname + '_kv' + str( k_values[channel] ) + '.' + output_format
-        if channel == 'combined':
-            filename = filename.replace( '_kv' + str( k_values[channel] ), '' )
+        filename = path + '/' + histname + '.' + output_format
         plt.savefig( filename )
 
     del hist_data, hist_measured
@@ -495,7 +486,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     gc.collect()
 
 def plot_central_and_systematics( channel, systematics, exclude = [], suffix = 'altogether' ):
-    global variable, k_values, b_tag_bin, met_type
+    global variable, b_tag_bin, met_type
 
     plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
     axes = plt.axes()
@@ -547,9 +538,8 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable
     make_folder_if_not_exists( path )
     for output_format in output_formats:
-        filename = path + '/normalised_xsection_' + channel + '_' + suffix + '_kv' + str( k_values[channel] ) + '.' + output_format
-        if channel == 'combined':
-            filename = filename.replace( '_kv' + str( k_values[channel] ), '' )
+        filename = path + '/normalised_xsection_' + channel + '_' + suffix + '.' + output_format
+
         plt.savefig( filename ) 
 
     plt.close()
@@ -601,10 +591,6 @@ if __name__ == '__main__':
     output_folder = options.output_folder
     if not output_folder.endswith( '/' ):
         output_folder += '/'
-    k_values = {'electron' : measurement_config.k_values_electron[variable],
-                'muon' : measurement_config.k_values_muon[variable],
-                'combined' : 'None'
-                }
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
