@@ -140,6 +140,8 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, options.pdfWeight )
     elif options.sample != 'central':
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
+    elif options.fineBinned:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
 
