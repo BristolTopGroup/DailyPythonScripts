@@ -7,6 +7,7 @@ from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
 from tools.hist_utilities import prepare_histograms
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
+from lib import read_fit_results
 
 def get_fitted_normalisation( variable, channel ):
     '''
@@ -100,18 +101,21 @@ if __name__ == '__main__':
             'MT':get_fitted_normalisation( 'MT', 'muon' ),
             'WPT':get_fitted_normalisation( 'WPT', 'muon' )
             }
-    title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
+    title_template = 'CMS, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
     e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, 'e+jets, $\geq$ 4 jets' )
 
     # electron |eta|
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
-      
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
     n_qcd_control_region = qcd_from_data.Integral()
@@ -132,8 +136,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
@@ -145,10 +154,13 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Electron/electron_pT_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -170,8 +182,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$p_\mathrm{T}(e)$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [0, 250]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
@@ -183,7 +199,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
      
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -228,7 +244,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -275,7 +291,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_phi_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -323,7 +339,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/HT_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -369,7 +385,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/ST_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -416,7 +432,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -463,7 +479,7 @@ if __name__ == '__main__':
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin
     qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -498,35 +514,139 @@ if __name__ == '__main__':
     else:
         histogram_properties.mc_error = mc_uncertainty
         histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+        
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
     histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True )
-      
+
+    # M3 histograms are not plotted in the histogram output files from analysis software
+    # so sum the M3 histograms from the BAT output histogram file and sum over all bins
     # M3
-    b_tag_bin = ''
-    control_region = 'DiffVariablesAnalyser/EPlusJets/M3'
+    histograms = {}
+    b_tag_bin = '2orMoreBtags'
+    for bin in variable_bins_ROOT['MT']:
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + bin + '/M3_' + b_tag_bin 
+        control_region_without_MT_bin = control_region.replace( '_bin_' + bin, '' )
+        qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
+        qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
+        qcd_control_region_without_MT_bin = qcd_control_region.replace( '_bin_' + bin, '' )
+    
+        # Get "before fit" plots by summing the histograms across all bins in a variable (using MT because it is the 
+        # variable with the fewest bins.
+        histograms_in_MT_bin = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
+    
+        for key in histograms_in_MT_bin.keys():
+            # if key does not exist yet, then add it to the histograms dictionary
+            if key not in histograms:
+                histograms[key] = {}
+                histograms[key][control_region_without_MT_bin] = (histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin] = (histograms_in_MT_bin[key][qcd_control_region])
+            # if the key already exists, add the histogram for the current key in the current MT bin to the existing histogram
+            else:
+                histograms[key][control_region_without_MT_bin].Add(histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin].Add(histograms_in_MT_bin[key][qcd_control_region])
+
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 4, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 4, scale_factor = measurement_config.luminosity_scale )
+
+    qcd_from_data = histograms['data'][qcd_control_region_without_MT_bin].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region_without_MT_bin].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale( 1.0 / n_qcd_control_region * n_qcd_predicted_mc )
       
-    histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-      
-    histograms_to_draw = [histograms['data'][control_region], histograms['QCD'][control_region],
-                          histograms['V+Jets'][control_region],
-                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histograms_to_draw = [histograms['data'][control_region_without_MT_bin], qcd_from_data,
+                          histograms['V+Jets'][control_region_without_MT_bin],
+                          histograms['SingleTop'][control_region_without_MT_bin], histograms['TTJet'][control_region_without_MT_bin]]
     histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
     histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
-      
+
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'EPlusJets_M3' + b_tag_bin
+    histogram_properties.name = 'EPlusJets_M3_' + b_tag_bin
     if category != 'central':
         histogram_properties.name += '_' + category
-    histogram_properties.title = e_title
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$M3$ [GeV]'
-    histogram_properties.y_axis_title = 'Events/(9 GeV)'
-    histogram_properties.x_limits = [100, 600]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
+    histogram_properties.x_limits = [0, 1000]
+    
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+      
+    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False )
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = True )
+    
+    # angle_bl histograms are not plotted in the histogram output files from analysis software
+    # so sum the angle_bl histograms from the BAT output histogram file and sum over all bins
+    # angle_bl
+    histograms = {}
+    b_tag_bin = '2orMoreBtags'
+    for bin in variable_bins_ROOT['MT']:
+        control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + bin + '/angle_bl_' + b_tag_bin 
+        control_region_without_MT_bin = control_region.replace( '_bin_' + bin, '' )
+        qcd_control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
+        qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
+        qcd_control_region_without_MT_bin = qcd_control_region.replace( '_bin_' + bin, '' )
+
+        # Get "before fit" plots by summing the histograms across all bins in a variable (using MT because it is the 
+        # variable with the fewest bins.
+        histograms_in_MT_bin = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
+    
+        for key in histograms_in_MT_bin.keys():
+            # if key does not exist yet, then add it to the histograms dictionary
+            if key not in histograms:
+                histograms[key] = {}
+                histograms[key][control_region_without_MT_bin] = (histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin] = (histograms_in_MT_bin[key][qcd_control_region])
+            # if the key already exists, add the histogram for the current key in the current MT bin to the existing histogram
+            else:
+                histograms[key][control_region_without_MT_bin].Add(histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin].Add(histograms_in_MT_bin[key][qcd_control_region])
+
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 2, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 2, scale_factor = measurement_config.luminosity_scale )
+
+    qcd_from_data = histograms['data'][qcd_control_region_without_MT_bin].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region_without_MT_bin].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale( 1.0 / n_qcd_control_region * n_qcd_predicted_mc )
+      
+    histograms_to_draw = [histograms['data'][control_region_without_MT_bin], qcd_from_data,
+                          histograms['V+Jets'][control_region_without_MT_bin],
+                          histograms['SingleTop'][control_region_without_MT_bin], histograms['TTJet'][control_region_without_MT_bin]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'EPlusJets_angle_bl_' + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = 'angle(bl) [GeV]'
+    histogram_properties.y_axis_title = 'Events/(0.2 GeV)'
+    histogram_properties.x_limits = [0, 4]
+
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+      
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
     histogram_properties.name += '_with_ratio'
@@ -538,7 +658,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/bjet_invariant_mass_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -556,7 +679,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$M_{\mathrm{b}\\bar{\mathrm{b}}}$'
     histogram_properties.y_axis_title = 'Normalised events/(10 GeV)'
     histogram_properties.x_limits = [0, 800]
-    histogram_properties.mc_error = mc_uncertainty
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
     histogram_properties.name += '_with_ratio'
@@ -568,7 +697,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -586,7 +718,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = mc_uncertainty
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder )
       
@@ -594,7 +732,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets_reweighted'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -612,7 +753,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = mc_uncertainty
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder )
   
@@ -621,7 +768,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Jets/N_Jets_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -639,8 +789,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'Jet multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [3.5, 9.5]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder )
   
@@ -650,10 +805,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -669,8 +827,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -681,10 +843,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_ST_Analysis/ST_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -700,8 +865,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -712,10 +881,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -731,8 +903,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -743,10 +919,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -762,8 +941,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -774,10 +957,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCDConversions' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -793,8 +979,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'            
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -805,10 +995,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso e+jets' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -824,6 +1017,10 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
+        if normalise_to_fit:
+            histogram_properties.mc_error = 0.0
+            histogram_properties.mc_errors_label = 'fit uncertainty'
+        else:
             histogram_properties.mc_error = 0.0
             histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
@@ -836,10 +1033,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_ST_Analysis/ST_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso e+jets' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -855,8 +1055,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'            
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -867,10 +1071,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso e+jets' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )            
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -886,8 +1093,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -898,10 +1109,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso e+jets' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -917,8 +1131,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'        
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -929,10 +1147,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/electron_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso e+jets' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -948,8 +1169,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -960,7 +1185,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_rhoCorrectedIso_03_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -981,8 +1209,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 3]
     histogram_properties.y_limits = [1, 10000000]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
     histogram_properties.set_log_y = True
       
@@ -994,7 +1226,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD e+jets PFRelIso/Electron/electron_rhoCorrectedIso_03_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1015,8 +1250,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 3]
     histogram_properties.y_limits = [1, 10000000]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
     histogram_properties.set_log_y = True
       
@@ -1029,7 +1268,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['QCD'][control_region].Clone()
       
@@ -1046,8 +1288,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 7000]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'    
     histogram_properties.legend_location = 'upper left'
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1058,7 +1304,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1078,8 +1327,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1091,7 +1344,10 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region_1, control_region_2], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     region_1 = histograms['data'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone()
@@ -1103,8 +1359,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 0.14]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.legend_location = 'upper right'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     make_control_region_comparison( region_1, region_2,
                                    name_region_1 = 'conversions', name_region_2 = 'non-isolated electrons',
                                    histogram_properties = histogram_properties, save_folder = output_folder )
@@ -1114,7 +1374,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['QCD'][control_region].Clone()
       
@@ -1131,8 +1394,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 1000]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper left'
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1142,7 +1409,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['QCD'][control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral()
@@ -1162,8 +1432,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(e)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     histogram_properties.legend_location = 'upper right'
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1176,7 +1450,10 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCDConversions/Electron/electron_AbsEta_' + b_tag_bin_2
       
     histograms = get_histograms_from_files( [control_region_1, control_region_2], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
@@ -1188,8 +1465,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 0.14]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.legend_location = 'upper right'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     make_control_region_comparison( region_1, region_2,
                                    name_region_1 = b_tag_bins_latex[b_tag_bin_1], name_region_2 = b_tag_bins_latex[b_tag_bin_2],
                                    histogram_properties = histogram_properties, save_folder = output_folder )
@@ -1201,7 +1482,10 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Electron/electron_AbsEta_' + b_tag_bin_2
       
     histograms = get_histograms_from_files( [control_region_1, control_region_2], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
@@ -1213,8 +1497,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
     histogram_properties.y_limits = [0, 0.14]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.legend_location = 'upper right'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'
     make_control_region_comparison( region_1, region_2,
                                    name_region_1 = b_tag_bins_latex[b_tag_bin_1], name_region_2 = b_tag_bins_latex[b_tag_bin_2],
                                    histogram_properties = histogram_properties, save_folder = output_folder )
@@ -1224,7 +1512,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1242,7 +1533,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'N(PV)'
     histogram_properties.y_axis_title = 'arbitrary units'
     histogram_properties.x_limits = [0, 50]
-    histogram_properties.mc_error = 0.0
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, normalise = True )
       
@@ -1250,7 +1546,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex_reweighted'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1268,7 +1567,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'N(PV)'
     histogram_properties.y_axis_title = 'arbitrary units'
     histogram_properties.x_limits = [0, 50]
-    histogram_properties.mc_error = 0.0
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, normalise = True )
   
@@ -1282,11 +1587,14 @@ if __name__ == '__main__':
     # Muon |eta|
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Muon/muon_AbsEta_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral() * 1.2
@@ -1307,9 +1615,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.6]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
-      
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'      
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
     histogram_properties.name += '_with_ratio'
@@ -1319,11 +1630,14 @@ if __name__ == '__main__':
     # Muon pt
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Muon/muon_pT_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_from_data = histograms['data'][qcd_control_region].Clone()
     n_qcd_predicted_mc = histograms['QCD'][control_region].Integral() * 1.2
@@ -1344,8 +1658,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$p_\mathrm{T}(\mu)$ [GeV]'
     histogram_properties.y_axis_title = 'Events/(10 GeV)'
     histogram_properties.x_limits = [0, 250]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
       
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
@@ -1355,8 +1673,8 @@ if __name__ == '__main__':
   
     # MET
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1400,8 +1718,8 @@ if __name__ == '__main__':
     # MET log
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1447,8 +1765,8 @@ if __name__ == '__main__':
     # MET phi
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_phi_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1495,8 +1813,8 @@ if __name__ == '__main__':
     # HT
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/HT_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1541,8 +1859,8 @@ if __name__ == '__main__':
     # ST
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/ST_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1588,8 +1906,8 @@ if __name__ == '__main__':
     # WPT
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
       
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1634,8 +1952,8 @@ if __name__ == '__main__':
     # MT
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin
-    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets' )
-    qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+    qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+    qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
      
     histograms = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
     if normalise_to_fit:
@@ -1675,42 +1993,148 @@ if __name__ == '__main__':
     histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True )
-     
+
+    # M3 histograms are not plotted in the histogram output files from analysis software
+    # so sum the M3 histograms from the BAT output histogram file and sum over all bins
     # M3
-    b_tag_bin = ''
-    control_region = 'DiffVariablesAnalyser/MuPlusJets/M3'
+    histograms = {}
+    b_tag_bin = '2orMoreBtags'
+    for bin in variable_bins_ROOT['MT']:
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + bin + '/M3_' + b_tag_bin 
+        control_region_without_MT_bin = control_region.replace( '_bin_' + bin, '' )
+        qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+        qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
+        qcd_control_region_without_MT_bin = qcd_control_region.replace( '_bin_' + bin, '' )
+    
+        # Get "before fit" plots by summing the histograms across all bins in a variable (using MT because it is the 
+        # variable with the fewest bins.
+        histograms_in_MT_bin = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
+    
+        for key in histograms_in_MT_bin.keys():
+            # if key does not exist yet, then add it to the histograms dictionary
+            if key not in histograms:
+                histograms[key] = {}
+                histograms[key][control_region_without_MT_bin] = (histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin] = (histograms_in_MT_bin[key][qcd_control_region])
+            # if the key already exists, add the histogram for the current key in the current MT bin to the existing histogram
+            else:
+                histograms[key][control_region_without_MT_bin].Add(histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin].Add(histograms_in_MT_bin[key][qcd_control_region])
+
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 4, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 4, scale_factor = measurement_config.luminosity_scale )
+
+    qcd_from_data = histograms['data'][qcd_control_region_without_MT_bin].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region_without_MT_bin].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale( 1.0 / n_qcd_control_region * n_qcd_predicted_mc )
       
-    histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-      
-    histograms_to_draw = [histograms['data'][control_region], histograms['QCD'][control_region],
-                          histograms['V+Jets'][control_region],
-                          histograms['SingleTop'][control_region], histograms['TTJet'][control_region]]
+    histograms_to_draw = [histograms['data'][control_region_without_MT_bin], qcd_from_data,
+                          histograms['V+Jets'][control_region_without_MT_bin],
+                          histograms['SingleTop'][control_region_without_MT_bin], histograms['TTJet'][control_region_without_MT_bin]]
     histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
     histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
-      
+
     histogram_properties = Histogram_properties()
-    histogram_properties.name = 'MuPlusJets_M3'
+    histogram_properties.name = 'MuPlusJets_M3_' + b_tag_bin
     if category != 'central':
         histogram_properties.name += '_' + category
-    histogram_properties.title = mu_title
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.x_axis_title = '$M3$ [GeV]'
-    histogram_properties.y_axis_title = 'Events/(9 GeV)'
-    histogram_properties.x_limits = [100, 600]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    histogram_properties.y_axis_title = 'Events/(20 GeV)'
+    histogram_properties.x_limits = [0, 1000]
+    
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+      
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
     histogram_properties.name += '_with_ratio'
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = True )
+    
+    # angle_bl histograms are not plotted in the histogram output files from analysis software
+    # so sum the angle_bl histograms from the BAT output histogram file and sum over all bins
+    # angle_bl
+    histograms = {}
+    b_tag_bin = '2orMoreBtags'
+    for bin in variable_bins_ROOT['MT']:
+        control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + bin + '/angle_bl_' + b_tag_bin 
+        control_region_without_MT_bin = control_region.replace( '_bin_' + bin, '' )
+        qcd_control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
+        qcd_control_region = qcd_control_region.replace( b_tag_bin, '0btag' )
+        qcd_control_region_without_MT_bin = qcd_control_region.replace( '_bin_' + bin, '' )
+
+        # Get "before fit" plots by summing the histograms across all bins in a variable (using MT because it is the 
+        # variable with the fewest bins.
+        histograms_in_MT_bin = get_histograms_from_files( [control_region, qcd_control_region], histogram_files )
+    
+        for key in histograms_in_MT_bin.keys():
+            # if key does not exist yet, then add it to the histograms dictionary
+            if key not in histograms:
+                histograms[key] = {}
+                histograms[key][control_region_without_MT_bin] = (histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin] = (histograms_in_MT_bin[key][qcd_control_region])
+            # if the key already exists, add the histogram for the current key in the current MT bin to the existing histogram
+            else:
+                histograms[key][control_region_without_MT_bin].Add(histograms_in_MT_bin[key][control_region])
+                histograms[key][qcd_control_region_without_MT_bin].Add(histograms_in_MT_bin[key][qcd_control_region])
+
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 2, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 2, scale_factor = measurement_config.luminosity_scale )
+
+    qcd_from_data = histograms['data'][qcd_control_region_without_MT_bin].Clone()
+    n_qcd_predicted_mc = histograms['QCD'][control_region_without_MT_bin].Integral()
+    n_qcd_control_region = qcd_from_data.Integral()
+    if not n_qcd_control_region == 0:
+        qcd_from_data.Scale( 1.0 / n_qcd_control_region * n_qcd_predicted_mc )
       
+    histograms_to_draw = [histograms['data'][control_region_without_MT_bin], qcd_from_data,
+                          histograms['V+Jets'][control_region_without_MT_bin],
+                          histograms['SingleTop'][control_region_without_MT_bin], histograms['TTJet'][control_region_without_MT_bin]]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = 'MuPlusJets_angle_bl_' + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = e_title + ', ' + b_tag_bins_latex[b_tag_bin]
+    histogram_properties.x_axis_title = 'angle(bl) [GeV]'
+    histogram_properties.y_axis_title = 'Events/(0.2 GeV)'
+    histogram_properties.x_limits = [0, 4]
+
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+      
+    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = False )
+    histogram_properties.name += '_with_ratio'
+    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder, show_ratio = True )
+
     # Jet multiplicity
     b_tag_bin = '2orMoreBtags'
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Jets/N_Jets_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1728,8 +2152,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'Jet multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [3.5, 9.5]
-    histogram_properties.mc_error = mc_uncertainty
-    histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'      
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder )
   
@@ -1738,7 +2167,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/bjet_invariant_mass_' + b_tag_bin
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
       
     qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1756,7 +2188,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$M_{\mathrm{b}\\bar{\mathrm{b}}}$'
     histogram_properties.y_axis_title = 'Normalised events/(10 GeV)'
     histogram_properties.x_limits = [0, 800]
-    histogram_properties.mc_error = mc_uncertainty
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, show_ratio = False )
     histogram_properties.name += '_with_ratio'
@@ -1768,7 +2206,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1786,7 +2227,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = mc_uncertainty
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder )
       
@@ -1794,7 +2241,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets_reweighted'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1812,7 +2262,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'B-tag multiplicity'
     histogram_properties.y_axis_title = 'Events'
     histogram_properties.x_limits = [-0.5, 5.5]
-    histogram_properties.mc_error = mc_uncertainty
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisations_electron['MET'] )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder )
       
@@ -1821,7 +2276,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1839,7 +2297,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'N(PV)'
     histogram_properties.y_axis_title = 'arbitrary units'
     histogram_properties.x_limits = [0, 50]
-    histogram_properties.mc_error = 0.0
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, normalise = True )
       
@@ -1847,7 +2311,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex_reweighted'
       
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
       
     n_qcd_predicted_mc = histograms['QCD'][control_region]
       
@@ -1865,7 +2332,13 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = 'N(PV)'
     histogram_properties.y_axis_title = 'arbitrary units'
     histogram_properties.x_limits = [0, 50]
-    histogram_properties.mc_error = 0.0
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
+
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder, normalise = True )
   
@@ -1875,10 +2348,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MET_Analysis/patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -1894,8 +2370,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1909,10 +2389,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_ST_Analysis/ST_with_patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -1928,8 +2411,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1940,10 +2427,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -1959,8 +2449,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -1971,10 +2465,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -1990,8 +2487,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -2002,10 +2503,13 @@ if __name__ == '__main__':
             b_tag_bin = '0btag'
             control_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_WPT_Analysis/WPT_with_patType1CorrectedPFMet_bin_' + variable_bin + '/muon_absolute_eta_' + b_tag_bin
             control_region = control_region.replace( 'Ref selection', 'QCD non iso mu+jets ge3j' )
-            qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
+#             qcd_control_region = control_region.replace( b_tag_bin, '0btag' )
               
             histograms = get_histograms_from_files( [control_region], histogram_files )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            if normalise_to_fit:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+            else:
+                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
               
             qcd_from_mc = histograms['QCD'][control_region].Clone()
               
@@ -2021,8 +2525,12 @@ if __name__ == '__main__':
             histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
             histogram_properties.y_axis_title = 'Events/(0.1)'
             histogram_properties.x_limits = [0, 2.6]
-            histogram_properties.mc_error = 0.0
-            histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'
+            if normalise_to_fit:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = 'fit uncertainty'
+            else:
+                histogram_properties.mc_error = 0.0
+                histogram_properties.mc_errors_label = '$\mathrm{t}\\bar{\mathrm{t}}$ uncertainty'  
             histogram_properties.legend_location = 'upper right'
               
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -2034,8 +2542,11 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin
   
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
-  
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+          
     qcd_from_mc = histograms['QCD'][control_region].Clone()
   
     histograms_to_draw = [histograms['data'][control_region], qcd_from_mc,
@@ -2052,8 +2563,12 @@ if __name__ == '__main__':
     histogram_properties.x_axis_title = '$\left|\eta(\mu)\\right|$'
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 2.5]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'  
     histogram_properties.legend_location = 'upper right'
   
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -2064,7 +2579,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_pfIsolation_04_' + b_tag_bin
   
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
   
     qcd_from_mc = histograms['QCD'][control_region].Clone()
   
@@ -2083,8 +2601,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 3.5]
     histogram_properties.y_limits = [1, 10000000]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'  
     histogram_properties.legend_location = 'upper right'
     histogram_properties.set_log_y = True
   
@@ -2096,7 +2618,10 @@ if __name__ == '__main__':
     control_region = 'TTbar_plus_X_analysis/MuPlusJets/QCD mu+jets PFRelIso ge3j/Muon/muon_pfIsolation_04_' + b_tag_bin
   
     histograms = get_histograms_from_files( [control_region], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )    
   
     qcd_from_mc = histograms['QCD'][control_region].Clone()
   
@@ -2115,8 +2640,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'Events/(0.1)'
     histogram_properties.x_limits = [0, 3.5]
     histogram_properties.y_limits = [1, 10000000]
-    histogram_properties.mc_error = 0.0
-    histogram_properties.mc_errors_label = 'MC unc.'
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'  
     histogram_properties.legend_location = 'upper right'
     histogram_properties.set_log_y = True
   
@@ -2130,7 +2659,10 @@ if __name__ == '__main__':
     control_region_2 = 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets ge3j/Muon/muon_AbsEta_' + b_tag_bin_2
       
     histograms = get_histograms_from_files( [control_region_1, control_region_2], histogram_files )
-    prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )
+    if normalise_to_fit:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale, normalisation = normalisations_electron['MET'] )
+    else:
+        prepare_histograms( histograms, rebin = 10, scale_factor = measurement_config.luminosity_scale )    
       
     region_1 = histograms['data'][control_region_1].Clone() - histograms['TTJet'][control_region_1].Clone() - histograms['V+Jets'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone()
@@ -2144,7 +2676,12 @@ if __name__ == '__main__':
     histogram_properties.y_axis_title = 'arbitrary units/(0.1)'
     histogram_properties.x_limits = [0, 2.5]
     histogram_properties.y_limits = [0, 0.14]
-    histogram_properties.mc_error = 0.0
+    if normalise_to_fit:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = 0.0
+        histogram_properties.mc_errors_label = 'MC unc.'  
     histogram_properties.legend_location = 'upper right'
     make_control_region_comparison( region_1, region_2,
                                    name_region_1 = b_tag_bins_latex[b_tag_bin_1], name_region_2 = b_tag_bins_latex[b_tag_bin_2],
