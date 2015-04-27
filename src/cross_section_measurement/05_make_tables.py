@@ -442,7 +442,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
             sum = 0.
             
             #if only one systematic in the group, in each bin just use the systematic value (absolute)
-            if len(typical_systematics[systematic_group]) == 1: 
+            if len(typical_systematics[systematic_group]) == 1:
                 sum += abs(values_for_typical_systematics_table[typical_systematics[systematic_group][0]][bin_i+1])
             
             #if two systematics in the group, in each bin use the largest of the two absolute values
@@ -474,7 +474,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
 
     printout = '%% ' + '=' * 60
     printout += '\n'
-    printout += '%% Typical systematics table for %s variable, %s channel, k-value %s, met type %s, %s b-tag region\n' % (variable, channel, str(k_values[channel]), met_type, b_tag_bin)
+    printout += '%% Typical systematics table for %s channel, k-value %s, met type %s, %s b-tag region\n' % (channel, str(k_values[channel]), met_type, b_tag_bin)
     if print_before_unfolding:
         printout += '%% BEFORE UNFOLDING\n'
     printout += '%% ' + '=' * 60
@@ -496,7 +496,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
     header = 'Uncertainty source '
     header += '& %s' % (variables_latex[variable])
 
-    header += ' \\\\'
+    header += ' '
     printout += header
     printout += '\n\\hline\n'
 
@@ -506,7 +506,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
         for item in rows_for_typical_systematics_table[systematic_group]:
             printout += item + ' & '
         printout = printout.rstrip('& ')
-        printout += ' \\\\ \n'
+        printout += ' \n'
 
     printout += '\\hline \n'
     printout += '\\hline \n'
@@ -605,7 +605,7 @@ if __name__ == '__main__':
     if not variable == "HT":
         met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     
-    new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
+    new_uncertainties = ['hadronisation', 'ptreweight_max', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     all_measurements = deepcopy(categories)

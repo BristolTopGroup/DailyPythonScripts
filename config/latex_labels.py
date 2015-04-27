@@ -48,7 +48,7 @@ measurements_latex = {'unfolded': 'unfolded',
                         'PU_down':'Pile-up $-1\sigma$',
                         'PU_up':'Pile-up $+1\sigma$',
                         'central':'central',
-                        #'ptreweight_max': '$p_\mathrm{T}(t,\\bar{t})$ reweighting',
+                        'ptreweight_max': '$p_\mathrm{T}(t,\\bar{t})$ reweighting',
                         'hadronisation': 'Hadronisation uncertainty',
                         'PDF_total_lower': 'PDF uncertainty $-1\sigma$',
                         'PDF_total_upper': 'PDF uncertainty $+1\sigma$',
@@ -111,5 +111,6 @@ typical_systematics_latex = {"typical_systematics_electron": "Trigger efficiency
                       "typical_systematics_top_mass": "top mass",
                       "typical_systematics_theoretical": "Theoretical systematics",
                       'typical_systematics_background_other': 'Background (other)',
-                      'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties'
+                      'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties',
+                      'typical_systematics_pt_reweight': '$p_\mathrm{T}$ reweighting'
                       }
