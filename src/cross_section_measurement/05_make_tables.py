@@ -605,7 +605,7 @@ if __name__ == '__main__':
     if not variable == "HT":
         met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     
-    new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
+    new_uncertainties = ['hadronisation', 'ptreweight_max', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]
     rate_changing_systematics.extend([systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()])
     all_measurements = deepcopy(categories)
