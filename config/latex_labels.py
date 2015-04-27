@@ -111,5 +111,6 @@ typical_systematics_latex = {"typical_systematics_electron": "Trigger efficiency
                       "typical_systematics_top_mass": "top mass",
                       "typical_systematics_theoretical": "Theoretical systematics",
                       'typical_systematics_background_other': 'Background (other)',
-                      'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties'
+                      'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties',
+                      'typical_systematics_pt_reweight': '$p_\mathrm{T}$ reweighting'
                       }

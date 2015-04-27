@@ -273,7 +273,8 @@ class XSectionConfig():
                                                      "patType1CorrectedPFMetTauEnUp",
                                                      "patType1CorrectedPFMetTauEnDown",
                                                      "patType1CorrectedPFMetUnclusteredEnUp",
-                                                     "patType1CorrectedPFMetUnclusteredEnDown"]
+                                                     "patType1CorrectedPFMetUnclusteredEnDown"],
+                        "typical_systematics_pt_reweight": ['ptreweight_max']
                        }
 
     def __fill_defaults_7TeV__( self ):
