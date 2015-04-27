@@ -19,7 +19,7 @@ variables_latex = {
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
                         'MADGRAPH': '$t\\bar{t}$ (MadGraph+Pythia)',
-                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MadGraph+$p_\mathrm{T}$ reweight)',
+                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MadGraph+$p_\mathrm{T}^\mathrm{reweight}$)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO+Herwig)',
                         'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
                         'POWHEG_HERWIG': '$t\\bar{t}$ (POWHEG+Herwig)',
