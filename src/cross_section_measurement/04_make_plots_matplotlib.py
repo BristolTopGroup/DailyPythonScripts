@@ -4,7 +4,7 @@ import os, gc
 from copy import deepcopy
 
 from config.latex_labels import variables_latex, measurements_latex, \
-met_systematics_latex, b_tag_bins_latex, fit_variables_latex
+met_systematics_latex, fit_variables_latex
 from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
@@ -22,9 +22,17 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator
 from config import CMS
-from matplotlib import rc
+from matplotlib import rc, rcParams
 rc( 'font', **CMS.font )
 rc( 'text', usetex = True )
+rcParams['text.latex.preamble'] = [
+       r'\usepackage{siunitx}',   # i need upright \micro symbols, but you need...
+       r'\sisetup{detect-all}',   # ...this to force siunitx to actually use your fonts
+       r'\usepackage{helvet}',    # set the normal font here
+       r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
+       r'\sansmath'               # <- tricky! -- gotta actually tell tex to use!
+]
+import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, k_values, met_type
@@ -82,8 +90,10 @@ def read_xsection_measurement_results( category, channel ):
         if channel == 'combined':
             file_template = file_template.replace( 'kv' + str( k_values[channel] ), '' )
 #         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
-        normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
-        normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
+#         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
+#         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
+        normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_errors.txt' )
+        normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_errors.txt' )
 
         # a rootpy.Graph with asymmetric errors!
         h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
@@ -218,7 +228,15 @@ def make_template_plots( histograms, category, channel ):
             axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
             
             plt.legend( numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
-            plt.title( get_cms_labels( channel ), CMS.title )
+            label, channel_label = get_cms_labels( channel )
+            plt.title( label, CMS.title )
+            # CMS text
+            # note: fontweight/weight does not change anything as we use Latex text!!!
+            plt.text(0.95, 0.95, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
+                     verticalalignment='top',horizontalalignment='right')
+            # channel text
+            axes.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+                      verticalalignment='top',horizontalalignment='right')
             plt.tight_layout()
         
             for output_format in output_formats:
@@ -251,7 +269,8 @@ def plot_fit_results( histograms, category, channel ):
             histogram_properties.name = plotname
             histogram_properties.x_axis_title = fit_variables_latex[fit_variable]
             histogram_properties.y_axis_title = 'Events/(%s)' % get_unit_string(fit_variable)
-            histogram_properties.title = get_cms_labels( channel )
+            label, channel_label = get_cms_labels( channel )
+            histogram_properties.title = label
             histogram_properties.x_limits = measurement_config.fit_boundaries[fit_variable]
             
             make_data_mc_comparison_plot( [h_data, h_background, h_signal],
@@ -270,9 +289,9 @@ def get_cms_labels( channel ):
         lepton = 'e, $\mu$ + jets combined'
 #     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
     channel_label = lepton
-    template = 'CMS, %.1f fb$^{-1}$ (%d TeV), %s'
-    label = template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, channel_label )
-    return label
+    template = '%.1f fb$^{-1}$ (%d TeV)'
+    label = template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy)
+    return label, channel_label
     
     
 def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
@@ -366,11 +385,24 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             new_handles.append( handle )
             new_labels.append( label )
     
-    legend_location = 'upper right'
+    legend_location = (0.98, 0.88)
     if variable == 'MT':
-        legend_location = 'upper left'
-    plt.legend( new_handles, new_labels, numpoints = 1, loc = legend_location, prop = CMS.legend_properties )
-    plt.title( get_cms_labels( channel ), CMS.title )
+        legend_location = (0.05, 0.88)
+    elif variable == 'ST':
+        legend_location = (0.95, 0.88)
+    plt.legend( new_handles, new_labels, numpoints = 1, prop = CMS.legend_properties, frameon = False, bbox_to_anchor=legend_location,
+                bbox_transform=plt.gcf().transFigure )
+    label, channel_label = get_cms_labels( channel )
+    # title
+    plt.title( label,loc='right', **CMS.title )
+    # CMS text
+    # note: fontweight/weight does not change anything as we use Latex text!!!
+    plt.text(0.05, 0.98, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
+        verticalalignment='top',horizontalalignment='left')
+    # channel text
+    axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+        verticalalignment='top',horizontalalignment='right')
+
 
     if show_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
@@ -386,7 +418,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
         plt.tick_params( **CMS.axis_label_major )
         plt.tick_params( **CMS.axis_label_minor ) 
-        plt.ylabel( '$\\frac{\\textrm{theory}}{\\textrm{data}}$', CMS.y_axis_title_small )
+        plt.ylabel( '$\\frac{\\textrm{pred.}}{\\textrm{data}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
         #draw a horizontal line at y=1 for data
         plt.axhline(y = 1, color = 'black', linewidth = 1)
@@ -416,10 +448,16 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             rplt.fill_between( syst_lower, syst_upper, ax1, facecolor = 'yellow', alpha = 0.5 )
 
         rplt.fill_between( stat_upper, stat_lower, ax1, facecolor = '0.75', alpha = 0.5 )
-
-        # p1 = plt.Rectangle((0, 0), 1, 1, fc="yellow")
-        # p2 = plt.Rectangle((0, 0), 1, 1, fc="0.75") 
-        # plt.legend([p1, p2], ['Stat. $\\oplus$ Syst.', 'Stat.'], loc = 'upper left', prop = {'size':20})
+        # legend for ratio plot
+        p_stat = mpatches.Patch(color='0.75', label='Stat.', alpha = 0.5 )
+        p_stat_and_syst = mpatches.Patch(color='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5 )
+        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
+                     frameon = False, prop = {'size':26})
+        
+        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
+                     frameon = False, prop = {'size':26})
+        ax1.add_artist(l1)
+        
         if variable == 'MET':
             ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
@@ -490,8 +528,16 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
         else:
             rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = False )
             
-    plt.legend( numpoints = 1, loc = 'upper right', prop = {'size':25}, ncol = 2 )
-    plt.title( get_cms_labels( channel ), CMS.title )
+    plt.legend( numpoints = 1, loc = 'center right', prop = {'size':25}, ncol = 2 )
+    label, channel_label = get_cms_labels( channel )
+    plt.title( label, CMS.title )
+    # CMS text
+    # note: fontweight/weight does not change anything as we use Latex text!!!
+    plt.text(0.95, 0.95, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
+        verticalalignment='top',horizontalalignment='right')
+    # channel text
+    axes.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+        verticalalignment='top',horizontalalignment='right')
     plt.tight_layout()
 
     
@@ -533,6 +579,9 @@ if __name__ == '__main__':
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 8, type = int,
                       help = "set the centre of mass energy for analysis. Default = 8 [TeV]" )
     parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
+                      help = """Draws additional plots like the comparison of different 
+                      systematics to the central result.""" )
+    parser.add_option("--draw-systematics", action = "store_true", dest = "draw_systematics",
                       help = "creates a set of plots for each systematic (in addition to central result)." )
     
     output_formats = ['png', 'pdf']
@@ -589,7 +638,7 @@ if __name__ == '__main__':
     all_measurements.extend( rate_changing_systematics )
     for channel in ['electron', 'muon', 'combined']:
         for category in all_measurements:
-            if not category == 'central' and not options.additional_plots:
+            if not category == 'central' and not options.draw_systematics:
                 continue
             if variable == 'HT' and category in met_uncertainties:
                 continue
@@ -625,22 +674,23 @@ if __name__ == '__main__':
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
     
-        plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
-        
-        plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
-        
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
-        
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
-        
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
-        
-        exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_45 ) )
-        plot_central_and_systematics( channel, pdf_uncertainties_34_to_45, exclude = exclude, suffix = 'PDF_34_to_45' )
-        
-        plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
-        plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
-        plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )
+        if options.additional_plots:
+            plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
+            
+            plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
+              
+            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
+            plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
+              
+            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
+            plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
+              
+            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
+            plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
+              
+            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_45 ) )
+            plot_central_and_systematics( channel, pdf_uncertainties_34_to_45, exclude = exclude, suffix = 'PDF_34_to_45' )
+              
+            plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
+            plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
+            plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )
