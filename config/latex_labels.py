@@ -114,3 +114,9 @@ typical_systematics_latex = {"typical_systematics_electron": "Trigger efficiency
                       'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties',
                       'typical_systematics_pt_reweight': '$p_\mathrm{T}$ reweighting'
                       }
+
+channel_latex = {
+                 'electron' : r"e + jets",
+                 'muon' : r"$\mu$ + jets",
+                 'combined' : r"e, $\mu$ + jets combined",
+                 }
