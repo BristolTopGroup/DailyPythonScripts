@@ -6,7 +6,7 @@ from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
-from tools.hist_utilities import prepare_histograms
+from tools.hist_utilities import prepare_histograms, clean_control_region
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
 from matplotlib import rc, rcParams
 from config import CMS
@@ -173,7 +173,11 @@ def make_plot( channel, x_axis_title, y_axis_title,
                             scale_factor = measurement_config.luminosity_scale )
     qcd_from_data = None
     if use_qcd_data_region:
-        qcd_from_data = histograms['data'][qcd_control_region].Clone()
+        inclusive_control_region_hists = {}
+        for sample in histograms.keys():
+            inclusive_control_region_hists[sample] = histograms[sample][qcd_control_region]
+        qcd_from_data = clean_control_region( inclusive_control_region_hists,
+                          subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
     else:
         qcd_from_data = histograms['QCD'][signal_region]
 
