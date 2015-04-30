@@ -6,6 +6,7 @@ Created on 19 Jan 2013
 from rootpy.logger import logging
 from rootpy.io import File
 from ROOT import gROOT, TH1F
+from rootpy.plotting import Hist
 gcd = gROOT.cd
 from rootpy.plotting import Hist
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations

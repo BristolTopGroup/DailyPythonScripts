@@ -482,7 +482,7 @@ if __name__ == '__main__':
     ### all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
 
-
+    print all_measurements
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
         print 'Doing category ',category

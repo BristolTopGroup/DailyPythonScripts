@@ -482,7 +482,7 @@ if __name__ == '__main__':
         # For other systematics and central, use different weights
         treePrefix = ''
         weightBranch = ''
-        if category in ['JES_up', 'JES_down']:
+        if category in ['JES_up', 'JES_down', 'JES_up_alphaCorr', 'JES_down_alphaCorr']:
             treePrefix = prefix
         elif category not in measurement_config.rate_changing_systematics:
             weightBranch = prefix
