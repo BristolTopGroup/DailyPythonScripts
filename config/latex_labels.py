@@ -18,8 +18,8 @@ variables_latex = {
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
-                        'MADGRAPH': '$t\\bar{t}$ (MadGraph+Pythia)',
-                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MadGraph+$p_\mathrm{T}$ reweight)',
+                        'MADGRAPH': '$t\\bar{t}$ (MADPGRAPH+Pythia)',
+                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADPGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO+Herwig)',
                         'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
                         'POWHEG_HERWIG': '$t\\bar{t}$ (POWHEG+Herwig)',
@@ -114,3 +114,9 @@ typical_systematics_latex = {"typical_systematics_electron": "Trigger efficiency
                       'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties',
                       'typical_systematics_pt_reweight': '$p_\mathrm{T}$ reweighting'
                       }
+
+channel_latex = {
+                 'electron' : r"e + jets",
+                 'muon' : r"$\mu$ + jets",
+                 'combined' : r"e, $\mu$ + jets combined",
+                 }
