@@ -77,7 +77,7 @@ echo "Installing matplotlib"
 export LDFLAGS="$LDFLAGS -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/lib -L$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/lib"
 export CFLAGS="$CFLAGS -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/freetype/2.4.7/include/freetype2 -I$VO_CMS_SW_DIR/$SCRAM_ARCH/external/libpng/1.2.46/include"
 #pip install -e $base/external/matplotlib
-pip install matplotlib==1.3.1 &> /dev/null
+pip install matplotlib==1.4.3 &> /dev/null
 success $? matplotlib
 echo "Installing rootpy"
 pip install -e $base/external/rootpy &> /dev/null
