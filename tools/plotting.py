@@ -17,10 +17,9 @@ from copy import deepcopy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FixedLocator
 from itertools import cycle
+from tools.latex import setup_matplotlib
 
-from matplotlib import rc
-rc('font',**CMS.font)
-rc( 'text', usetex = True )
+setup_matplotlib()
 
 class Histogram_properties:
     name = 'Test'

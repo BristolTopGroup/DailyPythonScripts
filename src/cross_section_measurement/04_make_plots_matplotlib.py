@@ -22,16 +22,10 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator
 from config import CMS
-from matplotlib import rc, rcParams
-rc( 'font', **CMS.font )
-rc( 'text', usetex = True )
-rcParams['text.latex.preamble'] = [
-       r'\usepackage{siunitx}',   # i need upright \micro symbols, but you need...
-       r'\sisetup{detect-all}',   # ...this to force siunitx to actually use your fonts
-       r'\usepackage{helvet}',    # set the normal font here
-       r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
-       r'\sansmath'               # <- tricky! -- gotta actually tell tex to use!
-]
+from tools.latex import setup_matplotlib
+# latex, font, etc
+setup_matplotlib()
+
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
