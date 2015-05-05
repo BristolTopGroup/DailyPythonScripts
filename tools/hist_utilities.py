@@ -95,25 +95,38 @@ def scale_histogram_errors( histogram, total_error ):
 def prepare_histograms( histograms, rebin = 1, scale_factor = 1.,
                         normalisation = {}, exclude_from_scaling = ['data'] ):
     for sample, histogram_dict in histograms.iteritems():
-        for _, histogram in histogram_dict.iteritems():
-            histogram.Rebin( rebin )
+        # check if this is a simple dict
+        if histogram_dict.__class__.__name__ == 'Hist':
+            h = histogram_dict
+            scale = 1.
+            norm = None
             if not sample in exclude_from_scaling:
-                histogram.Scale( scale_factor )
-            if normalisation != {} and histogram.Integral() != 0:
-                # TODO: this can be simplyfied and generalised 
-                # by using normalisation.keys() + for loop
-                if sample == 'TTJet':
-                    histogram.Scale( normalisation['TTJet'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['TTJet'][1] )
-                if sample == 'SingleTop':
-                    histogram.Scale( normalisation['SingleTop'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['SingleTop'][1] )
-                if sample == 'V+Jets':
-                    histogram.Scale( normalisation['V+Jets'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['V+Jets'][1] )
-                if sample == 'QCD':
-                    histogram.Scale( normalisation['QCD'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['QCD'][1] )
+                scale = scale_factor
+            if sample in normalisation.keys():
+                norm = normalisation[sample]
+            scale_and_rebin_histogram( histogram = h, scale_factor = scale,
+                                      normalisation = norm, rebin = rebin )
+            continue
+        # otherwise go a level deeper
+        for _, histogram in histogram_dict.iteritems():
+            scale = 1.
+            norm = None
+            if not sample in exclude_from_scaling:
+                scale = scale_factor
+            if sample in normalisation.keys():
+                norm = normalisation[sample]
+            scale_and_rebin_histogram( histogram = histogram,
+                                       scale_factor = scale,
+                                       normalisation = norm, rebin = rebin )
+
+def scale_and_rebin_histogram(histogram, scale_factor,
+                              normalisation = None,
+                              rebin = 1):
+    histogram.Rebin( rebin )
+    histogram.Scale( scale_factor )
+    if not normalisation is None and histogram.Integral() != 0:
+        histogram.Scale( normalisation[0] / histogram.Integral() )
+        scale_histogram_errors( histogram, normalisation[1] )
 
 def rebin_asymmetric( histogram, bins ):
     bin_array = array( 'd', bins )
