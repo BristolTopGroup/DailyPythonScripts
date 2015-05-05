@@ -98,7 +98,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
               signal_region,
               name_prefix, x_limits,
               qcd_data_region_btag = '',
-              qcd_data_region = '',
               use_qcd_data_region = True,
               y_limits = [],
               y_max_scale = 1.2,
@@ -112,19 +111,20 @@ def make_plot( channel, x_axis_title, y_axis_title,
     global output_folder, measurement_config, category, normalise_to_fit
     global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
 
+    qcd_data_region = ''
     title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
     normalisation = None
     if channel == 'electron':
         histogram_files['data'] = measurement_config.data_file_electron
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates[category]
         normalisation = normalisations_electron[norm_variable]
-        if qcd_data_region_btag and qcd_data_region == '':
+        if use_qcd_data_region:
             qcd_data_region = 'QCDConversions'
     if channel == 'muon':
         histogram_files['data'] = measurement_config.data_file_muon
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates[category]
         normalisation = normalisations_muon[norm_variable]
-        if qcd_data_region_btag and qcd_data_region == '':
+        if use_qcd_data_region:
             qcd_data_region = 'QCD non iso mu+jets ge3j'
 
     multi = isinstance( signal_region, list )
@@ -156,31 +156,39 @@ def make_plot( channel, x_axis_title, y_axis_title,
         else:
             histograms = get_histograms_from_files( [signal_region], histogram_files )
 
+    signal_region_hists = {}
+    inclusive_control_region_hists = {}
+    for sample in histograms.keys():
+        signal_region_hists[sample] = histograms[sample][signal_region]
+        if use_qcd_data_region:
+            inclusive_control_region_hists[sample] = histograms[sample][qcd_control_region]
+
     if normalise_to_fit:
-        prepare_histograms( histograms, rebin = rebin,
+        # only scale signal region to fit (results are invalid for control region)
+        prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = measurement_config.luminosity_scale,
                             normalisation = normalisation )
     else:
-        prepare_histograms( histograms, rebin = rebin,
+        prepare_histograms( signal_region_hists, rebin = rebin,
+                            scale_factor = measurement_config.luminosity_scale )
+    prepare_histograms( inclusive_control_region_hists, rebin = rebin,
                             scale_factor = measurement_config.luminosity_scale )
     qcd_from_data = None
     if use_qcd_data_region:
-        inclusive_control_region_hists = {}
-        for sample in histograms.keys():
-            inclusive_control_region_hists[sample] = histograms[sample][qcd_control_region]
         qcd_from_data = clean_control_region( inclusive_control_region_hists,
                           subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
     else:
-        qcd_from_data = histograms['QCD'][signal_region]
+        qcd_from_data = signal_region_hists['QCD']
 
     n_qcd_predicted_mc = histograms['QCD'][signal_region].Integral()
     n_qcd_control_region = qcd_from_data.Integral()
     if not n_qcd_control_region == 0:
         qcd_from_data.Scale( 1.0 / n_qcd_control_region * n_qcd_predicted_mc )
 
-    histograms_to_draw = [histograms['data'][signal_region], qcd_from_data,
-                          histograms['V+Jets'][signal_region],
-                          histograms['SingleTop'][signal_region], histograms['TTJet'][signal_region]]
+    histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
+                          signal_region_hists['V+Jets'],
+                          signal_region_hists['SingleTop'],
+                          signal_region_hists['TTJet']]
     histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
     histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
 
@@ -635,7 +643,7 @@ if __name__ == '__main__':
                   rebin = 2,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
+                  ratio_y_limits = [0.25, 1.75],
                   )
         tmp = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/angle_bl_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
@@ -662,6 +670,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Normalised events/(10 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/bjet_invariant_mass_' + b_tag_bin,
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_BJets_invmass_',
                   x_limits = [0, 800],
                   rebin = 10,
@@ -673,6 +682,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Normalised events/(10 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/bjet_invariant_mass_' + b_tag_bin,
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_BJets_invmass_',
                   x_limits = [0, 800],
                   rebin = 10,
@@ -689,6 +699,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Events',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_N_BJets',
                   x_limits = [1.5, 7.5],
                   rebin = 1,
@@ -700,6 +711,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Events',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_N_BJets',
                   x_limits = [1.5, 7.5],
                   rebin = 1,
@@ -713,6 +725,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Events',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets_reweighted',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_N_BJets_reweighted',
                   x_limits = [1.5, 7.5],
                   rebin = 1,
@@ -724,6 +737,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Events',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_N_BJets',
                   x_limits = [1.5, 7.5],
                   rebin = 1,
@@ -740,6 +754,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Events',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Jets/N_Jets_' + b_tag_bin,
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_N_Jets_',
                   x_limits = [3.5, 9.5],
                   rebin = 1,
@@ -751,6 +766,7 @@ if __name__ == '__main__':
                   y_axis_title = 'Events',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Jets/N_Jets_' + b_tag_bin,
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_N_Jets_',
                   x_limits = [3.5, 9.5],
                   rebin = 1,
@@ -767,6 +783,7 @@ if __name__ == '__main__':
                   y_axis_title = 'arbitrary units',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_nVertex_',
                   x_limits = [0, 50],
                   rebin = 1,
@@ -779,6 +796,7 @@ if __name__ == '__main__':
                   y_axis_title = 'arbitrary units',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_nVertex_',
                   x_limits = [0, 50],
                   rebin = 1,
@@ -792,6 +810,7 @@ if __name__ == '__main__':
                   y_axis_title = 'arbitrary units',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Vertices/nVertex_reweighted',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_nVertex_reweighted_',
                   x_limits = [0, 50],
                   rebin = 1,
@@ -804,6 +823,7 @@ if __name__ == '__main__':
                   y_axis_title = 'arbitrary units',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Vertices/nVertex_reweighted',
                   qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_nVertex_reweighted_',
                   x_limits = [0, 50],
                   rebin = 1,
