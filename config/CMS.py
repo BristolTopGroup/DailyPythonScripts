@@ -52,6 +52,6 @@ data_marker_size = 3
 data_marker_style = 'o'
 tight_layout = True
 
-font = {'family':'sans-serif','sans-serif':['Helvetica']} #Helvetica, Avant Garde, Computer Modern Sans serif
-# font = {'family':'serif','serif':['Computer Modern Roman']} #Times, Palatino, New Century Schoolbook, Bookman, Computer Modern Roman
+# font = {'family':'sans-serif','sans-serif':['Helvetica']} #Helvetica, Avant Garde, Computer Modern Sans serif
+font = {'family':'serif','serif':['Computer Modern Roman']} #Times, Palatino, New Century Schoolbook, Bookman, Computer Modern Roman
 #more info on fonts: https://www.stat.auckland.ac.nz/~paul/Talks/fonts.pdf

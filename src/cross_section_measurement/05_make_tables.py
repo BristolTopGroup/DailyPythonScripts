@@ -246,7 +246,7 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     printout += '\\begin{table}[htbp]\n'
     printout += '\\setlength{\\tabcolsep}{2pt}\n'
     printout += '\\centering\n'
-    printout += '\\caption{Normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
+    printout += '\\caption{Normalised \\ttbar differential cross section measurements with respect to the \\%s variable\n' % variable
     printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
     if channel == 'combined':
         printout += '(combination of electron and muon channels).'

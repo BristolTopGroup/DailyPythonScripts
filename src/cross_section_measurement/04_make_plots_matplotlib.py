@@ -22,16 +22,16 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator
 from config import CMS
-from matplotlib import rc, rcParams
+from matplotlib import rc
 rc( 'font', **CMS.font )
 rc( 'text', usetex = True )
-rcParams['text.latex.preamble'] = [
-       r'\usepackage{siunitx}',   # i need upright \micro symbols, but you need...
-       r'\sisetup{detect-all}',   # ...this to force siunitx to actually use your fonts
-       r'\usepackage{helvet}',    # set the normal font here
-       r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
-       r'\sansmath'               # <- tricky! -- gotta actually tell tex to use!
-]
+# rcParams['text.latex.preamble'] = [
+#        r'\usepackage{siunitx}',   # i need upright \micro symbols, but you need...
+#        r'\sisetup{detect-all}',   # ...this to force siunitx to actually use your fonts
+#        r'\usepackage{helvet}',    # set the normal font here
+#        r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
+#        r'\sansmath'               # <- tricky! -- gotta actually tell tex to use!
+# ]
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
@@ -223,7 +223,7 @@ def make_template_plots( histograms, category, channel ):
                 rplt.hist( h_QCD, axes = axes, label = 'QCD' )
             else:
                 print "WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel )
-            y_max = get_best_max_y([h_ttjet, h_single_top, h_VJets, h_QCD])
+            y_max = get_best_max_y([h_ttjet, h_single_top, h_VJets, h_QCD], x_limits = measurement_config.fit_boundaries[fit_variable])
             axes.set_ylim( [0, y_max * 1.1] )
             axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
             
@@ -449,14 +449,13 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
         rplt.fill_between( stat_upper, stat_lower, ax1, facecolor = '0.75', alpha = 0.5 )
         # legend for ratio plot
-        p_stat = mpatches.Patch(color='0.75', label='Stat.', alpha = 0.5 )
-        p_stat_and_syst = mpatches.Patch(color='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5 )
-        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
-                     frameon = False, prop = {'size':26})
-        
-        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
-                     frameon = False, prop = {'size':26})
-        ax1.add_artist(l1)
+        # p_stat = mpatches.Patch(color='0.75', label='Stat.', alpha = 0.5 )
+        # p_stat_and_syst = mpatches.Patch(color='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5 )
+        # l1 = ax1.legend([p_stat], loc = 'upper left',
+        #              frameon = False, prop = {'size':26})
+        # ax1.legend([p_stat_and_syst], loc = 'lower left',
+        #              frameon = False, prop = {'size':26})
+        # ax1.add_artist(l1)
         
         if variable == 'MET':
             ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
@@ -474,7 +473,6 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.set_ylim( ymin = 0.75, ymax = 1.5 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
-
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -538,6 +536,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     # channel text
     axes.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
         verticalalignment='top',horizontalalignment='right')
+
     plt.tight_layout()
 
     
@@ -668,7 +667,7 @@ if __name__ == '__main__':
                 met_type = 'patMETsPFlow'
             
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
-    
+
             make_plots( histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators' )
             make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
 

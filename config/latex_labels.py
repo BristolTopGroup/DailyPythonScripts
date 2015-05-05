@@ -18,8 +18,8 @@ variables_latex = {
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
-                        'MADGRAPH': '$t\\bar{t}$ (MADPGRAPH+Pythia)',
-                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADPGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
+                        'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
+                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}$^\mathrm{reweight})',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO+Herwig)',
                         'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
                         'POWHEG_HERWIG': '$t\\bar{t}$ (POWHEG+Herwig)',
@@ -99,8 +99,8 @@ fit_variables_latex = {
                        'angle_bl' : r'angle$(b,l)$',
                        }
 
-typical_systematics_latex = {"typical_systematics_electron": "Trigger efficiency \& electron selection",
-                      "typical_systematics_muon": "Trigger efficiency \& muon selection",
+typical_systematics_latex = {"typical_systematics_electron": "Electron trigger efficiency \& selection",
+                      "typical_systematics_muon": "Muon trigger efficiency \& selection",
                       "typical_systematics_btagging": "btagging",
                       "typical_systematics_JES": "Jet Energy Scale",
                       "typical_systematics_JER": "Jet Energy Resolution",

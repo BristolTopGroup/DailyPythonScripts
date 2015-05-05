@@ -12,13 +12,13 @@ from matplotlib import rc, rcParams
 from config import CMS
 rc( 'font', **CMS.font )
 rc( 'text', usetex = True )
-rcParams['text.latex.preamble'] = [
-       r'\usepackage{siunitx}',  # i need upright \micro symbols, but you need...
-       r'\sisetup{detect-all}',  # ...this to force siunitx to actually use your fonts
-       r'\usepackage{helvet}',  # set the normal font here
-       r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
-       r'\sansmath'  # <- tricky! -- gotta actually tell tex to use!
-]
+# rcParams['text.latex.preamble'] = [
+#        r'\usepackage{siunitx}',  # i need upright \micro symbols, but you need...
+#        r'\sisetup{detect-all}',  # ...this to force siunitx to actually use your fonts
+#        r'\usepackage{helvet}',  # set the normal font here
+#        r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
+#        r'\sansmath'  # <- tricky! -- gotta actually tell tex to use!
+# ]
 
 def get_fitted_normalisation( variable, channel ):
     '''
@@ -297,7 +297,7 @@ if __name__ == '__main__':
             }
     title_template = '$%.1f$ fb$^{-1}$ (%d TeV)'
     e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
-    preliminary = True
+    preliminary = False
     
     b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
