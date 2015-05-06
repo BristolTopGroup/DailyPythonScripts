@@ -647,7 +647,7 @@ if __name__ == '__main__':
                 if met_type == 'PFMETJetEnDown':
                     met_type = 'patPFMetJetEnDown'
             
-            if not channel == 'combined':
+            if not channel == 'combined' and options.additional_plots:
                 #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
                 #in the unfolding process with BLT unfolding files.
                 if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:
