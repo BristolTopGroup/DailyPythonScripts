@@ -1,0 +1,53 @@
+{
+    "command": "compare-files", 
+    "files": [ 
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/unfolding/unfolding_TTJets_8TeV_asymmetric.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/unfolding/unfolding_TTJets_8TeV_scaledown_asymmetric.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/unfolding/unfolding_TTJets_8TeV_scaleup_asymmetric.root"
+    ], 
+    "file-aliases": [ 
+        "TTJets_central",
+        "TTJets_scaledown",
+        "TTJets_scaleup"
+    ], 
+    "histograms": [
+        "unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/truth",
+        "unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/measured",
+        "unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/fake",
+        "unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/truth",
+        "unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/measured",
+        "unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/fake"
+    ], 
+    "labels": [
+        "central", 
+        "scale down",
+        "scale up"
+    ], 
+    "output_folder": "plots/8TeV/TTJet_comparison", 
+    "output_format": ["pdf"], 
+    "name_prefix": "comparison_scale_",
+    "plot_type": "shape_comparison", 
+    "ratio_y_limits": [
+        [0.8, 1.2]
+    ], 
+    "title": [
+        "Comparison of TTJets MC (central, $Q^2$ up/down) $\\sqrt{s}$ = 8 TeV"
+    ], 
+    "x_axis_title": [
+        "$E_T^{\\text{miss}}$ [GeV]"
+    ], 
+    "x_limits": [
+        [0, 300]
+    ], 
+    "y_axis_title": [
+        "normalised to unit area"
+    ], 
+    "y_limits": [
+        [0, 0.4]
+    ],
+    "rebin" : [
+    	[0.0, 27.0, 52.0, 87.0, 130.0, 172.0, 300]	
+    ],
+    "colours": ["green", "red", "blue"],
+    "fill_area": false
+}

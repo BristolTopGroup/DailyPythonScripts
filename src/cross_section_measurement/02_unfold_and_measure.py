@@ -433,7 +433,7 @@ if __name__ == '__main__':
     categories.extend( vjets_generator_systematics )
 
     # ttbar theory systematics, including pt reweighting and hadronisation systematic
-    ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
+    ttbar_theory_systematics = [ ttbar_theory_systematic_prefix + 'ptreweight' ]
     ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
     categories.extend( ttbar_theory_systematics )
 

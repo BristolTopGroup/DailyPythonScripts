@@ -139,6 +139,14 @@ def draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable
                             connectionstyle = "arc3" ),
             size = 40,
             )
+    
+    ax.annotate( r"$\tau_{k} = %.3g$" % tau_from_k[0],
+            xy = ( tau_from_k[0], tau_from_k[1] ), xycoords = 'data',
+            xytext = ( tau_from_k[0], tau_from_k[1]*0.9 ), textcoords = 'data',
+            arrowprops = dict( arrowstyle = "fancy,head_length=0.4,head_width=0.4,tail_width=0.4",
+                            connectionstyle = "arc3" ),
+            size = 40,
+            )
     print 'Writing to ','plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable )
     if use_data:
         plt.savefig( 'plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable ) )    
@@ -247,9 +255,9 @@ if __name__ == '__main__':
     # ST and HT have the problem of the overflow bin in the truth/response matrix
     # 7 input bins and 8 output bins (includes 1 overflow bin)
     variables = [ 
-		# 'MET', 
-		# 'WPT', 
-		# 'MT' , 
+		'MET', 
+		'WPT', 
+		'MT' , 
 		'ST', 
 		'HT'
 		]
