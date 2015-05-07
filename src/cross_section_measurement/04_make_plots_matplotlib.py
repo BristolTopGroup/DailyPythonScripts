@@ -22,16 +22,10 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator
 from config import CMS
-from matplotlib import rc, rcParams
-rc( 'font', **CMS.font )
-rc( 'text', usetex = True )
-rcParams['text.latex.preamble'] = [
-       r'\usepackage{siunitx}',   # i need upright \micro symbols, but you need...
-       r'\sisetup{detect-all}',   # ...this to force siunitx to actually use your fonts
-       r'\usepackage{helvet}',    # set the normal font here
-       r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
-       r'\sansmath'               # <- tricky! -- gotta actually tell tex to use!
-]
+from tools.latex import setup_matplotlib
+# latex, font, etc
+setup_matplotlib()
+
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
@@ -653,7 +647,7 @@ if __name__ == '__main__':
                 if met_type == 'PFMETJetEnDown':
                     met_type = 'patPFMetJetEnDown'
             
-            if not channel == 'combined':
+            if not channel == 'combined' and options.additional_plots:
                 #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
                 #in the unfolding process with BLT unfolding files.
                 if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:

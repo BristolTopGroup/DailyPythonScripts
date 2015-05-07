@@ -17,10 +17,9 @@ from copy import deepcopy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FixedLocator
 from itertools import cycle
+from tools.latex import setup_matplotlib
 
-from matplotlib import rc
-rc('font',**CMS.font)
-rc( 'text', usetex = True )
+setup_matplotlib()
 
 class Histogram_properties:
     name = 'Test'
@@ -610,9 +609,11 @@ def get_best_max_y(histograms, include_error = True, x_limits = None):
     return max_y
 
 def __max__(plotable, include_error = True):
-    if isinstance(plotable, Hist):
+    if plotable is None:
+        return 0
+    if plotable.__class__.__name__ == 'Hist':
         return plotable.max(include_error = include_error)
-    if isinstance(plotable, Graph):
+    if plotable.__class__.__name__ == 'Graph':
         ve = graph_to_value_errors_tuplelist(plotable)
         if not include_error:
             return max([v for v,_,_ in ve])

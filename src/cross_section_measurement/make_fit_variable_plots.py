@@ -15,17 +15,9 @@ from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, m
 from config.latex_labels import b_tag_bins_latex, samples_latex, channel_latex
 from config.variable_binning import variable_bins_ROOT, fit_variable_bin_edges, bin_edges
 from config import XSectionConfig
-from config import CMS
-from matplotlib import rc, rcParams
-rc( 'font', **CMS.font )
-rc( 'text', usetex = True )
-rcParams['text.latex.preamble'] = [
-       r'\usepackage{siunitx}',  # i need upright \micro symbols, but you need...
-       r'\sisetup{detect-all}',  # ...this to force siunitx to actually use your fonts
-       r'\usepackage{helvet}',  # set the normal font here
-       r'\usepackage{sansmath}',  # load up the sansmath so that math -> helvet
-       r'\sansmath'  # <- tricky! -- gotta actually tell tex to use!
-]
+from tools.latex import setup_matplotlib
+# latex, font, etc
+setup_matplotlib()
 
 common_fit_variables = ['M3', 'M_bl', 'angle_bl']
 electron_fit_variables = copy( common_fit_variables )
