@@ -516,11 +516,11 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
             colour_number = 42
         hist_data_systematic.SetMarkerColor( colour_number )
         if 'PDF' in systematic:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = systematic.replace( 'Weights_', ' ' ), xerr = False )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = systematic.replace( 'Weights_', ' ' ), xerr = None )
         elif met_type in systematic:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = met_systematics_latex[systematic.replace( met_type, '' )], xerr = False )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = met_systematics_latex[systematic.replace( met_type, '' )], xerr = None )
         else:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = False )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = None )
             
     plt.legend( numpoints = 1, loc = 'center right', prop = {'size':25}, ncol = 2 )
     label, channel_label = get_cms_labels( channel )

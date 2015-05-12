@@ -43,6 +43,10 @@ class Histogram_properties:
     ratio_y_title = 'I am the ratio'
     legend_color = False
     y_max_scale = 1.2
+    xerr = False
+    #If True (the default) then plot bins with zero content otherwise only
+    #    show bins with nonzero content.
+    emptybins = False
     
     
     def __init__( self, dictionary = {} ):
@@ -143,7 +147,8 @@ def make_data_mc_comparison_plot( histograms = [],
     # then the MC error (z = len(histograms_) + 1) and finally the data 
     # (z = len(histograms_) + 2)
     rplt.hist( stack, stacked = True, axes = axes, zorder = 1 )
-    rplt.errorbar( data, xerr = None, emptybins = False, axes = axes, 
+    rplt.errorbar( data, emptybins = histogram_properties.emptybins, axes = axes,
+                   xerr = histogram_properties.xerr,
                    elinewidth = 2, capsize = 10, capthick = 2, 
                    zorder = len(histograms_) + 2 )
     
@@ -197,7 +202,8 @@ def make_data_mc_comparison_plot( histograms = [],
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         plt.ylabel( r'$\frac{\mathrm{data}}{\mathrm{pred.}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
-        rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+        rplt.errorbar( ratio, emptybins = histogram_properties.emptybins, axes = ax1,
+                       xerr = histogram_properties.xerr, )
         if len( x_limits ) == 2:
             ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
         if len( histogram_properties.ratio_y_limits ) == 2:
@@ -282,7 +288,9 @@ def make_control_region_comparison( control_region_1, control_region_2,
     adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
     set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
     plt.ylabel( '(1)/(2)', CMS.y_axis_title )
-    rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+    rplt.errorbar( ratio, xerr = True,
+                   emptybins = histogram_properties.emptybins,
+                   axes = ax1 )
     if len( x_limits ) == 2:
         ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
     if len( histogram_properties.ratio_y_limits ) == 2:
@@ -365,7 +373,7 @@ def make_shape_comparison_plot( shapes = [],
     #add error bars
     graphs = spread_x(shapes_, list(shapes_[0].xedges()))
     for graph in graphs:
-        rplt.errorbar( graph, axes = axes, xerr = False,)
+        rplt.errorbar( graph, axes = axes )
 
     adjust_axis_limits(axes, histogram_properties, shapes_)
     if make_ratio:
@@ -381,7 +389,9 @@ def make_shape_comparison_plot( shapes = [],
             plt.ylabel( '(1)/(2)', CMS.y_axis_title )
         for ratio in ratios:
             ratio.SetMarkerSize( 2 )
-            rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+            rplt.errorbar( ratio, xerr = True,
+                           emptybins = histogram_properties.emptybins,
+                           axes = ax1 )
         if len( histogram_properties.x_limits ) == 2:
             ax1.set_xlim( xmin = histogram_properties.x_limits[0], 
                           xmax = histogram_properties.x_limits[1] )
@@ -419,7 +429,8 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
     axes = plt.axes()
     
     if draw_errorbar:
-        rplt.errorbar( histogram, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2 )
+        rplt.errorbar( histogram, emptybins = histogram_properties.emptybins,
+                       axes = axes, elinewidth = 2, capsize = 10, capthick = 2 )
     else:
         rplt.hist( histogram )
     
@@ -508,7 +519,7 @@ def compare_measurements( models = {}, measurements = {},
         histogram.markerstyle = next( markercycler )
         histogram.color = next( colorcycler )
         rplt.errorbar( histogram, axes = axes, label = label ,
-                       yerr = show_measurement_errors, xerr = False )
+                       yerr = show_measurement_errors )
     
     set_labels( plt, histogram_properties, axes = axes )
 
