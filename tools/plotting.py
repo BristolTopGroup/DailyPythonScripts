@@ -143,7 +143,7 @@ def make_data_mc_comparison_plot( histograms = [],
     # then the MC error (z = len(histograms_) + 1) and finally the data 
     # (z = len(histograms_) + 2)
     rplt.hist( stack, stacked = True, axes = axes, zorder = 1 )
-    rplt.errorbar( data, xerr = False, emptybins = False, axes = axes, 
+    rplt.errorbar( data, xerr = None, emptybins = False, axes = axes, 
                    elinewidth = 2, capsize = 10, capthick = 2, 
                    zorder = len(histograms_) + 2 )
     

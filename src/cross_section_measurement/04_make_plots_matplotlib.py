@@ -335,7 +335,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         hist_data_with_systematics.visible = True
         rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
     rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )
-    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
 
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
