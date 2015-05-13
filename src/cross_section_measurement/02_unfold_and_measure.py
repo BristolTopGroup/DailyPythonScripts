@@ -366,7 +366,7 @@ if __name__ == '__main__':
     parser.add_option( "-f", "--load_fakes", dest = "load_fakes", action = "store_true",
                       help = "Load fakes histogram and perform manual fake subtraction in TSVDUnfold" )
     parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
-                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
     parser.add_option( "-H", "--hreco", type = 'int',
                       dest = "Hreco", default = 2,
                       help = "Hreco parameter for error treatment in RooUnfold" )
