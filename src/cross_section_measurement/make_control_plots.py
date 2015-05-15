@@ -202,6 +202,9 @@ def make_plot( channel, x_axis_title, y_axis_title,
     histogram_properties.x_limits = x_limits
     histogram_properties.y_limits = y_limits
     histogram_properties.y_max_scale = y_max_scale
+    histogram_properties.xerr = None
+    # workaround for rootpy issue #638
+    histogram_properties.emptybins = True
     if b_tag_bin:
         histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin]
     else:

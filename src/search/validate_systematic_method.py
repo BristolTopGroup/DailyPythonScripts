@@ -27,7 +27,7 @@ def draw_pair(constructed, real, systematic):
     constructed.SetTitle('constructed')
     real.SetTitle('real')
     
-    rplt.errorbar(constructed, xerr=False, emptybins=False, axes=axes)
+    rplt.errorbar(constructed, xerr=None, emptybins=False, axes=axes)
     rplt.hist(real)
     
     plt.xlabel('MET [GeV]', CMS.x_axis_title)

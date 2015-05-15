@@ -311,7 +311,7 @@ def plot_efficiencies(efficiency_data, efficiency_mc, scale_factor,
     ax0.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     
     rplt.errorbar(efficiency_data, xerr=True, emptybins=True, axes=ax0)
-    rplt.errorbar(efficiency_mc, xerr=False, emptybins=True, axes=ax0)
+    rplt.errorbar(efficiency_mc, xerr=None, emptybins=True, axes=ax0)
     
     ax0.set_xlim(x_limits)
     

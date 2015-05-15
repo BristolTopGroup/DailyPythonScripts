@@ -335,7 +335,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         hist_data_with_systematics.visible = True
         rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
     rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )
-    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = False, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
 
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
@@ -516,11 +516,11 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
             colour_number = 42
         hist_data_systematic.SetMarkerColor( colour_number )
         if 'PDF' in systematic:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = systematic.replace( 'Weights_', ' ' ), xerr = False )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = systematic.replace( 'Weights_', ' ' ), xerr = None )
         elif met_type in systematic:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = met_systematics_latex[systematic.replace( met_type, '' )], xerr = False )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = met_systematics_latex[systematic.replace( met_type, '' )], xerr = None )
         else:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = False )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = None )
             
     plt.legend( numpoints = 1, loc = 'center right', prop = {'size':25}, ncol = 2 )
     label, channel_label = get_cms_labels( channel )
