@@ -14,7 +14,15 @@ variables_latex = {
                        'HT': 'H_{\mathrm{T}}',
                        'ST': 'S_{\mathrm{T}}',
                        'MT': 'M^{\mathrm{W}}_{\mathrm{T}}',
-                       'WPT': 'p^\mathrm{W}_{\mathrm{T}}'}
+                       'WPT': 'p^\mathrm{W}_{\mathrm{T}}',
+                       'lepTopPt' : 'p^\mathrm{lep}_{\mathrm{T}}',
+                       'hadTopPt' : 'p^\mathrm{had}_{\mathrm{T}}',
+                       'lepTopRap' : 'y^\mathrm{lep}',
+                       'hadTopRap' : 'y^\mathrm{had}',
+                       'ttbarPt' : 'p^\mathrm{t\\bar{t}}_{\mathrm{T}}',
+                       'ttbarM' : 'M_\mathrm{t\\bar{t}}',
+                       'ttbarRap' : 'y_{\mathrm{t\\bar{t}}}',
+                        }
 
 control_plots_latex = {
                        'NJets': '$N_{Jets}$',

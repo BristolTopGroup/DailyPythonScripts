@@ -7,6 +7,7 @@ from rootpy.logger import logging
 from rootpy.io import File
 from ROOT import gROOT, TH1F
 gcd = gROOT.cd
+from rootpy.plotting import Hist
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations
 from config.summations_common import b_tag_bins_exclusive
 
@@ -119,7 +120,6 @@ def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'Event
             currentTree = get_tree( tree )
             root_histogram = Hist( nBins, xMin, xMax)
             currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
-
             if not is_valid_histogram( root_histogram, tree, input_file):
                 return
 
