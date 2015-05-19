@@ -14,7 +14,7 @@ cd ../TopAnalysis
 make clean
 cd ../../
 git submodule init && git submodule update
-./setup_standalone.sh
+./setup.sh
 eval `scramv1 runtime -sh`
 . environment.sh
 rm -r unfolding

@@ -184,7 +184,7 @@ class XSectionConfig():
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
         self.topMasses = [169.5, 172.5, 173.5]
-        self.topMassUncertainty = 0.9
+        self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
 
@@ -271,13 +271,57 @@ class XSectionConfig():
         self.include_higgs = False
 
         self.luminosity_scale = self.new_luminosity / self.luminosity
+        
+        self.typical_systematics = {
+                                      "typical_systematics_electron": ['Electron_down',
+                                                          'Electron_up'],
+                         "typical_systematics_muon": ['Muon_down',
+                                                       'Muon_up'],
+                         "typical_systematics_btagging": ['BJet_down',
+                                                           'BJet_up'],
+                         "typical_systematics_JES": ['JES_down',
+                                                      'JES_up'],
+                         "typical_systematics_JER": ['JER_down',
+                                                      'JER_up'],
+                         "typical_systematics_PU": ['PU_down',
+                                                     'PU_up'],
+                        "typical_systematics_hadronisation": ['hadronisation'],
+                        "typical_systematics_QCD_shape": ['QCD_shape'],
+                         "typical_systematics_PDF": ['PDF_total_lower',
+                                                      'PDF_total_upper'],
+                         "typical_systematics_top_mass": ['TTJets_massdown',
+                                                           'TTJets_massup'],
+                         "typical_systematics_background_other": ["TTJet_cross_section+",
+                                                                   "TTJet_cross_section-",
+                                                                   "SingleTop_cross_section+",
+                                                                   "SingleTop_cross_section-",
+                                                                   "luminosity+",
+                                                                   "luminosity-"],
+                        "typical_systematics_theoretical": ["TTJets_matchingup",
+                                                             "TTJets_matchingdown",
+                                                             "VJets_matchingup",
+                                                             'VJets_matchingdown',
+                                                             "TTJets_scaleup",
+                                                             "TTJets_scaledown",
+                                                             "VJets_scaleup",
+                                                             "VJets_scaledown"],
+                        "typical_systematics_MET": ["patType1CorrectedPFMetElectronEnUp",
+                                                     "patType1CorrectedPFMetElectronEnDown",
+                                                     "patType1CorrectedPFMetMuonEnUp",
+                                                     "patType1CorrectedPFMetMuonEnDown",
+                                                     "patType1CorrectedPFMetTauEnUp",
+                                                     "patType1CorrectedPFMetTauEnDown",
+                                                     "patType1CorrectedPFMetUnclusteredEnUp",
+                                                     "patType1CorrectedPFMetUnclusteredEnDown"],
+                        "typical_systematics_pt_reweight": ['ptreweight_max']
+                       }
 
     def __fill_defaults_7TeV__( self ):
         middle = self.middle
         path_to_files = self.path_to_files
 
         self.new_luminosity = self.luminosity  # pb^-1
-        self.ttbar_xsection = 164  # pb
+        self.ttbar_xsection = 177.31 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
         self.data_file_electron = path_to_files + 'central/ElectronHad' + middle + '.root'
         self.rate_changing_systematics = {
@@ -326,7 +370,7 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         self.new_luminosity = 19712  # pb^-1
-        self.ttbar_xsection = 245.8  # pb
+        self.ttbar_xsection = 252.89 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
         self.data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
         self.rate_changing_systematics = {
