@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+'''
+plot2tdr --plots <path to DPS plots folder> --tdr <path to tdr plot folder [--noop, --type=paper|AN]
+
+Copies plots from the DailyPythonScripts plots folder to the latex document folder
+--plots    DailyPythonScripts plots folder
+--tdr      latex document plots folder
+--noop    Don't do anything, just print what you will do (aka dry-run)
+--type    paper|AN, default is paper. Determines the set of plots to be copied
+'''
+from optparse import OptionParser
+import shutil
+from glob import glob
+
+plot_map_common = {}
+
+plot_map_paper = {
+            # <src relative to DPS plots folder> : <dst relative to TDR plots folder>,
+            # results 8 TeV
+            '7TeV/MET/central/normalised_xsection_combined_*.pdf': '7TeV/MET/',
+            '7TeV/HT/central/normalised_xsection_combined_*.pdf': '7TeV/HT/',
+            '7TeV/ST/central/normalised_xsection_combined_*.pdf': '7TeV/ST/',
+            '7TeV/WPT/central/normalised_xsection_combined_*.pdf': '7TeV/WPT/',
+            # results 8 TeV
+            '8TeV/MET/central/normalised_xsection_combined_*.pdf': '8TeV/MET/',
+            '8TeV/HT/central/normalised_xsection_combined_*.pdf': '8TeV/HT/',
+            '8TeV/ST/central/normalised_xsection_combined_*.pdf': '8TeV/ST/',
+            '8TeV/WPT/central/normalised_xsection_combined_*.pdf': '8TeV/WPT/',
+            # control plots 8 TeV
+            'control_plots/after_fit/8TeV/*_HT_2orMoreBtags_with_ratio.pdf': 'control/',
+            'control_plots/after_fit/8TeV/*_patType1CorrectedPFMet_2orMoreBtags_with_ratio.pdf': 'control/',
+            # fit variables 8 TeV
+            'control_plots/after_fit/8TeV/*_angle_bl_2orMoreBtags_with_ratio.pdf': 'control/fit_variables/8TeV/',
+            'control_plots/after_fit/8TeV/*_AbsEta_2orMoreBtags_with_ratio.pdf': 'control/fit_variables/8TeV/',
+            'control_plots/after_fit/8TeV/*_M3_2orMoreBtags_with_ratio.pdf': 'control/fit_variables/8TeV/',
+            }
+
+plot_map_AN = {}
+
+noop = False
+
+def main():
+    global noop
+    plot_src, tdr_dst, t = parse_options()
+    if t == 'paper':
+        plot_map_common.update(plot_map_paper)
+    if t == 'AN':
+        plot_map_common.update(plot_map_AN)
+        
+    for src, dst in plot_map_common.iteritems():
+        full_src = plot_src + src
+        full_dst = tdr_dst + dst
+        src_files = glob(full_src)
+        for f in src_files:
+            dst_file = full_dst + f.split('/')[-1]
+            print 'Copying %s -> %s' % (f, dst_file)
+            if not noop:
+                shutil.copy2(f, dst_file)
+
+def parse_options():
+    global noop
+    parser = OptionParser( __doc__ )
+    parser.add_option( "--plots", dest = "plot_src", default = "plots/",
+                      help = "path to DPS plot location" )
+    parser.add_option( "--tdr", dest = "tdr_dst", default = "tdr/",
+                      help = "path to tdr plot location" )
+    parser.add_option( "--type", dest = "type", default = "paper",
+                      help = "paper|AN" )
+    parser.add_option( "--noop", dest = "noop", action = "store_true",
+                      help = "Don't copy anything" )
+    ( options, _ ) = parser.parse_args()
+    plot_src, tdr_dst = options.plot_src, options.tdr_dst
+    t = options.type
+    if not plot_src.endswith('/'):
+        plot_src += '/'
+    if not tdr_dst.endswith('/'):
+        tdr_dst += '/'
+        
+    noop = options.noop
+    
+    return plot_src, tdr_dst, t
+
+if __name__ == '__main__':
+    main()
