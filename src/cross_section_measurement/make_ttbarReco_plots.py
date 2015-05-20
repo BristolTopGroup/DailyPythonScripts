@@ -57,6 +57,9 @@ if __name__ == '__main__':
         'QCD': 'Nothing',
         'SingleTop': measurement_config.SingleTop_category_templates_trees[category],
     }
+    histogram_files_ttbar = {
+        'TTJet': measurement_config.ttbar_category_templates_trees[category],
+    }
 
     # Fitted normalisation
     normalisations_electron = {}
@@ -69,6 +72,16 @@ if __name__ == '__main__':
         normalisations_muon = {
                 'lepTopPt':get_fitted_normalisation( 'lepTopPt', 'muon', path_to_JSON, category, 'patType1CorrectedPFMet' ),
         }
+
+    variableBranchNames = {
+    'lepTopPt' : 'FittedLeptonicTopPtBestSolution',
+    'hadTopPt' : 'FittedHadronicTopPtBestSolution',
+    'lepTopRap' : 'FittedLeptonicTopRapidityBestSolution',
+    'hadTopRap' : 'FittedHadronicTopRapidityBestSolution',
+    'ttbarPt' : 'FittedTTbarPtBestSolution',
+    'ttbarM' : 'FittedTTbarMassBestSolution',
+    'ttbarRap' : 'FittedTTbarRapidityBestSolution',
+    }
 
     # Templates of titles for all plots
     title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
@@ -90,18 +103,10 @@ if __name__ == '__main__':
             histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
             fitted_normalisation = normalisations_muon
 
-        branchesOfVar = { 'lepTopPt' : 'FittedLeptonicTopPtBestSolution',
-                        'hadTopPt' : 'FittedHadronicTopPtBestSolution',
-                        'lepTopRap' : 'FittedLeptonicTopRapidityBestSolution',
-                        'hadTopRap' : 'FittedHadronicTopRapidityBestSolution',
-                        'ttbarPt' : 'FittedTTbarPtBestSolution',
-                        'ttbarM' : 'FittedTTbarMassBestSolution',
-                        'ttbarRap' : 'FittedTTbarRapidityBestSolution',
-         }
-
         # Variables for diff xsec
         for var in [ 
-        'lepTopPt', 'hadTopPt', 
+        'lepTopPt', 
+        'hadTopPt', 
         'lepTopRap', 'hadTopRap',
         'ttbarPt', 'ttbarM', 'ttbarRap'
         ]:
@@ -116,7 +121,20 @@ if __name__ == '__main__':
             xMax = bins[-1]
             nBins = 30
 
-            histograms = get_histograms_from_trees( trees = [signalTree], branch = branchesOfVar[var], weightBranch = '1', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
+            histograms = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
+
+            selection = 'SolutionCategory == 1'
+            histogramsCorrect = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+
+            selection = 'SolutionCategory == 2'
+            histogramsNotSL = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+
+            selection = 'SolutionCategory == 3'
+            histogramsNotReco = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+
+            selection = 'SolutionCategory > 3'
+            histogramsWrong = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+
 
             # histogram_dataDerivedQCD = get_data_derived_qcd( { h : histograms[h][controlTree] for h in ['data','TTJet','SingleTop','V+Jets','QCD']}, histograms['QCD'][signalTree])
 
@@ -127,6 +145,16 @@ if __name__ == '__main__':
             #     if controlNorm < 0.1 : controlNorm = 1.
             #     histograms[sample][controlTree].Scale( signalNorm / controlNorm )
             prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            prepare_histograms( histogramsCorrect, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            prepare_histograms( histogramsNotSL, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            prepare_histograms( histogramsNotReco, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            prepare_histograms( histogramsWrong, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+
+            print histograms['TTJet'][signalTree].Integral()
+            print histogramsCorrect['TTJet'][signalTree].Integral()
+            print histogramsWrong['TTJet'][signalTree].Integral()
+            print histogramsNotSL['TTJet'][signalTree].Integral()
+            print histogramsNotReco['TTJet'][signalTree].Integral()
 
             if normalise_to_fit:
                 prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = fitted_normalisation[var] )
@@ -137,12 +165,17 @@ if __name__ == '__main__':
                                   # histogram_dataDerivedQCD,
                                   histograms['QCD'][signalTree],
                                   histograms['V+Jets'][signalTree],
-                                  histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
+                                  histograms['SingleTop'][signalTree], 
+                                  histogramsNotSL['TTJet'][signalTree],
+                                  histogramsNotReco['TTJet'][signalTree],
+                                  histogramsWrong['TTJet'][signalTree],
+                                  histogramsCorrect['TTJet'][signalTree]
+                                  ]
 
             histogram_lables = ['data', 'QCD', 
-                                'V+Jets', 'Single-Top', samples_latex['TTJet']]
+                                'V+Jets', 'Single-Top', samples_latex['TTJet'], samples_latex['TTJet'], samples_latex['TTJet'], samples_latex['TTJet'] ]
             histogram_colors = ['black', 'yellow', 
-                                'green', 'magenta', 'red']
+                                'green', 'magenta', 'burlywood', 'chartreuse', 'blue', 'red']
 
             histogram_properties = Histogram_properties()
             histogram_properties.name = '%s_%s' % (channel, var)
