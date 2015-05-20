@@ -98,7 +98,7 @@ def make_control_region_data_mc_comparision(histograms, histogram_name,
     axes = plt.axes()
     
     rplt.hist(stack, stacked=True, axes=axes)
-    rplt.errorbar(data, xerr=False, emptybins=False, axes=axes)
+    rplt.errorbar(data, xerr=None, emptybins=False, axes=axes)
     
     plt.xlabel(x_label, CMS.x_axis_title)
     plt.ylabel(y_label, CMS.y_axis_title)

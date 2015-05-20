@@ -123,7 +123,7 @@ if __name__ == "__main__":
 	ax0.xaxis.labelpad = 11
 	
 	rplt.errorbar(graph, xerr=True, emptybins=True, axes=ax0, marker = 'o', ms = 15, mew=3, lw = 2)
-	rplt.errorbar(graphSpread, xerr=False, yerr=False, axes=ax0, linestyle='-', marker = 's', ms = 10, mew=1, lw = 2)
+	rplt.errorbar(graphSpread, xerr=None, yerr=False, axes=ax0, linestyle='-', marker = 's', ms = 10, mew=1, lw = 2)
 
 	for output_format in output_formats:
 		print output_folder_base
