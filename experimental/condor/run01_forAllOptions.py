@@ -7,7 +7,14 @@ vars = [
 	'MET',
 	'HT',
 	'ST',
-	'WPT'
+	'WPT',
+	'hadTopRap',
+	'lepTopPt',
+	'hadTopPt',
+	'ttbarPt',
+	'ttbarM',
+	'lepTopRap',
+	'ttbarRap',
 ]
 
 jobOptions = [ '-v %s --fit-variables \'%s\' ' % ( var, fit_var ) for var in vars ]
