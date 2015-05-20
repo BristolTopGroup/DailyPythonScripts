@@ -438,9 +438,6 @@ if __name__ == '__main__':
     file_for_pythia8 = File( measurement_config.unfolding_pythia8, 'read')
 
     variable = options.variable
-    k_value_electron_central = measurement_config.k_values_electron[variable]
-    k_value_muon_central = measurement_config.k_values_muon[variable]
-    k_value_combined_central = measurement_config.k_values_combined[variable]
 
     tau_value_electron = measurement_config.tau_values_electron[variable]
     tau_value_muon = measurement_config.tau_values_muon[variable]
@@ -507,23 +504,6 @@ if __name__ == '__main__':
         #     met_type += 'JetEnDown'
         #     if met_type == 'PFMETJetEnDown':
         #         met_type = 'patPFMetJetEnDown'
-
-        # Choose k Value
-        k_value_electron = k_value_electron_central
-        k_value_muon = k_value_muon_central
-        k_value_combined = k_value_combined_central
-        # For k value systematic
-      #     if category == 'kValue_up':
-      #       k_value_electron = k_value_electron_central+1
-      #       k_value_muon = k_value_muon_central+1
-      #       k_value_combined = k_value_combined_central+1
-      #     elif category == 'kValue_down':         
-      #       k_value_electron = k_value_electron_central-1
-      #       if k_value_electron < 2 : k_value_electron = 2
-      #       k_value_muon = k_value_muon_central-1
-      #       if k_value_muon < 2 : k_value_muon = 2
-      #       k_value_combined = k_value_combined_central-1
-      #       if k_value_combined < 2 : k_value_combined = 2
 
         # read fit results from JSON
         electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
