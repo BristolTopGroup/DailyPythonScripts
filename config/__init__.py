@@ -64,7 +64,7 @@ class XSectionConfig():
     def __fill_defaults__( self ):
         self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
 
-        self.path_to_unfolding_histograms = '/storage/ec6821/DailyPythonScripts/CMSSW_7_4_0_pre7/src/DailyPythonScripts/unfolding/' + str( self.centre_of_mass_energy ) + 'TeV/'
+        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/' + str( self.centre_of_mass_energy ) + 'TeV/'
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
 
@@ -301,7 +301,7 @@ class XSectionConfig():
                    'HT' : 3,
                    'ST' : 3,
                    'MT' : 2,
-                   'WPT' : 3
+                   'WPT' : 3,
                    }
 
         self.k_values_muon = {
@@ -393,7 +393,14 @@ class XSectionConfig():
                    'HT' : 3,
                    'ST' : 4,
                    'MT' : 2,
-                   'WPT' : 3
+                   'WPT' : 3,
+                   'lepTopPt' : 2,
+                   'lepTopRap' : 2,
+                   'hadTopPt' : 2,
+                   'hadTopRap' : 2,
+                   'ttbarPt' : 2,
+                   'ttbarRap' : 2,
+                   'ttbarM' : 2,
                    }
 
         self.k_values_muon = {
@@ -401,7 +408,14 @@ class XSectionConfig():
                    'HT' : 3,
                    'ST' : 4,
                    'MT' : 2,
-                   'WPT' : 3
+                   'WPT' : 3,
+                   'lepTopPt' : 1,
+                   'lepTopRap' : 1,
+                   'hadTopPt' : 1,
+                   'hadTopRap' : 1,
+                   'ttbarPt' : 1,
+                   'ttbarRap' : 1,
+                   'ttbarM' : 1,
                    }
         #keeping combined values for backward compatibility
         self.k_values_combined = {
@@ -409,21 +423,42 @@ class XSectionConfig():
                    'HT' : 0,
                    'ST' : 0,
                    'MT' : 0,
-                   'WPT' : 0
+                   'WPT' : 0,
+                   'lepTopPt' : 1,
+                   'lepTopRap' : 1,
+                   'hadTopPt' : 1,
+                   'hadTopRap' : 1,
+                   'ttbarPt' : 1,
+                   'ttbarRap' : 1,
+                   'ttbarM' : 1,
                    }
 
         self.tau_values_electron = {
-                   'MET' : 21.54,
-                   'HT' : 20.09,
-                   'ST' : 17.48,
-                   'WPT' : 20.09
+                    "hadTopRap" : 10.0,
+                    "lepTopPt" : 53.3669923121,
+                    "WPT" : 19.1791026167,
+                    "HT" : 15.9228279334,
+                    "ST" : 15.9228279334,
+                    "hadTopPt" : 58.5702081806,
+                    "MET" : 23.1012970008,
+                    "ttbarPt" : 27.8255940221,
+                    "ttbarM" : 21.0490414451,
+                    "lepTopRap" : 10.0,
+                    "ttbarRap" : 93.2603346883,
         }
 
         self.tau_values_muon = {
-                   'MET' : 305.39,
-                   'HT' : 141.75,
-                   'ST' : 114.98,
-                   'WPT' : 215.44     
+                    "hadTopRap" : 10.0,
+                    "lepTopPt" : 546.227721768,
+                    "WPT" : 236.448941265,
+                    "HT" : 58.5702081806,
+                    "ST" : 102.35310219,
+                    "hadTopPt" : 453.487850813,
+                    "MET" : 284.803586844,
+                    "ttbarPt" : 312.571584969,
+                    "ttbarM" : 196.304065004,
+                    "lepTopRap" : 10.0,
+                    "ttbarRap" : 236.448941265,  
         }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
