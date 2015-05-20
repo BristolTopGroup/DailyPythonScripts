@@ -1,6 +1,6 @@
 from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex, channel_latex, \
-    variables_latex
+    variables_latex, fit_variables_latex
 from config.variable_binning import variable_bins_ROOT
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
@@ -637,7 +637,7 @@ if __name__ == '__main__':
         tmp = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/angle_bl_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
         make_plot( 'electron',
-                  x_axis_title = 'angle(bl)',
+                  x_axis_title = fit_variables_latex['angle_bl'],
                   y_axis_title = 'Events/(0.2)',
                   signal_region = regions,
                   qcd_data_region_btag = '1btag',
@@ -651,7 +651,7 @@ if __name__ == '__main__':
         tmp = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/angle_bl_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
         make_plot( 'muon',
-                  x_axis_title = 'angle(bl)',
+                  x_axis_title = fit_variables_latex['angle_bl'],
                   y_axis_title = 'Events/(0.2)',
                   signal_region = regions,
                   qcd_data_region_btag = '1btag',

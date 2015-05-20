@@ -8,7 +8,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/'
     known_centre_of_mass_energies = [7, 8]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584}
+    luminosities = {7:5050, 8:19712}
     parameters = ['SingleTop_category_templates', 'SingleTop_file',
                   'VJets_category_templates', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -281,7 +281,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = self.luminosity  # pb^-1
+        self.new_luminosity = 5050  # pb^-1
         self.ttbar_xsection = 177.31 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
         self.data_file_electron = path_to_files + 'central/ElectronHad' + middle + '.root'

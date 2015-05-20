@@ -96,7 +96,7 @@ fit_variables_latex = {
                        'absolute_eta' : r'lepton $|\eta|$',
                        'M3' : r'$M3$',
                        'M_bl' : r'$M(b,l)$',
-                       'angle_bl' : r'angle$(b,l)$',
+                       'angle_bl' : r'$\alpha$',
                        }
 
 typical_systematics_latex = {"typical_systematics_electron": "Electron trigger efficiency \& electron selection",
