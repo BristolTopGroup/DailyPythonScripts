@@ -326,7 +326,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
     axes.minorticks_on()
     
-    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
+    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}$', CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
 
@@ -342,7 +342,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     
     for key, hist in sorted( histograms.iteritems() ):
         if not 'unfolded' in key and not 'measured' in key:
-            hist.linewidth = 2
+            hist.linewidth = 4
             # setting colours
             if 'POWHEG_PYTHIA' in key or 'matchingdown' in key:
                 hist.linestyle = 'longdashdot'
@@ -415,7 +415,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         plt.ylabel( '$\\frac{\\textrm{pred.}}{\\textrm{data}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
         #draw a horizontal line at y=1 for data
-        plt.axhline(y = 1, color = 'black', linewidth = 1)
+        plt.axhline(y = 1, color = 'black', linewidth = 2)
 
         for key, hist in sorted( histograms.iteritems() ):
             if not 'unfolded' in key and not 'measured' in key:
@@ -437,14 +437,15 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 syst_errors = graph_to_value_errors_tuplelist(hist_data_with_systematics)
                 syst_lower.SetBinContent( bin_i, 1 - syst_errors[bin_i-1][1]/syst_errors[bin_i-1][0] )
                 syst_upper.SetBinContent( bin_i, 1 + syst_errors[bin_i-1][2]/syst_errors[bin_i-1][0] )
-
         if category == 'central':
-            rplt.fill_between( syst_lower, syst_upper, ax1, facecolor = 'yellow', alpha = 0.5 )
+            rplt.fill_between( syst_lower, syst_upper, ax1,
+                               color = 'yellow', alpha = 0.5 )
 
-        rplt.fill_between( stat_upper, stat_lower, ax1, facecolor = '0.75', alpha = 0.5 )
+        rplt.fill_between( stat_upper, stat_lower, ax1, color = '0.75',
+                           alpha = 0.5 )
         # legend for ratio plot
-        p_stat = mpatches.Patch(color='0.75', label='Stat.', alpha = 0.5 )
-        p_stat_and_syst = mpatches.Patch(color='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5 )
+        p_stat = mpatches.Patch(facecolor='0.75', label='Stat.',alpha = 0.5, edgecolor='black' )
+        p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5, edgecolor='black' )
         l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
                      frameon = False, prop = {'size':26})
         
@@ -498,7 +499,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     
     
     plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
-    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
+    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}$', CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
 
