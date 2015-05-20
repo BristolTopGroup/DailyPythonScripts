@@ -31,7 +31,7 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     scatter_plot = get_histogram_from_file( histogram, input_file )
 #     scatter_plot.Rebin2D( 5, 5 )
 
-    x_limits = [0, bin_edges[variable][-1]]
+    x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
     y_limits = x_limits
 
     x_title = 'Reconstructed $' + variables_latex[variable] + '$ [GeV]'
@@ -101,14 +101,6 @@ if __name__ == '__main__':
     else :
         histogram_name = 'response_without_fakes'
 
-    histogram_templates = {
-                           'MET': 'unfolding_MET_analyser_%s_channel_patType1CorrectedPFMet/%s',
-                           'HT' : 'unfolding_HT_analyser_%s_channel/%s',
-                           'ST' : 'unfolding_ST_analyser_%s_channel_patType1CorrectedPFMet/%s',
-                           'MT' : 'unfolding_MT_analyser_%s_channel_patType1CorrectedPFMet/%s',
-                           'WPT': 'unfolding_WPT_analyser_%s_channel_patType1CorrectedPFMet/%s'
-                           }
-
     channels = ['electron', 'muon']
     channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets' }
 
@@ -116,8 +108,13 @@ if __name__ == '__main__':
     title_template = 'CMS Simulation, $\sqrt{s}$ = %d TeV, %s, %s, %s'
 
     for channel in channels:
+        print channel
         title = title_template % ( measurement_config.centre_of_mass_energy, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
-        for variable, histogram_template in histogram_templates.iteritems():
-            
-            histogram_path = histogram_template % (channel, histogram_name)
+        for variable in bin_edges.keys():
+            print '--- ',variable
+
+            if variable is 'HT':
+                histogram_path = 'unfolding_%s_analyser_%s_channel/%s' % (variable, channel, histogram_name)
+            else :
+                histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
             make_scatter_plot( hist_file, histogram_path, channel, variable, title )
