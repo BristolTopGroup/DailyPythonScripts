@@ -94,7 +94,8 @@ labels = []
 plot_options = {}
 global_options = ['files', 'file-aliases', 'histograms', 'labels', 'plot_type', 'output_folder',
                   'output_format', 'command', 'data_index', 'normalise',
-                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix']
+                  'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix',
+                  'fill_area', 'alpha']
 
 def main():
     options, input_values_sets, json_input_files = parse_options()
@@ -139,7 +140,7 @@ def check_and_fix_inputs( input_values ):
         for f in files:
             # check if they exist
             if not exists( f ):
-                return False, 'File "%s" does not exist' % f
+                _exit_( 'File "%s" does not exist' % f )
     if not input_values.has_key('file-aliases') or len(input_values['file-aliases']) == 0:
         for f in files:
             name = f.split( '/' )[-1]
