@@ -100,16 +100,6 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Updating RooUnfold config"
 	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
 	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
-
-	echo "Building TopAnalysis"
-	cd $base/external/TopAnalysis/
-	make -j4 &> /dev/null
-	success $? TopAnalysis
-	# remove tmp folder
-	rm -fr $base/external/TopAnalysis/tmp
-	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
-	echo "Updating TopSVDUnfold config"
-	echo "library = '$base/external/lib/libTopSVDUnfold.so'" > $base/config/TopSVDUnfold.py
 fi
 
 cd $base

@@ -366,7 +366,7 @@ if __name__ == '__main__':
     parser.add_option( "-f", "--load_fakes", dest = "load_fakes", action = "store_true",
                       help = "Load fakes histogram and perform manual fake subtraction in TSVDUnfold" )
     parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
-                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
     parser.add_option( "-H", "--hreco", type = 'int',
                       dest = "Hreco", default = 2,
                       help = "Hreco parameter for error treatment in RooUnfold" )
@@ -433,7 +433,7 @@ if __name__ == '__main__':
     categories.extend( vjets_generator_systematics )
 
     # ttbar theory systematics, including pt reweighting and hadronisation systematic
-    ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
+    ttbar_theory_systematics = [ ttbar_theory_systematic_prefix + 'ptreweight' ]
     ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
     categories.extend( ttbar_theory_systematics )
 

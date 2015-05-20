@@ -5,14 +5,11 @@ Created on 31 Oct 2012
 '''
 from ROOT import gSystem, cout, TDecompSVD
 import config.RooUnfold as unfoldCfg
-import config.TopSVDUnfold as top_unfold
 from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
 gSystem.Load( unfoldCfg.library )
-gSystem.Load( top_unfold.library )
 from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
 from ROOT import TSVDUnfold
-from ROOT import TopSVDUnfold
 from ROOT import TH2D, TH1D
 from rootpy import asrootpy
 from rootpy.plotting import Hist, Hist2D
@@ -99,38 +96,6 @@ class Unfolding:
                 self.response = new_response
 
                 self.unfoldObject = TSVDUnfold( self.data, self.measured, self.truth, self.response )
-            elif self.method == 'TopSVDUnfold':
-                ''' constructors are
-                 TopSVDUnfold(const TH1D* bdat, const TH1D* bini, const TH1D* xini, const TH2D* Adet);
-                 TopSVDUnfold(const TH1D* bdat, TH2D* Bcov, const TH1D* bini, const TH1D* xini, const TH2D* Adet);
-                 where
-                 bdat: data input
-                 xini: true underlying spectrum (TH1D, n bins)
-                 bini: reconstructed spectrum (TH1D, n bins)
-                 Adet: response matrix (TH2D, nxn bins)'''
-                # first convert all TH1F to TH2D
-                new_data = TH1D()
-                new_measured = TH1D()
-                new_truth = TH1D()
-                new_fakes = TH1D()
-                new_response = TH2D()
-                self.data.Copy( new_data )
-                self.measured.Copy( new_measured )
-                self.truth.Copy( new_truth )
-                if self.fakes:
-                    self.fakes.Copy( new_fakes )
-                    new_measured = new_measured - new_fakes
-                self.response.Copy( new_response )
-
-                # replace global objects with new ones
-                self.data = new_data
-                self.measured = new_measured
-                self.truth = new_truth
-                self.response = new_response
-                
-                self.unfoldObject = TopSVDUnfold( self.data, self.measured, self.truth, self.response )
-                if self.k_value == -1 and self.tau >= 0:
-                    self.unfoldObject.SetTau( self.tau )
 
     def test_regularisation ( self, data, k_max ):
         self.setup_unfolding( data )
@@ -154,7 +119,7 @@ class Unfolding:
         if not False in have_zeros:
             raise ValueError('Data histograms contains only zeros')
         self.setup_unfolding( data )
-        if self.method == 'TSVDUnfold' or self.method == 'TopSVDUnfold':
+        if self.method == 'TSVDUnfold':
             self.unfolded_data = asrootpy( self.unfoldObject.Unfold( self.k_value ) )
         else:
             # remove unfold reports (faster)
@@ -253,7 +218,7 @@ def get_unfold_histogram_tuple(
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
                 load_fakes = False,
-                scale_to_lumi = False,
+                scale_to_lumi = True,
                 ):
     folder = None
     h_truth = None

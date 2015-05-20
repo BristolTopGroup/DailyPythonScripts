@@ -251,7 +251,7 @@ if __name__ == '__main__':
     parser.add_option("-t", "--test", dest="test", default='data',
                       help="set the test type for k-value determination: bias, closure or data (default)")  
     parser.add_option("-u", "--unfolding_method", dest="unfolding_method", default = 'RooUnfoldSvd',
-                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, TopSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
+                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes")
     parser.add_option("-f", "--load_fakes", dest="load_fakes", action="store_true",
                       help="Load fakes histogram and perform manual fake subtraction in TSVDUnfold")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
