@@ -9,7 +9,7 @@ N_JOBS=6
 echo "Using the fit variable(s): $fit_var"
 
 i=0
-for var in MET HT ST WPT; do
+for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
 	echo "Plotting diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 13 -p data/$nice_fit_var &> logs/04_${var}_plot_13TeV_${nice_fit_var}.log & # -a  <--add this option for additional plots
 	let i+=1
