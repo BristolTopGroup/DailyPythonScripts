@@ -5,6 +5,8 @@ from rootpy.io import root_open, File
 from optparse import OptionParser
 
 from config.variable_binning import bin_edges
+from config.variableBranchNames import branchNames, genBranchNames
+from tools.file_utilities import make_folder_if_not_exists
 
 from scaleFactors import *
 
@@ -120,7 +122,8 @@ def main():
     # Output file name
     outputFileName = 'crap.root'
     outputFileDir = 'unfolding/%sTeV/' % options.centreOfMassEnergy
-
+    make_folder_if_not_exists(outputFileDir)
+   
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
         
     if options.applyTopPtReweighting:
@@ -160,8 +163,14 @@ def main():
                 outputDir.cd()
                 pdfWeightHist.Write()
                 pass
-                        
+
+            # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
+            allVariablesBins = bin_edges.copy()
             for variable in bin_edges:
+                if 'Rap' in variable:
+                    allVariablesBins['abs_%s' % variable] = [0,bin_edges[variable][-1]]
+
+            for variable in allVariablesBins:
                 if options.debug and variable != 'HT' : continue
                 
                 print '--->Doing variable :',variable
@@ -190,15 +199,15 @@ def main():
                 if channel.channelName is 'muPlusJets' :
                     offlineSelection = '( passSelection == 1 )'
                 elif channel.channelName is 'ePlusJets' :               
-                    offlineSelection = '( passSelection == 0 )'
+                    offlineSelection = '( passSelection == 2 )'
 
                 # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
                 offlineWeight = '( 1 )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
                 fakeSelectionVis = '( ' + offlineSelection+"&&!"+genSelectionVis +' ) '
 
-                recoVariable = variable
-                genVariable = getGenVariable( recoVariable )
+                recoVariable = branchNames[variable]
+                genVariable = genBranchNames[variable]
 
                 # Weights derived from variables in tree
                 if options.applyTopPtReweighting:
@@ -221,28 +230,36 @@ def main():
 
                 # Histograms to fill
                 # 1D histograms
-                truth = Hist( bin_edges[variable], name='truth')
-                truthVis = Hist( bin_edges[variable], name='truthVis')
-                measured = Hist( bin_edges[variable], name='measured')
-                fake = Hist( bin_edges[variable], name='fake')
+                truth = Hist( allVariablesBins[variable], name='truth')
+                truthVis = Hist( allVariablesBins[variable], name='truthVis')
+                measured = Hist( allVariablesBins[variable], name='measured')
+                fake = Hist( allVariablesBins[variable], name='fake')
                 
                 # 2D histograms
-                response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
-                response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
-                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')
+                response = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response')
+                response_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes')
+                response_only_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes')
 
-                responseVis_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_without_fakes')
-                responseVis_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_only_fakes')
+                responseVis_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_without_fakes')
+                responseVis_only_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_only_fakes')
 
                 if options.fineBinned:
-                    minVar = bin_edges[variable][0]
-                    maxVar = max( tree.GetMaximum(genVariable), tree.GetMaximum(recoVariable) )
+                    minVar = allVariablesBins[variable][0]
+                    maxVar = max( tree.GetMaximum(genVariable), tree.GetMaximum( recoVariable ) )
                     nBins = int(maxVar - minVar)
 
                     if variable is 'leptonEta' or variable is 'bEta':
                         maxVar = 2.5
                         minVar = -2.5
                         nBins = 1000
+                    elif 'abs' in variable:
+                        maxVar = 3.0
+                        minVar = 0.
+                        nBins = 1000
+                    elif 'Rap' in variable:
+                        maxVar = 3.0
+                        minVar = -3.0
+                        nBins = 1000                       
 
                     truth = Hist( nBins, minVar, maxVar, name='truth')
                     truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
