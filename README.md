@@ -9,8 +9,6 @@ Quick installation recipe:
 # get the code from the repository
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 cd DailyPythonScripts
-# checkout the last working version
-git checkout AN-14-071_2nd_draft
 
 # get submodules:
 git submodule init && git submodule update
@@ -29,8 +27,9 @@ If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not
 
 ```
 # install CMSSW and setup environment:
-scram p -n CMSSW_6_2_12_DailyPythonScripts CMSSW_6_2_12
-cd CMSSW_6_2_12_DailyPythonScripts/src/
+export SCRAM_ARCH=slc6_amd64_gcc491
+scram p -n CMSSW_7_5_0_pre4_DailyPythonScripts CMSSW_7_5_0_pre4
+cd CMSSW_7_5_0_pre4_DailyPythonScripts/src/
 cmsenv
 
 # then install DailyPythonScripts according to the recipe above
@@ -66,7 +65,7 @@ Instructions for ttbar differential cross-section analysis
 ==================
 
 Merge CRAB output unfolding files
-- Run ```experimental/BLTUnfold/merge_unfolding_jobs.sh``` to merge BLT unfolding CRAB output files
+- Run ```experimental/BLTUnfold/merge_unfolding_jobs.sh``` to merge BLT unfolding CRAB output files (each sample needs to be merged into one file, cannot be split over several files)
 - Move merged files to e.g.: ```/hdfs/TopQuarkGroup/mc/7TeV``` or ```8TeV/v11/NoSkimUnfolding/BLT/```
 
 Calculate binning (if needed)
@@ -77,11 +76,20 @@ Calculate binning (if needed)
 
 Create new asymmetric unfolding files 
 - Run ```python experimental/BLTUnfold/runJobsCrab.py``` with the last few lines commented out and uncommenting the line ```print len(jobs)``` to print the number of jobs.
-- Update 'queue' in ```experimental/BLTUnfold/submitBLTUnfold.description``` with the outputted number of jobs
-- ```tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts``` (tar file should be <=100MB)
+- Update ```queue``` in ```experimental/BLTUnfold/submitBLTUnfold.description``` with the outputted number of jobs
+- ```cd``` up to the folder containing DailyPythonScripts and ```tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts``` (tar file should be <= 100MB)
 - Run ```experimental/BLTUnfold/produceUnfoldingHistogram.py``` script on merged files using HTCondor: ```condor_submit submitBLTUnfold.description``` to convert unfolding files to our binning. Check progress using ```condor_q your_username```
-- Once all jobs have finished, untar output files: ```tar -xf *.tar
+- Once all jobs have finished, untar output files: ```tar -xf *.tar```
 - Output root files should be in a folder called ```unfolding```. Move these new files to ```/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV``` or ```8TeV/unfolding/```
+
+Prepare BAT output files
+- After running the Analysis Software, move the output files to ```/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/7TeV``` or ```8TeV``` using ```python experimental/move_BAT_output_files_to
+- Find out how many merging jobs are needed using ```python experimental/merge_samples_onDICE.py -c 7(or 8) -n 1 --listJobs```
+- Modify the following lines in experimental/submitMerge.description:
+centre of mass energy: ```arguments = $(process) 7``` or ```arguments = $(process) 8```
+number of jobs: enter the number of merging jobs for the centre of mass energy in question here e.g. ```queue 65```
+- ```cd``` up to the folder containing DailyPythonScripts and ```tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts``` (tar file should be <= 100MB)
+- Merge the required BAT output files (e.g. SingleTop, QCD etc.) using ```condor_submit DailyPythonScripts/experimental/submitMerge.description```
 
 Run final measurement scripts in bin/:
 ```
