@@ -26,8 +26,8 @@ control_plots_latex = {
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
-                        'MADGRAPH': '$t\\bar{t}$ (MadGraph+Pythia)',
-                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MadGraph+$p_\mathrm{T}$ reweight)',
+                        'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
+                        'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO+Herwig)',
                         'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
                         'POWHEG_HERWIG': '$t\\bar{t}$ (POWHEG+Herwig)',
@@ -101,11 +101,33 @@ samples_latex = {
                  }
 
 fit_variables_latex = {
-                       'absolute_eta' : 'lepton $|\eta|$',
-                       'M3' : '$M3$',
-                       'M_bl' : '$M(b,l)$',
-                       'angle_bl' : 'angle$(b,l)$',
+                       'absolute_eta' : r'lepton $|\eta|$',
+                       'M3' : r'$M3$',
+                       'M_bl' : r'$M(b,l)$',
+                       'angle_bl' : r'$\alpha$',
                        }
+
+typical_systematics_latex = {"typical_systematics_electron": "Electron trigger efficiency \& electron selection",
+                      "typical_systematics_muon": "Muon trigger efficiency \& muon selection",
+                      "typical_systematics_btagging": "btagging",
+                      "typical_systematics_JES": "Jet Energy Scale",
+                      "typical_systematics_JER": "Jet Energy Resolution",
+                      "typical_systematics_PU": "pileup",
+                      "typical_systematics_hadronisation": "hadronisation",
+                      "typical_systematics_QCD_shape": "QCD shape",
+                      "typical_systematics_PDF": "PDF uncertainties",
+                      "typical_systematics_top_mass": "top mass",
+                      "typical_systematics_theoretical": "Theoretical systematics",
+                      'typical_systematics_background_other': 'Background (other)',
+                      'typical_systematics_MET': '$E_{T}^{miss}$ uncertainties',
+                      'typical_systematics_pt_reweight': '$p_\mathrm{T}$ reweighting'
+                      }
+
+channel_latex = {
+                 'electron' : r"e + jets",
+                 'muon' : r"$\mu$ + jets",
+                 'combined' : r"e, $\mu$ + jets combined",
+                 }
 
 fit_variables_units_latex = {
                        'absolute_eta' : '',
