@@ -96,25 +96,38 @@ def scale_histogram_errors( histogram, total_error ):
 def prepare_histograms( histograms, rebin = 1, scale_factor = 1.,
                         normalisation = {}, exclude_from_scaling = ['data'] ):
     for sample, histogram_dict in histograms.iteritems():
-        for _, histogram in histogram_dict.iteritems():
-            histogram.Rebin( rebin )
+        # check if this is a simple dict
+        if histogram_dict.__class__.__name__ == 'Hist':
+            h = histogram_dict
+            scale = 1.
+            norm = None
             if not sample in exclude_from_scaling:
-                histogram.Scale( scale_factor )
-            if normalisation != {} and histogram.Integral() != 0:
-                # TODO: this can be simplyfied and generalised 
-                # by using normalisation.keys() + for loop
-                if sample == 'TTJet':
-                    histogram.Scale( normalisation['TTJet'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['TTJet'][1] )
-                if sample == 'SingleTop':
-                    histogram.Scale( normalisation['SingleTop'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['SingleTop'][1] )
-                if sample == 'V+Jets':
-                    histogram.Scale( normalisation['V+Jets'][0] / histogram.Integral() )
-                    scale_histogram_errors( histogram, normalisation['V+Jets'][1] )
-                # if sample == 'QCD':
-                #     histogram.Scale( normalisation['QCD'][0] / histogram.Integral() )
-                #     scale_histogram_errors( histogram, normalisation['QCD'][1] )
+                scale = scale_factor
+            if sample in normalisation.keys():
+                norm = normalisation[sample]
+            scale_and_rebin_histogram( histogram = h, scale_factor = scale,
+                                      normalisation = norm, rebin = rebin )
+            continue
+        # otherwise go a level deeper
+        for _, histogram in histogram_dict.iteritems():
+            scale = 1.
+            norm = None
+            if not sample in exclude_from_scaling:
+                scale = scale_factor
+            if sample in normalisation.keys():
+                norm = normalisation[sample]
+            scale_and_rebin_histogram( histogram = histogram,
+                                       scale_factor = scale,
+                                       normalisation = norm, rebin = rebin )
+
+def scale_and_rebin_histogram(histogram, scale_factor,
+                              normalisation = None,
+                              rebin = 1):
+    histogram.Rebin( rebin )
+    histogram.Scale( scale_factor )
+    if not normalisation is None and histogram.Integral() != 0:
+        histogram.Scale( normalisation[0] / histogram.Integral() )
+        scale_histogram_errors( histogram, normalisation[1] )
 
 def rebin_asymmetric( histogram, bins ):
     bin_array = array( 'd', bins )
@@ -330,7 +343,8 @@ def adjust_overflow_to_limit(histogram, x_min, x_max):
 
 def get_fitted_normalisation( variable, channel, path_to_JSON, category, met_type ):
     '''
-    This function now gets the error on the fit correctly, so that it can be applied if the --normalise_to_fit option is used 
+    This function now gets the error on the fit correctly,
+    so that it can be applied if the --normalise_to_fit option is used
     '''
     fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
 
@@ -373,7 +387,7 @@ def get_data_derived_qcd( control_hists, qcd_exclusive_hist ):
     normalisation_exclusive = qcd_exclusive_hist.integral( overflow = True )
 
     scale = 1.
-    if not normalisation_QCDdata == 0: 
+    if not normalisation_QCDdata == 0:
         if not normalisation_exclusive == 0:
             scale = 1 / normalisation_QCDdata * normalisation_exclusive
         else:
@@ -400,6 +414,49 @@ def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
     fit_data = fit_results['TTJet']
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges )
     return h_data
+
+def get_histogram_ratios(nominator, denominators, normalise_ratio_to_errors = False):
+    ratios = []
+    for denom in denominators:
+        ratio =  nominator.Clone()
+        if normalise_ratio_to_errors:
+            # TODO
+            # this is a preliminary feature, use with care
+            for bin_i in range( 1, nominator.nbins() ):
+                x_i = nominator[bin_i].value
+                x_i_error = nominator[bin_i].error
+                y_i = denom[bin_i].value
+                y_i_error = denom[bin_i].error
+                numerator = x_i - y_i
+                denominator = pow( pow( x_i_error, 2 ) + pow( y_i_error, 2 ), 0.5 )
+                if denominator == 0:
+                    ratio.SetBinContent(bin_i, 0.)
+                    ratio.SetBinError(bin_i, 0.)
+                else:
+                    ratio.SetBinContent(bin_i, numerator/denominator)
+                    ratio.SetBinError(bin_i, denominator)
+        else:
+            ratio.Divide( denom )
+        if len(denominators) > 1:
+            ratio.linecolor = denom.linecolor
+            ratio.fillcolor = denom.fillcolor
+        ratios.append(ratio)
+    return ratios
+
+def copy_style(copy_from, copy_to):
+    # colours
+    copy_to.linecolor = copy_from.linecolor
+    copy_to.markercolor = copy_from.markercolor
+    copy_to.fillcolor = copy_from.fillcolor
+    # style
+    copy_to.markerstyle = copy_from.markerstyle
+    copy_to.linestyle = copy_from.linestyle
+    copy_to.fillstyle = copy_from.fillstyle
+    # size
+    copy_to.markersize = copy_from.markersize
+    copy_to.linesize = copy_from.markersize
+    # legend
+    copy_to.legendstyle  = copy_from.legendstyle
 
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
