@@ -38,7 +38,7 @@ class Test( unittest.TestCase ):
         
     def test_luminosity( self ):
         self.assertEqual( self.config_7TeV.luminosity, 5050 )
-        self.assertEqual( self.config_8TeV.luminosity, 19712 )
+        self.assertEqual( self.config_8TeV.luminosity, 19584 )
         
     def test_parameters( self ):
         for param in XSectionConfig.parameters:

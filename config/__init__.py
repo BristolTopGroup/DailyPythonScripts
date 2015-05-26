@@ -8,7 +8,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/'
     known_centre_of_mass_energies = [7, 8]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19712}
+    luminosities = {7:5050, 8:19584}
     parameters = ['SingleTop_category_templates', 'SingleTop_file',
                   'VJets_category_templates', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
