@@ -6,20 +6,21 @@ Created on 3 May 2013
 import matplotlib as mpl
 from tools.file_utilities import make_folder_if_not_exists
 from tools.file_utilities import saveHistogramsToROOTFile
+from tools.hist_utilities import spread_x, graph_to_value_errors_tuplelist
+from tools.hist_utilities import get_histogram_ratios
 mpl.use('agg')
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
-from rootpy.plotting import HistStack
+from rootpy.plotting import HistStack, Hist, Graph
 from config import CMS
 from matplotlib.patches import Rectangle
 from copy import deepcopy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FixedLocator
 from itertools import cycle
+from tools.latex import setup_matplotlib
 
-from matplotlib import rc
-rc('font',**CMS.font)
-rc( 'text', usetex = True )
+setup_matplotlib()
 
 class Histogram_properties:
     name = 'Test'
@@ -31,12 +32,23 @@ class Histogram_properties:
     mc_error = 0.
     mc_errors_label = 'MC uncertainty'
     normalise = False
-    legend_location = 'best'
+    legend_location = (0.98, 0.88)
     set_log_y = False
     legend_columns = 1
     has_ratio = False
-    ratio_y_limits = [] #[min, max]
+    ratio_y_limits = [0.7, 1.3] #[min, max]
     rebin = 1
+    additional_text = ''
+    preliminary = True
+    cms_logo_location = 'left' # left|right
+    ratio_y_title = 'I am the ratio'
+    legend_color = False
+    y_max_scale = 1.2
+    xerr = False
+    #If True (the default) then plot bins with zero content otherwise only
+    #    show bins with nonzero content.
+    emptybins = False
+
     
     def __init__( self, dictionary = {} ):
         for name, value in dictionary.iteritems():
@@ -136,8 +148,9 @@ def make_data_mc_comparison_plot( histograms = [],
     # then the MC error (z = len(histograms_) + 1) and finally the data 
     # (z = len(histograms_) + 2)
     rplt.hist( stack, stacked = True, axes = axes, zorder = 1 )
-    rplt.errorbar( data, xerr = False, emptybins = False, axes = axes, 
-                   elinewidth = 2, capsize = 10, capthick = 2, 
+    rplt.errorbar( data, emptybins = histogram_properties.emptybins, axes = axes,
+                   xerr = histogram_properties.xerr,
+                   elinewidth = 2, capsize = 10, capthick = 2,
                    zorder = len(histograms_) + 2 )
     
     # put legend into the correct order (data is always first!)
@@ -153,10 +166,15 @@ def make_data_mc_comparison_plot( histograms = [],
         handles.append( p1 )
         labels.append( histogram_properties.mc_errors_label )
 
-    plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
-               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
+    l1 = axes.legend( handles, labels, numpoints = 1,
+                     frameon = histogram_properties.legend_color,
+                bbox_to_anchor = histogram_properties.legend_location,
+                bbox_transform=plt.gcf().transFigure,
+                prop = CMS.legend_properties,
+                ncol = histogram_properties.legend_columns )
+    l1.set_zorder(102)
 
-    set_labels( plt, histogram_properties, show_x_label = not show_ratio )
+    set_labels( plt, histogram_properties, show_x_label = not show_ratio, axes = axes )
 
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
@@ -165,7 +183,8 @@ def make_data_mc_comparison_plot( histograms = [],
     if len( y_limits ) == 2:
         axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
     else:
-        axes.set_ylim( ymin = 0 )
+        y_max = get_best_max_y(histograms_, x_limits=x_limits) * histogram_properties.y_max_scale
+        axes.set_ylim( ymin = 0, ymax = y_max )
     if histogram_properties.set_log_y:
         if not len( y_limits ) == 2:  # if not user set y-limits, set default
             axes.set_ylim( ymin = 1e-1 )
@@ -182,8 +201,10 @@ def make_data_mc_comparison_plot( histograms = [],
         # Add horizontal line at y=1 on ratio plot
         ax1.axhline(y=1, linewidth = 1)
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
-        plt.ylabel( 'data/MC', CMS.y_axis_title )
-        rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+        plt.ylabel( r'$\frac{\mathrm{data}}{\mathrm{pred.}}$', CMS.y_axis_title )
+        ax1.yaxis.set_label_coords(-0.115, 0.8)
+        rplt.errorbar( ratio, emptybins = histogram_properties.emptybins, axes = ax1,
+                       xerr = histogram_properties.xerr, )
         if len( x_limits ) == 2:
             ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
         if len( histogram_properties.ratio_y_limits ) == 2:
@@ -199,7 +220,6 @@ def make_data_mc_comparison_plot( histograms = [],
     for save in save_as:
         if save == 'root':
             saveHistogramsToROOTFile( data, stack,save_folder + histogram_properties.name + '.' + save )
-            pass
         else:
             plt.savefig( save_folder + histogram_properties.name + '.' + save )
 
@@ -233,29 +253,37 @@ def make_control_region_comparison( control_region_1, control_region_2,
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] ) 
-    ax0 = plt.subplot( gs[0] )
-    ax0.minorticks_on()
+    axes = plt.subplot( gs[0] )
+    axes.minorticks_on()
     
-    rplt.hist( control_region_1, axes = ax0, alpha = 0.5 )
-    rplt.hist( control_region_2, axes = ax0, alpha = 0.5 )
+    rplt.hist( control_region_1, axes = axes, alpha = 0.5 )
+    rplt.hist( control_region_2, axes = axes, alpha = 0.5 )
     
-    set_labels( plt, histogram_properties, show_x_label = False )
+    set_labels( plt, histogram_properties, show_x_label = False, axes = axes)
 
-    handles, labels = ax0.get_legend_handles_labels()
+    handles, labels = axes.get_legend_handles_labels()
 
     labels.insert( 0, name_region_1 + ' (1)' )
     labels.insert( 1, name_region_2 + ' (2)' )
 
-    plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
-               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
+    l1 = axes.legend( handles, labels, numpoints = 1,
+                     frameon = histogram_properties.legend_color,
+                bbox_to_anchor = histogram_properties.legend_location,
+                bbox_transform=plt.gcf().transFigure,
+                prop = CMS.legend_properties,
+                ncol = histogram_properties.legend_columns )
+    l1.set_zorder(102)
 
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
     if len( x_limits ) == 2:
-        ax0.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
+        axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
     if len( y_limits ) == 2:
-        ax0.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
-    plt.setp( ax0.get_xticklabels(), visible = False )
+        axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
+    else:
+        y_max = get_best_max_y([control_region_1, control_region_2], x_limits=x_limits) * histogram_properties.y_max_scale
+        axes.set_ylim( ymin = 0, ymax = y_max )
+    plt.setp( axes.get_xticklabels(), visible = False )
     
     ax1 = plt.subplot( gs[1] )
     ax1.minorticks_on()
@@ -264,9 +292,18 @@ def make_control_region_comparison( control_region_1, control_region_2,
     adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
     set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
     plt.ylabel( '(1)/(2)', CMS.y_axis_title )
-    rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+    rplt.errorbar( ratio, xerr = True,
+                   emptybins = histogram_properties.emptybins,
+                   axes = ax1 )
     if len( x_limits ) == 2:
         ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
+    if len( histogram_properties.ratio_y_limits ) == 2:
+            ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
+                      ymax = histogram_properties.ratio_y_limits[1] )
+    else:
+        ax1.set_ylim( ymin = -0.5, ymax = 4 )
+    # dynamic tick placement
+    adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
     ax1.set_ylim( ymin = -0.5, ymax = 4 )
     
     if CMS.tight_layout:
@@ -320,43 +357,33 @@ def make_shape_comparison_plot( shapes = [],
     for shape in shapes_:
         rplt.hist( shape, axes = axes, alpha = alpha )
     
-    set_labels( plt, histogram_properties, show_x_label = not make_ratio )
+    set_labels( plt, histogram_properties, show_x_label = not make_ratio, axes = axes )
     handles, labels = axes.get_legend_handles_labels()
     for i,name in enumerate(names):
         labels.insert(i, name)
 
-    plt.legend( handles, labels, numpoints = 1, loc = histogram_properties.legend_location,
-               prop = CMS.legend_properties, ncol = histogram_properties.legend_columns ).set_zorder(102)
-    #add error bars
-    for shape in shapes_:
-        rplt.errorbar( shape, axes = axes, alpha = alpha)
+    # always fill legends
+    if not fill_area:
+        for handle in handles:
+            handle.set_fill(True)
+            handle.set_facecolor(handle.get_edgecolor())
 
-    adjust_axis_limits(axes, histogram_properties)
+    l1 = axes.legend( handles, labels, numpoints = 1,
+                     frameon = histogram_properties.legend_color,
+                bbox_to_anchor = histogram_properties.legend_location,
+                bbox_transform=plt.gcf().transFigure,
+                prop = CMS.legend_properties,
+                ncol = histogram_properties.legend_columns )
+    l1.set_zorder(102)
+    #add error bars
+    graphs = spread_x(shapes_, list(shapes_[0].xedges()))
+    for graph in graphs:
+        rplt.errorbar( graph, axes = axes )
+
+    adjust_axis_limits(axes, histogram_properties, shapes_)
     if make_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
-
-        ratio = shapes_[0].Clone( 'ratio' )
-        if normalise_ratio_to_errors:
-            # TODO
-            # this is a preliminary feature, use with care
-            for bin_i in range( 1, shapes_[0].nbins() ):
-                x_i = shapes_[0][bin_i].value
-                x_i_error = shapes_[0][bin_i].error
-                y_i = shapes_[1][bin_i].value
-                y_i_error = shapes_[1][bin_i].error
-                numerator = x_i - y_i
-                denominator = pow( pow( x_i_error, 2 ) + pow( y_i_error, 2 ), 0.5 )
-                if denominator == 0:
-                    ratio.SetBinContent(bin_i, 0.)
-                    ratio.SetBinError(bin_i, 0.)
-                else:
-                    ratio.SetBinContent(bin_i, numerator/denominator)
-                    ratio.SetBinError(bin_i, denominator)
-        else:
-            ratio.Divide( shapes_[1] )
-
-        ratio.SetMarkerSize( 3 )
-    
+        ratios = get_histogram_ratios(shapes_[0], shapes_[1:], normalise_ratio_to_errors)
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
@@ -365,7 +392,11 @@ def make_shape_comparison_plot( shapes = [],
             plt.ylabel( r'$\frac{1-2}{\sqrt{(\sigma_1)^2 + (\sigma_2)^2}}$', CMS.y_axis_title )
         else:
             plt.ylabel( '(1)/(2)', CMS.y_axis_title )
-        rplt.errorbar( ratio, xerr = True, emptybins = False, axes = ax1 )
+        for ratio in ratios:
+            ratio.SetMarkerSize( 2 )
+            rplt.errorbar( ratio, xerr = True,
+                           emptybins = histogram_properties.emptybins,
+                           axes = ax1 )
         if len( histogram_properties.x_limits ) == 2:
             ax1.set_xlim( xmin = histogram_properties.x_limits[0], 
                           xmax = histogram_properties.x_limits[1] )
@@ -403,15 +434,22 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
     axes = plt.axes()
     
     if draw_errorbar:
-        rplt.errorbar( histogram, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2 )
+        rplt.errorbar( histogram, emptybins = histogram_properties.emptybins,
+                       axes = axes, elinewidth = 2, capsize = 10, capthick = 2 )
     else:
         rplt.hist( histogram )
     
 
     if draw_legend:
-        plt.legend( numpoints = 1, loc = histogram_properties.legend_location, prop = CMS.legend_properties )
+        l1 = axes.legend(numpoints = 1,
+                     frameon = histogram_properties.legend_color,
+                bbox_to_anchor = histogram_properties.legend_location,
+                bbox_transform=plt.gcf().transFigure,
+                prop = CMS.legend_properties,
+                ncol = histogram_properties.legend_columns )
+        l1.set_zorder(102)
     
-    adjust_axis_limits( axes, histogram_properties )
+    adjust_axis_limits( axes, histogram_properties, [histogram] )
 
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
@@ -486,13 +524,22 @@ def compare_measurements( models = {}, measurements = {},
         histogram.markerstyle = next( markercycler )
         histogram.color = next( colorcycler )
         rplt.errorbar( histogram, axes = axes, label = label ,
-                       yerr = show_measurement_errors, xerr = False )
+                       yerr = show_measurement_errors, xerr = None )
     
-    set_labels( plt, histogram_properties )
-
-    plt.legend( numpoints = 1, loc = histogram_properties.legend_location,
-                prop = CMS.legend_properties )
-    adjust_axis_limits( axes, histogram_properties )
+    set_labels( plt, histogram_properties, axes = axes )
+    
+    l1 = axes.legend(numpoints = 1,
+                     frameon = histogram_properties.legend_color,
+                bbox_to_anchor = histogram_properties.legend_location,
+                bbox_transform=plt.gcf().transFigure,
+                prop = CMS.legend_properties,
+                ncol = histogram_properties.legend_columns)
+    l1.set_zorder(102)
+    
+    all_hists = []
+    all_hists.extend(models.values())
+    all_hists.extend(measurements.values())
+    adjust_axis_limits( axes, histogram_properties, all_hists )
 
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
@@ -517,16 +564,43 @@ def compare_measurements( models = {}, measurements = {},
         plt.savefig( save_folder + histogram_properties.name + '.' + save )
     plt.close()
 
-def set_labels( plt, histogram_properties, show_x_label = True, show_title = True ):
+def set_labels( plt, histogram_properties, show_x_label = True,
+                show_title = True, axes = None ):
     if show_x_label:
         plt.xlabel( histogram_properties.x_axis_title, CMS.x_axis_title )
     plt.ylabel( histogram_properties.y_axis_title, CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
     if show_title:
-        plt.title( histogram_properties.title, CMS.title )
-    
-def adjust_axis_limits( axes, histogram_properties ):
+        plt.title( histogram_properties.title, CMS.title, loc='right', )
+
+    if not axes:
+        return
+    # CMS text
+    # note: fontweight/weight does not change anything as we use Latex text!!!
+    logo_location = (0.05, 0.98)
+    prelim_location = (0.05, 0.92)
+    additional_location = (0.95, 0.98)
+    loc = histogram_properties.cms_logo_location
+    if loc == 'right':
+        logo_location = (0.95, 0.98)
+        prelim_location = (0.95, 0.92)
+        additional_location = (0.95, 0.86)
+        
+    plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", 
+             transform=axes.transAxes, fontsize=42,
+             verticalalignment='top',horizontalalignment=loc)
+    if histogram_properties.preliminary:
+        plt.text(prelim_location[0], prelim_location[1], r"\emph{Preliminary}", 
+                 transform=axes.transAxes, fontsize=42,
+                 verticalalignment='top',horizontalalignment=loc)
+    # channel text
+    axes.text(additional_location[0], additional_location[1], 
+              r"\emph{%s}" %histogram_properties.additional_text, 
+              transform=axes.transAxes, fontsize=40, verticalalignment='top',
+              horizontalalignment='right')
+
+def adjust_axis_limits( axes, histogram_properties, histograms = [] ):
     x_limits = histogram_properties.x_limits
     if len( x_limits ) == 2:
         axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
@@ -535,12 +609,33 @@ def adjust_axis_limits( axes, histogram_properties ):
     if len( y_limits ) == 2:
         axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
     else:
-        axes.set_ylim( ymin = 0 )
+        y_max = get_best_max_y(histograms, x_limits=x_limits) * histogram_properties.y_max_scale
+        axes.set_ylim( ymin = 0, ymax = y_max )
         
-def get_best_max_y(histograms, include_error = True):
-    return max([histogram.max(include_error = include_error) for histogram in histograms])
+def get_best_max_y(histograms, include_error = True, x_limits = None):
+    max_y =  max([__max__(histogram, include_error) for histogram in histograms])
+    if x_limits and len(x_limits) == 2:
+        x_min, x_max = x_limits
+        all_y = []
+        add_y = all_y.extend
+        for histogram in histograms:
+            ys = [y for x,y in zip(histogram.x(), histogram.y()) if x > x_min and x < x_max]
+            add_y(ys)
+        max_y = max(all_y)
+    return max_y
 
-def get_best_min_y(histograms, include_error = True):
+def __max__(plotable, include_error = True):
+    if plotable is None:
+        return 0
+    if plotable.__class__.__name__ == 'Hist':
+        return plotable.max(include_error = include_error)
+    if plotable.__class__.__name__ == 'Graph':
+        ve = graph_to_value_errors_tuplelist(plotable)
+        if not include_error:
+            return max([v for v,_,_ in ve])
+        return max( [v + err_high for v, _, err_high in ve] )
+
+def get_best_min_y(histograms, include_error = True, x_limits = None):
     return min([histogram.min(include_error = include_error) for histogram in histograms])
 
 def check_save_folder(save_folder):
