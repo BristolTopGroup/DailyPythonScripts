@@ -66,7 +66,7 @@ if __name__ == '__main__':
     axes.tick_params(which='major', labelsize=15, length=8)
     axes.tick_params(which='minor', length=4)
     rplt.hist(h_new, axes=axes)
-    rplt.errorbar(h_data, xerr=False, emptybins=False, axes=axes)
+    rplt.errorbar(h_data, emptybins=False, axes=axes)
     plt.xlabel('Mass', position=(1., 0.), ha='right')
     plt.ylabel('Events', position=(0., 1.), va='top')
     plt.legend(numpoints=1)

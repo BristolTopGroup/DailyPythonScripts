@@ -141,7 +141,7 @@ def make_jet_response_comparison_plot(input_files, response):
     }
     counter = 0
     for jet_response_name, jet_response in jet_responses.iteritems():
-        rplt.errorbar(jet_response, xerr=False, emptybins=True, axes=ax0, marker = markers[counter], fillstyle = fill_styles[counter],
+        rplt.errorbar(jet_response, xerr=None, emptybins=True, axes=ax0, marker = markers[counter], fillstyle = fill_styles[counter],
             markerfacecolor = marker_face_colours[counter], markeredgecolor = marker_edge_colours[counter], ecolor = marker_edge_colours[counter], ms=15, mew=3, lw = 2)
         jet_response_name_list.append(jet_response_name)
         counter += 1

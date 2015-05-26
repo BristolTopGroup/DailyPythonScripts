@@ -6,9 +6,9 @@ __all__ = [
 
 class XSectionConfig():
     current_analysis_path = '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/'
-    known_centre_of_mass_energies = [7,8,13]
+    known_centre_of_mass_energies = [7, 8, 13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584, 13:5000}
+    luminosities = {7:5050, 8:19712, 13:5000}
     parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
                   'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -175,16 +175,16 @@ class XSectionConfig():
 
         # now fill in the centre of mass dependent values
         if self.centre_of_mass_energy == 7:
-          self.__fill_defaults_7TeV__()
+            self.__fill_defaults_7TeV__()
         elif self.centre_of_mass_energy == 8:
-          self.__fill_defaults_8TeV__()
+            self.__fill_defaults_8TeV__()
         elif self.centre_of_mass_energy == 13:
-          self.__fill_defaults_13TeV__()
+            self.__fill_defaults_13TeV__()
 
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
         self.topMasses = [169.5, 172.5, 173.5]
-        self.topMassUncertainty = 0.9
+        self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
 
@@ -277,7 +277,7 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         self.new_luminosity = self.luminosity  # pb^-1
-        self.ttbar_xsection = 164  # pb
+        self.ttbar_xsection = 177.31 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
         self.data_file_electron = path_to_files + 'central/ElectronHad' + middle + '.root'
         self.rate_changing_systematics = {
@@ -325,8 +325,8 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 19712  # pb^-1
-        self.ttbar_xsection = 245.8  # pb
+        self.new_luminosity = self.luminosity  # pb^-1
+        self.ttbar_xsection = 252.89 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
         self.data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
         self.rate_changing_systematics = {

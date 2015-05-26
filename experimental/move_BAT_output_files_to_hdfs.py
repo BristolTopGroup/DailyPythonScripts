@@ -57,7 +57,7 @@ for category in config.categories_and_prefixes.keys():
 	command = 'mv ' + options.pathToBATOutputFiles + '/*' + str(luminosity) + 'pb*' + config.categories_and_prefixes[category] + '.root ' + path_to_AN_folder + "/" + category
 	#make sure if category is central, only the central root files are selected by making sure the filename ending is correct for central files.
 	if category == 'central':
-		command.replace('.root', 'PFMET.root')
+		command = command.replace('.root', 'PFMET.root')
 		
 	if options.doNothing:
 		print "command = ", command

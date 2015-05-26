@@ -119,8 +119,8 @@ def draw_result( result, axes ):
     mcatnlo.SetLineColor( kMagenta + 3 )
     
     
-    rplt.errorbar( graph, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2, zorder = 6)
-    rplt.errorbar( graph_with_systematics, xerr = False, emptybins = False, axes = axes, elinewidth = 2, capsize = 0, zorder = 5, label = 'unfolded data')
+    rplt.errorbar( graph, xerr = None, emptybins = False, axes = axes, elinewidth = 2, capsize = 10, capthick = 2, zorder = 6)
+    rplt.errorbar( graph_with_systematics, xerr = None, emptybins = False, axes = axes, elinewidth = 2, capsize = 0, zorder = 5, label = 'unfolded data')
     rplt.hist( madgraph, axes = axes, label = 'MADGRAPH', zorder = 1 )
     rplt.hist( powheg, axes = axes, label = 'POWHEG', zorder = 2 )
     rplt.hist( mcatnlo, axes = axes, label = 'MCATNLO', zorder = 3 )

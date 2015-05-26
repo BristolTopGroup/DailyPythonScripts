@@ -10,7 +10,6 @@ availablemethods = [
                     'RooUnfoldBinByBin',
                     'RooUnfoldInvert',
                     'TSVDUnfold',
-                    'TopSVDUnfold',
                     ]
 
 SVD_k_value = 5
