@@ -105,7 +105,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
               legend_location = ( 0.98, 0.78 ), cms_logo_location = 'right',
               log_y = False,
               legend_color = False,
-              ratio_y_limits = None,
+              ratio_y_limits = [0.3, 1.7],
               normalise = False,
               ):
     global output_folder, measurement_config, category, normalise_to_fit
@@ -300,7 +300,7 @@ if __name__ == '__main__':
             }
     title_template = '$%.1f$ fb$^{-1}$ (%d TeV)'
     e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
-    preliminary = True
+    preliminary = False
     
     b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
@@ -400,7 +400,6 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'EPlusJets_patType1CorrectedPFMet_',
                   x_limits = [0, 200],
-                  ratio_y_limits = [0.5, 1.5],
                   rebin = 1,
                   legend_location = ( 0.98, 0.78 ),
                   cms_logo_location = 'right',
@@ -412,7 +411,6 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_patType1CorrectedPFMet_',
                   x_limits = [0, 200],
-                  ratio_y_limits = [0.5, 1.5],
                   rebin = 1,
                   legend_location = ( 0.98, 0.78 ),
                   cms_logo_location = 'right',
@@ -440,7 +438,6 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_patType1CorrectedPFMet_log_',
                   x_limits = [200, 700],
-                  ratio_y_limits = [0.5, 1.5],
                   rebin = 4,
                   legend_location = ( 0.98, 0.78 ),
                   cms_logo_location = 'right',
@@ -489,7 +486,6 @@ if __name__ == '__main__':
                   rebin = 4,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
         make_plot( 'muon',
                   x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
@@ -501,7 +497,6 @@ if __name__ == '__main__':
                   rebin = 4,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
     ###################################################
     # ST
@@ -518,7 +513,6 @@ if __name__ == '__main__':
                   rebin = 4,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
         make_plot( 'muon',
                   x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
@@ -530,7 +524,6 @@ if __name__ == '__main__':
                   rebin = 4,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
     ###################################################
     # WPT
@@ -547,7 +540,6 @@ if __name__ == '__main__':
                   rebin = 10,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
         make_plot( 'muon',
                   x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
@@ -559,7 +551,6 @@ if __name__ == '__main__':
                   rebin = 10,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
     ###################################################
     # MT
@@ -576,7 +567,6 @@ if __name__ == '__main__':
                   rebin = 5,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
         make_plot( 'muon',
                   x_axis_title = '$%s$ [GeV]' % variables_latex['MT'],
@@ -588,7 +578,6 @@ if __name__ == '__main__':
                   rebin = 5,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
         
     ###################################################
@@ -611,7 +600,6 @@ if __name__ == '__main__':
                   rebin = 4,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
         tmp = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/M3_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
@@ -625,7 +613,6 @@ if __name__ == '__main__':
                   rebin = 4,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
     ###################################################
     # angle_bl
@@ -646,7 +633,6 @@ if __name__ == '__main__':
                   rebin = 2,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.25, 1.75],
                   )
         tmp = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/angle_bl_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
@@ -660,7 +646,6 @@ if __name__ == '__main__':
                   rebin = 2,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
-                  ratio_y_limits = [0.5, 1.5],
                   )
     ###################################################
     # bjet invariant mass
