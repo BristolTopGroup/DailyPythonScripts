@@ -35,6 +35,7 @@ time pip install --user -e $base/external/rootpy
 echo "Installing root_numpy"
 git clone https://github.com/rootpy/root_numpy.git && (cd root_numpy && python setup.py install --user)
 cd $base
+major_root_version=`echo $ROOT | cut -d- -f1`
 
 if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
@@ -48,15 +49,11 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Updating RooUnfold config"
 	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
 	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
+	# this file is only created for ROOT 6
+	if [ $major_root_version -eq 6 ]; then
+	 cp RooUnfoldDict_rdict.pcm $base/.
+	fi
 
-	echo "Building TopAnalysis"
-	cd $base/external/TopAnalysis/
-	make
-	# remove tmp folder
-	rm -fr $base/external/TopAnalysis/tmp
-	mv $base/external/TopAnalysis/libTopSVDUnfold.so $base/external/lib/.
-	echo "Updating TopSVDUnfold config"
-	echo "library = '$base/external/lib/libTopSVDUnfold.so'" > $base/config/TopSVDUnfold.py
 fi
 
 cd $base

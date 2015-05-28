@@ -8,7 +8,7 @@ class XSectionConfig():
     current_analysis_path = '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/'
     known_centre_of_mass_energies = [7, 8, 13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19712, 13:5000}
+    luminosities = {7:5050, 8:19584, 13:5000}
     parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
                   'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
