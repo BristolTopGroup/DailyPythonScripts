@@ -4,7 +4,7 @@ from config.variable_binning import fit_variable_bin_edges, bin_edges, control_p
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
-make_control_region_comparison
+make_control_region_comparison, make_plot
 from tools.hist_utilities import prepare_histograms, get_fitted_normalisation, get_normalisation_error, get_data_derived_qcd
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults, get_histograms_from_trees
 
@@ -123,39 +123,40 @@ if __name__ == '__main__':
 
             histograms = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
 
-            selection = 'SolutionCategory == 1'
-            histogramsCorrect = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+            # selection = 'SolutionCategory == 1'
+            # histogramsCorrect = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
 
-            selection = 'SolutionCategory == 2'
-            histogramsNotSL = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+            # selection = 'SolutionCategory == 2'
+            # histogramsNotSL = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
 
-            selection = 'SolutionCategory == 3'
-            histogramsNotReco = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+            # selection = 'SolutionCategory == 3'
+            # histogramsNotReco = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
 
-            selection = 'SolutionCategory > 3'
-            histogramsWrong = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
+            # selection = 'SolutionCategory > 3'
+            # histogramsWrong = get_histograms_from_trees( trees = [signalTree], branch = variableBranchNames[var], weightBranch = '1', selection = selection, files = histogram_files_ttbar, nBins = nBins, xMin = xMin, xMax = xMax )
 
+            # # histogram_dataDerivedQCD = get_data_derived_qcd( { h : histograms[h][controlTree] for h in ['data','TTJet','SingleTop','V+Jets','QCD']}, histograms['QCD'][signalTree])
 
-            # histogram_dataDerivedQCD = get_data_derived_qcd( { h : histograms[h][controlTree] for h in ['data','TTJet','SingleTop','V+Jets','QCD']}, histograms['QCD'][signalTree])
-
-            # for sample in histograms:
-            #     signalNorm = histograms[sample][signalTree].integral( overflow = True )
-            #     controlNorm = histograms[sample][controlTree].integral( overflow = True )
-            #     if signalNorm < 1. : signalNorm = 1.
-            #     if controlNorm < 0.1 : controlNorm = 1.
-            #     histograms[sample][controlTree].Scale( signalNorm / controlNorm )
+            # # for sample in histograms:
+            # #     signalNorm = histograms[sample][signalTree].integral( overflow = True )
+            # #     controlNorm = histograms[sample][controlTree].integral( overflow = True )
+            # #     if signalNorm < 1. : signalNorm = 1.
+            # #     if controlNorm < 0.1 : controlNorm = 1.
+            # #     histograms[sample][controlTree].Scale( signalNorm / controlNorm )
             prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-            prepare_histograms( histogramsCorrect, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-            prepare_histograms( histogramsNotSL, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-            prepare_histograms( histogramsNotReco, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-            prepare_histograms( histogramsWrong, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            # prepare_histograms( histogramsCorrect, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            # prepare_histograms( histogramsNotSL, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            # prepare_histograms( histogramsNotReco, rebin = 1, scale_factor = measurement_config.luminosity_scale )
+            # prepare_histograms( histogramsWrong, rebin = 1, scale_factor = measurement_config.luminosity_scale )
 
-            print histograms['TTJet'][signalTree].Integral()
-            print histogramsCorrect['TTJet'][signalTree].Integral()
-            print histogramsWrong['TTJet'][signalTree].Integral()
-            print histogramsNotSL['TTJet'][signalTree].Integral()
-            print histogramsNotReco['TTJet'][signalTree].Integral()
+            # print 'Total number :',histograms['TTJet'][signalTree].Integral()
+            # print 'Total correct : ',histogramsCorrect['TTJet'][signalTree].Integral(),'percent : ',histogramsCorrect['TTJet'][signalTree].Integral()/histograms['TTJet'][signalTree].Integral() * 100
+            # print 'Total wrong :',histogramsWrong['TTJet'][signalTree].Integral()
+            # print 'Total not SL :',histogramsNotSL['TTJet'][signalTree].Integral()
+            # print 'Total not possible :',histogramsNotReco['TTJet'][signalTree].Integral()
 
+            # print 'Total correct from all percentage',histogramsCorrect['TTJet'][signalTree].Integral()/histograms['TTJet'][signalTree].Integral() * 100
+            # print 'Total correct when possible :',histogramsCorrect['TTJet'][signalTree].Integral() / ( histograms['TTJet'][signalTree].Integral() - histogramsNotSL['TTJet'][signalTree].Integral() - histogramsNotReco['TTJet'][signalTree].Integral() ) * 100
             if normalise_to_fit:
                 prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = fitted_normalisation[var] )
             else:
@@ -165,17 +166,20 @@ if __name__ == '__main__':
                                   # histogram_dataDerivedQCD,
                                   histograms['QCD'][signalTree],
                                   histograms['V+Jets'][signalTree],
-                                  histograms['SingleTop'][signalTree], 
-                                  histogramsNotSL['TTJet'][signalTree],
-                                  histogramsNotReco['TTJet'][signalTree],
-                                  histogramsWrong['TTJet'][signalTree],
-                                  histogramsCorrect['TTJet'][signalTree]
+                                  histograms['SingleTop'][signalTree],
+                                  histograms['TTJet'][signalTree],
+                                  # histogramsNotSL['TTJet'][signalTree],
+                                  # histogramsNotReco['TTJet'][signalTree],
+                                  # histogramsWrong['TTJet'][signalTree],
+                                  # histogramsCorrect['TTJet'][signalTree]
                                   ]
 
             histogram_lables = ['data', 'QCD', 
-                                'V+Jets', 'Single-Top', samples_latex['TTJet'], samples_latex['TTJet'], samples_latex['TTJet'], samples_latex['TTJet'] ]
+                                'V+Jets', 'Single-Top', samples_latex['TTJet'], ]#samples_latex['TTJet'], samples_latex['TTJet'], samples_latex['TTJet'] ]
             histogram_colors = ['black', 'yellow', 
-                                'green', 'magenta', 'burlywood', 'chartreuse', 'blue', 'red']
+                                'green', 'magenta', 
+                                'red']
+#                                'burlywood', 'chartreuse', 'blue', 'red']
 
             histogram_properties = Histogram_properties()
             histogram_properties.name = '%s_%s' % (channel, var)
@@ -195,5 +199,5 @@ if __name__ == '__main__':
           
             histogram_properties.name += '_with_ratio'
             make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = outputDirForVariables, show_ratio = True )
+                                         histogram_properties, save_folder = outputDirForVariables, show_ratio = False )
 
