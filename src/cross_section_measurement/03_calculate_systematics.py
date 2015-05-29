@@ -173,7 +173,9 @@ if __name__ == "__main__":
                       help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
     parser.add_option( "-s", "--symmetrise_errors", action = "store_true", dest = "symmetrise_errors",
                       help = "Makes the errors symmetric" )
-    
+    parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
+                      help = "Unfold to visible phase space" )
+
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
@@ -184,9 +186,15 @@ if __name__ == "__main__":
 
     variable = options.variable
 
+    visiblePS = options.visiblePS
+
+    phaseSpaceSuffix = 'FullPS'
+    if visiblePS:
+        phaseSpaceSuffix = 'VisiblePS'
+
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results/'
+    path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results_%s/' % phaseSpaceSuffix
     print options.path
     print path_to_JSON
     symmetrise_errors = options.symmetrise_errors

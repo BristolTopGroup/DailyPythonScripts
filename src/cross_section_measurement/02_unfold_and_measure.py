@@ -84,7 +84,7 @@ def data_covariance_matrix( data ):
         cov_matrix.SetBinContent( bin_i + 1, bin_i + 1, error * error )
     return cov_matrix
 
-def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value ):
+def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value, visiblePS ):
     global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_ptreweight, files_for_pdfs
     global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
     if centre_of_mass == 8:
@@ -146,7 +146,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value 
                                                                           centre_of_mass = centre_of_mass,
                                                                           ttbar_xsection = ttbar_xsection,
                                                                           luminosity = luminosity,
-                                                                          load_fakes = load_fakes
+                                                                          load_fakes = load_fakes,
+                                                                          visiblePS = visiblePS
                                                                           )
 
     # h_truth_POWHEG_PYTHIA, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_pythia,
@@ -232,7 +233,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value 
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes
+                                                load_fakes = load_fakes,
+                                                visiblePS = visiblePS,
                                                 )
 
     MADGRAPH_results = hist_to_value_error_tuplelist( h_truth )
@@ -279,7 +281,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value 
     normalisation_unfolded['pythia8'] = pythia8_results
     return normalisation_unfolded
     
-def calculate_xsections( normalisation, category, channel ):
+def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
     global variable, met_type, path_to_JSON
     # calculate the x-sections
     branching_ratio = 0.15
@@ -322,11 +324,11 @@ def calculate_xsections( normalisation, category, channel ):
     ### elif not channel == 'combined':
     ###     raise ValueError( 'Invalid k-value for variable %s, channel %s, category %s.' % ( variable, channel, category ) )
     ### else:
-    filename = path_to_JSON + '/xsection_measurement_results/%s/%s/xsection_%s.txt' % ( channel, category, met_type )
+    filename = path_to_JSON + '/xsection_measurement_results_%s/%s/%s/xsection_%s.txt' % ( phaseSpaceSuffix, channel, category, met_type )
 
     write_data_to_JSON( xsection_unfolded, filename )
     
-def calculate_normalised_xsections( normalisation, category, channel, normalise_to_one = False ):
+def calculate_normalised_xsections( normalisation, category, channel, phaseSpaceSuffix, normalise_to_one = False ):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one )
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection( normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one )
@@ -363,7 +365,7 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
     ### if not channel == 'combined':
     ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
     ### else:
-    filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
+    filename = path_to_JSON + '/xsection_measurement_results_%s/%s/%s/normalised_xsection_%s.txt' % ( phaseSpaceSuffix, channel, category, met_type )
     
     if normalise_to_one:
         filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
@@ -398,7 +400,8 @@ if __name__ == '__main__':
                       help = "Just run the central measurement" )
     parser.add_option( '--ptreweight', dest = "ptreweight", action = "store_true",
                       help = "Use pt-reweighted MadGraph for the measurement" )
-    
+    parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
+                      help = "Unfold to visible phase space" )    
     
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig( options.CoM )
@@ -441,6 +444,8 @@ if __name__ == '__main__':
 
     tau_value_electron = measurement_config.tau_values_electron[variable]
     tau_value_muon = measurement_config.tau_values_muon[variable]
+
+    visiblePS = options.visiblePS
 
     load_fakes = options.load_fakes
     unfoldCfg.Hreco = options.Hreco
@@ -530,34 +535,37 @@ if __name__ == '__main__':
     #         met_type = 'patMETsPFlow'
         
         filename = ''
+        phaseSpaceSuffix = 'FullPS'
+        if visiblePS:
+            phaseSpaceSuffix = "VisiblePS"
 
     #     # get unfolded normalisation
         unfolded_normalisation_electron = {}
         unfolded_normalisation_muon = {}
 
-        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron )
-        filename = path_to_JSON + '/xsection_measurement_results/electron/%s/normalisation_%s.txt' % ( category, met_type )
+        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron, visiblePS = visiblePS )
+        filename = path_to_JSON + '/xsection_measurement_results_%s/electron/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
         write_data_to_JSON( unfolded_normalisation_electron, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', True )
+        calculate_xsections( unfolded_normalisation_electron, category, 'electron', phaseSpaceSuffix )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', phaseSpaceSuffix )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', phaseSpaceSuffix , True )
 
-        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon )
-        filename = path_to_JSON + '/xsection_measurement_results/muon/%s/normalisation_%s.txt' % ( category, met_type )
+        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon, visiblePS = visiblePS )
+        filename = path_to_JSON + '/xsection_measurement_results_%s/muon/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', True )
+        calculate_xsections( unfolded_normalisation_muon, category, 'muon', phaseSpaceSuffix )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', phaseSpaceSuffix )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', phaseSpaceSuffix , True )
 
         # # if combine_before_unfolding:
         # #     unfolded_normalisation_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
         # # else:
         unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
-        filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results_%s/combined/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
-        calculate_xsections( unfolded_normalisation_combined, category, 'combined' )      
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined' )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', True )
+        calculate_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )      
+        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )
+        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix , True )

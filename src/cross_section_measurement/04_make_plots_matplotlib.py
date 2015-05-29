@@ -29,10 +29,10 @@ setup_matplotlib()
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
-    global path_to_JSON, variable, met_type
+    global path_to_JSON, variable, met_type, phaseSpaceSuffix
     
     filename = ''
-    filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+    filename = path_to_JSON + '/xsection_measurement_results_' + phaseSpaceSuffix +'/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
         
@@ -79,7 +79,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                   # 'scaleup': h_normalised_xsection_scaleup}
                                                                   })
         
-        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type
+        file_template = path_to_JSON + '/xsection_measurement_results_' + phaseSpaceSuffix + '/' + channel + '/' + category + '/normalised_xsection_' + met_type
 
         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
         ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
@@ -289,7 +289,7 @@ def get_cms_labels( channel ):
     
     
 def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
-    global variable
+    global variable, phaseSpaceSuffix
     
     channel = 'electron'
     if 'electron' in histname:
@@ -475,7 +475,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if CMS.tight_layout:
         plt.tight_layout()
 
-    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category
+    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/' + phaseSpaceSuffix
     make_folder_if_not_exists( path )
     for output_format in output_formats:
         filename = path + '/' + histname + '.' + output_format
@@ -576,7 +576,9 @@ if __name__ == '__main__':
                       systematics to the central result.""" )
     parser.add_option("--draw-systematics", action = "store_true", dest = "draw_systematics",
                       help = "creates a set of plots for each systematic (in addition to central result)." )
-    
+    parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
+                      help = "Unfold to visible phase space" )
+
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()
     
@@ -588,6 +590,12 @@ if __name__ == '__main__':
     met_systematics_suffixes = measurement_config.met_systematics_suffixes
     
     variable = options.variable
+
+    visiblePS = options.visiblePS
+    phaseSpaceSuffix = 'FullPS'
+    if visiblePS:
+        phaseSpaceSuffix = 'VisiblePS'
+
     output_folder = options.output_folder
     if not output_folder.endswith( '/' ):
         output_folder += '/'
@@ -641,14 +649,14 @@ if __name__ == '__main__':
                 if met_type == 'PFMETJetEnDown':
                     met_type = 'patPFMetJetEnDown'
             
-            if not channel == 'combined' and options.additional_plots:
-                #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
-                #in the unfolding process with BLT unfolding files.
-                if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:
-                    continue
-                fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
-                make_template_plots( fit_templates, category, channel )
-                plot_fit_results( fit_results, category, channel )
+            # if not channel == 'combined':
+            #     #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
+            #     #in the unfolding process with BLT unfolding files.
+            #     if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:
+            #         continue
+            #     fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
+            #     make_template_plots( fit_templates, category, channel )
+            #     plot_fit_results( fit_results, category, channel )
 
             # change back to original MET type
             met_type = translate_options[options.metType]

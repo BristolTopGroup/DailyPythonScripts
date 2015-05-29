@@ -12,10 +12,10 @@ import os.path
 from numpy import median
 
 def read_xsection_measurement_results_with_errors(channel):
-    global path_to_JSON, variable, met_type
+    global path_to_JSON, variable, met_type, phaseSpaceSuffix
     category = 'central'
 
-    file_template = path_to_JSON + '/' + variable +  '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+    file_template = path_to_JSON + '/' + variable +  '/xsection_measurement_results_' + phaseSpaceSuffix + '/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
 
     file_name = file_template
     normalised_xsection_unfolded = read_data_from_JSON( file_name )
@@ -306,7 +306,7 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
         print printout
 
 def print_error_table(central_values, errors, channel, toFile = True, print_before_unfolding = False):
-    global output_folder, variable, met_type, b_tag_bin, all_measurements
+    global output_folder, variable, met_type, b_tag_bin, all_measurements, phaseSpaceSuffix
     bins = variable_bins_ROOT[variable]
 
     printout = '%% ' + '=' * 60
@@ -390,7 +390,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     printout += '\\end{table}\n'
     
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
+        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable + '/' + phaseSpaceSuffix
         make_folder_if_not_exists(path)
         file_template = path + '/%s_systematics_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
 
@@ -561,6 +561,8 @@ if __name__ == '__main__':
                       help="set the centre of mass energy for analysis. Default = 13 [TeV]")
     parser.add_option("-a", "--additional-tables", action="store_true", dest="additional_tables",
                       help="creates a set of tables for each systematic (in addition to central result).")
+    parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
+                      help = "Unfold to visible phase space" )
 
     (options, args) = parser.parse_args()
     measurement_config = XSectionConfig(options.CoM)
@@ -579,7 +581,12 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/'
-    
+
+    visiblePS = options.visiblePS
+    phaseSpaceSuffix = 'FullPS'
+    if visiblePS:
+        phaseSpaceSuffix = 'VisiblePS'
+
     #remove btag mistagging rate systematic - new btagging method has only one, all-inclusive sytematic
     categories_and_prefixes = measurement_config.categories_and_prefixes
     ### del categories_and_prefixes['LightJet_down']
