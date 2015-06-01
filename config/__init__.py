@@ -141,8 +141,8 @@ class XSectionConfig():
         self.middle = '_' + str( self.luminosity ) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
         middle = self.middle
 
-        self.data_file_muon = path_to_files + 'pretendData_Pythia8.root'
-        self.data_file_electron = path_to_files + 'pretendData_Pythia8.root'
+        self.data_file_muon = path_to_files + 'pretendData_tree.root'
+        self.data_file_electron = path_to_files + 'pretendData_tree.root'
 
         self.data_file_muon_trees = path_to_files + 'pretendData_tree.root'
         self.data_file_electron_trees = path_to_files + 'pretendData_tree.root'

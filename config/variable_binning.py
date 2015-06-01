@@ -41,9 +41,9 @@ bin_edges_vis = {
 }
 
 control_plots_bins = {
-  'NJets' : [i + 0.5 for i in range ( 4 - 1, 13 + 1 )],
+  'NJets' : [i + 0.5 for i in range ( 3, 13 + 1 )],
   'pt' : [i * 15 for i in range ( 0,40 )],  
-  'NBJets' : [i + 0.5 for i in range ( 2 - 1, 6 + 1 )],
+  'NBJets' : [i + 0.5 for i in range ( 1, 6 + 1 )],
   'NPV' : [i for i in range ( 0,60 + 1 )],
   'relIso_03_deltaBeta' : [i for i in range ( 0,2 + 1 )],
   'relIso_04_deltaBeta' : [i for i in range ( 0,2 + 1 )],
