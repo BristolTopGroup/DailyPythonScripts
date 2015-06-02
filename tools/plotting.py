@@ -54,6 +54,17 @@ class Histogram_properties:
             if hasattr( self, name ):
                 setattr( self, name, value )
 
+    def is_valid(self):
+        return self.is_valid_legend_location()
+
+    def is_valid_legend_location(self):
+        # should not be a string
+        test1 = not isinstance(self.legend_location, basestring)
+        # should be of length 2
+        test2 = len(self.legend_location) == 2
+
+        return test1 and test2
+
 # prototype
 class PlotConfig:
     '''
