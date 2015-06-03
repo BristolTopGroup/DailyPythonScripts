@@ -30,14 +30,14 @@ y_axis_title_small = {
 
 axis_label_major = {
               'which':'major',
-              'labelsize':40,
+              'labelsize':41,
               'length':20,
               'width': 1,
               'pad': 12
               }
 axis_label_minor = {
               'which':'minor',
-              'labelsize':40,
+              'labelsize':41,
               'length':10,
               'width': 1,
               'pad': 12
