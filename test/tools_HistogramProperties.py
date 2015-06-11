@@ -22,3 +22,9 @@ def test_init_from_dictionary():
     assert hp.ratio_y_limits == test_values['ratio_y_limits']
     assert hp.x_axis_title == test_values['x_axis_title']
     assert hp.y_axis_title == test_values['y_axis_title']
+
+def test_validity():
+    hp = Histogram_properties()
+    assert hp.is_valid() == True
+    hp.legend_location = 'upper right'
+    assert hp.is_valid() == False

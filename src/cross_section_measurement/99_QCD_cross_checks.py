@@ -60,7 +60,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
         histogram_properties.x_limits = x_limits
         histogram_properties.y_limits = y_limits[0]
         histogram_properties.mc_error = 0.0
-        histogram_properties.legend_location = 'upper right'
+
         make_control_region_comparison(region_1, region_2,
                                        name_region_1=name_region_1, name_region_2=name_region_2,
                                        histogram_properties=histogram_properties, save_folder=output_folder)
@@ -82,7 +82,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
         histogram_properties.x_limits = x_limits
         histogram_properties.y_limits = y_limits[1]
         histogram_properties.mc_error = 0.0
-        histogram_properties.legend_location = 'upper right'
+
         make_control_region_comparison(region_1, region_2,
                                        name_region_1=name_region_1, name_region_2=name_region_3,
                                        histogram_properties=histogram_properties, save_folder=output_folder)
@@ -103,7 +103,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
     histogram_properties.x_limits = x_limits
     histogram_properties.y_limits = y_limits[1]
     histogram_properties.mc_error = 0.0
-    histogram_properties.legend_location = 'upper right'
+
     make_control_region_comparison(region_1, region_2,
                                    name_region_1=name_region_2, name_region_2=name_region_3,
                                    histogram_properties=histogram_properties, save_folder=output_folder)

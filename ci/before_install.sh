@@ -27,6 +27,8 @@ if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
 fi
 
 pip install nose --upgrade
+# need matplotlib >= 1.3 for plotting tests
+pip install matplotlib --upgrade
 nosetests -V
 
 # setup newer compilers ( we need gcc >= 4.7 for c++11
