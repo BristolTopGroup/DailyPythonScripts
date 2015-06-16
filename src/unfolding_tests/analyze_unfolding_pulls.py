@@ -31,12 +31,15 @@ if __name__ == "__main__":
 	parser.add_option("-c", "--channel", type='string',
 	                  dest="channel", default='combined',
 	                  help="channel to be analysed: electron|muon|combined")
+	parser.add_option( "-n", "--n_input_mc", type = 'int',
+                      dest = "n_input_mc", default = 100,
+                      help = "number of toy MC used for the tests" )
 
 	(options, args) = parser.parse_args()
 	measurement_config = XSectionConfig(options.CoM)
 	
 	if not options.input_folder:
-	    sys.exit('No input folder specified. Please do so manually using -i option.')
+		sys.exit('No input folder specified. Please do so manually using -i option.')
 
 	centre_of_mass = options.CoM
 	variable = options.variable
@@ -44,7 +47,8 @@ if __name__ == "__main__":
 	output_folder_base = options.output_folder + '/' + str(centre_of_mass) + 'TeV/' + variable + '/' + channel + '/'
 	make_folder_if_not_exists(output_folder_base)
 	output_formats = ['pdf']
-	input_folder = options.input_folder+'/' + str(centre_of_mass) + 'TeV/' + variable + '/35_input_toy_mc/'
+	n_toy = options.n
+	input_folder = options.input_folder+'/' + str(centre_of_mass) + 'TeV/' + variable + '/%d_input_toy_mc/' % n_toy
 	print input_folder
 
 	bins = array('d', bin_edges[variable])
@@ -136,4 +140,3 @@ if __name__ == "__main__":
 	print sigmaups
 	print sigmadowns
 	print sigmaForEachK
-    
