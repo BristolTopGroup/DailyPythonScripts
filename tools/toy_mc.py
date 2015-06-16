@@ -3,9 +3,12 @@ Created on 11 Dec 2012
 
 @author: kreczko
 '''
+from __future__ import division
 from numpy.random import poisson
+import numpy as np
 from math import sqrt
 from hist_utilities import value_error_tuplelist_to_hist
+from numpy.ma.extras import average
 
 def generate_toy_MC_from_distribution( distribution ):
     initial_values = list( distribution.y() )
@@ -36,7 +39,21 @@ def generate_toy_MC_from_2Ddistribution( distribution ):
             set_bin_content(bin_x, bin_y, new_value)
             set_bin_error(bin_x, bin_y, error)
     return new_distribution
-    
+
+def generate_n_poisson_weights(n, b = 1000):
+    '''
+        Creates N weights from a Poisson distribution peak at 1.
+        @param n: sample size
+        @param b: base (base = 1000 creates weights with precirion of 3 decimals
+
+        For large b this corresponds to a gaussian centred at 1
+    '''
+    return poisson(b, n)/b
+
+def generate_n_poisson_weights_for_average(n, n_events_in_bins = [100, 120]):
+    mean = average(n_events_in_bins)
+    return generate_n_poisson_weights(n, mean)
+
 if __name__ == '__main__':
     from array import array
     from rootpy.plotting import Hist
