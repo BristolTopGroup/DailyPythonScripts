@@ -271,8 +271,8 @@ def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
     get = hist_2D.GetBinContent
     x_axis_centre = hist_2D.GetXaxis().GetBinCenter
     y_axis_centre = hist_2D.GetYaxis().GetBinCenter
-    for i in range( 1, n_bins_x + 1 ):
-        for j in range( 1, n_bins_y + 1 ):
+    for i in range( 0, n_bins_x + 1 ):
+        for j in range( 0, n_bins_y + 1 ):
             fill( x_axis_centre( i ), y_axis_centre( j ), get( i, j ) )
     
     return hist

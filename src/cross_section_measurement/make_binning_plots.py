@@ -17,6 +17,8 @@ from config.variable_binning import bin_edges
 from config import XSectionConfig
 from tools.ROOT_utils import get_histogram_from_file
 from tools.file_utilities import make_folder_if_not_exists
+from tools.file_utilities import read_data_from_JSON
+from tools.hist_utilities import value_tuplelist_to_hist
 
 from matplotlib import rc
 rc( 'font', **CMS.font )
@@ -74,10 +76,62 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     for output_format in output_formats:
         plt.savefig( output_folder + save_as_name + '.' + output_format )
 
+def makePurityStabilityPlots(input_path, channel, variable):
+    global output_folder, output_formats
+    
+    inputFile = '%s/binningInfo_%s_%s.txt' % ( input_path, variable, channel)
+    info = read_data_from_JSON(inputFile)
+    print input_path, channel, variable
+    print info
+    print info['s_i']
+    print bin_edges[variable]
+    hist_stability = value_tuplelist_to_hist(info['s_i'], bin_edges[variable])
+    hist_purity = value_tuplelist_to_hist(info['p_i'], bin_edges[variable])
+    print hist_stability, hist_purity
+    print hist_stability.Integral(), hist_purity.Integral()
+
+    hist_purity.color = 'red'
+    hist_stability.color = 'blue'
+
+    hist_stability.linewidth = 4
+    hist_purity.linewidth = 4
+
+    x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
+    y_limits = [0,1]
+    plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
+    
+    ax0 = plt.axes()
+    ax0.minorticks_on()
+#     ax0.grid( True, 'major', linewidth = 2 )
+#     ax0.grid( True, 'minor' )
+    plt.tick_params( **CMS.axis_label_major )
+    plt.tick_params( **CMS.axis_label_minor )
+    ax0.xaxis.labelpad = 12
+    ax0.yaxis.labelpad = 12
+    im = rplt.hist( [hist_stability, hist_purity], stacked=False, axes = ax0, cmap = my_cmap, vmin = 1 )
+
+    ax0.set_xlim( x_limits )
+    ax0.set_ylim( y_limits )
+
+    plt.tick_params( **CMS.axis_label_major )
+    plt.tick_params( **CMS.axis_label_minor )
+    
+    x_title = variables_latex[variable] + '$ [GeV]'
+    plt.xlabel( x_title, CMS.x_axis_title )
+
+    plt.tight_layout()
+
+    plt.savefig('test.pdf')
+    save_as_name = 'purityStability_'+channel + '_' + variable + '_' + str(options.CoM) + 'TeV'
+    for output_format in output_formats:
+        plt.savefig( output_folder + save_as_name + '.' + output_format )
+
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/binning/',
                       help = "set path to save plots" )
+    parser.add_option( "-p", dest = "input_path", default = 'unfolding/13TeV/',
+                      help = "set input path of purity and stability" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
                       help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
     parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
@@ -117,4 +171,6 @@ if __name__ == '__main__':
                 histogram_path = 'unfolding_%s_analyser_%s_channel/%s' % (variable, channel, histogram_name)
             else :
                 histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
-            make_scatter_plot( hist_file, histogram_path, channel, variable, title )
+            # make_scatter_plot( hist_file, histogram_path, channel, variable, title )
+
+            makePurityStabilityPlots(options.input_path, channel, variable)

@@ -47,6 +47,7 @@ from tools.hist_utilities import rebin_2d
 from config import XSectionConfig
 from optparse import OptionParser
 from config.variable_binning import bin_edges
+from tools.file_utilities import write_data_to_JSON
 
 def main():
     '''
@@ -76,12 +77,11 @@ def main():
         if 'Rap' in variable:
             variableToUse = 'abs_%s' % variable
         histogram_information = get_histograms( variableToUse, options )
-        print 'Got histograms'
+
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
-        print 'Got best binning'
+
         if 'Rap' in variable:
             for bin in list(best_binning):
-                print bin
                 if bin != 0.0:
                     best_binning.append(-1.0*bin)
             best_binning.sort()
@@ -94,7 +94,15 @@ def main():
         print 'The corresponding purities and stabilities are:'
         for info in histogram_information:
             print_latex_table(info, variable, best_binning)
-        print '=' * 120  
+            outputInfo = {}
+            outputInfo['p_i'] = info['p_i']
+            outputInfo['s_i'] = info['s_i']
+            outputInfo['N'] = info['N']
+            write_data_to_JSON( outputInfo, 'unfolding/13TeV/binningInfo_%s_%s.txt' % ( variable, info['channel']  ) )
+        print '=' * 120
+
+
+        print outputInfo
 
     print '=' * 120
     print 'For config/variable_binning.py'
@@ -154,7 +162,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
     Step 3: Check if it is true for all other histograms. If not back to step 2
-    Step 4: Repeat step 2 & 3 until no mo bins can be created
+    Step 4: Repeat step 2 & 3 until no more bins can be created
     '''
     histograms = [info['hist'] for info in histogram_information]
     bin_edges = []
@@ -177,7 +185,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
     
     # add the purity and stability values for the final binning
     for info in histogram_information:
-        new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )  
+        new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )
         get_bin_content = new_hist.GetBinContent
         purities = calculate_purities( new_hist.Clone() )
         stabilities = calculate_stabilities( new_hist.Clone() )
@@ -202,8 +210,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
  
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ): 
     current_bin_start = bin_start
-    current_bin_end = bin_end 
-
+    current_bin_end = bin_end
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
         gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
@@ -228,6 +235,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
             if n_gen > 0:
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
+            # print 'New bin : ',current_bin_start,current_bin_end,p,s
             if p >= p_min and s >= s_min and n_gen_and_reco >= n_min:
                 current_bin_end = bin_i
                 break
