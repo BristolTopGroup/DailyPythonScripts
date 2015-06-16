@@ -22,9 +22,10 @@ branchNames = {
     'abs_ttbarRap' : 'abs(ttbarRap)',
 }
 
-genBranchNames = {
+genBranchNames_particle = {
 	'MT' : 'pseudoMT',
-	'WPT' : 'pseudoWPT',
+	# 'WPT' : 'pseudoWPT_noReco',
+    'WPT' : 'pseudoWPT',
 	'leptonPt' : 'pseudoLepton_pT',
 	'leptonEta' : 'pseudoLepton_eta',
 	'HT' : 'pseudoHT',
@@ -44,4 +45,23 @@ genBranchNames = {
     'abs_lepTopRap' : 'abs(pseudoTop_y)',
     'abs_hadTopRap' : 'abs(pseudoTop_y)',
     'abs_ttbarRap' : 'abs(pseudoTTbar_y)',
+}
+
+genBranchNames_parton = {
+	'leptonPt' : 'leptonPt_parton',
+	'leptonEta' : 'leptonEta_parton',
+
+	'MET' : 'neutrinoPt_parton',
+
+	'lepTopPt' : 'lepTopPt_parton',
+    'hadTopPt' : 'hadTopPt_parton',
+    'lepTopRap' : 'lepTopRap_parton',
+    'hadTopRap' : 'hadTopRap_parton',
+    'ttbarPt' : 'ttbarPt',
+    'ttbarM' : 'ttbarM',
+    'ttbarRap' : 'ttbarRap',
+
+    'abs_lepTopRap' : 'abs(lepTopRap_parton)',
+    'abs_hadTopRap' : 'abs(hadTopRap_parton)',
+    'abs_ttbarRap' : 'abs(ttbarRap)',
 }

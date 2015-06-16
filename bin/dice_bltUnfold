@@ -4,5 +4,5 @@ tar -cf dps.tar ../DailyPythonScripts/ --exclude ../DailyPythonScripts/data --ex
 echo "Submitting jobs to DICE..."
 condor_submit experimental/BLTUnfold/submitBLTUnfold.description
 echo "Done."
-condor_q
+condor_q `whoami`
 
