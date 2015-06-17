@@ -36,6 +36,7 @@ fit_variable_properties = {
 b_tag_bin = '2orMoreBtags'
 b_tag_bin_ctl = '0orMoreBtag'
 category = 'central'
+channels = ['electron', 'muon']
 
 variables = bin_edges.keys()
 
@@ -46,61 +47,87 @@ def main():
     global electron_fit_variables, muon_fit_variables, fit_variable_properties
     global b_tag_bin, category, histogram_files, variables
     global b_tag_bin_ctl
+    global channels
     
     title_template = '$%.1f$ fb$^{-1}$(%d TeV)'
-    e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
+    title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
     met_type = 'patType1CorrectedPFMet'
-    for variable in ['MET']:  # variables:
-        variable_bins = variable_bins_ROOT[variable]
-        histogram_template = get_histogram_template( variable )
+    fit_variables = []
+    for channel in channels:
         
-        for fit_variable in ['electron_absolute_eta']:  # electron_fit_variables:
-            if '_bl' in fit_variable:
-                b_tag_bin_ctl = '1orMoreBtag'
-            else:
-                b_tag_bin_ctl = '0orMoreBtag'
-            save_path = 'plots/%dTeV/fit_variables/%s/%s/' % ( measurement_config.centre_of_mass_energy, variable, fit_variable )
-            make_folder_if_not_exists( save_path )
-            make_folder_if_not_exists( save_path + 'qcd/' )
-            make_folder_if_not_exists( save_path + 'vjets/' )
-            inclusive_histograms = {}
-            inclusive_fit_distribution = ''
-            inclusive_qcd_distribution = ''
-            for bin_range in variable_bins:
-                params = {'met_type': met_type, 'bin_range':bin_range, 'fit_variable':fit_variable, 'b_tag_bin':b_tag_bin, 'variable':variable}
-                fit_variable_distribution = histogram_template % params
-                qcd_fit_variable_distribution = fit_variable_distribution.replace( 'Ref selection', 'QCDConversions' )
-                qcd_fit_variable_distribution = qcd_fit_variable_distribution.replace( b_tag_bin, b_tag_bin_ctl )
-                histograms = get_histograms_from_files( [fit_variable_distribution, qcd_fit_variable_distribution], histogram_files )
-                plot_fit_variable( histograms, fit_variable, variable, bin_range, fit_variable_distribution, qcd_fit_variable_distribution, e_title, save_path )
-                # sum histograms for inclusive plots
-                for sample, hist in histograms.iteritems():
-                    inclusive_fit_distribution = fit_variable_distribution.replace( bin_range, "inclusive" )
-                    inclusive_qcd_distribution = qcd_fit_variable_distribution.replace( bin_range, "inclusive" )
-                    if not inclusive_histograms.has_key( sample ):
-                        inclusive_histograms[sample] = {}
-                        inclusive_histograms[sample][inclusive_fit_distribution] = hist[fit_variable_distribution].clone()
-                        inclusive_histograms[sample][inclusive_qcd_distribution] = hist[qcd_fit_variable_distribution].clone() 
-                    else:
-                        inclusive_histograms[sample][inclusive_fit_distribution] += hist[fit_variable_distribution]   
-                        inclusive_histograms[sample][inclusive_qcd_distribution] += hist[qcd_fit_variable_distribution]
-                        
-            plot_fit_variable( inclusive_histograms, fit_variable, variable,
-                               'inclusive', inclusive_fit_distribution,
-                               inclusive_qcd_distribution, e_title, save_path )
+        if channel == "electron":
+            fit_variables = electron_fit_variables
+            histogram_files['data'] = measurement_config.data_file_electron
+            histogram_files['QCD'] = measurement_config.electron_QCD_MC_file
+            QCD_region = 'QCDConversions'
+        if channel == "muon":
+            fit_variables = muon_fit_variables
+            histogram_files['data'] = measurement_config.data_file_muon
+            histogram_files['QCD'] = measurement_config.muon_QCD_MC_file
+            QCD_region = 'QCD non iso mu+jets ge3j'
+        
+        for variable in variables:
+            variable_bins = variable_bins_ROOT[variable]
+            histogram_template = get_histogram_template( variable, channel )
             
-        compare_qcd_control_regions( variable, met_type, e_title )
-        compare_vjets_btag_regions( variable, met_type, e_title )
-        compare_vjets_templates( variable, met_type, e_title )
+            for fit_variable in fit_variables: 
+                if '_bl' in fit_variable:
+                    b_tag_bin_ctl = '1orMoreBtag'
+                else:
+                    b_tag_bin_ctl = '0orMoreBtag'
+                save_path = 'plots/%dTeV/fit_variables/%s/%s/%s/' % ( measurement_config.centre_of_mass_energy, channel, variable, fit_variable )
+                make_folder_if_not_exists( save_path )
+                make_folder_if_not_exists( save_path + 'qcd/' )
+                make_folder_if_not_exists( save_path + 'vjets/' )
+                inclusive_histograms = {}
+                inclusive_fit_distribution = ''
+                inclusive_qcd_distribution = ''
+                for bin_range in variable_bins:
+                    params = {'met_type': met_type, 'bin_range':bin_range, 'fit_variable':fit_variable, 'b_tag_bin':b_tag_bin, 'variable':variable}
+                    fit_variable_distribution = histogram_template % params
+                    qcd_fit_variable_distribution = fit_variable_distribution.replace( 'Ref selection', QCD_region )
+                    qcd_fit_variable_distribution = qcd_fit_variable_distribution.replace( b_tag_bin, b_tag_bin_ctl )
+                    
+                    histograms = get_histograms_from_files( [fit_variable_distribution, qcd_fit_variable_distribution], histogram_files )
+                    plot_fit_variable( histograms, fit_variable, variable, bin_range, fit_variable_distribution, qcd_fit_variable_distribution, title, save_path )
+                    # sum histograms for inclusive plots
+                    for sample, hist in histograms.iteritems():
+                        inclusive_fit_distribution = fit_variable_distribution.replace( bin_range, "inclusive" )
+                        inclusive_qcd_distribution = qcd_fit_variable_distribution.replace( bin_range, "inclusive" )
+                        if not inclusive_histograms.has_key( sample ):
+                            inclusive_histograms[sample] = {}
+                            inclusive_histograms[sample][inclusive_fit_distribution] = hist[fit_variable_distribution].clone()
+                            inclusive_histograms[sample][inclusive_qcd_distribution] = hist[qcd_fit_variable_distribution].clone() 
+                        else:
+                            inclusive_histograms[sample][inclusive_fit_distribution] += hist[fit_variable_distribution]   
+                            inclusive_histograms[sample][inclusive_qcd_distribution] += hist[qcd_fit_variable_distribution]
+                            
+                plot_fit_variable( inclusive_histograms, fit_variable, variable,
+                                   'inclusive', inclusive_fit_distribution,
+                                   inclusive_qcd_distribution, title, save_path )
+            compare_qcd_control_regions( variable, met_type, title, channel )
+            compare_vjets_btag_regions( variable, met_type, title, channel )
+            compare_vjets_templates( variable, met_type, title, channel )
+            
+#             for fit_variable in fit_variables: 
+#                 if '_bl' in fit_variable:
+#                     b_tag_bin_ctl = '1orMoreBtag'
+#                 else:
+#                     b_tag_bin_ctl = '0orMoreBtag'        
         
-def get_histogram_template( variable ):     
-    histogram_template = '' 
+def get_histogram_template( variable, channel ):     
+    histogram_template = ''
+
+    if channel == "muon":
+         channel_string = "MuPlusJets"
+    elif channel == "electron":
+         channel_string = "EPlusJets"
     if variable == 'HT':
-        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_HT_Analysis/HT_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
+        histogram_template = 'TTbar_plus_X_analysis/' + channel_string + '/Ref selection/Binned_HT_Analysis/HT_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     elif variable == 'MET':
-        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MET_Analysis/%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
+        histogram_template = 'TTbar_plus_X_analysis/' + channel_string + '/Ref selection/Binned_MET_Analysis/%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     else:
-        histogram_template = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_%(variable)s_Analysis/%(variable)s_with_%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
+        histogram_template = 'TTbar_plus_X_analysis/' + channel_string + '/Ref selection/Binned_%(variable)s_Analysis/%(variable)s_with_%(met_type)s_bin_%(bin_range)s/%(fit_variable)s_%(b_tag_bin)s'
     return histogram_template
                       
 def plot_fit_variable( histograms, fit_variable, variable, bin_range,
@@ -139,7 +166,11 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     
     histogram_properties.title = title
     histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin_ctl]
-    histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_QCDConversions' % b_tag_bin_ctl
+    if channel == 'electron':
+        QCD_region = 'QCDConversions'
+    elif channel == 'muon':
+        QCD_region = 'QCD non iso mu+jets ge3j'
+    histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_%s' % (b_tag_bin_ctl, QCD_region)
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties,
                                  save_folder = save_path + '/qcd/',
@@ -153,7 +184,7 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                           histograms_['QCD'][qcd_fit_variable_distribution],
                           ]
     histogram_properties.y_max_scale = 1.5
-    histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_QCDConversions_subtracted' % b_tag_bin_ctl
+    histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_%s_%s_subtracted' % (b_tag_bin_ctl, QCD_region)
     make_data_mc_comparison_plot( histograms_to_draw,
                                   histogram_lables = ['data', 'QCD'],
                                   histogram_colors = ['black', 'yellow'],
@@ -221,16 +252,27 @@ def compare_qcd_control_regions( variable = 'MET', met_type = 'patType1Corrected
      of the current variable'''
     global fit_variable_properties, b_tag_bin, save_as, b_tag_bin_ctl
     variable_bins = variable_bins_ROOT[variable]
-    histogram_template = get_histogram_template( variable )
+    histogram_template = get_histogram_template( variable, channel )
     
-    for fit_variable in electron_fit_variables:
+    if channel == "electron":
+        fit_variables = electron_fit_variables
+        histogram_files['data'] = measurement_config.data_file_electron
+        histogram_files['QCD'] = measurement_config.electron_QCD_MC_file
+        QCD_region = 'QCDConversions'
+    if channel == "muon":
+        fit_variables = muon_fit_variables
+        histogram_files['data'] = measurement_config.data_file_muon
+        histogram_files['QCD'] = measurement_config.muon_QCD_MC_file
+        QCD_region = 'QCD non iso mu+jets ge3j'
+    
+    for fit_variable in fit_variables:
         all_hists = {}
         inclusive_hist = None
         if '_bl' in fit_variable:
                 b_tag_bin_ctl = '1orMoreBtag'
         else:
             b_tag_bin_ctl = '0orMoreBtag'
-        save_path = 'plots/%dTeV/fit_variables/%s/%s/' % ( measurement_config.centre_of_mass_energy, variable, fit_variable )
+        save_path = 'plots/%dTeV/fit_variables/%s/%s/%s/' % ( measurement_config.centre_of_mass_energy, channel, variable, fit_variable )
         make_folder_if_not_exists( save_path + '/qcd/' )
         
         max_bins = 3
@@ -238,7 +280,11 @@ def compare_qcd_control_regions( variable = 'MET', met_type = 'patType1Corrected
             
             params = {'met_type': met_type, 'bin_range':bin_range, 'fit_variable':fit_variable, 'b_tag_bin':b_tag_bin, 'variable':variable}
             fit_variable_distribution = histogram_template % params
-            qcd_fit_variable_distribution = fit_variable_distribution.replace( 'Ref selection', 'QCDConversions' )
+            if channel == 'electron':
+                QCD_region = 'QCDConversions'
+            elif channel == 'muon':
+                QCD_region = 'QCD non iso mu+jets ge3j'
+            qcd_fit_variable_distribution = fit_variable_distribution.replace( 'Ref selection', QCD_region )
             qcd_fit_variable_distribution = qcd_fit_variable_distribution.replace( b_tag_bin, b_tag_bin_ctl )
             # format: histograms['data'][qcd_fit_variable_distribution]
             histograms = get_histograms_from_files( [qcd_fit_variable_distribution], histogram_files )
@@ -287,14 +333,25 @@ def compare_vjets_btag_regions( variable = 'MET', met_type = 'patType1CorrectedP
     global fit_variable_properties, b_tag_bin, save_as, b_tag_bin_ctl
     b_tag_bin_ctl = '0orMoreBtag'
     variable_bins = variable_bins_ROOT[variable]
-    histogram_template = get_histogram_template( variable )
+    histogram_template = get_histogram_template( variable, channel )
     
-    for fit_variable in electron_fit_variables:
+    if channel == "electron":
+        fit_variables = electron_fit_variables
+        histogram_files['data'] = measurement_config.data_file_electron
+        histogram_files['QCD'] = measurement_config.electron_QCD_MC_file
+        QCD_region = 'QCDConversions'
+    if channel == "muon":
+        fit_variables = muon_fit_variables
+        histogram_files['data'] = measurement_config.data_file_muon
+        histogram_files['QCD'] = measurement_config.muon_QCD_MC_file
+        QCD_region = 'QCD non iso mu+jets ge3j'
+    
+    for fit_variable in fit_variables:
         if '_bl' in fit_variable:
                 b_tag_bin_ctl = '1orMoreBtag'
         else:
             b_tag_bin_ctl = '0orMoreBtag'
-        save_path = 'plots/%dTeV/fit_variables/%s/%s/' % ( measurement_config.centre_of_mass_energy, variable, fit_variable )
+        save_path = 'plots/%dTeV/fit_variables/%s/%s/%s/' % ( measurement_config.centre_of_mass_energy, channel, variable, fit_variable )
         make_folder_if_not_exists( save_path + '/vjets/' )
         histogram_properties = Histogram_properties()
         histogram_properties.x_axis_title = fit_variable_properties[fit_variable]['x-title']
@@ -327,12 +384,23 @@ def compare_vjets_templates( variable = 'MET', met_type = 'patType1CorrectedPFMe
      of the current variable'''
     global fit_variable_properties, b_tag_bin, save_as
     variable_bins = variable_bins_ROOT[variable]
-    histogram_template = get_histogram_template( variable )
+    histogram_template = get_histogram_template( variable, channel )
     
-    for fit_variable in electron_fit_variables:
+    if channel == "electron":
+        fit_variables = electron_fit_variables
+        histogram_files['data'] = measurement_config.data_file_electron
+        histogram_files['QCD'] = measurement_config.electron_QCD_MC_file
+        QCD_region = 'QCDConversions'
+    if channel == "muon":
+        fit_variables = muon_fit_variables
+        histogram_files['data'] = measurement_config.data_file_muon
+        histogram_files['QCD'] = measurement_config.muon_QCD_MC_file
+        QCD_region = 'QCD non iso mu+jets ge3j'
+    
+    for fit_variable in fit_variables:
         all_hists = {}
         inclusive_hist = None
-        save_path = 'plots/%dTeV/fit_variables/%s/%s/' % ( measurement_config.centre_of_mass_energy, variable, fit_variable )
+        save_path = 'plots/%dTeV/fit_variables/%s/%s/%s/' % ( measurement_config.centre_of_mass_energy, channel, variable, fit_variable )
         make_folder_if_not_exists( save_path + '/vjets/' )
         
         max_bins = len( variable_bins )
