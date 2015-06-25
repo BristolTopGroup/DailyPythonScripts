@@ -100,6 +100,7 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Updating RooUnfold config"
 	cat $base/config/RooUnfold_template.py > $base/config/RooUnfold.py
 	echo "library = '$base/external/lib/libRooUnfold.so'" >> $base/config/RooUnfold.py
+	cp $base/external/RooUnfold/RooUnfoldDict_rdict.pcm $base/.
 
 	echo "Building TopAnalysis"
 	cd $base/external/TopAnalysis/
