@@ -46,6 +46,8 @@ from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config import XSectionConfig
 from optparse import OptionParser
+from config.variable_binning import bin_edges
+from tools.file_utilities import write_data_to_JSON
 
 def main():
     '''
@@ -69,12 +71,22 @@ def main():
      
     bin_choices = {}
 
-    for variable in ['MET', 'HT', 'ST', 'MT', 'WPT']:
-        histogram_information = get_histograms( variable, options )
-        
+    for variable in bin_edges.keys():
+        print '--- Doing variable',variable
+        variableToUse = variable
+        if 'Rap' in variable:
+            variableToUse = 'abs_%s' % variable
+        histogram_information = get_histograms( variableToUse, options )
+
         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
 
-        bin_choices[variable] = best_binning        
+        if 'Rap' in variable:
+            for bin in list(best_binning):
+                if bin != 0.0:
+                    best_binning.append(-1.0*bin)
+            best_binning.sort()
+
+        bin_choices[variable] = best_binning
         print 'The best binning for', variable, 'is:'
         print 'bin edges =', best_binning
         print 'N_bins    =', len( best_binning ) - 1
@@ -82,7 +94,15 @@ def main():
         print 'The corresponding purities and stabilities are:'
         for info in histogram_information:
             print_latex_table(info, variable, best_binning)
-        print '=' * 120  
+            outputInfo = {}
+            outputInfo['p_i'] = info['p_i']
+            outputInfo['s_i'] = info['s_i']
+            outputInfo['N'] = info['N']
+            write_data_to_JSON( outputInfo, 'unfolding/13TeV/binningInfo_%s_%s.txt' % ( variable, info['channel']  ) )
+        print '=' * 120
+
+
+        print outputInfo
 
     print '=' * 120
     print 'For config/variable_binning.py'
@@ -92,7 +112,7 @@ def main():
 
 def get_histograms( variable, options ):
     config = XSectionConfig( 13 )
-    
+
     path_electron = ''
     path_muon = ''
     histogram_name = ''
@@ -101,22 +121,14 @@ def get_histograms( variable, options ):
     else :
         histogram_name = 'response_without_fakes'
 
-    if variable == 'MET':
-        path_electron = 'unfolding_MET_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
-        path_muon = 'unfolding_MET_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
-    elif variable == 'HT':
+
+    if variable == 'HT':
         path_electron = 'unfolding_HT_analyser_electron_channel/%s' % histogram_name
         path_muon = 'unfolding_HT_analyser_muon_channel/%s' % histogram_name
-    elif variable == 'ST':
-        path_electron = 'unfolding_ST_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
-        path_muon = 'unfolding_ST_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
-    elif variable == 'MT':
-        path_electron = 'unfolding_MT_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
-        path_muon = 'unfolding_MT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
-    elif variable == 'WPT':
-        path_electron = 'unfolding_WPT_analyser_electron_channel_patType1CorrectedPFMet/%s' % histogram_name
-        path_muon = 'unfolding_WPT_analyser_muon_channel_patType1CorrectedPFMet/%s' % histogram_name
-        
+    else :
+        path_electron = 'unfolding_%s_analyser_electron_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
+        path_muon = 'unfolding_%s_analyser_muon_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
+
     histogram_information = [
                 {'file': config.unfolding_madgraph_raw,
                  'CoM': 13,
@@ -150,7 +162,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
     Step 3: Check if it is true for all other histograms. If not back to step 2
-    Step 4: Repeat step 2 & 3 until no mo bins can be created
+    Step 4: Repeat step 2 & 3 until no more bins can be created
     '''
     histograms = [info['hist'] for info in histogram_information]
     bin_edges = []
@@ -173,7 +185,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
     
     # add the purity and stability values for the final binning
     for info in histogram_information:
-        new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )  
+        new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )
         get_bin_content = new_hist.GetBinContent
         purities = calculate_purities( new_hist.Clone() )
         stabilities = calculate_stabilities( new_hist.Clone() )
@@ -198,8 +210,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
  
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ): 
     current_bin_start = bin_start
-    current_bin_end = bin_end 
-
+    current_bin_end = bin_end
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
         gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
@@ -224,6 +235,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
             if n_gen > 0:
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
+            # print 'New bin : ',current_bin_start,current_bin_end,p,s
             if p >= p_min and s >= s_min and n_gen_and_reco >= n_min:
                 current_bin_end = bin_i
                 break
@@ -247,7 +259,12 @@ def print_latex_table( info, variable, best_binning ):
     header = """\%s bin (\GeV) &  purity & stability & number of events\\\\
     \hline""" % variable.lower()
     print header
-    for i in range( len( best_binning ) - 1 ):
+    firstBin = 0
+    lastBin = len( best_binning ) - 1
+    if 'Rap' in variable :
+        lastBin = len( best_binning )/2
+
+    for i in range( firstBin, lastBin ):
         bin_range = ""
         if i == len( best_binning ) - 2:
             bin_range = '$\geq %d$' % best_binning[i]

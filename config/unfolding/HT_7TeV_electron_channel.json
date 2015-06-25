@@ -1,15 +1,15 @@
 {
 	"config_for" : "src/unfolding_tests/get_best_regularisation.py",
 	"truth" : { 
-		"file": "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root",
+		"file": "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root",
 		"histogram": "unfolding_HT_analyser_electron_channel/truth"
 	},
 	"gen_vs_reco" : { 
-		"file": "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root",
+		"file": "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root",
 		"histogram": "unfolding_HT_analyser_electron_channel/response_without_fakes"
 	},
 	"measured" : { 
-		"file": "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root",
+		"file": "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/7TeV/unfolding/unfolding_TTJets_7TeV_asymmetric.root",
 		"histogram": "unfolding_HT_analyser_electron_channel/measured"
 	},
 	"data" : { 

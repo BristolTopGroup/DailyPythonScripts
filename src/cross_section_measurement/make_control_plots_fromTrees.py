@@ -1,243 +1,499 @@
 from optparse import OptionParser
-from config.latex_labels import b_tag_bins_latex, samples_latex, fit_variables_latex, fit_variables_units_latex, variables_latex, control_plots_latex
-from config.variable_binning import fit_variable_bin_edges, bin_edges, control_plots_bins
+from config.latex_labels import b_tag_bins_latex, samples_latex, channel_latex, \
+    variables_latex, fit_variables_latex, control_plots_latex
+from config.variable_binning import variable_bins_ROOT, bin_edges, fit_variable_bin_edges, control_plots_bins
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
-from tools.hist_utilities import prepare_histograms, get_fitted_normalisation, get_normalisation_error, get_data_derived_qcd
-from tools.ROOT_utils import get_histograms_from_files, set_root_defaults, get_histograms_from_trees
+from tools.hist_utilities import prepare_histograms, clean_control_region, get_normalisation_error, get_fitted_normalisation
+from tools.ROOT_utils import get_histograms_from_trees, set_root_defaults
+from tools.latex import setup_matplotlib
+# latex, font, etc
+setup_matplotlib()
 
-channels = [
-'EPlusJets',
-'MuPlusJets'
-]
+def compare_shapes( channel, x_axis_title, y_axis_title,
+              control_region_1, control_region_2,
+              name_region_1, name_region_2,
+              name_prefix, x_limits,
+              y_limits = [],
+              y_max_scale = 1.2,
+              rebin = 1,
+              legend_location = ( 0.98, 0.78 ), cms_logo_location = 'right',
+              legend_color = False,
+              ratio_y_limits = None,
+              ):
+    global output_folder, measurement_config, category, normalise_to_fit
+    global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
+
+    title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
+    if channel == 'electron':
+        histogram_files['data'] = measurement_config.data_file_electron_trees
+        histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
+    if channel == 'muon':
+        histogram_files['data'] = measurement_config.data_file_muon_trees
+        histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
+
+    histograms = get_histograms_from_files( [control_region_1, control_region_2], histogram_files )
+    prepare_histograms( histograms, rebin = rebin, scale_factor = measurement_config.luminosity_scale )
+    
+    region_1 = histograms['data'][control_region_1].Clone()
+    region_2 = histograms['data'][control_region_2].Clone()
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = name_prefix + b_tag_bin
+    histogram_properties.title = title
+    histogram_properties.x_axis_title = y_axis_title
+    histogram_properties.y_axis_title = x_axis_title
+    histogram_properties.x_limits = x_limits
+    histogram_properties.y_limits = y_limits
+    histogram_properties.legend_location = legend_location
+    histogram_properties.cms_logo_location = cms_logo_location
+    histogram_properties.preliminary = preliminary
+    histogram_properties.legend_color = legend_color
+    if b_tag_bin and b_tag_bin in b_tag_bins_latex.keys():
+        histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin]
+    else:
+        histogram_properties.additional_text = channel_latex[channel]
+    if ratio_y_limits:
+        histogram_properties.ratio_y_limits = ratio_y_limits
+
+    make_control_region_comparison( region_1, region_2,
+                                   name_region_1 = name_region_1,
+                                   name_region_2 = name_region_2,
+                                   histogram_properties = histogram_properties,
+                                   save_folder = output_folder )
+
+def make_plot( channel, x_axis_title, y_axis_title,
+              signal_region_tree,
+              control_region_tree,
+              branchName,
+              name_prefix, x_limits, nBins,
+              use_qcd_data_region = False,
+              y_limits = [],
+              y_max_scale = 1.2,
+              rebin = 1,
+              legend_location = ( 0.98, 0.78 ), cms_logo_location = 'right',
+              log_y = False,
+              legend_color = False,
+              ratio_y_limits = [0.3, 1.7],
+              normalise = False,
+              ):
+    global output_folder, measurement_config, category, normalise_to_fit
+    global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
+
+    # Input files, normalisations, tree/region names
+    qcd_data_region = ''
+    title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
+    normalisation = None
+    if channel == 'electron':
+        histogram_files['data'] = measurement_config.data_file_electron_trees
+        histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
+        if normalise_to_fit:
+            normalisation = normalisations_electron[norm_variable]
+        if use_qcd_data_region:
+            qcd_data_region = 'QCDConversions'
+    if channel == 'muon':
+        histogram_files['data'] = measurement_config.data_file_muon_trees
+        histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
+        if normalise_to_fit:
+            normalisation = normalisations_muon[norm_variable]
+        if use_qcd_data_region:
+            qcd_data_region = 'QCD non iso mu+jets ge3j'
+
+    # Get all histograms
+    # multi = isinstance( signal_region, list )
+    # histograms = {}
+    # qcd_control_region = ''
+    # if multi:
+    #     signal_region_sum = signal_region[0].replace( '_bin_' + sum_bins[0], '' )
+    #     qcd_control_region_sum = signal_region_sum.replace( 'Ref selection', qcd_data_region )
+    #     qcd_control_region_sum = qcd_control_region_sum.replace( b_tag_bin, qcd_data_region_btag )
+    #     for region in signal_region:
+    #         qcd_control_region = region.replace( 'Ref selection', qcd_data_region )
+    #         qcd_control_region = qcd_control_region.replace( b_tag_bin, qcd_data_region_btag )
+    #         tmp_hists = get_histograms_from_files( [region, qcd_control_region], histogram_files )
+    #         for name in tmp_hists.keys():
+    #             if not histograms.has_key( name ):
+    #                 histograms[name] = {}
+    #                 histograms[name][signal_region_sum] = tmp_hists[name][region]
+    #                 histograms[name][qcd_control_region_sum] = tmp_hists[name][qcd_control_region]
+    #             else:
+    #                 histograms[name][signal_region_sum] += tmp_hists[name][region]
+    #                 histograms[name][qcd_control_region_sum] += tmp_hists[name][qcd_control_region]
+    #     signal_region = signal_region_sum
+    #     qcd_control_region = qcd_control_region_sum
+    # else:
+    #     qcd_control_region = signal_region.replace( 'Ref selection', qcd_data_region )
+    #     qcd_control_region = qcd_control_region.replace( b_tag_bin, qcd_data_region_btag )
+    #     if qcd_data_region:
+    #         histograms = get_histograms_from_files( [signal_region, qcd_control_region], histogram_files )
+    #     else:
+    #         histograms = get_histograms_from_files( [signal_region], histogram_files )
+    histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+
+    # Split histograms up into signal/control (?)
+    signal_region_hists = {}
+    inclusive_control_region_hists = {}
+    for sample in histograms.keys():
+        signal_region_hists[sample] = histograms[sample][signal_region_tree]
+        if use_qcd_data_region:
+            inclusive_control_region_hists[sample] = histograms[sample][control_region_tree]
+
+    # Prepare histograms
+    if normalise_to_fit:
+        # only scale signal region to fit (results are invalid for control region)
+        prepare_histograms( signal_region_hists, rebin = rebin,
+                            scale_factor = measurement_config.luminosity_scale,
+                            normalisation = normalisation )
+    else:
+        prepare_histograms( signal_region_hists, rebin = rebin,
+                            scale_factor = measurement_config.luminosity_scale )
+    prepare_histograms( inclusive_control_region_hists, rebin = rebin,
+                            scale_factor = measurement_config.luminosity_scale )
+
+    # Use qcd from data control region or not
+    qcd_from_data = None
+    if use_qcd_data_region:
+        qcd_from_data = clean_control_region( inclusive_control_region_hists,
+                          subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
+        # Normalise contorl region correctly
+        n_qcd_predicted_mc = histograms['QCD'][signal_region_tree].Integral()
+        n_qcd_control_region = qcd_from_data.Integral()
+        if not n_qcd_control_region == 0:
+            qcd_from_data.Scale( 1.0 / n_qcd_control_region * n_qcd_predicted_mc )
+    else:
+        qcd_from_data = signal_region_hists['QCD']
+
+    # Which histograms to draw, and properties
+    histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
+                          signal_region_hists['V+Jets'],
+                          signal_region_hists['SingleTop'],
+                          signal_region_hists['TTJet']]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+
+    histogram_properties = Histogram_properties()
+    histogram_properties.name = name_prefix + b_tag_bin
+    if category != 'central':
+        histogram_properties.name += '_' + category
+    histogram_properties.title = title
+    histogram_properties.x_axis_title = x_axis_title
+    histogram_properties.y_axis_title = y_axis_title
+    histogram_properties.x_limits = x_limits
+    histogram_properties.y_limits = y_limits
+    histogram_properties.y_max_scale = y_max_scale
+    histogram_properties.xerr = None
+    # workaround for rootpy issue #638
+    histogram_properties.emptybins = True
+    if b_tag_bin:
+        histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin]
+    else:
+        histogram_properties.additional_text = channel_latex[channel]
+    histogram_properties.legend_location = legend_location
+    histogram_properties.cms_logo_location = cms_logo_location
+    histogram_properties.preliminary = preliminary
+    histogram_properties.set_log_y = log_y
+    histogram_properties.legend_color = legend_color
+    if ratio_y_limits:
+        histogram_properties.ratio_y_limits = ratio_y_limits
+
+    if normalise_to_fit:
+        histogram_properties.mc_error = get_normalisation_error( normalisation )
+        histogram_properties.mc_errors_label = 'fit uncertainty'
+    else:
+        histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_errors_label = 'MC unc.'
+
+    # Actually draw histograms
+    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder,
+                                 show_ratio = False, normalise = normalise,
+                                 )
+    histogram_properties.name += '_with_ratio'
+    loc = histogram_properties.legend_location
+    # adjust legend location as it is relative to canvas!
+    histogram_properties.legend_location = ( loc[0], loc[1] + 0.05 )
+    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+                                 histogram_properties, save_folder = output_folder,
+                                 show_ratio = True, normalise = normalise,
+                                 )
+
 if __name__ == '__main__':
-
     set_root_defaults()
     parser = OptionParser()
     parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
                   help = "set path to JSON files" )
     parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/control_plots/',
                   help = "set path to save plots" )
+    parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
+                      help = "set MET type used in the analysis of MET-dependent variables" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
                       help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
     parser.add_option( "--category", dest = "category", default = 'central',
                       help = "set the category to take the fit results from (default: central)" )
     parser.add_option( "-n", "--normalise_to_fit", dest = "normalise_to_fit", action = "store_true",
                   help = "normalise the MC to fit results" )
+    parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_QCD_plots",
+                      help = "creates a set of QCD plots for exclusive bins for all variables" )
 
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
-
-    normalise_to_fit = options.normalise_to_fit
-
-    # Input and output
+    
     path_to_JSON = '%s/%dTeV/' % ( options.path, measurement_config.centre_of_mass_energy )
-
+    normalise_to_fit = options.normalise_to_fit
     if normalise_to_fit:
         output_folder = '%s/after_fit/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
     else:
         output_folder = '%s/before_fit/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
-    make_folder_if_not_exists(output_folder)
-
-    # Central or whatever
+    make_folder_if_not_exists( output_folder )
+    output_folder_base = output_folder
     category = options.category
+    met_type = translate_options[options.metType]
+    make_additional_QCD_plots = options.additional_QCD_plots
+
+    # this is shown as \ttbar (or MC) uncertainty on the plots
+    # in fact, it takes the uncertainty on the whole MC stack
+    # although unimportant, this needs revision
+    mc_uncertainty = 0.10
     
-    # Input files for each group of samples
     histogram_files = {
-        'data' : measurement_config.data_file_electron_trees,
-        'TTJet': measurement_config.ttbar_category_templates_trees[category],
-        'V+Jets': measurement_config.VJets_category_templates_trees[category],
-        'QCD': 'Nothing',
-        'SingleTop': measurement_config.SingleTop_category_templates_trees[category],
+            'TTJet': measurement_config.ttbar_category_templates_trees[category],
+            'V+Jets': measurement_config.VJets_category_templates_trees[category],
+            'QCD': measurement_config.electron_QCD_MC_category_templates_trees[category],
+            'SingleTop': measurement_config.SingleTop_category_templates_trees[category],
     }
 
-    # Fitted normalisation
-    normalisations_electron = {}
-    normalisations_muon = {}
-    if normalise_to_fit:
-        normalisations_electron = {
-                'MET':get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, 'patType1CorrectedPFMet' ),
-                'HT':get_fitted_normalisation( 'HT', 'electron', path_to_JSON, category, 'patType1CorrectedPFMet'  ),
-                'ST':get_fitted_normalisation( 'ST', 'electron', path_to_JSON, category, 'patType1CorrectedPFMet'  ),
-                'MT':get_fitted_normalisation( 'MT', 'electron', path_to_JSON, category, 'patType1CorrectedPFMet'  ),
-                'WPT':get_fitted_normalisation( 'WPT', 'electron', path_to_JSON, category, 'patType1CorrectedPFMet'  )
-        }
+    # getting normalisations
+    normalisations_electron = {
+            'MET':get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, met_type ),
+            'HT':get_fitted_normalisation( 'HT', 'electron', path_to_JSON, category, met_type ),
+            'ST':get_fitted_normalisation( 'ST', 'electron', path_to_JSON, category, met_type ),
+            'MT':get_fitted_normalisation( 'MT', 'electron', path_to_JSON, category, met_type ),
+            'WPT':get_fitted_normalisation( 'WPT', 'electron', path_to_JSON, category, met_type )
+            }
+    normalisations_muon = {
+            'MET':get_fitted_normalisation( 'MET', 'muon', path_to_JSON, category, met_type ),
+            'HT':get_fitted_normalisation( 'HT', 'muon', path_to_JSON, category, met_type ),
+            'ST':get_fitted_normalisation( 'ST', 'muon', path_to_JSON, category, met_type ),
+            'MT':get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, met_type ),
+            'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
+            }
+    title_template = '$%.1f$ fb$^{-1}$ (%d TeV)'
+    e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
+    preliminary = True
+    
+    b_tag_bin = '2orMoreBtags'
+    norm_variable = 'MET'
+    # comment out plots you don't want
+    include_plots = [
 
-        normalisations_muon = {
-                'MET':get_fitted_normalisation( 'MET', 'muon', path_to_JSON, category, 'patType1CorrectedPFMet' ),
-                'HT':get_fitted_normalisation( 'HT', 'muon', path_to_JSON, category, 'patType1CorrectedPFMet'  ),
-                'ST':get_fitted_normalisation( 'ST', 'muon', path_to_JSON, category, 'patType1CorrectedPFMet'  ),
-                'MT':get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, 'patType1CorrectedPFMet'  ),
-                'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, 'patType1CorrectedPFMet'  )
-        }
-
-    # Templates of titles for all plots
-    title_template = 'CMS Preliminary, $\mathcal{L} = %.1f$ fb$^{-1}$  at $\sqrt{s}$ = %d TeV \n %s'
-    # Title in electron channel
-    e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, 'e+jets, $\geq$ 4 jets' )
-    # Title in muon channel
-    mu_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy, '#mu+jets, $\geq$ 4 jets' )
-
-
-    for channel in channels:
-        print channel
-        control_region = ''
-        fitted_normalisation = {}
-        if channel == 'EPlusJets':
-            control_region = 'QCD non iso e+jets'
-            histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
-            fitted_normalisation = normalisations_electron
-        elif channel == 'MuPlusJets':
-            control_region = 'QCD non iso mu+jets'
-            histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
-            fitted_normalisation = normalisations_muon
-
-        # Variables for diff xsec
-        for var in [ 'MET', 'HT', 'ST', 'WPT', 'MT' ]:
-            print '--->',var
-            signal_region = 'Ref selection'
-
-            signalTree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % ( channel, signal_region )
-            controlTree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % ( channel, control_region )
-
-            bins = bin_edges[var]
-            xMin = bins[0]
-            xMax = bins[-1]
-            nBins = 40
-
-            histograms = get_histograms_from_trees( trees = [signalTree, controlTree], branch = var, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
-
-            histogram_dataDerivedQCD = get_data_derived_qcd( { h : histograms[h][controlTree] for h in ['data','TTJet','SingleTop','V+Jets','QCD']}, histograms['QCD'][signalTree])
-
-            for sample in histograms:
-                signalNorm = histograms[sample][signalTree].integral( overflow = True )
-                controlNorm = histograms[sample][controlTree].integral( overflow = True )
-                if signalNorm < 1. : signalNorm = 1.
-                if controlNorm < 0.1 : contorlNorm = 1.
-                histograms[sample][controlTree].Scale( signalNorm / controlNorm )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-
-            if normalise_to_fit:
-                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale, normalisation = fitted_normalisation[var] )
-            else:
-                prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-
-            histograms_to_draw = [histograms['data'][signalTree],
-                                  histogram_dataDerivedQCD,
-                                  histograms['V+Jets'][signalTree],
-                                  histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
-            histogram_lables = ['data', 'QCD', 
-                                'V+Jets', 'Single-Top', samples_latex['TTJet']]
-            histogram_colors = ['black', 'yellow', 
-                                'green', 'magenta', 'red']
-
-            histogram_properties = Histogram_properties()
-            histogram_properties.name = '%s_%s' % (channel, var)
-            if category != 'central':
-                histogram_properties.name += '_' + category
-            if channel == 'EPlusJets':
-                histogram_properties.title = e_title
-            elif channel == 'MuPlusJets':
-                histogram_properties.title = mu_title
-
-            eventsPerBin = (xMax - xMin) / nBins
-            histogram_properties.x_axis_title = '%s [GeV]' % ( variables_latex[var] )
-            histogram_properties.y_axis_title = 'Events/(%.2g GeV)' % (eventsPerBin)
-            histogram_properties.y_limits = [0, histograms['data'][signalTree].GetMaximum() * 1.3 ]
-            # histogram_properties.set_log_y = True
-
-          
-            histogram_properties.name += '_with_ratio'
-            make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder, show_ratio = True )
-
-        if normalise_to_fit : continue
-        # Fit variables (inclusive)
-        for var in ['M3', 'angle_bl', 'M_bl', 'absolute_eta']:
-            print '--->',var
-            signal_region = 'Ref selection'
-            signalTree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % ( channel, signal_region )
-
-            bins = fit_variable_bin_edges[var]
-            xMin = bins[0]
-            xMax = bins[-1]
-            nBins = len(bins) -1
-            
-            histograms = get_histograms_from_trees( trees = [signalTree], branch = var, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
-
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-            
-            histograms_to_draw = [histograms['data'][signalTree], 
-                                  histograms['QCD'][signalTree],
-                                  histograms['V+Jets'][signalTree],
-                                  histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
-            histogram_lables = ['data', 'QCD', 
-                                'V+Jets', 'Single-Top', samples_latex['TTJet']]
-            histogram_colors = ['black', 'yellow',
-                                 'green', 'magenta', 'red']
-            
-            histogram_properties = Histogram_properties()
-            histogram_properties.name = '%s_%s' % (channel, var)
-            if category != 'central':
-                histogram_properties.name += '_' + category
-            if channel == 'EPlusJets':
-                histogram_properties.title = e_title
-            elif channel == 'MuPlusJets':
-                histogram_properties.title = mu_title
-
-            eventsPerBin = (xMax - xMin) / nBins
-            if fit_variables_units_latex[var] != '':
-                histogram_properties.x_axis_title = '%s [%s]' % ( fit_variables_latex[var], fit_variables_units_latex[var] )
-                histogram_properties.y_axis_title = 'Events/(%.2g %s)' % (eventsPerBin, fit_variables_units_latex[var])
-            else :
-                histogram_properties.x_axis_title = '%s' % ( fit_variables_latex[var] )
-                histogram_properties.y_axis_title = 'Events/(%.2g)' % eventsPerBin             
-            histogram_properties.name += '_with_ratio'
-            make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder, show_ratio = True )
+                        # 'HT',
+                        # 'MET',
+                        # 'ST',
+                        # 'WPT',
+                        # 'M3',
+                        # 'angle_bl',
+                        'NJets',
+                        'NBJets',
+                        ]
+    additional_qcd_plots = [
+                            ]
+    if make_additional_QCD_plots:
+        include_plots.extend( additional_qcd_plots )
 
 
-        # Jet control plots
-        for var in [ 'NJets', 'NBJets', 'pt' ]:
-            print '--->',var
-            signal_region = 'Ref selection'
-            signalTree = 'TTbar_plus_X_analysis/%s/%s/Jets/Jets' % ( channel, signal_region )
+    for channel, label in {'electron' : 'EPlusJets', 
+                            'muon' : 'MuPlusJets'
+                            }.iteritems() :
+        # Set folder for this batch of plots
+        output_folder = output_folder_base + "/Variables/"
+        make_folder_if_not_exists(output_folder)
 
-            bins = control_plots_bins[var]
-            xMin = bins[0]
-            xMax = bins[-1]
-            nBins = len(bins)-1
-            histograms = get_histograms_from_trees( trees = [signalTree], branch = var, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = xMin, xMax = xMax )
-            prepare_histograms( histograms, rebin = 1, scale_factor = measurement_config.luminosity_scale )
-            
-            histograms_to_draw = [histograms['data'][signalTree],
-                                  histograms['QCD'][signalTree],
-                                  histograms['V+Jets'][signalTree],
-                                  histograms['SingleTop'][signalTree], histograms['TTJet'][signalTree]]
-            histogram_lables = ['data', 'QCD',
-                                'V+Jets', 'Single-Top', samples_latex['TTJet']]
-            histogram_colors = ['black', 'yellow',
-                                'green', 'magenta', 'red']
-            
-            histogram_properties = Histogram_properties()
-            histogram_properties.name = '%s_%s' % (channel, var)
-            if category != 'central':
-                histogram_properties.name += '_' + category
-            if channel == 'EPlusJets':
-                histogram_properties.title = e_title
-            elif channel == 'MuPlusJets':
-                histogram_properties.title = mu_title
+        ###################################################
+        # HT
+        ###################################################
+        norm_variable = 'HT'
+        if 'HT' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'HT',
+                      name_prefix = '%s_HT_' % label,
+                      x_limits = bin_edges['HT'],
+                      nBins = 30,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
 
-            eventsPerBin = (xMax - xMin) / nBins
-            histogram_properties.x_axis_title = '%s [GeV]' % ( control_plots_latex[var] )
-            histogram_properties.y_axis_title = 'Events/(%.2g GeV)' % (eventsPerBin)
-            histogram_properties.x_limits = [xMin, xMax]
-            histogram_properties.set_log_y = True
+        ###################################################
+        # MET
+        ###################################################
+        norm_variable = 'MET'
+        if 'MET' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'MET',
+                      name_prefix = '%s_MET_' % label,
+                      x_limits = bin_edges['MET'],
+                      nBins = 30,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
 
-            histogram_properties.name += '_with_ratio'
-            make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                         histogram_properties, save_folder = output_folder, show_ratio = True )
+        ###################################################
+        # ST
+        ###################################################
+        norm_variable = 'ST'
+        if 'ST' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'ST',
+                      name_prefix = '%s_ST_' % label,
+                      x_limits = bin_edges['ST'],
+                      nBins = 30,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        ###################################################
+        # WPT
+        ###################################################
+        norm_variable = 'WPT'
+        if 'WPT' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'WPT',
+                      name_prefix = '%s_WPT_' % label,
+                      x_limits = bin_edges['WPT'],
+                      nBins = 30,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        # Set folder for this batch of plots
+        # output_folder =  output_folder_base + "/FitVariables/"
+        output_folder = output_folder_base
+        make_folder_if_not_exists(output_folder)
+
+        ###################################################
+        # M3
+        ###################################################
+        if 'M3' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % fit_variables_latex['M3'],
+                      y_axis_title = 'Events/(X GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'M3',
+                      name_prefix = '%s_M3_' % label,
+                      x_limits = fit_variable_bin_edges['M3'],
+                      nBins = 10,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        ###################################################
+        # angle_bl
+        ###################################################
+        if 'angle_bl' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % fit_variables_latex['angle_bl'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'angle_bl',
+                      name_prefix = '%s_angle_bl_' % label,
+                      x_limits = fit_variable_bin_edges['angle_bl'],
+                      nBins = 10,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        # Set folder for this batch of plots
+        output_folder =  output_folder_base + "/Control/"
+        make_folder_if_not_exists(output_folder)
+
+        ###################################################
+        # NJets
+        ###################################################
+        if 'NJets' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      branchName = 'NJets',
+                      name_prefix = '%s_NJets_' % label,
+                      x_limits = control_plots_bins['NJets'],
+                      nBins = len(control_plots_bins['NJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      branchName = 'NJets',
+                      name_prefix = '%s_NJets_logY_' % label,
+                      x_limits = control_plots_bins['NJets'],
+                      nBins = len(control_plots_bins['NJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      log_y = True,
+                      )
+        ###################################################
+        # NBJets
+        ###################################################
+        if 'NBJets' in include_plots:
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      branchName = 'NBJets',
+                      name_prefix = '%s_NBJets_' % label,
+                      x_limits = control_plots_bins['NBJets'],
+                      nBins = len(control_plots_bins['NBJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % label,
+                      branchName = 'NBJets',
+                      name_prefix = '%s_NBJets_logY_' % label,
+                      x_limits = control_plots_bins['NBJets'],
+                      nBins = len(control_plots_bins['NBJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      log_y = True,
+                      )

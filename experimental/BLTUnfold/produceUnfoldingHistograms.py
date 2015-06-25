@@ -5,6 +5,8 @@ from rootpy.io import root_open, File
 from optparse import OptionParser
 
 from config.variable_binning import bin_edges
+from config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
+from tools.file_utilities import make_folder_if_not_exists
 
 from scaleFactors import *
 
@@ -64,10 +66,21 @@ def convertScaleFactorsToString( scaleFactors ):
     sfString += ')'
     return sfString
 
+def getgenVariable_particle( recoVariable ):
+    if recoVariable is 'leptonEta':
+        return 'pseudoLepton_eta'
+    elif recoVariable is ('leptonPt'):
+        return 'pseudoLepton_pT'
+    elif recoVariable is 'bEta':
+        return 'pseudoB_eta'
+    elif recoVariable is 'bPt':
+        return 'pseudoB_pT'
+    else : return 'pseudo'+recoVariable
 
 fileNames = {
              '13TeV' : {
-                    'central' : '/storage/ec6821/AnalysisTools/CMSSW_7_4_0_pre7/src/atOutput/tree_TTJet_5000pb_PFElectron_PFMuon_PF2PATJets_MET.root',
+                    'central' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/TTJets_amc_tree.root',
+                    'pythia8' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/TTJets_Pythia8_tree.root',
                    #  'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
                    #  'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
                    #  'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
@@ -108,8 +121,9 @@ def main():
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'unfolding/%sTeV/' & options.centreOfMassEnergy
-
+    outputFileDir = 'unfolding/%sTeV/' % options.centreOfMassEnergy
+    make_folder_if_not_exists(outputFileDir)
+   
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
         
     if options.applyTopPtReweighting:
@@ -149,8 +163,14 @@ def main():
                 outputDir.cd()
                 pdfWeightHist.Write()
                 pass
-                        
+
+            # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
+            allVariablesBins = bin_edges.copy()
             for variable in bin_edges:
+                if 'Rap' in variable:
+                    allVariablesBins['abs_%s' % variable] = [0,bin_edges[variable][-1]]
+
+            for variable in allVariablesBins:
                 if options.debug and variable != 'HT' : continue
                 
                 print '--->Doing variable :',variable
@@ -167,11 +187,11 @@ def main():
                 genSelection = ''
                 genSelectionVis = ''
                 if channel.channelName is 'muPlusJets' :
-                    genSelection = '( isSemiLeptonicMuon )'
-                    genSelectionVis = '( isSemiLeptonicMuon && passesGenEventSelection )'
+                    genSelection = '( isSemiLeptonicMuon == 1 )'
+                    genSelectionVis = '( isSemiLeptonicMuon == 1 && passesGenEventSelection )'
                 elif channel.channelName is 'ePlusJets' :
-                    genSelection = '( isSemiLeptonicElectron )'
-                    genSelectionVis = '( isSemiLeptonicElectron && passesGenEventSelection )'
+                    genSelection = '( isSemiLeptonicElectron == 1 )'
+                    genSelectionVis = '( isSemiLeptonicElectron == 1 && passesGenEventSelection )'
 
                 genWeight = '( 1 )'
                 # genWeight = '( unfolding.puWeight )'
@@ -179,14 +199,18 @@ def main():
                 if channel.channelName is 'muPlusJets' :
                     offlineSelection = '( passSelection == 1 )'
                 elif channel.channelName is 'ePlusJets' :               
-                    offlineSelection = '( passSelection == 0 )'
+                    offlineSelection = '( passSelection == 2 )'
 
                 # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
                 offlineWeight = '( 1 )'
                 fakeSelection = '( ' + offlineSelection+"&&!"+genSelection +' ) '
                 fakeSelectionVis = '( ' + offlineSelection+"&&!"+genSelectionVis +' ) '
-                genVariable = 'pseudo'+variable
-                recoVariable = variable
+
+                recoVariable = branchNames[variable]
+                genVariable_particle = genBranchNames_particle[variable]
+                genVariable_parton = None
+                if variable in genBranchNames_parton:
+                    genVariable_parton = genBranchNames_parton[variable]
 
                 # Weights derived from variables in tree
                 if options.applyTopPtReweighting:
@@ -209,25 +233,45 @@ def main():
 
                 # Histograms to fill
                 # 1D histograms
-                truth = Hist( bin_edges[variable], name='truth')
-                truthVis = Hist( bin_edges[variable], name='truthVis')
-                measured = Hist( bin_edges[variable], name='measured')
-                fake = Hist( bin_edges[variable], name='fake')
+                truth = Hist( allVariablesBins[variable], name='truth')
+                truthVis = Hist( allVariablesBins[variable], name='truthVis')
+                truth_parton = Hist( allVariablesBins[variable], name='truth_parton')                
+                measured = Hist( allVariablesBins[variable], name='measured')
+                fake = Hist( allVariablesBins[variable], name='fake')
                 
                 # 2D histograms
-                response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
-                response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
-                response_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_only_fakes')
+                response = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response')
+                response_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes')
+                response_only_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes')
 
-                responseVis_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_without_fakes')
-                responseVis_only_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='responseVis_only_fakes')
+                responseVis_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_without_fakes')
+                responseVis_only_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_only_fakes')
+
+                response_parton = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_parton')
+                response_without_fakes_parton = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes_parton')
+                response_only_fakes_parton = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes_parton')
 
                 if options.fineBinned:
-                    minVar = bin_edges[variable][0]
-                    maxVar = max( tree.GetMaximum(genVariable), tree.GetMaximum(recoVariable) )
+                    minVar = allVariablesBins[variable][0]
+                    maxVar = max( tree.GetMaximum(genVariable_particle), tree.GetMaximum( recoVariable ) ) * 1.2
                     nBins = int(maxVar - minVar)
+
+                    if variable is 'leptonEta' or variable is 'bEta':
+                        maxVar = 2.5
+                        minVar = -2.5
+                        nBins = 1000
+                    elif 'abs' in variable:
+                        maxVar = 3.0
+                        minVar = 0.
+                        nBins = 1000
+                    elif 'Rap' in variable:
+                        maxVar = 3.0
+                        minVar = -3.0
+                        nBins = 1000                       
+
                     truth = Hist( nBins, minVar, maxVar, name='truth')
                     truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
+                    truth_parton = Hist( nBins, minVar, maxVar, name='truth_parton')
                     measured = Hist( nBins, minVar, maxVar, name='measured')
                     fake = Hist( nBins, minVar, maxVar, name='fake')
                     response = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
@@ -236,23 +280,34 @@ def main():
                     responseVis_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_without_fakes')
                     responseVis_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_only_fakes')
 
+                    response_parton = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_parton')
+                    response_without_fakes_parton = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes_parton')
+                    response_only_fakes_parton = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes_parton')
+
                 # Some interesting histograms
                 puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                  
                 # Fill histograms
-                # 1D
                 if not options.donothing:
-                    tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
-                    tree.Draw(genVariable,genWeight+'*'+genSelectionVis,hist=truthVis)
+                    # 1D
+                    tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth)
+                    tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis)
+                    if genVariable_parton != None:
+                        tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton)
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
                     # 2D
-                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+offlineSelection,hist=response)
-                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
-                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=response_only_fakes)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+offlineSelection,hist=response)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=response_only_fakes)
 
-                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes)
-                    tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes)
+
+                    if genVariable_parton != None:
+                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+offlineSelection,hist=response_parton)
+                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes_parton)
+                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+fakeSelection,hist=response_only_fakes_parton)
 
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
@@ -262,11 +317,15 @@ def main():
                 outputDir.cd()
                 truth.Write()
                 truthVis.Write()
+                truth_parton.Write()
                 measured.Write()
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()
                 response_only_fakes.Write()
+                response_parton.Write()
+                response_without_fakes_parton.Write()
+                response_only_fakes_parton.Write()
                 responseVis_without_fakes.Write()
                 responseVis_only_fakes.Write()
 

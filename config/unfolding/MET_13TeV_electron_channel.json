@@ -1,0 +1,26 @@
+{
+    "centre-of-mass energy": 13,
+    "channel": "electron",
+    "data": {
+        "file": "data/M3_angle_bl/13TeV/MET/fit_results/central/fit_results_electron_patType1CorrectedPFMet.txt",
+        "histogram": "TTJet"
+    },
+    "gen_vs_reco": {
+        "file": "/hdfs/TopQuarkGroup/run2/unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root",
+        "histogram": "unfolding_MET_analyser_electron_channel/response_without_fakes"
+    },
+    "measured": {
+        "file": "/hdfs/TopQuarkGroup/run2/unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root",
+        "histogram": "unfolding_MET_analyser_electron_channel/measured"
+    },
+    "output_folder": "plots/13TeV/unfolding_tests",
+    "output_format": [
+        "png",
+        "pdf"
+    ],
+    "truth": {
+        "file": "/hdfs/TopQuarkGroup/run2/unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root",
+        "histogram": "unfolding_MET_analyser_electron_channel/truth"
+    },
+    "variable": "MET"
+}

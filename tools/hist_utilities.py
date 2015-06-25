@@ -271,8 +271,8 @@ def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
     get = hist_2D.GetBinContent
     x_axis_centre = hist_2D.GetXaxis().GetBinCenter
     y_axis_centre = hist_2D.GetYaxis().GetBinCenter
-    for i in range( 1, n_bins_x + 1 ):
-        for j in range( 1, n_bins_y + 1 ):
+    for i in range( 0, n_bins_x + 1 ):
+        for j in range( 0, n_bins_y + 1 ):
             fill( x_axis_centre( i ), y_axis_centre( j ), get( i, j ) )
     
     return hist
@@ -403,7 +403,7 @@ def get_normalisation_error( normalisation ):
         total_error += number[1]
     return total_error / total_normalisation
 
-def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
+def get_fit_results_histogram( data_path = 'data/M3_angle_bl',
                                centre_of_mass = 8,
                                channel = 'electron',
                                variable = 'MET',
@@ -412,6 +412,7 @@ def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
     fit_result_input = data_path + '/%(CoM)dTeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'CoM': centre_of_mass, 'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
+    print fit_data, bin_edges
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges )
     return h_data
 

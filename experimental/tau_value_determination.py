@@ -139,11 +139,11 @@ def draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable
                             connectionstyle = "arc3" ),
             size = 40,
             )
-    print 'Writing to ','plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable )
+
     if use_data:
-        plt.savefig( 'plots/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable ) )    
+        plt.savefig( 'plots/unfolding_tests/%dTeV/tau_from_global_correlation_%s_channel_%s_DATA.png' % ( centre_of_mass, channel, variable ) )    
     else:
-        plt.savefig( 'plots/%dTeV/tau_from_global_correlation_%s_channel_%s_MC.png' % ( centre_of_mass, channel, variable ) )
+        plt.savefig( 'plots/unfolding_tests/%dTeV/tau_from_global_correlation_%s_channel_%s_MC.png' % ( centre_of_mass, channel, variable ) )
 
 def get_tau_from_L_shape( h_truth, h_measured, h_response, h_data = None ):
     
@@ -212,8 +212,6 @@ def get_data_histogram( channel, variable, met_type ):
     fit_result_input = 'data/M3_angle_bl/13TeV/%(variable)s/fit_results/central/fit_results_%(channel)s_%(met_type)s.txt'
     fit_results = read_data_from_JSON( fit_result_input % {'channel': channel, 'variable': variable, 'met_type':met_type} )
     fit_data = fit_results['TTJet']
-    print fit_data
-    print bin_edges[variable]
     h_data = value_error_tuplelist_to_hist( fit_data, bin_edges[variable] )
     return h_data
 
@@ -250,7 +248,7 @@ if __name__ == '__main__':
 		# 'MET', 
 		# 'WPT', 
 		# 'MT' , 
-		'ST', 
+		'ST',
 		'HT'
 		]
     centre_of_mass = 13
@@ -288,9 +286,7 @@ if __name__ == '__main__':
                 h_data = deepcopy( h_measured )
                 
             
-            print 'Getting tau'
             tau, rho, tau_values, rho_values, tau_from_k = get_tau_from_global_correlation( h_truth, h_measured, h_response, h_data )
-            print 'Drawing'
             draw_global_correlation( tau_values, rho_values, tau, rho, channel, variable, tau_from_k )
             
             #tau, l_curve, x, y = get_tau_from_L_shape( h_truth, h_measured, h_response, h_data )
