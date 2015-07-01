@@ -72,23 +72,17 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     plt.title( title, CMS.title )
 
     plt.tight_layout()
-    
+
     for output_format in output_formats:
         plt.savefig( output_folder + save_as_name + '.' + output_format )
 
 def makePurityStabilityPlots(input_path, channel, variable):
     global output_folder, output_formats
-    
+
     inputFile = '%s/binningInfo_%s_%s.txt' % ( input_path, variable, channel)
     info = read_data_from_JSON(inputFile)
-    print input_path, channel, variable
-    print info
-    print info['s_i']
-    print bin_edges[variable]
     hist_stability = value_tuplelist_to_hist(info['s_i'], bin_edges[variable])
     hist_purity = value_tuplelist_to_hist(info['p_i'], bin_edges[variable])
-    print hist_stability, hist_purity
-    print hist_stability.Integral(), hist_purity.Integral()
 
     hist_purity.color = 'red'
     hist_stability.color = 'blue'
@@ -99,7 +93,7 @@ def makePurityStabilityPlots(input_path, channel, variable):
     x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
     y_limits = [0,1]
     plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
-    
+
     ax0 = plt.axes()
     ax0.minorticks_on()
 #     ax0.grid( True, 'major', linewidth = 2 )
@@ -115,7 +109,7 @@ def makePurityStabilityPlots(input_path, channel, variable):
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
-    
+
     x_title = variables_latex[variable] + '$ [GeV]'
     plt.xlabel( x_title, CMS.x_axis_title )
 
@@ -148,7 +142,7 @@ if __name__ == '__main__':
 
     #hist_file = measurement_config.central_general_template % ( 'TTJet' )
     hist_file = measurement_config.unfolding_madgraph_raw
-    
+
     histogram_name = ''
     if options.visiblePhaseSpace:
         histogram_name = 'responseVis_without_fakes'
@@ -162,7 +156,7 @@ if __name__ == '__main__':
     title_template = 'CMS Simulation, $\sqrt{s}$ = %d TeV, %s, %s, %s'
 
     for channel in channels:
-        print channel
+        print 'Channel', channel
         title = title_template % ( measurement_config.centre_of_mass_energy, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
         for variable in bin_edges.keys():
             print '--- ',variable

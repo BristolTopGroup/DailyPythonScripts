@@ -24,54 +24,15 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     global variable, path_to_JSON, options
     h_data = value_error_tuplelist_to_hist( results, bin_edges[variable] )
     unfolding = Unfolding( h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
-    
+
     # turning off the unfolding errors for systematic samples
     if not category == 'central':
         unfoldCfg.Hreco = 0
     else:
         unfoldCfg.Hreco = options.Hreco
-        
-    h_unfolded_data = unfolding.unfold( h_data )
-    
-    ### if options.write_unfolding_objects:
-    ###     # export the D and SV distributions
-    ###     SVD_path = path_to_JSON + '/unfolding_objects/' + channel + '/kv_' + str( k_value ) + '/'
-    ###     make_folder_if_not_exists( SVD_path )
-    ###     if method == 'TSVDUnfold':
-    ###         SVDdist = File( SVD_path + method + '_SVDdistributions_' + category + '.root', 'recreate' )
-    ###         directory = SVDdist.mkdir( 'SVDdist' )
-    ###         directory.cd()
-    ###         unfolding.unfoldObject.GetD().Write()
-    ###         unfolding.unfoldObject.GetSV().Write()
-    ###         #    unfolding.unfoldObject.GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
-    ###         SVDdist.Close()
-    ###     else:
-    ###         SVDdist = File( SVD_path + method + '_SVDdistributions_Hreco' + str( unfoldCfg.Hreco ) + '_' + category + '.root', 'recreate' )
-    ###         directory = SVDdist.mkdir( 'SVDdist' )
-    ###         directory.cd()
-    ###         unfolding.unfoldObject.Impl().GetD().Write()
-    ###         unfolding.unfoldObject.Impl().GetSV().Write()
-    ###         h_truth.Write()
-    ###         h_measured.Write()
-    ###         h_response.Write()
-    ###         #    unfolding.unfoldObject.Impl().GetUnfoldCovMatrix(data_covariance_matrix(h_data), unfoldCfg.SVD_n_toy).Write()
-    ###         SVDdist.Close()
 
-    ###     # export the whole unfolding object if it doesn't exist
-    ###     if method == 'TSVDUnfold':
-    ###         unfolding_object_file_name = SVD_path + method + '_unfoldingObject_' + category + '.root'
-    ###     else:
-    ###         unfolding_object_file_name = SVD_path + method + '_unfoldingObject_Hreco' + str( unfoldCfg.Hreco ) + '_' + category + '.root'
-    ###     if not os.path.isfile( unfolding_object_file_name ):
-    ###         unfoldingObjectFile = File( unfolding_object_file_name, 'recreate' )
-    ###         directory = unfoldingObjectFile.mkdir( 'unfoldingObject' )
-    ###         directory.cd()
-    ###         if method == 'TSVDUnfold':
-    ###             unfolding.unfoldObject.Write()
-    ###         else:
-    ###             unfolding.unfoldObject.Impl().Write()
-    ###         unfoldingObjectFile.Close()
-    
+    h_unfolded_data = unfolding.unfold( h_data )
+
     del unfolding
     return hist_to_value_error_tuplelist( h_unfolded_data )
 
@@ -106,7 +67,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                              # ttbar_theory_systematic_prefix + 'powheg_herwig':file_for_powheg_herwig,
                              # ttbar_theory_systematic_prefix + 'ptreweight':file_for_ptreweight,
                              }
-    
+
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
     # if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in ttbar_mass_systematics:
     #     h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_systematics[category],
@@ -260,7 +221,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 h_fakes,
                                                 method
                                                 )
-        
+
     normalisation_unfolded = {
                           'TTJet_measured' : TTJet_fit_results,
                           'TTJet_unfolded' : TTJet_fit_results_unfolded,
@@ -280,7 +241,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
 
     normalisation_unfolded['pythia8'] = pythia8_results
     return normalisation_unfolded
-    
+
 def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
     global variable, met_type, path_to_JSON
     # calculate the x-sections
@@ -300,7 +261,7 @@ def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
     # matchingup_xsection = calculate_xsection( normalisation['matchingup'], luminosity, branching_ratio )  # L in pb1
     # scaledown_xsection = calculate_xsection( normalisation['scaledown'], luminosity, branching_ratio )  # L in pb1
     # scaleup_xsection = calculate_xsection( normalisation['scaleup'], luminosity, branching_ratio )  # L in pb1
-    
+
     pythia8_xsection = calculate_xsection( normalisation['pythia8'], luminosity, branching_ratio )
 
     xsection_unfolded = {'TTJet_measured' : TTJet_xsection,
@@ -318,7 +279,7 @@ def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
                      }
     # if centre_of_mass == 8:
     #     xsection_unfolded['MCATNLO'] =  MCATNLO_xsection
-        
+
     ### if k_value:
     ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/xsection_%s.txt' % ( channel, k_value, category, met_type )
     ### elif not channel == 'combined':
@@ -327,7 +288,7 @@ def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
     filename = path_to_JSON + '/xsection_measurement_results_%s/%s/%s/xsection_%s.txt' % ( phaseSpaceSuffix, channel, category, met_type )
 
     write_data_to_JSON( xsection_unfolded, filename )
-    
+
 def calculate_normalised_xsections( normalisation, category, channel, phaseSpaceSuffix, normalise_to_one = False ):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one )
@@ -343,7 +304,7 @@ def calculate_normalised_xsections( normalisation, category, channel, phaseSpace
     # matchingup_normalised_xsection = calculate_normalised_xsection( normalisation['matchingup'], bin_widths[variable], normalise_to_one )
     # scaledown_normalised_xsection = calculate_normalised_xsection( normalisation['scaledown'], bin_widths[variable], normalise_to_one )
     # scaleup_normalised_xsection = calculate_normalised_xsection( normalisation['scaleup'], bin_widths[variable], normalise_to_one )
-    
+
     pythia8_normalised_xsection = calculate_normalised_xsection( normalisation['pythia8'], bin_widths[variable], normalise_to_one )
 
     normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
@@ -361,12 +322,12 @@ def calculate_normalised_xsections( normalisation, category, channel, phaseSpace
                        }
     # if centre_of_mass == 8:
     #     normalised_xsection['MCATNLO'] = MCATNLO_normalised_xsection
-    
+
     ### if not channel == 'combined':
-    ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
+    ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )
     ### else:
     filename = path_to_JSON + '/xsection_measurement_results_%s/%s/%s/normalised_xsection_%s.txt' % ( phaseSpaceSuffix, channel, category, met_type )
-    
+
     if normalise_to_one:
         filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
     write_data_to_JSON( normalised_xsection, filename )
@@ -401,8 +362,8 @@ if __name__ == '__main__':
     parser.add_option( '--ptreweight', dest = "ptreweight", action = "store_true",
                       help = "Use pt-reweighted MadGraph for the measurement" )
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
-                      help = "Unfold to visible phase space" )    
-    
+                      help = "Unfold to visible phase space" )
+
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig( options.CoM )
     run_just_central = options.test
@@ -412,12 +373,12 @@ if __name__ == '__main__':
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     met_systematics_suffixes = measurement_config.met_systematics_suffixes
-    
+
     centre_of_mass = options.CoM
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
     ttbar_xsection = measurement_config.ttbar_xsection
     path_to_files = measurement_config.path_to_files
-    
+
     file_for_unfolding = File( measurement_config.unfolding_madgraph, 'read' )
 
     # Not unfolding with other files at the moment
@@ -429,7 +390,7 @@ if __name__ == '__main__':
     ###    #     file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
     ###    # file_for_ptreweight = File ( measurement_config.unfolding_ptreweight, 'read' )
     ###    # files_for_pdfs = { 'PDFWeights_%d' % index : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 1, 45 ) }
-    ###        
+    ###
     ###    # file_for_scaledown = File( measurement_config.unfolding_scale_down, 'read' )
     ###    # file_for_scaleup = File( measurement_config.unfolding_scale_up, 'read' )
     ###    # file_for_matchingdown = File( measurement_config.unfolding_matching_down, 'read' )
@@ -480,7 +441,7 @@ if __name__ == '__main__':
 
     # all MET uncertainties except JES as this is already included
     met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    
+
     all_measurements = deepcopy( categories )
     ### all_measurements.extend( pdf_uncertainties )
     ### all_measurements.extend( met_uncertainties )
@@ -500,7 +461,7 @@ if __name__ == '__main__':
         print 'Unfolding category "%s"' % category
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
-        
+
         # if category == 'JES_up':
         #     met_type += 'JetEnUp'
         #     if met_type == 'PFMETJetEnUp':
@@ -520,20 +481,20 @@ if __name__ == '__main__':
     #         electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
     #         muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
     #         combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
-        
+
         fit_results_electron = read_data_from_JSON( electron_file )
         fit_results_muon = read_data_from_JSON( muon_file )
         # fit_results_combined = read_data_from_JSON( combined_file )
         TTJet_fit_results_electron = fit_results_electron['TTJet']
         TTJet_fit_results_muon = fit_results_muon['TTJet']
         # TTJet_fit_results_combined = fit_results_combined['TTJet']
-        
+
     #     # change back to original MET type for the unfolding
     #     met_type = translate_options[options.metType]
     #     # ad-hoc switch for PFMET -> patMETsPFlow
     #     if met_type == 'PFMET':
     #         met_type = 'patMETsPFlow'
-        
+
         filename = ''
         phaseSpaceSuffix = 'FullPS'
         if visiblePS:
@@ -566,6 +527,6 @@ if __name__ == '__main__':
 
         filename = path_to_JSON + '/xsection_measurement_results_%s/combined/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
-        calculate_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )      
+        calculate_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix , True )

@@ -8,17 +8,16 @@ from rootpy.io import File
 from ROOT import gROOT, TH1F
 from rootpy.plotting import Hist
 gcd = gROOT.cd
-from rootpy.plotting import Hist
 from config.summations_common import b_tag_bins_inclusive, b_tag_summations
 from config.summations_common import b_tag_bins_exclusive
 
 def get_histogram_from_file( histogram_path, input_file ):
     current_btag, found_btag = find_btag(histogram_path)
-    
+
     root_file = File( input_file )
     get_histogram = root_file.Get
-    
-    
+
+
     if not found_btag or not current_btag in b_tag_summations.keys():
         root_histogram = get_histogram( histogram_path )
         if not is_valid_histogram( root_histogram, histogram_path, input_file ):
@@ -26,17 +25,17 @@ def get_histogram_from_file( histogram_path, input_file ):
     else:
         listOfExclusiveBins = b_tag_summations[current_btag]
         exclhists = []
-        
+
         for excbin in listOfExclusiveBins:
             hist = get_histogram( histogram_path.replace( current_btag, excbin ) )
             if not is_valid_histogram( hist, histogram_path.replace( current_btag, excbin ), input_file ):
                 return
             exclhists.append( hist )
         root_histogram = exclhists[0].Clone()
-        
+
         for hist in exclhists[1:]:
             root_histogram.Add( hist )
-    
+
     gcd()
     histogram = None
     # change from float to double
@@ -46,8 +45,8 @@ def get_histogram_from_file( histogram_path, input_file ):
     else:
         histogram = root_histogram.Clone()
     root_file.Close()
-    return histogram 
-    
+    return histogram
+
 def is_valid_histogram( histogram, histogram_name, file_name ):
     if not histogram:
         logging.error( 'Histogram \n"%s" \ncould not be found in root_file:\n%s' % ( histogram_name, file_name ) )
@@ -70,10 +69,10 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
         root_file = File( input_file )
         get_histogram = root_file.Get
         histograms[sample] = {}
-        
+
         for histogram_path in histogram_paths:
             current_btag, found_btag = find_btag(histogram_path)
-            
+
             root_histogram = None
             if not found_btag or not current_btag in b_tag_summations.keys():
                 root_histogram = get_histogram( histogram_path )
@@ -82,17 +81,17 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
             else:
                 listOfExclusiveBins = b_tag_summations[current_btag]
                 exclhists = []
-                
+
                 for excbin in listOfExclusiveBins:
                     hist = get_histogram( histogram_path.replace( current_btag, excbin ) )
                     if not is_valid_histogram( hist, histogram_path.replace( current_btag, excbin ), input_file ):
                         return
                     exclhists.append( hist )
                 root_histogram = exclhists[0].Clone()
-                
+
                 for hist in exclhists[1:]:
                     root_histogram.Add( hist )
-            
+
             gcd()
             nHistograms += 1
             histograms[sample][histogram_path] = root_histogram.Clone()
@@ -114,7 +113,7 @@ def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'Event
 
         get_tree = root_file.Get
         histograms[sample] = {}
-        
+
         for tree in trees:
 
             # print sample, tree, input_file
@@ -140,9 +139,9 @@ def get_histogram_info_tuple( histogram_in_path ):
     histogram_name = histogram_in_path.split( '/' )[-1]
     directory = ''.join( histogram_in_path.rsplit( histogram_name, 1 )[:-1] )
     b_tag_bin = histogram_name.split( '_' )[-1]
-    
-    return directory, histogram_name, b_tag_bin    
-        
+
+    return directory, histogram_name, b_tag_bin
+
 def set_root_defaults( set_batch = True, msg_ignore_level = 1001 ):
     # set to batch mode (or not)
     gROOT.SetBatch( set_batch )
