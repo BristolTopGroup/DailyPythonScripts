@@ -4,5 +4,5 @@ tar -cf dps.tar ../DailyPythonScripts/ --exclude ../DailyPythonScripts/data --ex
 echo "Submitting jobs to DICE..."
 condor_submit experimental/condor/01_fit.description
 echo "Done."
-condor_q
+condor_q `whoami`
 
