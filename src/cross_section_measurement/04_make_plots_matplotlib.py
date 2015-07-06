@@ -48,7 +48,7 @@ def read_xsection_measurement_results( category, channel ):
     
     if category == 'central':
         # true distributions
-        h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
+        h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], bin_edges[variable] )
         ### h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
         ### h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
         ### h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
@@ -60,10 +60,10 @@ def read_xsection_measurement_results( category, channel ):
         ### h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
         ### h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
         
-        h_normalised_xsection_pythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['pythia8'], bin_edges[variable] )
+        h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], bin_edges[variable] )
 
-        histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                     'pythia8':h_normalised_xsection_pythia8,
+        histograms_normalised_xsection_different_generators.update( {'amcatnlo':h_normalised_xsection_amcatnlo,
+                                                                     'madgraphMLM':h_normalised_xsection_madgraphMLM,
         ###                                                         # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
         ###                                                         # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
         ###                                                         # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
@@ -71,7 +71,7 @@ def read_xsection_measurement_results( category, channel ):
         ### if measurement_config.centre_of_mass_energy == 8:
         ###     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
         
-        histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
+        histograms_normalised_xsection_systematics_shifts.update( {'amcatnlo':h_normalised_xsection_amcatnlo,
                                                                   # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
                                                                   # 'matchingdown': h_normalised_xsection_mathchingdown,
                                                                   # 'matchingup': h_normalised_xsection_mathchingup,
@@ -353,13 +353,13 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             elif 'MADGRAPH_ptreweight' in key:
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kBlack )
-            elif 'MADGRAPH' in key:
+            elif 'amcatnlo' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor( kRed + 1 )
             elif 'matchingup' in key:
                 hist.linestyle = 'verylongdashdot'
                 hist.linecolor = 'orange'
-            elif 'MCATNLO'  in key or 'pythia8' in key or 'scaleup' in key:
+            elif 'MCATNLO'  in key or 'madgraphMLM' in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor( kMagenta + 3 )
             rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
@@ -447,10 +447,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         # legend for ratio plot
         p_stat = mpatches.Patch(facecolor='0.75', label='Stat.',alpha = 0.5, edgecolor='black' )
         p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5, edgecolor='black' )
-        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
+        l1 = ax1.legend([p_stat], loc = 'upper left',
                      frameon = False, prop = {'size':26})
         
-        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
+        ax1.legend([p_stat_and_syst], loc = 'lower left',
                      frameon = False, prop = {'size':26})
         ax1.add_artist(l1)
 
