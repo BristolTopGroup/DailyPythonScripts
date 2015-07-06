@@ -62,11 +62,11 @@ def main():
                       help = "Consider visible phase space or not" )
     ( options, args ) = parser.parse_args()
 
-    p_min = 0.5
-    s_min = 0.5
+    p_min = 0.6
+    s_min = 0.6
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 100
+    n_min = 200
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
@@ -98,7 +98,10 @@ def main():
             outputInfo['p_i'] = info['p_i']
             outputInfo['s_i'] = info['s_i']
             outputInfo['N'] = info['N']
-            write_data_to_JSON( outputInfo, 'unfolding/13TeV/binningInfo_%s_%s.txt' % ( variable, info['channel']  ) )
+            outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_FullPS.txt' % ( variable, info['channel'] )
+            if options.visiblePhaseSpace:
+                outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
+            write_data_to_JSON( outputInfo, outputJsonFile )
         print '=' * 120
 
 
@@ -130,11 +133,11 @@ def get_histograms( variable, options ):
         path_muon = 'unfolding_%s_analyser_muon_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
 
     histogram_information = [
-                {'file': config.unfolding_madgraph_raw,
+                {'file': config.unfolding_central_raw,
                  'CoM': 13,
                  'path':path_electron,
                  'channel':'electron'},
-                {'file':config.unfolding_madgraph_raw,
+                {'file':config.unfolding_central_raw,
                  'CoM': 13,
                  'path':path_muon,
                  'channel':'muon'},
