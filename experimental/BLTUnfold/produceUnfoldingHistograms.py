@@ -79,8 +79,9 @@ def getgenVariable_particle( recoVariable ):
 
 fileNames = {
              '13TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/TTJets_amc_tree.root',
-                    'pythia8' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/TTJets_Pythia8_tree.root',
+                    'central' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_tree.root',
+                    'amcatnlo' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_amc_tree.root',
+                    'madgraph' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_madgraph_tree.root',
                    #  'scaleup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaleup_8TeV.root',
                    #  'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
                    #  'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
