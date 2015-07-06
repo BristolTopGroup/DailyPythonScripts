@@ -34,6 +34,9 @@ control_plots_latex = {
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
+                        'amcatnlo': '$t\\bar{t}$ (MC@NLO)',
+                        'madgraphMLM': '$t\\bar{t}$ (MADGRAPH MLM)',
+
                         'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
                         'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO+Herwig)',
