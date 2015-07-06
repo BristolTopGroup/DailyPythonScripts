@@ -322,6 +322,12 @@ class XSectionConfig():
                    'WPT' : 0
                    }
 
+        self.tau_values_electron = {
+        }
+
+        self.tau_values_muon = {
+        }
+        
         self.categories_and_prefixes['PU_down'] = '_PU_64600mb'
         self.categories_and_prefixes['PU_up'] = '_PU_71400mb'
 
@@ -365,6 +371,12 @@ class XSectionConfig():
                    'MT' : 0,
                    'WPT' : 0
                    }
+
+        self.tau_values_electron = {
+        }
+
+        self.tau_values_muon = {
+        }
 
         self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
         self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
