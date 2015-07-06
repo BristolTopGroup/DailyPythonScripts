@@ -76,10 +76,13 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     for output_format in output_formats:
         plt.savefig( output_folder + save_as_name + '.' + output_format )
 
-def makePurityStabilityPlots(input_path, channel, variable):
+def makePurityStabilityPlots(input_path, channel, variable, isVisiblePhaseSpace):
     global output_folder, output_formats
+ 
+    inputFile = '%s/binningInfo_%s_%s_FullPS.txt' % ( input_path, variable, channel)
+    if isVisiblePhaseSpace:
+        inputFile = '%s/binningInfo_%s_%s_VisiblePS.txt' % ( input_path, variable, channel)        
 
-    inputFile = '%s/binningInfo_%s_%s.txt' % ( input_path, variable, channel)
     info = read_data_from_JSON(inputFile)
     hist_stability = value_tuplelist_to_hist(info['s_i'], bin_edges[variable])
     hist_purity = value_tuplelist_to_hist(info['p_i'], bin_edges[variable])
@@ -141,8 +144,8 @@ if __name__ == '__main__':
     make_folder_if_not_exists( output_folder )
 
     #hist_file = measurement_config.central_general_template % ( 'TTJet' )
-    hist_file = measurement_config.unfolding_madgraph_raw
-
+    hist_file = measurement_config.unfolding_central_raw
+    
     histogram_name = ''
     if options.visiblePhaseSpace:
         histogram_name = 'responseVis_without_fakes'
@@ -165,6 +168,6 @@ if __name__ == '__main__':
                 histogram_path = 'unfolding_%s_analyser_%s_channel/%s' % (variable, channel, histogram_name)
             else :
                 histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
-            # make_scatter_plot( hist_file, histogram_path, channel, variable, title )
+            make_scatter_plot( hist_file, histogram_path, channel, variable, title )
 
-            makePurityStabilityPlots(options.input_path, channel, variable)
+            makePurityStabilityPlots(options.input_path, channel, variable, options.visiblePhaseSpace)

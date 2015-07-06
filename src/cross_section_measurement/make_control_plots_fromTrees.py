@@ -101,6 +101,8 @@ def make_plot( channel, x_axis_title, y_axis_title,
         if use_qcd_data_region:
             qcd_data_region = 'QCD non iso mu+jets ge3j'
 
+    for sample in histogram_files:
+        print sample, histogram_files[sample]
     # Get all histograms
     # multi = isinstance( signal_region, list )
     # histograms = {}
@@ -268,18 +270,18 @@ if __name__ == '__main__':
 
     # getting normalisations
     normalisations_electron = {
-            'MET':get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, met_type ),
-            'HT':get_fitted_normalisation( 'HT', 'electron', path_to_JSON, category, met_type ),
-            'ST':get_fitted_normalisation( 'ST', 'electron', path_to_JSON, category, met_type ),
-            'MT':get_fitted_normalisation( 'MT', 'electron', path_to_JSON, category, met_type ),
-            'WPT':get_fitted_normalisation( 'WPT', 'electron', path_to_JSON, category, met_type )
+            # 'MET':get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, met_type ),
+            # 'HT':get_fitted_normalisation( 'HT', 'electron', path_to_JSON, category, met_type ),
+            # 'ST':get_fitted_normalisation( 'ST', 'electron', path_to_JSON, category, met_type ),
+            # 'MT':get_fitted_normalisation( 'MT', 'electron', path_to_JSON, category, met_type ),
+            # 'WPT':get_fitted_normalisation( 'WPT', 'electron', path_to_JSON, category, met_type )
             }
     normalisations_muon = {
-            'MET':get_fitted_normalisation( 'MET', 'muon', path_to_JSON, category, met_type ),
-            'HT':get_fitted_normalisation( 'HT', 'muon', path_to_JSON, category, met_type ),
-            'ST':get_fitted_normalisation( 'ST', 'muon', path_to_JSON, category, met_type ),
-            'MT':get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, met_type ),
-            'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
+            # 'MET':get_fitted_normalisation( 'MET', 'muon', path_to_JSON, category, met_type ),
+            # 'HT':get_fitted_normalisation( 'HT', 'muon', path_to_JSON, category, met_type ),
+            # 'ST':get_fitted_normalisation( 'ST', 'muon', path_to_JSON, category, met_type ),
+            # 'MT':get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, met_type ),
+            # 'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
             }
     title_template = '$%.1f$ fb$^{-1}$ (%d TeV)'
     e_title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
@@ -289,15 +291,14 @@ if __name__ == '__main__':
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-
-                        # 'HT',
-                        # 'MET',
-                        # 'ST',
-                        # 'WPT',
+                        'HT',
+                        'MET',
+                        'ST',
+                        'WPT',
                         # 'M3',
                         # 'angle_bl',
                         'NJets',
-                        'NBJets',
+                        # 'NBJets',
                         ]
     additional_qcd_plots = [
                             ]
@@ -305,7 +306,8 @@ if __name__ == '__main__':
         include_plots.extend( additional_qcd_plots )
 
 
-    for channel, label in {'electron' : 'EPlusJets', 
+    for channel, label in {
+                            'electron' : 'EPlusJets', 
                             'muon' : 'MuPlusJets'
                             }.iteritems() :
         # Set folder for this batch of plots
@@ -317,6 +319,7 @@ if __name__ == '__main__':
         ###################################################
         norm_variable = 'HT'
         if 'HT' in include_plots:
+            print '---> HT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
                       y_axis_title = 'Events/(20 GeV)',
@@ -336,6 +339,7 @@ if __name__ == '__main__':
         ###################################################
         norm_variable = 'MET'
         if 'MET' in include_plots:
+            print '---> MET'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
                       y_axis_title = 'Events/(20 GeV)',
@@ -355,6 +359,7 @@ if __name__ == '__main__':
         ###################################################
         norm_variable = 'ST'
         if 'ST' in include_plots:
+            print '---> ST'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
                       y_axis_title = 'Events/(20 GeV)',
@@ -374,6 +379,7 @@ if __name__ == '__main__':
         ###################################################
         norm_variable = 'WPT'
         if 'WPT' in include_plots:
+            print '---> WPT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
                       y_axis_title = 'Events/(20 GeV)',
@@ -397,6 +403,7 @@ if __name__ == '__main__':
         # M3
         ###################################################
         if 'M3' in include_plots:
+            print '---> M3'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % fit_variables_latex['M3'],
                       y_axis_title = 'Events/(X GeV)',
@@ -415,6 +422,7 @@ if __name__ == '__main__':
         # angle_bl
         ###################################################
         if 'angle_bl' in include_plots:
+            print '---> angle_bl'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % fit_variables_latex['angle_bl'],
                       y_axis_title = 'Events',
@@ -437,6 +445,7 @@ if __name__ == '__main__':
         # NJets
         ###################################################
         if 'NJets' in include_plots:
+            print '---> NJets'
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['NJets'],
                       y_axis_title = 'Events',
@@ -469,6 +478,7 @@ if __name__ == '__main__':
         # NBJets
         ###################################################
         if 'NBJets' in include_plots:
+            print '---> NBJets'
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['NBJets'],
                       y_axis_title = 'Events',
