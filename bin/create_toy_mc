@@ -6,9 +6,9 @@ N_JOBS=4
 N_toy=300
 
 i=0
-for var in MET HT ST WPT MT; do
+for var in MET HT ST WPT; do
 	echo "Creating toy MC for: $var"
-	for energy in 7 8; do
+	for energy in 7 8 13; do
 		nohup time python src/unfolding_tests/create_toy_mc.py -V -v $var -c $energy --n_toy_mc=$N_toy &> logs/${var}_${N_toy}_toy_MC_${energy}TeV.log &
 		let i+=1
 		if (( $i % N_JOBS == 0 ))
