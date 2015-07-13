@@ -223,8 +223,8 @@ def get_best_tau_from_global_correlation( regularisation_settings ):
     h_truth, h_response, h_measured, h_data = regularisation_settings.get_histograms()
     n_toy = regularisation_settings.n_toy   
     number_of_iterations = regularisation_settings.n_tau_scan_points
-    tau_min = 0
-    tau_max = 100
+    tau_min = 10
+    tau_max = 100000
     optimal_tau = 0
     minimal_rho = 9999
     tau_values = []
@@ -376,6 +376,8 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
         else:
             headers = ['Variable', 'best k', 'rho (best k)', 'best tau', 'rho (best tau)']
         data = []
+        configOutputElectron = {}
+        configOutputMuon = {}        
         measurement_config = XSectionConfig(com)
         for variable in result_dict[com].keys():
             has_both_channels = len(result_dict[com][variable]) == 2
@@ -384,6 +386,9 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
                 electron_results = result_dict[com][variable]['electron']
                 muon_results = result_dict[com][variable]['muon']
                 
+                configOutputElectron[variable] = electron_results[1][0]
+                configOutputMuon[variable] = muon_results[1][0]
+
                 entry = []
                 if use_current_k_values:
                     electron_set = get_k_tau_set(measurement_config, 'electron',
@@ -409,7 +414,12 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
             else:
                 channel = result_dict[com][variable].keys()[0]
                 results = result_dict[com][variable][channel]
-                
+                print channel
+                if channel == 'electron':
+                    configOutputElectron[variable] = results[1][0]
+                else :
+                    configOutputMuon[variable] = results[1][0]
+
                 if use_current_k_values:
                     result_set = get_k_tau_set(measurement_config, channel,
                                                 variable, results)
@@ -428,7 +438,18 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
                              ]
                     
                 data.append(entry)
-    
+        
+        print '\nOutput for __init__\n'
+        print configOutputElectron
+        print configOutputMuon
+        print 'Electron'
+        for var in configOutputElectron:
+            print '"%s" : %s,' % (var, configOutputElectron[var])
+        print '\n'
+        print 'Muon'
+        for var in configOutputMuon:
+            print '"%s" : %s,' % (var, configOutputMuon[var])
+        print '\n'
         table = PrintTable(data, headers)
         
         print 'Printing table for sqrt(s) = %d TeV' % com
@@ -445,7 +466,7 @@ def get_k_tau_set(config, channel, variable, results):
     k_results, tau_results = results
     optimal_tau, _, tau_values, rho_values = tau_results
     optimal_k, _, k_values, _, k_rho_values = k_results
-    
+
     current_k = config.k_values_electron[variable]
     rho_index = k_values.index(current_k)
     current_k_rho = k_rho_values[rho_index]

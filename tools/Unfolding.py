@@ -218,7 +218,8 @@ def get_unfold_histogram_tuple(
                 ttbar_xsection = 245.8,
                 luminosity = 19712,
                 load_fakes = False,
-                scale_to_lumi = True,
+                scale_to_lumi = False,
+                visiblePS = False,
                 ):
     folder = None
     h_truth = None
@@ -231,13 +232,22 @@ def get_unfold_histogram_tuple(
         else:
             folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
         
-        h_truth = asrootpy( folder.truth.Clone() )
-        h_measured = asrootpy( folder.measured.Clone() )
-        # response matrix is always without fakes
-        # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
-        # or manually for TSVDUnfold
-        # fix for a bug/typo in NTupleTools
-        h_response = asrootpy( folder.response_without_fakes.Clone() )
+        if visiblePS:
+            h_truth = asrootpy( folder.truthVis.Clone() )
+            h_measured = asrootpy( folder.measured.Clone() )
+            # response matrix is always without fakes
+            # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
+            # or manually for TSVDUnfold
+            # fix for a bug/typo in NTupleTools
+            h_response = asrootpy( folder.responseVis_without_fakes.Clone() )
+        else :
+            h_truth = asrootpy( folder.truth.Clone() )
+            h_measured = asrootpy( folder.measured.Clone() )
+            # response matrix is always without fakes
+            # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
+            # or manually for TSVDUnfold
+            # fix for a bug/typo in NTupleTools
+            h_response = asrootpy( folder.response_without_fakes.Clone() )
 
         if load_fakes:
             h_fakes = asrootpy( folder.fake.Clone() )
@@ -250,6 +260,7 @@ def get_unfold_histogram_tuple(
                                                    luminosity = luminosity,
                                                    load_fakes = load_fakes,
                                                    scale_to_lumi = scale_to_lumi,
+                                                   visiblePS = visiblePS,
                                                    )
 
     if scale_to_lumi:
@@ -276,6 +287,7 @@ def get_combined_unfold_histogram_tuple(
                 luminosity = 19712,
                 load_fakes = False,
                 scale_to_lumi = True,
+                visiblePS = False
                 ):
     
     h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple( inputfile = inputfile,
@@ -287,6 +299,7 @@ def get_combined_unfold_histogram_tuple(
                                                                                   luminosity = luminosity,
                                                                                   load_fakes = load_fakes,
                                                                                   scale_to_lumi = scale_to_lumi,
+                                                                                  visiblePS = visiblePS,
                                                                                   )
     h_truth_mu, h_measured_mu, h_response_mu, h_fakes_mu = get_unfold_histogram_tuple( inputfile = inputfile,
                                                                                   variable = variable,
@@ -297,6 +310,7 @@ def get_combined_unfold_histogram_tuple(
                                                                                   luminosity = luminosity,
                                                                                   load_fakes = load_fakes,
                                                                                   scale_to_lumi = scale_to_lumi,
+                                                                                  visiblePS = visiblePS,
                                                                                   )
     # summing histograms, the errors are added in quadrature
     h_truth = h_truth_e + h_truth_mu

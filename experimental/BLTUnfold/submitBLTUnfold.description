@@ -1,4 +1,4 @@
-Executable = DailyPythonScripts/experimental/BLTUnfold/runCondor.sh
+Executable = experimental/BLTUnfold/runCondor.sh
 Universe = vanilla
 Output = bltUnfold.job.$(cluster).$(process).out
 Error = bltUnfold.job.$(cluster).$(process).err
@@ -15,4 +15,4 @@ request_memory=500
 # use the ENV that is provided
 getenv = true
 
-queue 2
+queue 3

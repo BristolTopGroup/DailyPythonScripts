@@ -35,15 +35,15 @@ def values_and_errors_to_hist( values, errors, bins ):
 def value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges ):
     value_error_tuplelist = [( value, 0 ) for value, lower_error, upper_error in value_errors_tuplelist]
     hist = value_error_tuplelist_to_hist( value_error_tuplelist, bin_edges )
-    rootpy_graph = asrootpy( TGraphAsymmErrors( hist ) ) 
+    rootpy_graph = asrootpy( TGraphAsymmErrors( hist ) )
 #    rootpy_graph = Graph(hist = hist)
     set_lower_error = rootpy_graph.SetPointEYlow
     set_upper_error = rootpy_graph.SetPointEYhigh
-    
+
     for point_i, ( value, lower_error, upper_error ) in enumerate( value_errors_tuplelist ):
         set_lower_error( point_i, lower_error )
         set_upper_error( point_i, upper_error )
-        
+
     return rootpy_graph
 
 def graph_to_value_errors_tuplelist( graph ):
@@ -89,7 +89,7 @@ def scale_histogram_errors( histogram, total_error ):
     bins_number = histogram.GetNbinsX()
     current_total_error = sum( histogram.yerravg() )
     scale_factor = total_error / current_total_error
-    
+
     for bin_i in range( bins_number ):
         histogram.SetBinError( bin_i + 1, scale_factor * histogram.GetBinError( bin_i + 1 ) )
 
@@ -137,13 +137,13 @@ def rebin_asymmetric( histogram, bins ):
 
 def spread_x( histograms, bin_edges ):
     """
-        Usually when plotting multiple histograms with same x-values and 
+        Usually when plotting multiple histograms with same x-values and
         similar y-values their markers will overlap. This function spreads
         the data points across a bin. It creates a set of graphs with the
         same y-values but different x.
-        
+
         @param histograms: list of histograms with same binning
-        @param bin_edges: the bin edges of the histograms 
+        @param bin_edges: the bin edges of the histograms
     """
     # construct bins from the bin edges
     bins = [( bin_lower, bin_upper ) for bin_lower, bin_upper in izip( bin_edges[:-1], bin_edges[1:] )]
@@ -157,18 +157,18 @@ def spread_x( histograms, bin_edges ):
     for bin_lower, width in izip( bin_edges, bin_widths ):
         x_step = width / ( 1.0 * number_of_hists + 1 )  # +1 due to spacing to bin edge
         add_locations( [bin_lower + n * x_step for n in range( 1, number_of_hists + 1 )] )
-    
+
     # transpose
     x_locations = map( list, zip( *x_locations ) )
-    
+
     graphs = []
     for histogram, x_coordinates in zip( histograms, x_locations ):
         g = Graph( histogram )
         for i, ( x, y ) in enumerate( zip( x_coordinates, histogram.y() ) ):
             g.SetPoint( i, x, y )
-        
+
         graphs.append( g )
-        
+
     return graphs
 
 def limit_range_y( histogram ):
@@ -184,16 +184,16 @@ def limit_range_y( histogram ):
 def fix_overflow( hist ):
     ''' Moves entries from the overflow bin into the last bin as we treat the last bin as everything > last_bin.lower_edge.
     This is to fix a bug in the unfolding workflow where we neglect this treatment.'''
-    
+
     if 'TH1' in hist.class_name():
         last_bin = hist.nbins()
         overflow_bin = last_bin + 1
         overflow = hist.GetBinContent( overflow_bin )
         overflow_error= hist.GetBinError( overflow_bin )
-        
+
         new_last_bin_content = hist.GetBinContent( last_bin ) + overflow
         new_last_bin_error = hist.GetBinError( last_bin ) + overflow_error
-        
+
         hist.SetBinContent( last_bin, new_last_bin_content )
         hist.SetBinError( last_bin, new_last_bin_error )
         hist.SetBinContent( overflow_bin, 0. )
@@ -206,10 +206,10 @@ def fix_overflow( hist ):
         for x in range( 1, overflow_bin_x +1):
             overflow_y = hist.GetBinContent( x, overflow_bin_y )
             overflow_error_y = hist.GetBinError( x, overflow_bin_y )
-            
+
             last_bin_content_y = hist.GetBinContent( x, last_bin_y )
             last_bin_error_y = hist.GetBinError( x, last_bin_y )
-            
+
             hist.SetBinContent( x, overflow_bin_y, 0. )
             hist.SetBinContent( x, last_bin_y, overflow_y + last_bin_content_y )
             hist.SetBinError( x, last_bin_y, overflow_error_y + last_bin_error_y )
@@ -217,10 +217,10 @@ def fix_overflow( hist ):
         for y in range( 1, overflow_bin_y +1):
             overflow_x = hist.GetBinContent( overflow_bin_x, y )
             overflow_error_x = hist.GetBinError( overflow_bin_x, y )
-            
+
             last_bin_content_x = hist.GetBinContent( last_bin_x, y )
             last_bin_error_x = hist.GetBinError( last_bin_x, y )
-            
+
             hist.SetBinContent( overflow_bin_x, y, 0. )
             hist.SetBinContent( last_bin_x, y, overflow_x + last_bin_content_x )
             hist.SetBinError( last_bin_x, y, overflow_error_x + last_bin_error_x )
@@ -238,10 +238,10 @@ def fix_overflow( hist ):
 def transfer_values_without_overflow( histogram ):
     if histogram == None:
         return histogram
-    
+
     histogram_new = None
     if 'TH1' in histogram.class_name():
-        histogram_new = Hist( list( histogram.xedges() ), type = 'D' ) 
+        histogram_new = Hist( list( histogram.xedges() ), type = 'D' )
         n_bins = histogram_new.nbins()
         for i in range(1, n_bins + 1):
             histogram_new.SetBinContent(i, histogram.GetBinContent(i))
@@ -256,25 +256,25 @@ def transfer_values_without_overflow( histogram ):
                 histogram_new.SetBinError(i,j, histogram.GetBinError(i, j))
     else:
         raise Exception("Unknown type of histogram in transfer_values_without_overflow")
-    
+
     return histogram_new
-    
+
 def rebin_2d( hist_2D, bin_edges_x, bin_edges_y ):
-    # since there is no easy way to rebin a 2D histogram, lets make it from 
+    # since there is no easy way to rebin a 2D histogram, lets make it from
     # scratch
     random_string = ''.join( random.choice( string.ascii_uppercase + string.digits ) for _ in range( 6 ) )
-    hist = Hist2D( bin_edges_x, bin_edges_y, name = hist_2D.GetName() + '_rebinned_' + random_string )  
+    hist = Hist2D( bin_edges_x, bin_edges_y, name = hist_2D.GetName() + '_rebinned_' + random_string )
     n_bins_x = hist_2D.nbins()
     n_bins_y = hist_2D.nbins( axis = 1 )
-    
+
     fill = hist.Fill
     get = hist_2D.GetBinContent
     x_axis_centre = hist_2D.GetXaxis().GetBinCenter
     y_axis_centre = hist_2D.GetYaxis().GetBinCenter
-    for i in range( 1, n_bins_x + 1 ):
-        for j in range( 1, n_bins_y + 1 ):
+    for i in range( 0, n_bins_x + 1 ):
+        for j in range( 0, n_bins_y + 1 ):
             fill( x_axis_centre( i ), y_axis_centre( j ), get( i, j ) )
-    
+
     return hist
 
 def conditional_rebin( histogram, bin_edges ):
@@ -290,12 +290,12 @@ def conditional_rebin( histogram, bin_edges ):
                 histogram_ = histogram_.rebinned( bin_edges, axis = 1 )
     return histogram_
 
-def clean_control_region(histograms = {}, 
-                         data_label = 'data', 
-                         subtract = [], 
+def clean_control_region(histograms = {},
+                         data_label = 'data',
+                         subtract = [],
                          fix_to_zero = True):
     '''This function takes a dictionary of histograms (sample_name:histogram)
-     and will subtract all samples given in the parameter "subtract" from the 
+     and will subtract all samples given in the parameter "subtract" from the
      data distribution.
      '''
     data_hist = deepcopy(histograms[data_label])
@@ -327,13 +327,13 @@ def adjust_overflow_to_limit(histogram, x_min, x_max):
         for i in range(underflow_bin + 1):
             histogram_.SetBinContent(i, 0)
             histogram_.SetBinError(i, 0)
-    
+
     if not overflow_bin > n_bins:
         overflow, overflow_error = histogram_.integral(overflow_bin, n_bins + 1, error=True)
         for i in range(overflow_bin, n_bins + 2):
             histogram_.SetBinContent(i, 0)
             histogram_.SetBinError(i, 0)
-    
+
     histogram_.SetBinContent(underflow_bin, underflow)
     histogram_.SetBinError(underflow_bin, underflow_error)
     histogram_.SetBinContent(overflow_bin, overflow)
@@ -403,7 +403,7 @@ def get_normalisation_error( normalisation ):
         total_error += number[1]
     return total_error / total_normalisation
 
-def get_fit_results_histogram( data_path = 'data/absolute_eta_M3_angle_bl',
+def get_fit_results_histogram( data_path = 'data/M3_angle_bl',
                                centre_of_mass = 8,
                                channel = 'electron',
                                variable = 'MET',
@@ -476,7 +476,7 @@ if __name__ == '__main__':
     plt.legend( numpoints = 1 )
     plt.savefig( 'Array2Hist.png' )
     plt.close()
-      
+
     value_errors_tuplelist = [( 0.006480446927374301, 0.0004647547547401945, 0.0004647547547401945 * 2 ),
                              ( 0.012830288388947605, 0.0010071677178938234, 0.0010071677178938234 * 2 ),
                              ( 0.011242639287332025, 0.000341258792551077 * 2, 0.000341258792551077 ),
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     hist = value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges = [0, 25, 45, 70, 100, 300] )
     tuplelist = graph_to_value_errors_tuplelist( hist )
     assert tuplelist == value_errors_tuplelist
-  
+
     plt.figure( figsize = ( 16, 10 ), dpi = 100 )
     plt.figure( 1 )
     rplt.errorbar( hist, label = 'test2' )
