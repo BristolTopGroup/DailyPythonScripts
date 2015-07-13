@@ -1,7 +1,7 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
 from copy import deepcopy
-from config.latex_labels import variables_latex, measurements_latex, met_systematics_latex, samples_latex, typical_systematics_latex
+from config.latex_labels import variables_latex, measurements_latex, samples_latex, typical_systematics_latex
 from config.variable_binning import variable_bins_latex, variable_bins_ROOT
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
@@ -356,7 +356,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             if rows.has_key(source):
                 rows[source].append(text)
             elif met_type in source:
-                rows[source] = [met_systematics_latex[source.replace(met_type, '')] + ' (\%)', text]
+                rows[source] = [measurements_latex[source.replace(met_type, '')] + ' (\%)', text]
             else:
                 rows[source] = [measurements_latex[source] + ' (\%)', text]
 
@@ -570,7 +570,7 @@ if __name__ == '__main__':
     translate_options = measurement_config.translate_options
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
-    met_systematics_suffixes = measurement_config.met_systematics_suffixes
+    met_systematics = measurement_config.met_systematics
     typical_systematics = measurement_config.typical_systematics
 
     variable = options.variable
@@ -608,7 +608,7 @@ if __name__ == '__main__':
     ###categories.extend( measurement_config.kValueSystematic )
 
     ### # all MET uncertainties except JES as this is already included
-    ### met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    ### met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
     ### new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
     all_measurements = deepcopy(categories)
@@ -626,8 +626,8 @@ if __name__ == '__main__':
         print_error_table(normalised_xsection_measured_unfolded, normalised_xsection_unfolded_errors, channel, toFile = True, print_before_unfolding = False)
         print_error_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
 
-        if channel == 'combined':
-            print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_unfolded_errors, channel, toFile = True, print_before_unfolding = False)
+        # if channel == 'combined':
+            # print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_unfolded_errors, channel, toFile = True, print_before_unfolding = False)
 #             print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
 
         if not channel == 'combined':

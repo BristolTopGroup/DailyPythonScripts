@@ -30,7 +30,7 @@ class XSectionConfig():
                   'k_values_combined', 'k_values_electron', 'k_values_muon',
                   'tau_values_electron', 'tau_values_muon',
                   'known_centre_of_mass_energies', 'luminosities',
-                  'luminosity', 'luminosity_scale', 'met_systematics_suffixes',
+                  'luminosity', 'luminosity_scale', 'met_systematics',
                   'muon_QCD_MC_category_templates', 'muon_QCD_MC_file',
                   'muon_QCD_file', 'muon_control_region',
                   'muon_control_region_systematic', 'new_luminosity',
@@ -73,20 +73,20 @@ class XSectionConfig():
         self.luminosity = self.luminosities[self.centre_of_mass_energy]
 
         # general
-        self.met_systematics_suffixes = [
-                                         "ElectronEnUp",
-                                         "ElectronEnDown",
-                                         "MuonEnUp",
-                                         "MuonEnDown",
-                                         "TauEnUp",
-                                         "TauEnDown",
-                                         "JetResUp",
-                                         "JetResDown",
-                                         "JetEnUp",
-                                         "JetEnDown",
-                                         "UnclusteredEnUp",
-                                         "UnclusteredEnDown"
-                                        ]
+        self.met_systematics = {
+                                 'ElectronEnUp' : 6,
+                                 'ElectronEnDown' : 7,
+                                 'MuonEnUp' : 4,
+                                 'MuonEnDown' : 5,
+                                 'TauEnUp' : 8,
+                                 'TauEnDown' : 9,
+                                 'JetResUp' : 0,
+                                 'JetResDown' : 1,
+                                 'JES_up' : 2,
+                                 'JES_down' : 3,
+                                 'UnclusteredEnUp' : 10,
+                                 'UnclusteredEnDown' : 11,
+                                }
 
         self.analysis_types = {
                 'electron':'EPlusJets',
@@ -177,8 +177,18 @@ class XSectionConfig():
                  # 'JER_up':'_plusJER',
                  # 'LightJet_down':'_minusLightJet',
                  # 'LightJet_up':'_plusLightJet',
-                 }
 
+
+                 # Other MET uncertainties not already included
+                 'ElectronEnUp' : '',
+                 'ElectronEnDown' : '',
+                 'MuonEnUp' : '',
+                 'MuonEnDown' : '',
+                 'TauEnUp' : '',
+                 'TauEnDown' : '',
+                 'UnclusteredEnUp' : '',
+                 'UnclusteredEnDown' : '',
+                 }
         # now fill in the centre of mass dependent values
         if self.centre_of_mass_energy == 7:
             self.__fill_defaults_7TeV__()
@@ -187,8 +197,11 @@ class XSectionConfig():
         elif self.centre_of_mass_energy == 13:
             self.__fill_defaults_13TeV__()
 
-        self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
-        self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
+        self.generator_systematics = [ 
+                                        # 'matchingup', 'matchingdown', 
+                                        'scaleup', 'scaledown',
+                                        'massup', 'massdown'
+                                      ]
         self.topMasses = [169.5, 172.5, 173.5]
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
@@ -296,6 +309,50 @@ class XSectionConfig():
         self.include_higgs = False
 
         self.luminosity_scale = self.new_luminosity / self.luminosity
+
+        self.typical_systematics = {
+        #                               "typical_systematics_electron": ['Electron_down',
+        #                                                   'Electron_up'],
+        #                  "typical_systematics_muon": ['Muon_down',
+        #                                                'Muon_up'],
+        #                  "typical_systematics_btagging": ['BJet_down',
+        #                                                    'BJet_up'],
+        #                  "typical_systematics_JES": ['JES_down',
+        #                                               'JES_up'],
+        #                  "typical_systematics_JER": ['JER_down',
+        #                                               'JER_up'],
+        #                  "typical_systematics_PU": ['PU_down',
+        #                                              'PU_up'],
+        #                 "typical_systematics_hadronisation": ['hadronisation'],
+        #                 "typical_systematics_QCD_shape": ['QCD_shape'],
+        #                  "typical_systematics_PDF": ['PDF_total_lower',
+        #                                               'PDF_total_upper'],
+        #                  "typical_systematics_top_mass": ['TTJets_massdown',
+        #                                                    'TTJets_massup'],
+        #                  "typical_systematics_background_other": ["TTJet_cross_section+",
+        #                                                            "TTJet_cross_section-",
+        #                                                            "SingleTop_cross_section+",
+        #                                                            "SingleTop_cross_section-",
+        #                                                            "luminosity+",
+        #                                                            "luminosity-"],
+        #                 "typical_systematics_theoretical": ["TTJets_matchingup",
+        #                                                      "TTJets_matchingdown",
+        #                                                      "VJets_matchingup",
+        #                                                      'VJets_matchingdown',
+        #                                                      "TTJets_scaleup",
+        #                                                      "TTJets_scaledown",
+        #                                                      "VJets_scaleup",
+        #                                                      "VJets_scaledown"],
+        #                 "typical_systematics_MET": ["patType1CorrectedPFMetElectronEnUp",
+        #                                              "patType1CorrectedPFMetElectronEnDown",
+        #                                              "patType1CorrectedPFMetMuonEnUp",
+        #                                              "patType1CorrectedPFMetMuonEnDown",
+        #                                              "patType1CorrectedPFMetTauEnUp",
+        #                                              "patType1CorrectedPFMetTauEnDown",
+        #                                              "patType1CorrectedPFMetUnclusteredEnUp",
+        #                                              "patType1CorrectedPFMetUnclusteredEnDown"],
+        #                 "typical_systematics_pt_reweight": ['ptreweight_max']
+                       }
 
     def __fill_defaults_7TeV__( self ):
         middle = self.middle
@@ -464,11 +521,11 @@ class XSectionConfig():
         self.tau_values_electron = {
                     "hadTopRap" : 10.0,
                     "lepTopPt" : 53.3669923121,
-                    "WPT" : 19.1791026167,
-                    "HT" : 15.9228279334,
-                    "ST" : 15.9228279334,
+"WPT" : 16.681005372,
+"HT" : 2.5950242114,
+"ST" : 11.497569954,
                     "hadTopPt" : 58.5702081806,
-                    "MET" : 23.1012970008,
+"MET" : 20.0923300257,
                     "ttbarPt" : 27.8255940221,
                     "ttbarM" : 21.0490414451,
                     "lepTopRap" : 10.0,
@@ -478,11 +535,11 @@ class XSectionConfig():
         self.tau_values_muon = {
                     "hadTopRap" : 10.0,
                     "lepTopPt" : 546.227721768,
-                    "WPT" : 236.448941265,
-                    "HT" : 58.5702081806,
-                    "ST" : 102.35310219,
+"WPT" : 16.681005372,
+"HT" : 9.54548456662,
+"ST" : 26.5608778295,
                     "hadTopPt" : 453.487850813,
-                    "MET" : 284.803586844,
+"MET" : 38.5352859371,
                     "ttbarPt" : 312.571584969,
                     "ttbarM" : 196.304065004,
                     "lepTopRap" : 10.0,

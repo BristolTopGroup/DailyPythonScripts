@@ -16,7 +16,7 @@ from tools.ROOT_utils import set_root_defaults, get_histograms_from_trees
 from tools.hist_utilities import clean_control_region, adjust_overflow_to_limit, get_data_derived_qcd
 from lib import closure_tests
 
-def get_histograms( channel, input_files, variable, met_type, variable_bin,
+def get_histograms( channel, input_files, variable, met_systematic, met_type, variable_bin,
                    b_tag_bin, 
                    treePrefix, weightBranch,
                    rebin = 1, fit_variable = 'absolute_eta',
@@ -57,13 +57,21 @@ def get_histograms( channel, input_files, variable, met_type, variable_bin,
         # else:
         #     fit_variable_name_data = fit_variable_name
 
+
+    variableForSelection = variable
+    if met_systematic:
+        if variable == 'MET':
+            variableForSelection = 'MET_METUncertainties[%i]' % met_systematics[met_systematic]
+        elif variable == 'ST':
+            variableForSelection = 'ST_METUncertainties[%i]' % met_systematics[met_systematic]
+
     # Work out bin of variable
     minVar = variable_bin.split('-')[0]
     maxVar = variable_bin.split('-')[-1]
     if maxVar != 'inf' :
-        selection = '%s >= %s && %s < %s' % ( variable, minVar, variable, maxVar)
+        selection = '%s >= %s && %s < %s' % ( variableForSelection, minVar, variableForSelection, maxVar)
     else :
-        selection = '%s >= %s' % ( variable, minVar )
+        selection = '%s >= %s' % ( variableForSelection, minVar )
 
 
     # Get inclusive template for these (i.e. don't split up fit variable in bins of MET or whatever)
@@ -141,7 +149,7 @@ def get_inclusive_histogram( inclusive_hist, exclusive_hist ):
 
     return inclusive_hist
 
-def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type, b_tag_bin, treePrefix, weightBranch, scale_factors = None ):
+def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_systematic, met_type, b_tag_bin, treePrefix, weightBranch, scale_factors = None ):
     '''
     Retrieves the number of ttbar events from fits to one or more distribution
     (fit_variables) for each bin in the variable.
@@ -162,6 +170,7 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
             histograms = get_histograms( channel,
                                         input_files,
                                         variable = variable,
+                                        met_systematic = met_systematic,
                                         met_type = met_type,
                                         variable_bin = variable_bin,
                                         b_tag_bin = b_tag_bin,
@@ -376,7 +385,7 @@ if __name__ == '__main__':
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     generator_systematics = measurement_config.generator_systematics
     categories_and_prefixes = measurement_config.categories_and_prefixes
-    met_systematics_suffixes = measurement_config.met_systematics_suffixes
+    met_systematics = measurement_config.met_systematics
     analysis_type = measurement_config.analysis_types
     run_just_central = options.closure_test or options.test
 
@@ -464,7 +473,6 @@ if __name__ == '__main__':
     VJets_file = measurement_config.VJets_category_templates_trees['central']
     del scale_factors
 
-
     allCategories = categories_and_prefixes
     allCategories.update( measurement_config.rate_changing_systematics )
 
@@ -474,6 +482,8 @@ if __name__ == '__main__':
         if run_just_central and not category == 'central': 
             continue
 
+        if not ( category == 'central' or category == 'MuonEnUp' ):
+            continue
         print 'Doing category :',category
         # Will want to use central template for rate changing systematic
         categoryForTemplates = category
@@ -482,8 +492,18 @@ if __name__ == '__main__':
         # For other systematics and central, use different weights
         treePrefix = ''
         weightBranch = ''
+        met_systematic = ''
         if category in ['JES_up', 'JES_down', 'JES_up_alphaCorr', 'JES_down_alphaCorr']:
+
             treePrefix = prefix
+            met_systematic = category
+            # print variable
+            # if 'MET' in variable :
+            #     print 'Changing variable from ',variable
+            #     variable = 'MET_Uncertainties[2]'
+            #     print 'to',variable
+        elif category in met_systematics.keys():
+            met_systematic = category
         elif category not in measurement_config.rate_changing_systematics:
             weightBranch = prefix
 
@@ -534,6 +554,7 @@ if __name__ == '__main__':
                                    'data': data_file_electron,
                                    },
                       variable = variable,
+                      met_systematic = met_systematic,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
                       treePrefix = treePrefix,
@@ -551,6 +572,7 @@ if __name__ == '__main__':
                                    'data': data_file_muon,
                                    },
                       variable = variable,
+                      met_systematic = met_systematic,
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
                       treePrefix = treePrefix,
@@ -572,53 +594,11 @@ if __name__ == '__main__':
  
 
 
-    data_file_electron = File( measurement_config.data_electron_category_templates_trees )
-    data_file_muon = File( measurement_config.data_muon_category_templates_trees )
-    TTJet_file = File( measurement_config.ttbar_category_templates_trees['central'] )
-    SingleTop_file = File( measurement_config.SingleTop_category_templates_trees['central'] )
-    VJets_file = File( measurement_config.VJets_category_templates_trees['central'] )
- 
-    # for met_systematic in met_systematics_suffixes:
-    #     if run_just_central: 
-    #         continue
-    #     # all MET uncertainties except JES & JER - as this is already included
-    #     if 'JetEn' in met_systematic or 'JetRes' in met_systematic or variable == 'HT':  # HT is not dependent on MET!
-    #         continue
-    #     category = met_type + met_systematic
-    #     if 'PFMET' in met_type:
-    #         category = category.replace( 'PFMET', 'patPFMet' )
- 
-    #     if verbose:
-    #         print "\n" + met_systematic + "\n"
- 
-    #     fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
-    #                   input_files = {
-    #                                'TTJet': TTJet_file,
-    #                                'SingleTop': SingleTop_file,
-    #                                'V+Jets': VJets_file,
-    #                                'data': data_file_electron,
-    #                                'Higgs' : Higgs_file,
-    #                                },
-    #                   variable = variable,
-    #                   met_type = category,
-    #                   b_tag_bin = b_tag_bin,
-    #                   )
- 
-    #     fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
-    #                   input_files = {
-    #                                'TTJet': TTJet_file,
-    #                                'SingleTop': SingleTop_file,
-    #                                'V+Jets': VJets_file,
-    #                                'data': data_file_muon,
-    #                                'Higgs' : Higgs_file,
-    #                                },
-    #                   variable = variable,
-    #                   met_type = category,
-    #                   b_tag_bin = b_tag_bin,
-    #                   )
-    #     write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
-    #     write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
-    #     write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
+    # data_file_electron = File( measurement_config.data_electron_category_templates_trees )
+    # data_file_muon = File( measurement_config.data_muon_category_templates_trees )
+    # TTJet_file = File( measurement_config.ttbar_category_templates_trees['central'] )
+    # SingleTop_file = File( measurement_config.SingleTop_category_templates_trees['central'] )
+    # VJets_file = File( measurement_config.VJets_category_templates_trees['central'] )
  
     # # QCD systematic
     # if not run_just_central:
