@@ -18,15 +18,15 @@ for channel in config.analysis_types.keys():
 		    "channel": "%s" % channel,
 		    "variable": "%s" % variable,
 			"truth" : { 
-				"file" : "%s" % config.unfolding_madgraph,
+				"file" : "%s" % config.unfolding_central,
 				"histogram": "%s/truth" % ( histogramTemplate ),
 				},
 			"gen_vs_reco" : { 
-				"file" : "%s" % config.unfolding_madgraph,
+				"file" : "%s" % config.unfolding_central,
 				"histogram": "%s/response_without_fakes" % ( histogramTemplate ),
 			},
 			"measured" : {
-				"file" : "%s" % config.unfolding_madgraph,
+				"file" : "%s" % config.unfolding_central,
 				"histogram": "%s/measured" % ( histogramTemplate ),
 				},
 			"data" : { 
