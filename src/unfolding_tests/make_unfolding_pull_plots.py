@@ -66,7 +66,9 @@ def drange(start, stop, step):
         yield r
         r += step
         
-def plot_pull(pulls, centre_of_mass, channel, variable, k_value, output_folder, output_formats, bin_index = None, n_bins = 1):
+def plot_pull(pulls, centre_of_mass, channel, variable, k_value,
+              output_folder, output_formats,
+              bin_index = None, n_bins = 1):
     min_x, max_x = min(pulls), max(pulls)
     abs_max = int(max(abs(min_x), max_x))
     n_x_bins = 2 * abs_max * 10  # bin width = 0.1
@@ -262,10 +264,12 @@ if __name__ == "__main__":
     pulls = get_data(files, subset='pull')
 
     for bin_i in range (0, nbins):
-        plot_pull(pulls, bin_index = bin_i, n_bins = nbins)
+        plot_pull(pulls, centre_of_mass, channel, variable, k_value,
+              output_folder, output_formats, bin_index = bin_i, n_bins = nbins)
 
     #plot all bins
-    plot_pull(pulls)
+    plot_pull(pulls, centre_of_mass, channel, variable, k_value,
+              output_folder, output_formats)
     del pulls #deleting to make space in memory
 
     difference = get_data(files, subset='difference')
