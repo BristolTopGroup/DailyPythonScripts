@@ -28,7 +28,7 @@ class XSectionConfig():
                   'higgs_category_templates', 'higgs_file',
                   'include_higgs',
                   'k_values_combined', 'k_values_electron', 'k_values_muon',
-                  'tau_values_electron', 'tau_values_muons',
+                  'tau_values_electron', 'tau_values_muon',
                   'known_centre_of_mass_energies', 'luminosities',
                   'luminosity', 'luminosity_scale', 'met_systematics_suffixes',
                   'muon_QCD_MC_category_templates', 'muon_QCD_MC_file',
