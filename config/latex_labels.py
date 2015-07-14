@@ -28,8 +28,10 @@ control_plots_latex = {
                        'NJets': '$N_{Jets}$',
                        'NBJets': '$N_{B Jets}$',
                        'pt' : '$p_{T}$',
+                       'eta' : '$\eta$',
                        'relIso_03_deltaBeta' : "RelIso",
                        'relIso_04_deltaBeta' : "RelIso",
+                       'NVertex' : '$N_{Vertices}$',
                        }
 
 measurements_latex = {'unfolded': 'unfolded',
@@ -112,10 +114,10 @@ samples_latex = {
                  }
 
 fit_variables_latex = {
-                       'absolute_eta' : r'lepton $|\eta|$',
-                       'M3' : r'$M3$',
-                       'M_bl' : r'$M(b,l)$',
-                       'angle_bl' : r'$\alpha$',
+                       'absolute_eta' : '\mathrm{lepton} |\eta|',
+                       'M3' : 'M3',
+                       'M_bl' : 'M(b,l)',
+                       'angle_bl' : 'angle(b,l)',
                        }
 
 typical_systematics_latex = {"typical_systematics_electron": "Electron trigger efficiency \& electron selection",
