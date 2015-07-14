@@ -13,7 +13,7 @@ from config import CMS
 import matplotlib.cm as cm
 # from itertools import cycle
 from config.latex_labels import b_tag_bins_latex, variables_latex
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges, bin_edges_vis
 from config import XSectionConfig
 from tools.ROOT_utils import get_histogram_from_file
 from tools.file_utilities import make_folder_if_not_exists
@@ -28,7 +28,7 @@ rc( 'text', usetex = True )
 my_cmap = cm.get_cmap( 'jet' )
 my_cmap.set_under( 'w' )
 
-def make_scatter_plot( input_file, histogram, channel, variable, title ):
+def make_scatter_plot( input_file, histogram, bin_edges, channel, variable, title ):
     global output_folder, output_formats, options
     scatter_plot = get_histogram_from_file( histogram, input_file )
 #     scatter_plot.Rebin2D( 5, 5 )
@@ -50,7 +50,7 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     plt.tick_params( **CMS.axis_label_minor )
     ax0.xaxis.labelpad = 12
     ax0.yaxis.labelpad = 12
-    im = rplt.imshow( scatter_plot, axes = ax0, cmap = my_cmap, vmin = 1 )
+    im = rplt.imshow( scatter_plot, axes = ax0, cmap = my_cmap, vmin = 0.001 )
     colorbar = plt.colorbar( im )
     colorbar.ax.tick_params( **CMS.axis_label_major )
 
@@ -76,7 +76,7 @@ def make_scatter_plot( input_file, histogram, channel, variable, title ):
     for output_format in output_formats:
         plt.savefig( output_folder + save_as_name + '.' + output_format )
 
-def makePurityStabilityPlots(input_path, channel, variable, isVisiblePhaseSpace):
+def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisiblePhaseSpace):
     global output_folder, output_formats
  
     inputFile = '%s/binningInfo_%s_%s_FullPS.txt' % ( input_path, variable, channel)
@@ -113,7 +113,7 @@ def makePurityStabilityPlots(input_path, channel, variable, isVisiblePhaseSpace)
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
 
-    x_title = variables_latex[variable] + '$ [GeV]'
+    x_title = '$' + variables_latex[variable] + '$ [GeV]'
     plt.xlabel( x_title, CMS.x_axis_title )
 
     plt.tight_layout()
@@ -147,10 +147,13 @@ if __name__ == '__main__':
     hist_file = measurement_config.unfolding_central_raw
     
     histogram_name = ''
+    bin_edges_to_use = []
     if options.visiblePhaseSpace:
         histogram_name = 'responseVis_without_fakes'
+        bin_edges_to_use = bin_edges_vis
     else :
         histogram_name = 'response_without_fakes'
+        bin_edges_to_use = bin_edges
 
     channels = ['electron', 'muon']
     channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets' }
@@ -161,13 +164,13 @@ if __name__ == '__main__':
     for channel in channels:
         print 'Channel', channel
         title = title_template % ( measurement_config.centre_of_mass_energy, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
-        for variable in bin_edges.keys():
+        for variable in bin_edges_to_use.keys():
             print '--- ',variable
 
             if variable is 'HT':
                 histogram_path = 'unfolding_%s_analyser_%s_channel/%s' % (variable, channel, histogram_name)
             else :
                 histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
-            make_scatter_plot( hist_file, histogram_path, channel, variable, title )
+            make_scatter_plot( hist_file, histogram_path, bin_edges_to_use, channel, variable, title )
 
-            makePurityStabilityPlots(options.input_path, channel, variable, options.visiblePhaseSpace)
+            makePurityStabilityPlots(options.input_path, bin_edges_to_use, channel, variable, options.visiblePhaseSpace)
