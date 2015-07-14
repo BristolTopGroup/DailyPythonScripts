@@ -306,8 +306,6 @@ def main():
                 if not options.donothing:
                     tree.Draw('EventWeight','1',hist=eventWeight)
                     # 1D
-                    print genVariable_particle,genWeight+'*'+genSelection
-                    print recoVariable,offlineWeight+'*'+offlineSelection
                     tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth)
                     tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis)
                     if genVariable_parton != None:
