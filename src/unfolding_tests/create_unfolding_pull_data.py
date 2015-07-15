@@ -70,57 +70,66 @@ def main():
     variable = options.variable
 
     create_unfolding_pull_data(options.file, method, options.channel,
-                               centre_of_mass, variable, use_n_toy,
+                               centre_of_mass, variable, use_n_toy, use_n_toy,
                                options.output_folder, offset_toy_mc,
                                offset_toy_data, k_value, tau_value)
 
 
 def create_unfolding_pull_data(input_file_name, method, channel,
-                               centre_of_mass, variable, use_n_toy,
+                               centre_of_mass, variable, n_toy_mc, n_toy_data,
                                output_folder, offset_toy_mc, offset_toy_data,
-                               k_value, tau_value=-1):
+                               k_value, tau_value=-1, run_matrix=None):
     '''
         Sets up all variables for check_multiple_data_multiple_unfolding
     '''
     timer = Timer()
     input_file = File(input_file_name, 'read')
+    folder_template = '{path}/{centre_of_mass}TeV/{variable}/'
+    folder_template += '{n_toy_mc}_input_toy_mc/{n_toy_data}_input_toy_data/'
+    folder_template += '{vtype}_value_{value}/'
 
+    msg_template = 'Producing unfolding pull data for {variable},'
+    msg_template += ' {vtype}-value {value}'
+    inputs = {
+        'path': output_folder,
+        'centre_of_mass': centre_of_mass,
+        'variable': variable,
+        'n_toy_mc': n_toy_mc,
+        'n_toy_data': n_toy_data,
+        'vtype': 'k',
+        'value': k_value,
+    }
     if tau_value >= 0:
-        msg = 'Producing unfolding pull data for {0} variable, tau-value {1}'
-        output_folder = output_folder + '/' + \
-            str(centre_of_mass) + 'TeV/' + variable + \
-            '/%d_input_toy_mc/tau_value_%.2f/' % (use_n_toy, tau_value)
-        print(msg.format(variable, tau_value))
-    else:
-        output_folder = output_folder + '/' + \
-            str(centre_of_mass) + 'TeV/' + variable + \
-            '/%d_input_toy_mc/k_value_%d/' % (use_n_toy, k_value)
-        msg = 'Producing unfolding pull data for {0} variable, k-value {1}'
-        print(msg.format(variable, tau_value))
-    print('Output folder: {0}'.format(output_folder))
+        inputs['vtype'] = 'tau'
+        inputs['value'] = round(tau_value, 1)
+
+    output_folder = folder_template.format(**inputs)
     make_folder_if_not_exists(output_folder)
+    print(msg_template.format(**inputs))
+    print('Output folder: {0}'.format(output_folder))
 
     check_multiple_data_multiple_unfolding(
-        input_file, method, channel, use_n_toy, output_folder, offset_toy_mc,
-        offset_toy_data, k_value, tau_value
+        input_file, method, channel, n_toy_mc, n_toy_data, output_folder,
+        offset_toy_mc, offset_toy_data, k_value, tau_value
     )
     print('Runtime', timer.elapsed_time())
 
 
-def run_matrix(use_n_toy, offset_toy_mc, offset_toy_data):
-    mc_range = range(offset_toy_mc + 1, offset_toy_mc + use_n_toy + 1)
-    data_range = range(offset_toy_data + 1, offset_toy_data + use_n_toy + 1)
+def create_run_matrix(n_toy_mc, n_toy_data, offset_toy_mc, offset_toy_data):
+    mc_range = range(offset_toy_mc + 1, offset_toy_mc + n_toy_mc + 1)
+    data_range = range(offset_toy_data + 1, offset_toy_data + n_toy_data + 1)
     for mc in mc_range:
         for data in data_range:
             yield (mc, data)
 
 
 def check_multiple_data_multiple_unfolding(input_file, method, channel,
-                                           use_n_toy, output_folder,
+                                           n_toy_mc, n_toy_data, output_folder,
                                            offset_toy_mc, offset_toy_data,
-                                           k_value, tau_value=-1):
+                                           k_value, tau_value=-1,
+                                           run_matrix=None):
     '''
-        Loops through a use_n_toy x use_n_toy matrix of pseudo data versus
+        Loops through a n_toy_mc x n_toy_data matrix of pseudo data versus
         simulation, unfolds the pseudo data and compares it to the MC truth
     '''
     # same unfolding input, different data
@@ -132,8 +141,8 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel,
 
     print('Reading toy MC')
     start1 = time()
-    mc_range = range(offset_toy_mc + 1, offset_toy_mc + use_n_toy + 1)
-    data_range = range(offset_toy_data + 1, offset_toy_data + use_n_toy + 1)
+    mc_range = range(offset_toy_mc + 1, offset_toy_mc + n_toy_mc + 1)
+    data_range = range(offset_toy_data + 1, offset_toy_data + n_toy_data + 1)
     for nth_toy_mc in range(1, 10000 + 1):  # read all of them (easier)
         if nth_toy_mc in mc_range or nth_toy_mc in data_range:
             folder_mc = get_folder(channel + '/toy_%d' % nth_toy_mc)
@@ -142,7 +151,11 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel,
             add_histograms((0, 0, 0))
     print('Done reading toy MC in', time() - start1, 's')
 
-    for nth_toy_mc, nth_toy_data in run_matrix(use_n_toy, offset_toy_mc, offset_toy_data):
+    if not run_matrix:
+        run_matrix = create_run_matrix(n_toy_mc, n_toy_data, offset_toy_mc,
+                                       offset_toy_data)
+
+    for nth_toy_mc, nth_toy_data in run_matrix:
         h_truth, h_measured, h_response = histograms[nth_toy_mc - 1]
         if tau_value >= 0:
             unfolding_obj = Unfolding(
@@ -212,20 +225,20 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel,
 #             add_pull(all_data)
 #             reset()
     save_pulls(pulls, 'multiple_data_multiple_unfolding', method,
-               channel, output_folder, use_n_toy, offset_toy_mc,
+               channel, output_folder, n_toy_mc, n_toy_data, offset_toy_mc,
                offset_toy_data)
 
 
-def save_pulls(pulls, test, method, channel, output_folder, use_n_toy,
-               offset_toy_mc, offset_toy_data):
+def save_pulls(pulls, test, method, channel, output_folder, n_toy_mc,
+               n_toy_data, offset_toy_mc, offset_toy_data):
     '''
         Saves pull distributions in JSON format
     '''
     file_template = 'Pulls_%s_%s_%s_toy_MC_%d_to_%d_MC_%d_to_%d_data.txt'
     output_file = output_folder + \
-        file_template % (test, method, channel, offset_toy_mc + 1, use_n_toy +
+        file_template % (test, method, channel, offset_toy_mc + 1, n_toy_mc +
                          offset_toy_mc, offset_toy_data + 1,
-                         use_n_toy + offset_toy_data)
+                         n_toy_data + offset_toy_data)
     write_data_to_JSON(pulls, output_file)
     print('Pulls saved in file: ', output_file)
 

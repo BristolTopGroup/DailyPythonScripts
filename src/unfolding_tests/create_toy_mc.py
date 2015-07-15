@@ -54,15 +54,12 @@ def main():
 
 
 def create_toy_mc(input_file, output_folder, variable, n_toy, centre_of_mass, ttbar_xsection, met_type, start_at=1):
-    print input_file, output_folder, variable, n_toy, centre_of_mass, ttbar_xsection, met_type
     from tools.file_utilities import make_folder_if_not_exists
     from tools.toy_mc import generate_toy_MC_from_distribution, generate_toy_MC_from_2Ddistribution
     from tools.Unfolding import get_unfold_histogram_tuple
     make_folder_if_not_exists(output_folder)
     input_file_hists = File(input_file)
-    # define output file
-    out_file_template = '{0}/toy_mc_{1}_N_from_{2}_to_{3}_{4}TeV.root'
-    output_file_name = out_file_template.format(
+    output_file_name = get_output_file_name(
         output_folder, variable, start_at, n_toy, centre_of_mass)
     output = File(output_file_name, 'recreate')
 
@@ -99,6 +96,14 @@ def create_toy_mc(input_file, output_folder, variable, n_toy, centre_of_mass, tt
             response.Write()
     output.Write()
     output.Close()
+
+
+def get_output_file_name(output_folder, variable, start_at, n_toy, centre_of_mass):
+    # define output file
+    out_file_template = '{0}/toy_mc_{1}_N_from_{2}_to_{3}_{4}TeV.root'
+    output_file_name = out_file_template.format(
+        output_folder, variable, start_at, n_toy, centre_of_mass)
+    return output_file_name
 
 if __name__ == '__main__':
     main()
