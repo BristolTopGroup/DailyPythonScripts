@@ -110,7 +110,7 @@ def create_unfolding_pull_data(input_file_name, method, channel,
 
     check_multiple_data_multiple_unfolding(
         input_file, method, channel, n_toy_mc, n_toy_data, output_folder,
-        offset_toy_mc, offset_toy_data, k_value, tau_value
+        offset_toy_mc, offset_toy_data, k_value, tau_value, run_matrix,
     )
     print('Runtime', timer.elapsed_time())
 
