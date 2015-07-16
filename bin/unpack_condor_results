@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+'''
+    Script to unpack results produced with any of the condor jobtypes.
+    Usage:
+    unpack_condor_results <tar files> <destination>
+    
+    Example:
+    unpack_condor_results UnfoldingPullJob_MET_electron_13TeV_*.tar.gz data/pull_data
+'''
+from __future__ import print_function
+from optparse import OptionParser
+import tarfile
+import os
+
+def main():
+    parser = OptionParser(__doc__)
+    parser.add_option("-c", "--com", dest="com", type=int,
+                      help="Centre-of-mass energy to be used for submission")
+    (_, args) = parser.parse_args()
+    output_folder = args[-1]
+    files = args[:-1]
+    print('Files:', files)
+    print('ouput folder:', output_folder)
+    
+    for f in files:
+        file_handle = tarfile.open(f)
+        for member in file_handle.getmembers():
+            if member.isreg():  # skip if the TarInfo is not files
+                member.name = os.path.basename(member.name) # remove the path by resetting it
+                print('Extracting', member.name, 'into', output_folder)
+                file_handle.extract(member, output_folder)
+#         for name in file_handle.getnames():
+#             print('Extracting', name, 'into', output_folder)
+        
+    
+if __name__ == '__main__':
+    main()
