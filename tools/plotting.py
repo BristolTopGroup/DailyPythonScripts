@@ -413,7 +413,7 @@ def make_shape_comparison_plot( shapes = [],
         plt.savefig( save_folder + histogram_properties.name + '.' + save ) 
     plt.close()
 
-def make_plot( histogram, histogram_label, histogram_properties = Histogram_properties(),
+def make_plot( histogram, histogram_properties = Histogram_properties(),
                                  save_folder = 'plots/',
                                  save_as = ['pdf', 'png'],
                                  normalise = False,
@@ -421,7 +421,7 @@ def make_plot( histogram, histogram_label, histogram_properties = Histogram_prop
                                  draw_legend = True
                                  ):
     save_folder = check_save_folder(save_folder)
-    histogram.SetTitle( histogram_label )
+    histogram.SetTitle(histogram_properties.title)
 #    histogram.SetMarkerSize(CMS.data_marker_size)
     # to be changed
     histogram.fillcolor = '0.75'
@@ -524,7 +524,8 @@ def compare_measurements( models = {}, measurements = {},
         histogram.markerstyle = next( markercycler )
         histogram.color = next( colorcycler )
         rplt.errorbar( histogram, axes = axes, label = label ,
-                       yerr = show_measurement_errors, xerr = None )
+                       yerr = show_measurement_errors,
+                       xerr = histogram_properties.xerr )
     
     set_labels( plt, histogram_properties, axes = axes )
     
