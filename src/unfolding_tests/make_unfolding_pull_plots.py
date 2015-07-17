@@ -2,6 +2,7 @@
     Script to make plots from unfolding pull JSON files. Will output
      - difference_errors_stats_#.pdf
      - difference_stats_#.pdf
+     - pull_distributino_mean_and_sigma_<variable>_<channel>_<centre of mass energy>TeV
      - pull_from_files_all_bins_stats_#.pdf
      - pull_from_files_bin_X_stats_#.pdf
      into output_folder/<centre of mass energy>TeV/<variable>/<channel>/
