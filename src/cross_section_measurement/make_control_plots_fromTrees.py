@@ -12,6 +12,8 @@ from tools.latex import setup_matplotlib
 # latex, font, etc
 setup_matplotlib()
 
+title_template = '$%.1f$ pb$^{-1}$ (%d TeV)'
+
 def compare_shapes( channel, x_axis_title, y_axis_title,
               control_region_1, control_region_2,
               name_region_1, name_region_2,
@@ -86,15 +88,17 @@ def make_plot( channel, x_axis_title, y_axis_title,
     qcd_data_region = ''
     title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
     normalisation = None
-    if channel == 'electron':
-        histogram_files['data'] = measurement_config.data_file_electron_trees
+    if 'electron' in channel:
+        histogram_files['data'] = '/storage/ec6821/AnalysisTools/CMSSW_7_4_5/src/tree_SingleElectron_1000pb_PFElectron_PFMuon_PF2PATJets_MET.root'
+        # histogram_files['data'] = measurement_config.data_file_electron_trees
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
         if normalise_to_fit:
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = 'QCDConversions'
-    if channel == 'muon':
-        histogram_files['data'] = measurement_config.data_file_muon_trees
+    if 'muon' in channel:
+        histogram_files['data'] = '/storage/ec6821/AnalysisTools/CMSSW_7_4_5/src/tree_SingleMuon_1000pb_PFElectron_PFMuon_PF2PATJets_MET.root'
+        # histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
         if normalise_to_fit:
             normalisation = normalisations_muon[norm_variable]
@@ -295,27 +299,30 @@ if __name__ == '__main__':
             # 'MT':get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, met_type ),
             # 'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
             }
-    title_template = '$%.1f$ pb$^{-1}$ (%d TeV)'
-    e_title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
     preliminary = True
     
     b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        'HT',
-                        'MET',
-                        'ST',
-                        'WPT',
-                        'Mjj',
-                        'M3',
-                        'angle_bl',
-                        'NJets',
-                        'NBJets',
-                        'JetPt',
-                        'NVertex',
-                        'LeptonPt',
-                        'LeptonEta'
+                        # 'HT',
+                        # 'MET',
+                        # 'ST',
+                        # 'WPT',
+                        # 'Mjj',
+                        # 'M3',
+                        # 'angle_bl',
+                        # 'NJets',
+                        # 'NBJets',
+                        # 'JetPt',
+                        # 'NVertex',
+                        # 'LeptonPt',
+                        # 'LeptonEta',
+                        # 'QCDHT'
+                        # 'QCDMET',
+                        # 'QCDST',
+                        # 'QCDWPT',
+                        'QCDLeptonEta',
                         ]
     additional_qcd_plots = [
                             ]
@@ -625,4 +632,130 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      )  
+                      )
+
+    ###################################################
+    # QCD Control Region
+    ###################################################
+    for channel, label in {
+                            'electronQCDNonIso' : 'EPlusJets/QCD non iso e+jets',
+                            'electronQCDConversions' : 'EPlusJets/QCDConversions', 
+                            'muonQCDNonIso' : 'MuPlusJets/QCD non iso mu+jets'
+                            }.iteritems() :
+        # Set folder for this batch of plots
+        output_folder = output_folder_base + "QCDControl/Variables/"
+        make_folder_if_not_exists(output_folder)
+
+
+        treeName = 'EPlusJets/QCD non iso e+jets'
+        if channel == 'electronQCDConversions':
+            treeName = 'EPlusJets/QCDConversions'
+        elif channel == 'muonQCDNonIso':
+            treeName = 'MuPlusJets/QCD non iso mu+jets'
+
+        ###################################################
+        # HT
+        ###################################################
+        norm_variable = 'HT'
+        if 'QCDHT' in include_plots:
+            print '---> QCD HT'
+            print output_folder
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      branchName = 'HT',
+                      name_prefix = '%s_HT_' % channel,
+                      x_limits = bin_edges['HT'],
+                      nBins = 20,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        ###################################################
+        # MET
+        ###################################################
+        norm_variable = 'MET'
+        if 'QCDMET' in include_plots:
+            print '---> QCD MET'
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      branchName = 'MET',
+                      name_prefix = '%s_MET_' % channel,
+                      x_limits = bin_edges['MET'],
+                      nBins = 20,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        ###################################################
+        # ST
+        ###################################################
+        norm_variable = 'ST'
+        if 'QCDST' in include_plots:
+            print '---> QCD ST'
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      branchName = 'ST',
+                      name_prefix = '%s_ST_' % channel,
+                      x_limits = bin_edges['ST'],
+                      nBins = 20,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        ###################################################
+        # WPT
+        ###################################################
+        norm_variable = 'WPT'
+        if 'QCDWPT' in include_plots:
+            print '---> QCD WPT'
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      branchName = 'WPT',
+                      name_prefix = '%s_WPT_' % channel,
+                      x_limits = bin_edges['WPT'],
+                      nBins = 20,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        # Set folder for this batch of plots
+        output_folder =  output_folder_base + "QCDControl/Control/"
+        make_folder_if_not_exists(output_folder)
+        ###################################################
+        # Lepton Pt
+        ###################################################
+        if 'QCDLeptonEta' in include_plots:
+            print '---> QCD Lepton Eta'
+            channelTreeName = 'Electron/Electrons'
+            if channel == 'muonQCDNonIso':
+                channelTreeName = 'Muon/Muons'
+
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['eta'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
+                      branchName = 'eta',
+                      name_prefix = '%s_LeptonEta_' % channel,
+                      x_limits = control_plots_bins['LeptonEta'],
+                      nBins = len(control_plots_bins['LeptonEta'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )

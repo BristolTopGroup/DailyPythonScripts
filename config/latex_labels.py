@@ -156,10 +156,14 @@ typical_systematics_latex = {
 }
 
 channel_latex = {
-    'electron': r"e + jets",
-    'muon': r"$\mu$ + jets",
-    'combined': r"e, $\mu$ + jets combined",
-}
+                 'electron' : r"e + jets",
+                 'muon' : r"$\mu$ + jets",
+                 'combined' : r"e, $\mu$ + jets combined",
+
+                 'electronQCDNonIso' : r"Non-iso e + jets",
+                 'electronQCDConversions' : r"Conversion e + jets",
+                 'muonQCDNonIso' : r"Non-iso $\mu$ + jets",
+                 }
 
 fit_variables_units_latex = {
     'absolute_eta': '',
