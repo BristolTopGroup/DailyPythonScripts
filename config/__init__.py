@@ -236,15 +236,15 @@ class XSectionConfig():
 
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,
-                                    'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    'JES_up': self.data_file_muon,
+                                    'JES_down': self.data_file_muon
                                     }
 
         self.data_muon_category_templates_trees = self.data_file_muon_trees
 
         self.data_electron_category_templates = {'central': self.data_file_electron,
-                            'JES_up': path_to_files + 'JES_up/SingleElectron' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                            'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                            'JES_up': self.data_file_electron,
+                            'JES_down': self.data_file_electron,
                             }
 
         self.data_electron_category_templates_trees = self.data_file_electron_trees
@@ -460,8 +460,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        # self.new_luminosity = 10.933  # pb^-1
-        self.new_luminosity = 13.256  # pb^-1
+        self.new_luminosity = 1000  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {

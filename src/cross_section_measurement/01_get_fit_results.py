@@ -27,74 +27,69 @@ def get_histograms( channel, input_files, variable, met_systematic, met_type, va
     boundaries = measurement_config.fit_boundaries[fit_variable]
     histograms = {}
 
-    tree = measurement_config.tree_path_templates[channel] + treePrefix
+    tree = measurement_config.tree_path_templates[channel]
     control_tree = measurement_config.tree_path_control_templates[channel]
 
+    # Put together weight
     fullWeight = 'EventWeight'
     if weightBranch != '' :
         fullWeight += ' * %s' % weightBranch
 
-    # fit_variable_name = ''
-    # fit_variable_name_data = ''
-    # ht_fill_list, other_fill_list = None, None
-    # if fit_variable == 'absolute_eta':
-    #     ht_fill_list = ( analysis_type[channel], variable_bin, channel + '_' + fit_variable )
-    #     other_fill_list = ( analysis_type[channel], met_type, variable_bin, channel + '_' + fit_variable )
-    # else:
-    #     ht_fill_list = ( analysis_type[channel], variable_bin, fit_variable )
-    #     other_fill_list = ( analysis_type[channel], met_type, variable_bin, fit_variable )
-    # if variable == 'HT':
-    #     fit_variable_name = fit_variable_template % ht_fill_list
-    #     fit_variable_name_data = fit_variable_name
-    # else:
-    #     fit_variable_name = fit_variable_template % other_fill_list
-
-        # if 'JetRes' in met_type:
-        #     fit_variable_name_data = fit_variable_name.replace( 'JetResDown', '' )
-        #     fit_variable_name_data = fit_variable_name_data.replace( 'JetResUp', '' )
-        #     if 'patPFMet' in met_type:
-        #         fit_variable_name = fit_variable_name.replace( 'patPFMet', 'PFMET' )
-        # else:
-        #     fit_variable_name_data = fit_variable_name
-
-
+    # Work out bin of variable
     variableForSelection = variable
+    minVar = variable_bin.split('-')[0]
+    maxVar = variable_bin.split('-')[-1]
+    selection = ''
+    if maxVar != 'inf' :
+        selection = '%s >= %s && %s < %s' % ( variableForSelection, minVar, variableForSelection, maxVar)
+    else :
+        selection = '%s >= %s' % ( variableForSelection, minVar )
+
+    bins = fit_variable_bin_edges[fit_variable]
+    xMin = bins[0]
+    xMax = bins[-1]
+    nBins = len(bins) -1
+
+    # Get data files here, without any systematic variations
+    data_files = { sample : input_files[sample] for sample in ['data'] }
+    histograms_data = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = fullWeight, files = data_files, nBins = nBins, xMin = xMin, xMax = xMax )
+
+    # Now work out tree/variable for MC
+    # Identical for data if central, different for systematics
+    tree = tree + treePrefix
+
     if met_systematic:
         if variable == 'MET':
             variableForSelection = 'MET_METUncertainties[%i]' % met_systematics[met_systematic]
         elif variable == 'ST':
             variableForSelection = 'ST_METUncertainties[%i]' % met_systematics[met_systematic]
 
-    # Work out bin of variable
-    minVar = variable_bin.split('-')[0]
-    maxVar = variable_bin.split('-')[-1]
+    # Work out selection again for MC, as variable (e.g. MET) could be different after systematic variation
     if maxVar != 'inf' :
         selection = '%s >= %s && %s < %s' % ( variableForSelection, minVar, variableForSelection, maxVar)
     else :
         selection = '%s >= %s' % ( variableForSelection, minVar )
 
-
+    # Get exclusive templates for MC
+    input_files_exclusive = { sample : input_files[sample] for sample in ['TTJet', 'SingleTop', 'V+Jets', 'QCD'] }
     # Get inclusive template for these (i.e. don't split up fit variable in bins of MET or whatever)
     input_files_inclusive = { sample : input_files[sample] for sample in ['V+Jets'] }
     # # Get control templates for QCD only, and inclusive
     # input_files_control = input_files
 
-    print selection, fit_variable
-
-    bins = fit_variable_bin_edges[fit_variable]
-    xMin = bins[0]
-    xMax = bins[-1]
-    nBins = len(bins) -1
- 
     # Get necessary histograms
     # Signal, binned by e.g. MET, HT etc.
-    histograms_exclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = fullWeight, files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
+    histograms_exclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, selection = selection, weightBranch = fullWeight, files = input_files_exclusive, nBins = nBins, xMin = xMin, xMax = xMax )
     # Signal, not binned.  For V+Jets template
     histograms_inclusive = get_histograms_from_trees( trees = [tree], branch = fit_variable, weightBranch = fullWeight, files = input_files_inclusive, nBins = nBins, xMin = xMin, xMax = xMax )
     # Control, not binned.  For QCD template
     histograms_control_inclusive = get_histograms_from_trees( trees = [control_tree], branch = fit_variable, weightBranch = fullWeight, files = input_files, nBins = nBins, xMin = xMin, xMax = xMax )
 
     # Currently needed, as get_histograms_from_trees returns the histograms as part of a more complicated structure
+    for histogram in histograms_data:
+        for d in histograms_data[histogram]:
+            histograms_data[histogram] = histograms_data[histogram][d].Clone()
+
     for histogram in histograms_exclusive:
         for d in histograms_exclusive[histogram]:
             histograms_exclusive[histogram] = histograms_exclusive[histogram][d].Clone()
@@ -110,6 +105,9 @@ def get_histograms( channel, input_files, variable, met_systematic, met_type, va
     # Put all histograms into one dictionary
     histograms = {}
     histograms.update(histograms_exclusive)
+
+    # Always use central data sample
+    histograms['data'] = histograms_data['data']
 
     # Get QCD distribution from data
     # histograms['QCD'] = get_data_derived_qcd(histograms_control_inclusive, histograms_exclusive['QCD'])
@@ -482,7 +480,7 @@ if __name__ == '__main__':
         if run_just_central and not category == 'central': 
             continue
 
-        if not ( category == 'central' or category == 'MuonEnUp' ):
+        if not ( category == 'JES_up' ):
             continue
         print 'Doing category :',category
         # Will want to use central template for rate changing systematic
