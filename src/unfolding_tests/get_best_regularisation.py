@@ -223,8 +223,8 @@ def get_best_tau_from_global_correlation( regularisation_settings ):
     h_truth, h_response, h_measured, h_data = regularisation_settings.get_histograms()
     n_toy = regularisation_settings.n_toy   
     number_of_iterations = regularisation_settings.n_tau_scan_points
-    tau_min = 10
-    tau_max = 100000
+    tau_min = 0.1
+    tau_max = 1000
     optimal_tau = 0
     minimal_rho = 9999
     tau_values = []

@@ -28,16 +28,21 @@ control_plots_latex = {
                        'NJets': '$N_{Jets}$',
                        'NBJets': '$N_{B Jets}$',
                        'pt' : '$p_{T}$',
+                       'eta' : '$\eta$',
                        'relIso_03_deltaBeta' : "RelIso",
                        'relIso_04_deltaBeta' : "RelIso",
+                       'NVertex' : '$N_{Vertices}$',
                        }
 
 measurements_latex = {'unfolded': 'unfolded',
                         'measured': 'measured',
+                        'amcatnlo': '$t\\bar{t}$ (MC@NLO)',
+                        'madgraphMLM': '$t\\bar{t}$ (MADGRAPH MLM)',
+
                         'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
                         'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
                         'MCATNLO': '$t\\bar{t}$ (MC@NLO+Herwig)',
-                        'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
+                        'powhegPythia8': '$t\\bar{t}$ (POWHEG+Pythia8)',
                         'POWHEG_HERWIG': '$t\\bar{t}$ (POWHEG+Herwig)',
                         'pythia8':'$t\\bar{t}$ (Pythia8)',
                         'matchingdown': '$t\\bar{t}$ (matching down)',
@@ -48,8 +53,8 @@ measurements_latex = {'unfolded': 'unfolded',
                         'TTJets_matchingup': '$t\\bar{t}$ (matching up)',
                         'TTJets_scaledown': '$t\\bar{t}$ ($Q^{2}$ down)',
                         'TTJets_scaleup': '$t\\bar{t}$ ($Q^{2}$ up)',
-                        'TTJets_massdown': '$t\\bar{t}$ (top mass down)',
-                        'TTJets_massup': '$t\\bar{t}$ (top mass up)',
+                        'massdown': '$t\\bar{t}$ (top mass down)',
+                        'massup': '$t\\bar{t}$ (top mass up)',
                         'VJets_matchingdown': 'V+jets (matching down)',
                         'VJets_matchingup': 'V+jets (matching up)',
                         'VJets_scaledown': 'V+jets ($Q^{2}$ down)',
@@ -84,21 +89,18 @@ measurements_latex = {'unfolded': 'unfolded',
                         'Muon_up' : 'Muon efficiency $+1\sigma$',
                         'kValue_up' : 'k Value $+1$',
                         'kValue_down' : 'k Value $-1$',
-                          }
-
-met_systematics_latex = {
-                "ElectronEnUp":'Electron energy $+1\sigma$',
-                "ElectronEnDown":'Electron energy $-1\sigma$',
-                "MuonEnUp":'Muon energy $+1\sigma$',
-                "MuonEnDown":'Muon energy $-1\sigma$',
-                "TauEnUp":'Tau energy $+1\sigma$',
-                "TauEnDown":'Tau energy $-1\sigma$',
-                "JetResUp":'Jet resolution $+1\sigma$',
-                "JetResDown":'Jet resolution $-1\sigma$',
-                "JetEnUp":'Jet energy $+1\sigma$',
-                "JetEnDown":'Jet energy $-1\sigma$',
-                "UnclusteredEnUp":'Unclustered energy $+1\sigma$',
-                "UnclusteredEnDown":'Unclustered energy $-1\sigma$'
+                        "ElectronEnUp":'Electron energy $+1\sigma$',
+                        "ElectronEnDown":'Electron energy $-1\sigma$',
+                        "MuonEnUp":'Muon energy $+1\sigma$',
+                        "MuonEnDown":'Muon energy $-1\sigma$',
+                        "TauEnUp":'Tau energy $+1\sigma$',
+                        "TauEnDown":'Tau energy $-1\sigma$',
+                        "JetResUp":'Jet resolution $+1\sigma$',
+                        "JetResDown":'Jet resolution $-1\sigma$',
+                        "JetEnUp":'Jet energy $+1\sigma$',
+                        "JetEnDown":'Jet energy $-1\sigma$',
+                        "UnclusteredEnUp":'Unclustered energy $+1\sigma$',
+                        "UnclusteredEnDown":'Unclustered energy $-1\sigma$'
 }
 
 samples_latex = {
@@ -112,10 +114,10 @@ samples_latex = {
                  }
 
 fit_variables_latex = {
-                       'absolute_eta' : r'lepton $|\eta|$',
-                       'M3' : r'$M3$',
-                       'M_bl' : r'$M(b,l)$',
-                       'angle_bl' : r'$\alpha$',
+                       'absolute_eta' : '\mathrm{lepton} |\eta|',
+                       'M3' : 'M3',
+                       'M_bl' : 'M(b,l)',
+                       'angle_bl' : 'angle(b,l)',
                        }
 
 typical_systematics_latex = {"typical_systematics_electron": "Electron trigger efficiency \& electron selection",

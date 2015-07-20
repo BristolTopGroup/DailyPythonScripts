@@ -4,7 +4,7 @@ import os, gc
 from copy import deepcopy
 
 from config.latex_labels import variables_latex, measurements_latex, \
-met_systematics_latex, b_tag_bins_latex, fit_variables_latex
+b_tag_bins_latex, fit_variables_latex
 from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
@@ -48,22 +48,21 @@ def read_xsection_measurement_results( category, channel ):
     
     if category == 'central':
         # true distributions
-        h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
-        ### h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
-        ### h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
-        ### h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
-        ### h_normalised_xsection_MCATNLO = None
-        ### if measurement_config.centre_of_mass_energy == 8:
-        ###     h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
+        h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], bin_edges[variable] )
+        h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], bin_edges[variable] )
+        h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], bin_edges[variable] )
+
         ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
         ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
-        ### h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
-        ### h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
-        
-        h_normalised_xsection_pythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['pythia8'], bin_edges[variable] )
+        h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
+        h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
+        h_normalised_xsection_massup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], bin_edges[variable] )
+        h_normalised_xsection_massdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], bin_edges[variable] )
 
-        histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
-                                                                     'pythia8':h_normalised_xsection_pythia8,
+        histograms_normalised_xsection_different_generators.update( {
+                                                                     'powhegPythia8':h_normalised_xsection_powhegPythia8,
+                                                                     'amcatnlo':h_normalised_xsection_amcatnlo,
+                                                                     'madgraphMLM':h_normalised_xsection_madgraphMLM,
         ###                                                         # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
         ###                                                         # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
         ###                                                         # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
@@ -71,12 +70,14 @@ def read_xsection_measurement_results( category, channel ):
         ### if measurement_config.centre_of_mass_energy == 8:
         ###     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
         
-        histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
+        histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
                                                                   # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
                                                                   # 'matchingdown': h_normalised_xsection_mathchingdown,
                                                                   # 'matchingup': h_normalised_xsection_mathchingup,
-                                                                  # 'scaledown': h_normalised_xsection_scaledown,
-                                                                  # 'scaleup': h_normalised_xsection_scaleup}
+                                                                  'scaledown': h_normalised_xsection_scaledown,
+                                                                  'scaleup': h_normalised_xsection_scaleup,
+                                                                  'massdown': h_normalised_xsection_massdown,
+                                                                  'massup': h_normalised_xsection_massup
                                                                   })
         
         file_template = path_to_JSON + '/xsection_measurement_results_' + phaseSpaceSuffix + '/' + channel + '/' + category + '/normalised_xsection_' + met_type
@@ -344,22 +345,22 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         if not 'unfolded' in key and not 'measured' in key:
             hist.linewidth = 4
             # setting colours
-            if 'POWHEG_PYTHIA' in key or 'matchingdown' in key:
+            if 'amcatnlo' in key or 'massdown' in key:
                 hist.linestyle = 'longdashdot'
                 hist.SetLineColor( kBlue )
-            elif 'POWHEG_HERWIG' in key or 'scaledown' in key:
+            elif 'madgraphMLM' in key or 'scaledown' in key:
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kGreen )
             elif 'MADGRAPH_ptreweight' in key:
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kBlack )
-            elif 'MADGRAPH' in key:
+            elif 'powhegPythia8' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor( kRed + 1 )
-            elif 'matchingup' in key:
+            elif 'massup' in key:
                 hist.linestyle = 'verylongdashdot'
                 hist.linecolor = 'orange'
-            elif 'MCATNLO'  in key or 'pythia8' in key or 'scaleup' in key:
+            elif 'MCATNLO'  in key or 'madgraphMLM' in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor( kMagenta + 3 )
             rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
@@ -447,10 +448,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         # legend for ratio plot
         p_stat = mpatches.Patch(facecolor='0.75', label='Stat.',alpha = 0.5, edgecolor='black' )
         p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5, edgecolor='black' )
-        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
+        l1 = ax1.legend([p_stat], loc = 'upper left',
                      frameon = False, prop = {'size':26})
         
-        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
+        ax1.legend([p_stat_and_syst], loc = 'lower left',
                      frameon = False, prop = {'size':26})
         ax1.add_artist(l1)
 
@@ -518,7 +519,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
         if 'PDF' in systematic:
             rplt.errorbar( hist_data_systematic, axes = axes, label = systematic.replace( 'Weights_', ' ' ), xerr = None )
         elif met_type in systematic:
-            rplt.errorbar( hist_data_systematic, axes = axes, label = met_systematics_latex[systematic.replace( met_type, '' )], xerr = None )
+            rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic.replace( met_type, '' )], xerr = None )
         else:
             rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = None )
             
@@ -587,7 +588,7 @@ if __name__ == '__main__':
     translate_options = measurement_config.translate_options
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
-    met_systematics_suffixes = measurement_config.met_systematics_suffixes
+    met_systematics = measurement_config.met_systematics
     
     variable = options.variable
 
@@ -606,16 +607,8 @@ if __name__ == '__main__':
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    # categories.extend( ttbar_generator_systematics )
+    categories.extend( ttbar_generator_systematics )
     # categories.extend( vjets_generator_systematics )
-
-    # # Add mass systematics
-    ttbar_mass_systematics = measurement_config.topMass_systematics
-    # categories.extend( measurement_config.topMass_systematics )
-
-    # # Add k value systematic
-    kValue_systematics = measurement_config.kValueSystematic
-    # categories.extend( measurement_config.kValueSystematic )
     
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
@@ -623,7 +616,7 @@ if __name__ == '__main__':
     # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
     # pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
     # # all MET uncertainties except JES as this is already included
-    # met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    # met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
     # new_uncertainties = ['QCD_shape']
     rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
 
