@@ -1,11 +1,12 @@
 from __future__ import division
+import tools.measurement
 
 __all__ = [
     'XSectionConfig',
 ]
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/50ns/'
     known_centre_of_mass_energies = [7,8,13]
     # has to be separate as many variables depend on it
     luminosities = {7:5050, 8:19584, 13:1000}
@@ -56,6 +57,7 @@ class XSectionConfig():
                   'unfolding_pdfweights',
                   'vjets_theory_systematic_prefix'
                   ]
+    samples = ['TTJet', 'V+Jets', 'SingleTop', 'QCD']
 
     def __init__( self, centre_of_mass_energy ):
         if not centre_of_mass_energy in self.known_centre_of_mass_energies:
@@ -211,6 +213,32 @@ class XSectionConfig():
                          'electron' : self.k_values_electron,
                          'muon' : self.k_values_muon,
                          }
+        self.rate_changing_systematics_values = {}
+        for systematic in self.rate_changing_systematics.keys():
+            affected_samples = XSectionConfig.samples # all samples
+            if 'SingleTop' in systematic:
+                affected_samples = ['SingleTop']
+            if 'TTJet' in systematic:
+                affected_samples = ['TTJet'] 
+            if 'VJets' in systematic:
+                affected_samples = ['V+Jets']
+            if 'QCD' in systematic:
+                affected_samples = ['QCD']
+            sp = tools.measurement.Systematic( 
+                        systematic + '+',
+                        stype = tools.measurement.Systematic.RATE,
+                        affected_samples = affected_samples,
+                        scale = 1 + self.rate_changing_systematics[systematic],
+                        )
+            sm = tools.measurement.Systematic( 
+                        systematic + '-',
+                        stype = tools.measurement.Systematic.RATE,
+                        affected_samples = affected_samples,
+                        scale = 1 - self.rate_changing_systematics[systematic],
+                        )
+            self.rate_changing_systematics_values[sp.name] = sp
+            self.rate_changing_systematics_values[sm.name] = sm
+        self.rate_changing_systematics_names = self.rate_changing_systematics_values.keys()
 
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
         self.topMasses = [169.5, 172.5, 173.5]
@@ -319,6 +347,13 @@ class XSectionConfig():
                                     'electron' : 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/FitVariables',
                                     'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets/FitVariables'
                                     }
+        self.variable_path_templates = {
+                            'MET' : 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/MET',
+                            'HT' : 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/HT',
+                            'ST': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/ST',
+                            'MT': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/MT',
+                            'WPT': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/WPT',
+                            }
 
         self.electron_control_region = 'QCDConversions'
         self.electron_control_region_systematic = 'QCD non iso e+jets'
@@ -385,7 +420,9 @@ class XSectionConfig():
         self.rate_changing_systematics = {
                         'luminosity': 0.022,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupSystematicErrors
                         'SingleTop_cross_section': 0.3,
-                        'TTJet_cross_section': 0.15
+                        'TTJet_cross_section': 0.15,
+                        'V+Jets_cross_section': 0.3,
+                        'QCD_cross_section' : 1.,
                          }
 
         # optimal regularisation parameters
@@ -435,7 +472,9 @@ class XSectionConfig():
         self.rate_changing_systematics = {
                         'luminosity': 0.026,  # https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
                         'SingleTop_cross_section': 0.034,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
-                        'TTJet_cross_section': 0.043
+                        'TTJet_cross_section': 0.043,
+                        'V+Jets_cross_section': 0.3,
+                        'QCD_cross_section' : 1.,
                          }
 
         # optimal regularisation parameters
@@ -483,13 +522,12 @@ class XSectionConfig():
         self.new_luminosity = 56.830  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
-        self.rate_changing_systematics = {
-                        'luminosity_up': 0.026,  # Currently same as 8 TeV
-                        'luminosity_down': 0.026,  # Currently same as 8 TeV                       
-                        'SingleTop_cross_section_up': 0.034,  # Currently same as 8 TeV
-                        'SingleTop_cross_section_down': 0.034,  # Currently same as 8 TeV
-                        'TTJet_cross_section_up': 0.043, # Currently same as 8 TeV
-                        'TTJet_cross_section_down': 0.043 # Currently same as 8 TeV
+        self.rate_changing_systematics = {#TODO check where this is used
+                        'luminosity': 0.026,  # Currently same as 8 TeV
+                        'SingleTop_cross_section': 0.034,  # Currently same as 8 TeV
+                        'TTJet_cross_section': 0.043, # Currently same as 8 TeV
+                        'V+Jets_cross_section': 0.3,
+                        'QCD_cross_section' : 1.,
                          }
 
         # optimal regularisation parameters
