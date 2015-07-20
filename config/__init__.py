@@ -202,6 +202,12 @@ class XSectionConfig():
                                         'scaleup', 'scaledown',
                                         'massup', 'massdown'
                                       ]
+        self.k_values = {
+                         'electron' : self.k_values_electron,
+                         'muon' : self.k_values_muon,
+                         }
+
+        self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
         self.topMasses = [169.5, 172.5, 173.5]
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
