@@ -187,6 +187,10 @@ class XSectionConfig():
             self.rate_changing_systematics_values[sm.name] = sm
         self.rate_changing_systematics_names = self.rate_changing_systematics_values.keys()
 
+        self.k_values = {
+                         'electron' : self.k_values_electron,
+                         'muon' : self.k_values_muon,
+                         }
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
         self.topMasses = [169.5, 172.5, 173.5]
