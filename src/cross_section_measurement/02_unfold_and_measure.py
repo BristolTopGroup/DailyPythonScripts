@@ -450,7 +450,7 @@ if __name__ == '__main__':
     rate_changing_systematics.extend( [systematic + '-' for systematic in measurement_config.rate_changing_systematics.keys()] )
 
     # all MET uncertainties except JES as this is already included
-    met_uncertainties = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    met_uncertainties = [suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy( categories )
     all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( met_uncertainties )
@@ -475,33 +475,48 @@ if __name__ == '__main__':
             met_type += 'JetEnDown'
             if met_type == 'PFMETJetEnDown':
                 met_type = 'patPFMetJetEnDown'
+        elif category == 'JER_up':
+            met_type += 'JetResUp'
+        elif category == 'JER_down':
+            met_type += 'JetResDown'
+        if category in met_uncertainties:
+            met_type += category
 
         # Choose k Value
         k_value_electron = k_value_electron_central
         k_value_muon = k_value_muon_central
         k_value_combined = k_value_combined_central
         if category == 'kValue_up':
-          k_value_electron = k_value_electron_central+1
-          k_value_muon = k_value_muon_central+1
-          k_value_combined = k_value_combined_central+1
+            k_value_electron = k_value_electron_central+1
+            k_value_muon = k_value_muon_central+1
+            k_value_combined = k_value_combined_central+1
         elif category == 'kValue_down':         
-          k_value_electron = k_value_electron_central-1
-          if k_value_electron < 2 : k_value_electron = 2
-          k_value_muon = k_value_muon_central-1
-          if k_value_muon < 2 : k_value_muon = 2
-          k_value_combined = k_value_combined_central-1
-          if k_value_combined < 2 : k_value_combined = 2
+            k_value_electron = k_value_electron_central-1
+            if k_value_electron < 2 : k_value_electron = 2
+            k_value_muon = k_value_muon_central-1
+            if k_value_muon < 2 : k_value_muon = 2
+            k_value_combined = k_value_combined_central-1
+            if k_value_combined < 2 : k_value_combined = 2
 
         # read fit results from JSON
-        electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
-        muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
-        combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
+#         electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
+#         muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
+#         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
+        electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+        muon_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+        combined_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+
+
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
         if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics or category in kValue_systematics:
-            electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
-            muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
-            combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
+#             electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
+#             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
+#             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
+            electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
+            muon_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
+            combined_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
+
         
         fit_results_electron = read_data_from_JSON( electron_file )
         fit_results_muon = read_data_from_JSON( muon_file )

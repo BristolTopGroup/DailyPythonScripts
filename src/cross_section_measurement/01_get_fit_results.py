@@ -457,7 +457,6 @@ if __name__ == '__main__':
     if measurement_config.include_higgs:
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
 
-    TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
     # Using 8 TeV VJets systematic samples for 7 TeV so need to scale:
     # vjets ratio = sigma(7TeV)*lumi(7TeV)/(sigma(8TeV)*lumi(8TeV))
     vjets_ratio = ( 31314 * 5050 ) / ( 36257.2 * 19584 )
