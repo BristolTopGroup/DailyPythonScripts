@@ -8,8 +8,7 @@ from rootpy.io import File
 from ROOT import gROOT, TH1F
 from rootpy.plotting import Hist
 gcd = gROOT.cd
-from config.summations_common import b_tag_bins_inclusive, b_tag_summations
-from config.summations_common import b_tag_bins_exclusive
+import config.summations_common as sumations
 
 def get_histogram_from_file( histogram_path, input_file ):
     current_btag, found_btag = find_btag(histogram_path)
@@ -18,12 +17,12 @@ def get_histogram_from_file( histogram_path, input_file ):
     get_histogram = root_file.Get
 
 
-    if not found_btag or not current_btag in b_tag_summations.keys():
+    if not found_btag or not current_btag in sumations.b_tag_summations.keys():
         root_histogram = get_histogram( histogram_path )
         if not is_valid_histogram( root_histogram, histogram_path, input_file ):
             return
     else:
-        listOfExclusiveBins = b_tag_summations[current_btag]
+        listOfExclusiveBins = sumations.b_tag_summations[current_btag]
         exclhists = []
 
         for excbin in listOfExclusiveBins:
@@ -74,12 +73,12 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
             current_btag, found_btag = find_btag(histogram_path)
 
             root_histogram = None
-            if not found_btag or not current_btag in b_tag_summations.keys():
+            if not found_btag or not current_btag in sumations.b_tag_summations.keys():
                 root_histogram = get_histogram( histogram_path )
                 if not is_valid_histogram( root_histogram, histogram_path, input_file ):
                     return
             else:
-                listOfExclusiveBins = b_tag_summations[current_btag]
+                listOfExclusiveBins = sumations.b_tag_summations[current_btag]
                 exclhists = []
 
                 for excbin in listOfExclusiveBins:
@@ -101,7 +100,18 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
     return histograms
 
 # Reads a list of histograms from each given file
-def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'EventWeight', selection = '1', files = {}, verbose = False, nBins = 40, xMin = 0, xMax = 100, ignoreUnderflow = True ):
+def get_histograms_from_trees(
+                              trees = [],
+                              branch = 'var',
+                              weightBranch = 'EventWeight',
+                              selection = '1',
+                              files = {},
+                              verbose = False,
+                              nBins = 40,
+                              xMin = 0,
+                              xMax = 100,
+                              ignoreUnderflow = True,
+                              ):
     histograms = {}
     nHistograms = 0
 
@@ -134,6 +144,30 @@ def get_histograms_from_trees( trees = [], branch = 'var', weightBranch = 'Event
 
         root_file.Close()
     return histograms
+
+def get_histogram_from_tree(**kwargs):
+    branch = kwargs.pop('branch')
+    weight_branch = kwargs.pop('weight_branch')
+    branches = [branch, weight_branch]
+    selection_branches = []
+    if kwargs.has_key('selection_branches'):
+        selection_branches = kwargs.pop('selection_branches')
+    branches.extend(selection_branches)
+    input_file = kwargs.pop('input_file')
+    tree = kwargs.pop('tree')
+    selection = kwargs.pop('selection')
+    weight_and_selection = '( {0} ) * ( {0} )'.format(weight_branch, selection)
+    if kwargs.has_key('n_bins'):
+        hist = Hist(kwargs['n_bins'], kwargs['x_min'], kwargs['x_max'], 
+                    type = 'D')
+    if kwargs.has_key('bin_edges'):
+        hist = Hist(kwargs['bin_edges'], type = 'D')
+
+    with File.open(input_file) as f:
+        t = f[tree]
+        t.activate(branches, exclusive = True)
+        t.Draw(branch, selection = weight_and_selection, hist = hist)
+    return hist
 
 def get_histogram_info_tuple( histogram_in_path ):
     histogram_name = histogram_in_path.split( '/' )[-1]
@@ -189,10 +223,10 @@ def find_btag( histogram_path ):
         multiplicity identifier (as specified in config.summations_common)
         Returns (found b-tag, True) or (default b-tag, False)
     '''
-    for b_tag in b_tag_bins_inclusive:
+    for b_tag in sumations.b_tag_bins_inclusive:
         if b_tag in histogram_path:
             return b_tag, True
-    for b_tag in b_tag_bins_exclusive:
+    for b_tag in sumations.b_tag_bins_exclusive:
         if b_tag in histogram_path:
             return b_tag, True
-    return b_tag_bins_inclusive[0], False
+    return sumations.b_tag_bins_inclusive[0], False
