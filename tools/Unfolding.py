@@ -32,7 +32,7 @@ class Unfolding:
                  verbose = 0 ):
         if not method in unfoldCfg.availablemethods:
             raise ValueError( 'Unknown unfolding method "%s". Available methods: %s' % ( method, str( unfoldCfg.availablemethods ) ) )
-        self.method = method        
+        self.method = method
         self.truth = truth
         self.measured = measured
         self.fakes = fakes
@@ -48,7 +48,7 @@ class Unfolding:
         self.Bayes_n_repeat = Bayes_n_repeat
         self.Hreco = Hreco
         self.measured_truth_without_fakes = measured_truth_without_fakes
-    
+
     def setup_unfolding ( self, data ):
         self.data = data
         if not self.unfoldObject:
@@ -73,10 +73,10 @@ class Unfolding:
             elif self.method == 'TSVDUnfold':
                 new_data = Hist( list( self.data.xedges() ), type = 'D' )
                 new_data.Add( self.data )
-                
+
                 new_measured = Hist( list( self.measured.xedges() ), type = 'D' )
                 new_measured.Add( self.measured )
-                
+
                 new_truth = Hist( list( self.truth.xedges() ), type = 'D' )
                 new_truth.Add( self.truth )
 
@@ -126,10 +126,10 @@ class Unfolding:
             self.unfoldObject.SetVerbose( self.verbose )
             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.Hreco ) )
         return self.unfolded_data
-    
+
     def closureTest( self ):
         return self.unfold(self.measured)
-    
+
     def _makeUnfoldResponse( self ):
         if self.fakes:
             return RooUnfoldResponse ( self.measured, self.truth, self.fakes, self.response )
@@ -138,13 +138,11 @@ class Unfolding:
 
     def printTable( self ):
         self.unfoldObject.PrintTable( cout, self.truth )
-    
+
     def Reset( self ):
         if self.unfoldObject:
             self.unfoldObject = None
-        if self.closure_test:
-            self.closure_test = None
-            
+
     def chi2( self ):
         chi2 = 99999999, 0
         if self.unfolded_data and self.truth:
@@ -159,18 +157,18 @@ class Unfolding:
             error = sqrt( sum( errorsSquared ) )
             chi2 = value, error
         return chi2
-    
+
     def pull( self ):
         result = [9999999]
-        
+
         if self.unfolded_data and self.truth:
-            diff = self.unfolded_data - self.truth 
+            diff = self.unfolded_data - self.truth
             value_error_tuplelist = hist_to_value_error_tuplelist( diff )
 
             result = [value / error for value, error in value_error_tuplelist]
-        
+
         return result
-    
+
     def pull_inputErrorOnly( self ):
         result = [9999999]
         if self.unfolded_data and self.truth:
@@ -185,7 +183,7 @@ class Unfolding:
             temp_truth = self.truth.Clone()
             for bin_i in range( len( temp_truth ) ):
                 temp_truth.SetBinError( bin_i + 1, 0 )
-                
+
             diff = temp - temp_truth
             errors = []
             values = list( diff.y() )
@@ -193,7 +191,7 @@ class Unfolding:
                 errors.append( diff.GetBinError( bin_i + 1 ) )
             result = [value / error for value, error in zip( values, errors )]
         return result
-    
+
     def get_unfolded_data_errors( self ):
         # get the data errors
         input_errors = self.unfoldObject.Emeasured()
@@ -203,13 +201,13 @@ class Unfolding:
         decomposition = TDecompSVD( self.unfoldResponse.Mresponse() );
         # apply R-1 to data errors
         decomposition.Solve( unfolded_errors );
-        
+
         return unfolded_errors
-    
+
     def Impl(self):
         return self.unfoldObject.Impl()
-            
-def get_unfold_histogram_tuple( 
+
+def get_unfold_histogram_tuple(
                 inputfile,
                 variable,
                 channel,
@@ -231,7 +229,7 @@ def get_unfold_histogram_tuple(
             folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel_%s' % ( variable, channel, met_type ) )
         else:
             folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
-        
+
         if visiblePS:
             h_truth = asrootpy( folder.truthVis.Clone() )
             h_measured = asrootpy( folder.measured.Clone() )
@@ -264,21 +262,26 @@ def get_unfold_histogram_tuple(
                                                    )
 
     if scale_to_lumi:
-        nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events 
-        lumiweight = ttbar_xsection * luminosity / nEvents
+        lumiweight = 1. # 13 TeV unfolding files are scaled.
+        # we will need to change this as we do not want to reproduce them
+        # every time we get new data.
+        if hasattr(inputfile, 'EventFilter'):
+            nEvents = inputfile.EventFilter.EventCounter.GetBinContent( 1 )  # number of processed events
+            lumiweight = ttbar_xsection * luminosity / nEvents
+
         if load_fakes:
             h_fakes.Scale( lumiweight )
         h_truth.Scale( lumiweight )
         h_measured.Scale( lumiweight )
         h_response.Scale( lumiweight )
-    
+
     h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
     if load_fakes:
         h_fakes = fix_overflow( h_fakes )
-    
+
     return h_truth, h_measured, h_response, h_fakes
 
-def get_combined_unfold_histogram_tuple( 
+def get_combined_unfold_histogram_tuple(
                 inputfile,
                 variable,
                 met_type,
@@ -289,7 +292,7 @@ def get_combined_unfold_histogram_tuple(
                 scale_to_lumi = True,
                 visiblePS = False
                 ):
-    
+
     h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple( inputfile = inputfile,
                                                                                   variable = variable,
                                                                                   channel = 'electron',
@@ -319,5 +322,5 @@ def get_combined_unfold_histogram_tuple(
     h_fakes = None
     if load_fakes:
         h_fakes = h_fakes_e + h_fakes_mu
-    
+
     return h_truth, h_measured, h_response, h_fakes

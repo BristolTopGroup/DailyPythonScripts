@@ -92,7 +92,7 @@ if [ ! -d "$base/external/lib" ]; then
 	echo "Building RooUnfold"
 	cd $base/external/RooUnfold/
 	cmake CMakeLists.txt
-	make -j4
+	make RooUnfold -j4
 	success $? RooUnfold
 	#remove tmp folder
 	rm -fr $base/external/RooUnfold/tmp
