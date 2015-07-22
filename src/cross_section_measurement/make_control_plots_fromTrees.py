@@ -6,6 +6,7 @@ from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
 make_control_region_comparison
+from rootpy.plotting import Hist
 from tools.hist_utilities import prepare_histograms, clean_control_region, get_normalisation_error, get_fitted_normalisation
 from tools.ROOT_utils import get_histograms_from_trees, set_root_defaults
 from tools.latex import setup_matplotlib
@@ -15,9 +16,9 @@ setup_matplotlib()
 title_template = '$%.1f$ pb$^{-1}$ (%d TeV)'
 
 def compare_shapes( channel, x_axis_title, y_axis_title,
-              control_region_1, control_region_2,
-              name_region_1, name_region_2,
-              name_prefix, x_limits,
+              control_region_1, name_region_1, samples_region_1,
+              control_region_2, name_region_2, samples_region_2,
+              name_prefix, x_limits, nBins,
               y_limits = [],
               y_max_scale = 1.2,
               rebin = 1,
@@ -29,15 +30,34 @@ def compare_shapes( channel, x_axis_title, y_axis_title,
     global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
 
     title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
-    if channel == 'electron':
+    if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron_trees
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
-    if channel == 'muon':
+    if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
 
-    histograms = get_histograms_from_files( [control_region_1, control_region_2], histogram_files )
-    prepare_histograms( histograms, rebin = rebin, scale_factor = measurement_config.luminosity_scale )
+    histograms_region1 = get_histograms_from_trees( trees = [control_region_1], branch = name_region_1, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+    histograms_region2 = get_histograms_from_trees( trees = [control_region_2], branch = name_region_2, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+
+    for samples, region, histograms in zip( [ samples_region_1, samples_region_2], [control_region_1, control_region_2], [histograms_region1, histograms_region2]):
+        if samples == 'data':
+            del histograms['TTJet']
+            del histograms['V+Jets']
+            del histograms['QCD']
+            del histograms['SingleTop']
+        elif samples == 'MC':
+            del histograms['data']
+            histograms['MC'] = { region : Hist() }
+            for h in histograms:
+                print h, histograms[h]
+                histograms['MC'][''] += histograms[h][region]
+
+    prepare_histograms( histograms_region1, rebin = rebin, scale_factor = measurement_config.luminosity_scale )
+    prepare_histograms( histograms_region2, rebin = rebin, scale_factor = measurement_config.luminosity_scale )
+
+    print histograms_region1
+    print histograms_region2
     
     region_1 = histograms['data'][control_region_1].Clone()
     region_2 = histograms['data'][control_region_2].Clone()
@@ -72,6 +92,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
               branchName,
               name_prefix, x_limits, nBins,
               use_qcd_data_region = False,
+              compare_qcd_signal_with_data_control = False,
               y_limits = [],
               y_max_scale = 1.2,
               rebin = 1,
@@ -89,16 +110,14 @@ def make_plot( channel, x_axis_title, y_axis_title,
     title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
     normalisation = None
     if 'electron' in channel:
-        histogram_files['data'] = '/storage/ec6821/AnalysisTools/CMSSW_7_4_5/src/tree_SingleElectron_1000pb_PFElectron_PFMuon_PF2PATJets_MET.root'
-        # histogram_files['data'] = measurement_config.data_file_electron_trees
+        histogram_files['data'] = measurement_config.data_file_electron_trees
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
         if normalise_to_fit:
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = 'QCDConversions'
     if 'muon' in channel:
-        histogram_files['data'] = '/storage/ec6821/AnalysisTools/CMSSW_7_4_5/src/tree_SingleMuon_1000pb_PFElectron_PFMuon_PF2PATJets_MET.root'
-        # histogram_files['data'] = measurement_config.data_file_muon_trees
+        histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
         if normalise_to_fit:
             normalisation = normalisations_muon[norm_variable]
@@ -141,6 +160,15 @@ def make_plot( channel, x_axis_title, y_axis_title,
     inclusive_control_region_hists = {}
     for sample in histograms.keys():
         signal_region_hists[sample] = histograms[sample][signal_region_tree]
+
+        if compare_qcd_signal_with_data_control:
+            if sample is 'data':
+                signal_region_hists[sample] = histograms[sample][control_region_tree]
+            elif sample is 'QCD' :
+                signal_region_hists[sample] = histograms[sample][signal_region_tree]
+            else:
+                del signal_region_hists[sample]
+
         if use_qcd_data_region:
             inclusive_control_region_hists[sample] = histograms[sample][control_region_tree]
 
@@ -151,7 +179,9 @@ def make_plot( channel, x_axis_title, y_axis_title,
                             scale_factor = measurement_config.luminosity_scale,
                             normalisation = normalisation )
     elif normalise_to_data:
-        totalMC = signal_region_hists['TTJet'].Integral() + signal_region_hists['SingleTop'].Integral() + signal_region_hists['V+Jets'].Integral()
+        totalMC = 0
+        for sample in signal_region_hists:
+            totalMC += signal_region_hists[sample].Integral()
         newScale = signal_region_hists['data'].Integral() / totalMC
         prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = newScale,
@@ -176,17 +206,35 @@ def make_plot( channel, x_axis_title, y_axis_title,
         qcd_from_data = signal_region_hists['QCD']
 
     # Which histograms to draw, and properties
-    histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
-                          signal_region_hists['V+Jets'],
-                          signal_region_hists['SingleTop'],
-                          signal_region_hists['TTJet']]
-    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
-    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    histograms_to_draw = []
+    histogram_lables = []
+    histogram_colors = []
 
-    # if channel == 'electron':
-    histograms_to_draw.remove(qcd_from_data)
-    histogram_lables.remove('QCD')
-    histogram_colors.remove('yellow')
+    if compare_qcd_signal_with_data_control :
+        histograms_to_draw = [signal_region_hists['data'], qcd_from_data ]
+        histogram_lables = ['data', 'QCD']
+        histogram_colors = ['black', 'yellow']
+    else :
+        histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
+                              signal_region_hists['V+Jets'],
+                              signal_region_hists['SingleTop'],
+                              signal_region_hists['TTJet']]
+        histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+        histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+
+    # # # if channel == 'electron':
+    # if compare_qcd_signal_with_data_control:
+    #     histograms_to_draw.remove(signal_region_hists['V+Jets'])
+    #     histograms_to_draw.remove(signal_region_hists['SingleTop'])
+    #     histograms_to_draw.remove(signal_region_hists['TTJet'])
+
+    #     histogram_lables.remove('V+Jets')
+    #     histogram_lables.remove('Single-Top')
+    #     histogram_lables.remove(samples_latex['TTJet'])
+
+    #     histogram_colors.remove('green')
+    #     histogram_colors.remove('magenta')
+    #     histogram_colors.remove('red')
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = name_prefix + b_tag_bin
@@ -219,6 +267,10 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # else:
     #     histogram_properties.mc_error = mc_uncertainty
     #     histogram_properties.mc_errors_label = 'MC unc.'
+
+
+    if normalise_to_data:
+            histogram_properties.name += '_normToData'
 
     # Actually draw histograms
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -318,12 +370,15 @@ if __name__ == '__main__':
                         # 'NVertex',
                         # 'LeptonPt',
                         # 'LeptonEta',
-                        # 'QCDHT'
+                        # 'QCDHT',
                         # 'QCDMET',
                         # 'QCDST',
                         # 'QCDWPT',
                         'QCDLeptonEta',
+                        # 'QCDRelIso',
+                        # 'QCDHT_dataControl_mcSignal',
                         ]
+    print include_plots
     additional_qcd_plots = [
                             ]
     if make_additional_QCD_plots:
@@ -643,15 +698,18 @@ if __name__ == '__main__':
                             'muonQCDNonIso' : 'MuPlusJets/QCD non iso mu+jets'
                             }.iteritems() :
         # Set folder for this batch of plots
-        output_folder = output_folder_base + "QCDControl/Variables/"
+        output_folder = output_folder_base + "QCDControl/Variables/%s/" % channel
         make_folder_if_not_exists(output_folder)
 
+        print 'Control region :',label
 
         treeName = 'EPlusJets/QCD non iso e+jets'
+        signalTreeName = 'EPlusJets/Ref selection'
         if channel == 'electronQCDConversions':
             treeName = 'EPlusJets/QCDConversions'
         elif channel == 'muonQCDNonIso':
             treeName = 'MuPlusJets/QCD non iso mu+jets'
+            signalTreeName = 'MuPlusJets/Ref selection'
 
         ###################################################
         # HT
@@ -659,12 +717,28 @@ if __name__ == '__main__':
         norm_variable = 'HT'
         if 'QCDHT' in include_plots:
             print '---> QCD HT'
-            print output_folder
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
                       y_axis_title = 'Events/(20 GeV)',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      branchName = 'HT',
+                      name_prefix = '%s_HT_' % channel,
+                      x_limits = bin_edges['HT'],
+                      nBins = 20,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      )
+
+        if 'QCDHT_dataControl_mcSignal' in include_plots:
+            print '---> QCD HT data to signal QCD'
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
+                      y_axis_title = 'Events/(20 GeV)',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % signalTreeName,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
+                      compare_qcd_signal_with_data_control = True,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % channel,
                       x_limits = bin_edges['HT'],
@@ -735,7 +809,7 @@ if __name__ == '__main__':
                       )
 
         # Set folder for this batch of plots
-        output_folder =  output_folder_base + "QCDControl/Control/"
+        output_folder =  output_folder_base + "QCDControl/Control/%s" % channel
         make_folder_if_not_exists(output_folder)
         ###################################################
         # Lepton Pt
@@ -747,15 +821,40 @@ if __name__ == '__main__':
                 channelTreeName = 'Muon/Muons'
 
             make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['eta'],
+                      x_axis_title = '$%s$' % fit_variables_latex['absolute_eta'],
                       y_axis_title = 'Events',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
                       control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      branchName = 'eta',
+                      branchName = 'fabs(eta)',
                       name_prefix = '%s_LeptonEta_' % channel,
-                      x_limits = control_plots_bins['LeptonEta'],
-                      nBins = len(control_plots_bins['LeptonEta'])-1,
+                      x_limits = control_plots_bins['AbsLeptonEta'],
+                      nBins = len(control_plots_bins['AbsLeptonEta'])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
                       )
+
+
+        ###################################################
+        # Rel iso
+        ###################################################
+        if 'QCDRelIso' in include_plots:
+            if channel != 'muonQCDNonIso': 
+                print '---> QCD Rel iso'
+                channelTreeName = 'Electron/Electrons'
+                if channel == 'muonQCDNonIso':
+                    channelTreeName = 'Muon/Muons'
+
+                make_plot( channel,
+                          x_axis_title = '$%s$' % control_plots_latex['relIso'],
+                          y_axis_title = 'Events',
+                          signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
+                          control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
+                          branchName = 'relIso_03_deltaBeta',
+                          name_prefix = '%s_relIso_' % channel,
+                          x_limits = control_plots_bins['relIso'],
+                          nBins = len(control_plots_bins['relIso'])-1,
+                          rebin = 1,
+                          legend_location = ( 0.95, 0.78 ),
+                          cms_logo_location = 'right',
+                          )            

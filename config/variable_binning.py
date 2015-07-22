@@ -59,11 +59,11 @@ control_plots_bins = {
   # 'NJets' : [i*0.25 for i in range ( 0, 40 + 1 )],
   'JetPt' : [i * 5  for i in range ( 5, 40 )],  
   'LeptonPt' : [i * 10 for i in range ( 3, 20 )],  
-  'LeptonEta' : [-2.5, -2.0, -1.5, 1.0, 0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5],  
+  'LeptonEta' : [-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5],  
+  'AbsLeptonEta' : [0.0, 0.5, 1.0, 1.5, 2.0, 2.1, 2.5, 3.0],  
   'NBJets' : [i + 0.5 for i in range ( 1, 6 + 1 )],
   'NVertex' : [i*2 for i in range ( 0,20 + 1 )],
-  'relIso_03_deltaBeta' : [i for i in range ( 0,2 + 1 )],
-  'relIso_04_deltaBeta' : [i for i in range ( 0,2 + 1 )],
+  'relIso' : [i*0.05 for i in range ( 0, 20 )],
 }
 
 
