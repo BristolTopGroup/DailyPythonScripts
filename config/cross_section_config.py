@@ -241,7 +241,13 @@ class XSectionConfig():
         self.topMasses = [169.5, 172.5, 173.5]
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
-        self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
+        self.generator_systematic_vjets_templates = {}
+        for systematic in self.generator_systematics:
+            if 'mass' in systematic:
+                continue
+            tmp = path_to_files + 'central/VJets-{0}_{1}pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
+            tmp = tmp.format(systematic, self.luminosity)
+            self.generator_systematic_vjets_templates[systematic] = tmp
 
         self.kValueSystematic = [ 'kValue_up', 'kValue_down']
 
