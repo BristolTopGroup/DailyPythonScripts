@@ -94,7 +94,6 @@ class TTJetNormalisation:
         '''
         if self.have_normalisation:
             return
-#         input_files = self.get_input_files()
         if self.measurement.__class__ == tools.measurement.Systematic:
             self.measurement.scale_histograms()
         histograms = self.measurement.histograms
@@ -172,8 +171,8 @@ def parse_options():
                       help="set output path for JSON files")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT, WPT). Default is MET.")
-    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8, type=int,
-                      help="set the centre of mass energy for analysis. Default = 8 [TeV]")
+    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
+                      help="set the centre of mass energy for analysis. Default = 13 [TeV]")
     parser.add_option('-d', '--debug', dest="debug", action="store_true",
                       help="Print the debug information")
     parser.add_option('--closure_test', dest="closure_test", action="store_true",
@@ -207,7 +206,8 @@ def main():
     for met_unc in ['JetEnUp', 'JetEnDown', 'JetResUp', 'JetResDown']:
         # the above ones are done together with
         # categories_and_prefixes, see get_met_type
-        categories.remove(met_unc)
+        if met_unc in measurement_config.met_systematics_suffixes:
+            categories.remove(met_unc)
 
     for channel in ['electron']:
         inputs = {
@@ -218,6 +218,7 @@ def main():
         }
         measurement_files = glob.glob(input_template.format(**inputs))
         for f in measurement_files:
+            print('Processing file ' + f)
             measurement = tools.measurement.Measurement.fromJSON(f)
             # for each measurement
             norm = TTJetNormalisation(
