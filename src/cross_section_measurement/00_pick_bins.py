@@ -62,11 +62,11 @@ def main():
                       help = "Consider visible phase space or not" )
     ( options, args ) = parser.parse_args()
 
-    p_min = 0.6
-    s_min = 0.6
+    p_min = 0.5
+    s_min = 0.5
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 200
+    n_min = 30
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}

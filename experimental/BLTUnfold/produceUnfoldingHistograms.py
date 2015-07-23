@@ -3,7 +3,7 @@ from rootpy.plotting import Hist, Hist2D, Canvas
 from rootpy.io import root_open, File
 #from rootpy.interactive import wait
 from optparse import OptionParser
-
+from config import XSectionConfig
 from config.variable_binning import bin_edges
 from config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from tools.file_utilities import make_folder_if_not_exists
@@ -77,22 +77,21 @@ def getgenVariable_particle( recoVariable ):
         return 'pseudoB_pT'
     else : return 'pseudo'+recoVariable
 
-fileNames = {
-             '13TeV' : {
-                    'central' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_tree.root',
-                    'amcatnlo' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_amc_tree.root',
-                    'madgraph' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_madgraph_tree.root',
-                    'scaleup' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_scaleup_tree.root',
-                    'scaledown' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_scaledown_tree.root',
-                    'massdown' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_mtop1695_tree.root',
-                    'massup' : '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_mtop1755_tree.root',
-                   #  'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
-                   #  'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
-                   #  'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
-                   #  'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
-                   #  'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
-                },
-             }
+def getFileName( com, sample, measurementConfig ) :
+
+    fileNames = {
+                 '13TeV' : {
+                        'central' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'amcatnlo' : measurementConfig.ttbar_amc_category_templates_trees,
+                        'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
+                        'scaleup' : measurementConfig.ttbar_scaleup_category_templates_trees,
+                        'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
+                        'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
+                        'massup' : measurementConfig.ttbar_mtop1755_category_templates_trees,
+                    },
+                 }
+
+    return fileNames[com][sample]
 
 channels = [
         channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
@@ -113,10 +112,14 @@ def main():
 
     (options, _) = parser.parse_args()
 
+    measurement_config = XSectionConfig( options.centreOfMassEnergy )
+
     # Input file name
     file_name = 'crap.root'
     if int(options.centreOfMassEnergy) == 13:
-        file_name = fileNames['13TeV'][options.sample]
+        # file_name = fileNames['13TeV'][options.sample]
+        file_name = getFileName('13TeV', options.sample, measurement_config)
+        print getFileName('13TeV', options.sample, measurement_config)
     else:
         print "Error: Unrecognised centre of mass energy."
 
@@ -198,7 +201,7 @@ def main():
                 #
                 
                 # Generator level
-                genWeight = '( EventWeight )'
+                genWeight = '( EventWeight * %.4f)' % measurement_config.luminosity_scale
                 # genWeight = '( unfolding.puWeight )'
                 genSelection = ''
                 genSelectionVis = ''
@@ -211,7 +214,7 @@ def main():
 
                 # Offline level
                 # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
-                offlineWeight = '( EventWeight )'
+                offlineWeight = '( EventWeight * %.4f)' % measurement_config.luminosity_scale
                 offlineSelection = ''
                 if channel.channelName is 'muPlusJets' :
                     offlineSelection = '( passSelection == 1 )'
@@ -304,7 +307,7 @@ def main():
                 # Fill histograms
                 #
                 if not options.donothing:
-                    tree.Draw('EventWeight','1',hist=eventWeight)
+                    tree.Draw('(EventWeight * %.4f)' % measurement_config.luminosity_scale,'1',hist=eventWeight)
                     # 1D
                     tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth)
                     tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis)
