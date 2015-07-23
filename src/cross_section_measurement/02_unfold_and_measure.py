@@ -1,7 +1,6 @@
 # general
 from __future__ import division
 from optparse import OptionParser
-import os
 # from array import array
 # rootpy
 from rootpy.io import File
@@ -15,8 +14,7 @@ combine_complex_results
 from tools.hist_utilities import hist_to_value_error_tuplelist, \
 value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
-from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, \
-make_folder_if_not_exists
+from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
 
@@ -455,7 +453,7 @@ if __name__ == '__main__':
         if run_just_central and not category == 'central':
             continue
         # Don't need to consider MET uncertainties for HT
-        if variable == 'HT' and category in met_uncertainties:
+        if variable == 'HT' and category in measurement_config.met_systematics_suffixes:
             continue
         print 'Unfolding category "%s"' % category
         # Setting up systematic MET for JES up/down samples
@@ -471,16 +469,16 @@ if __name__ == '__main__':
         #         met_type = 'patPFMetJetEnDown'
 
         # read fit results from JSON
-        electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
-        muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
+        electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+        muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'
     #     combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
         if category in ttbar_generator_systematics :
             # or category in ttbar_mass_systematics 
-                electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
-                muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
-            # combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
+                electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
+                muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'
+            # combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'
         
         fit_results_electron = read_data_from_JSON( electron_file )
         fit_results_muon = read_data_from_JSON( muon_file )
