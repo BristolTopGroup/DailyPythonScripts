@@ -30,7 +30,7 @@ for channel in config.analysis_types.keys():
 				"histogram": "%s/measured" % ( histogramTemplate ),
 				},
 			"data" : { 
-				"file": "data/%s/%sTeV/%s/fit_results/central/fit_results_%s_patType1CorrectedPFMet.txt" % ( fitVars, com, variable, channel),
+				"file": "data/normalisation/background_subtraction/%sTeV/%s/central/normalisation_%s_patType1CorrectedPFMet.txt" % ( com, variable, channel),
 				"histogram": "TTJet"
 				},
 			}
