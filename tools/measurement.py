@@ -135,7 +135,6 @@ class Measurement():
             if isinstance(i, dict):
                 i = ti.Input(**self.samples[sample]['input'])
             self.histograms[sample] = i.read()
-            print(sample, self.histograms[sample].Integral())
             return
         input_file = self.samples[sample]['input_file']
         if self.samples[sample].has_key('hist'):
