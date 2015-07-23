@@ -43,6 +43,11 @@ def main():
 
 
 def create_measurement(com, category, variable, channel):
+    if com == 13:
+        # exclude non existing systematics
+        if 'VJets' in category and 'scale' in category:
+            print('Exculding {0} for now'.format(category))
+            return
     config = XSectionConfig(com)
     met_type = get_met_type(category, config)
     if category in config.met_systematics_suffixes and variable == 'HT':
@@ -276,13 +281,15 @@ def get_qcd_template(config, variable, category, channel):
             'Ref selection', config.electron_control_region)
         if category == 'QCD_shape':
             qcd_template = qcd_template.replace(
-                'Ref selection', config.electron_control_region_systematic)
+                config.electron_control_region,
+                config.electron_control_region_systematic)
     else:
         qcd_template = qcd_template.replace(
             'Ref selection', config.muon_control_region)
         if category == 'QCD_shape':
             qcd_template = qcd_template.replace(
-                'Ref selection', config.muon_control_region_systematic)
+                config.muon_control_region,
+                config.muon_control_region_systematic)
 
     return qcd_template
 
