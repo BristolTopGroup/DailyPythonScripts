@@ -245,6 +245,15 @@ class XSectionConfig():
         self.electron_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Electron_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.muon_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Muon_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
 
+
+        self.ttbar_amc_category_templates_trees = path_to_files + '/TTJets_amc_tree.root'
+        self.ttbar_madgraph_category_templates_trees = path_to_files + '/TTJets_madgraph_tree.root'
+        self.ttbar_scaleup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaleup_tree.root'
+        self.ttbar_scaledown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaledown_tree.root'
+        self.ttbar_mtop1695_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1695_tree.root'
+        self.ttbar_mtop1755_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1755_tree.root'
+
+
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,
                                     'JES_up': self.data_file_muon,
@@ -471,7 +480,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 1000  # pb^-1
+        self.new_luminosity = 50  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {
