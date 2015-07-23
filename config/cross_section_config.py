@@ -359,8 +359,11 @@ class XSectionConfig():
         self.electron_control_region = 'QCDConversions'
         self.electron_control_region_systematic = 'QCD non iso e+jets'
 
-        self.muon_control_region = 'QCD non iso mu+jets'
-        self.muon_control_region_systematic = 'QCD non iso mu+jets'  # no systematic yet
+        self.muon_control_region = 'QCD non iso mu+jets ge3j'
+        self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
+        if self.centre_of_mass_energy == 13:
+            self.muon_control_region = 'QCD non iso mu+jets'
+            self.muon_control_region_systematic = 'QCD non iso mu+jets'
 
         self.include_higgs = False
 
