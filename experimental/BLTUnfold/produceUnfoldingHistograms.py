@@ -7,6 +7,7 @@ from config import XSectionConfig
 from config.variable_binning import bin_edges
 from config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from tools.file_utilities import make_folder_if_not_exists
+from math import trunc
 
 from scaleFactors import *
 
@@ -267,10 +268,9 @@ def main():
                 response_only_fakes_parton = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes_parton')
 
                 if options.fineBinned:
-                    minVar = allVariablesBins[variable][0]
-                    maxVar = max( tree.GetMaximum(genVariable_particle), tree.GetMaximum( recoVariable ) ) * 1.2
+                    minVar = trunc( allVariablesBins[variable][0] )
+                    maxVar = trunc( max( tree.GetMaximum(genVariable_particle), tree.GetMaximum( recoVariable ) ) * 1.2 )
                     nBins = int(maxVar - minVar)
-
                     if variable is 'leptonEta' or variable is 'bEta':
                         maxVar = 2.5
                         minVar = -2.5
