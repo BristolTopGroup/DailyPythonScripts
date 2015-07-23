@@ -156,7 +156,7 @@ def get_histogram_from_tree(**kwargs):
     input_file = kwargs.pop('input_file')
     tree = kwargs.pop('tree')
     selection = kwargs.pop('selection')
-    weight_and_selection = '( {0} ) * ( {0} )'.format(weight_branch, selection)
+    weight_and_selection = '( {0} ) * ( {1} )'.format(weight_branch, selection)
     if kwargs.has_key('n_bins'):
         hist = Hist(kwargs['n_bins'], kwargs['x_min'], kwargs['x_max'], 
                     type = 'D')
