@@ -5,7 +5,7 @@ Created on 21 Jul 2015
 '''
 import unittest
 from rootpy.io import File
-from test.data import create_test_tree, create_test_hist
+from tests.data import create_test_tree, create_test_hist
 import tools.input as ti
 
 
@@ -77,7 +77,7 @@ class Test(unittest.TestCase):
                   hist='test_hist',
                   )
         d = i.toDict()
-        self.assertEqual(d, {'file': 'test.root', 'hist': 'test_hist'})
+        self.assertEqual(d, {'input_file': 'test.root', 'hist': 'test_hist'})
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
