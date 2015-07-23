@@ -79,7 +79,10 @@ class Input():
                 if not f.__contains__(self.tree_name):
                     return False
                 tree = f[self.tree_name]
-                if not tree.has_branch(self.branch):
+                branchToCheck = self.branch
+                if '[' in branchToCheck and ']' in branchToCheck:
+                    branchToCheck = branchToCheck.split('[')[0]
+                if not tree.has_branch(branchToCheck):
                     return False
         return True
 

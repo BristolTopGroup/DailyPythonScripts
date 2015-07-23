@@ -93,7 +93,7 @@ def create_measurement(com, category, variable, channel):
     variable_template = config.variable_path_templates[
         variable].format(**inputs)
     template_category = category
-    if category == 'QCD_shape' or category in config.rate_changing_systematics_names or category in config.met_systematics_suffixes:
+    if category == 'QCD_shape' or category in config.rate_changing_systematics_names:
         template_category = 'central'
     if category in [config.vjets_theory_systematic_prefix + systematic for systematic in config.generator_systematics]:
         template_category = 'central'
@@ -303,7 +303,16 @@ def create_input(config, sample, variable, category, channel, template, input_fi
     if config.centre_of_mass_energy == 13:
         branch = template.split('/')[-1]
         tree = template.replace('/' + branch, '')
-        selection = '{0} >= 0'.format(variable)
+
+        if sample != 'data':
+            if category in config.met_systematics_suffixes:
+                branch = template.split('/')[-1]
+                branch += '_METUncertainties[%s]' % config.met_systematics[category]
+
+            if 'JES_down' in category or 'JES_up' in category:
+                tree += config.categories_and_prefixes[category]
+
+        selection = '{0} >= 0'.format(branch)
     else:
         hist = template
     lumi_scale = 1.
