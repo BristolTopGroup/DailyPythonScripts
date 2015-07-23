@@ -438,7 +438,7 @@ if __name__ == '__main__':
     ### categories.extend( measurement_config.kValueSystematic )
 
     ### pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
-    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]    
+    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics_names]
 
     all_measurements = deepcopy( categories )
     ### all_measurements.extend( pdf_uncertainties )
