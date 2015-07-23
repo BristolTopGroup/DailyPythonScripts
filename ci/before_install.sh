@@ -21,13 +21,13 @@ wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
 sudo apt-get update -q
 # Install the dependencies we need
 time sudo apt-get -q install cmake clang-${CLANG_VERSION} libclang-${CLANG_VERSION}-dev gcc-${GCC_VERSION} g++-${GCC_VERSION} boost${BOOST_VERSION} libboost${BOOST_VERSION}-dev libboost-test${BOOST_VERSION}-dev \
-python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-nose python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX}
+python${PYTHON_SUFFIX}-numpy python${PYTHON_SUFFIX}-sphinx python${PYTHON_SUFFIX}-pip cython${PYTHON_SUFFIX}
 if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then 
 	time sudo apt-get install -qq python-matplotlib python-tables; 
 fi
 
-pip install nose --upgrade
-nosetests -V
+pip install --upgrade pip
+pip install nose2 --upgrade
 
 # setup newer compilers ( we need gcc >= 4.7 for c++11
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} 50;
