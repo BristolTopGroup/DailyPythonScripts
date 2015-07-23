@@ -165,7 +165,14 @@ def get_histogram_from_tree(**kwargs):
 
     with File.open(input_file) as f:
         t = f[tree]
-        t.activate(branches, exclusive = True)
+        branchesToActivate = []
+        for b in branches:
+            if '[' in b and ']' in b:
+                branchesToActivate.append( b.split('[')[0] )
+            else : 
+                branchesToActivate.append(b)
+
+        t.activate(branchesToActivate, exclusive = True)
         t.Draw(branch, selection = weight_and_selection, hist = hist)
     return hist
 
