@@ -3,14 +3,14 @@ import os
 
 jobs = [
         # 13 TeV
-        # '--centreOfMassEnergy 13 -f',
+        '--centreOfMassEnergy 13 -f',
 
-        # '--centreOfMassEnergy 13 -s central',
-        # '--centreOfMassEnergy 13 -s amcatnlo',
-        # '--centreOfMassEnergy 13 -s madgraph',
+        '--centreOfMassEnergy 13 -s central',
+        '--centreOfMassEnergy 13 -s amcatnlo',
+        '--centreOfMassEnergy 13 -s madgraph',
 
-        # '--centreOfMassEnergy 13 -s scaleup',
-        # '--centreOfMassEnergy 13 -s scaledown',
+        '--centreOfMassEnergy 13 -s scaleup',
+        '--centreOfMassEnergy 13 -s scaledown',
 
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
