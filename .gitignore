@@ -26,6 +26,7 @@ external/TopAnalysis/libTopSVDUnfold.rootmap
 external/TopAnalysis/libTopSVDUnfold.so
 config/RooUnfold.py
 config/TopSVDUnfold.py
+config/unfolding/*
 #eclipse settings
 .settings
 jobs
