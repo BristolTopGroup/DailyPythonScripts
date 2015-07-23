@@ -304,9 +304,13 @@ def create_input(config, sample, variable, category, channel, template, input_fi
         branch = template.split('/')[-1]
         tree = template.replace('/' + branch, '')
 
-        if category in config.met_systematics_suffixes:
-            branch = template.split('/')[-1]
-            branch += '_METUncertainties[%s]' % config.met_systematics[category]
+        if sample != 'data':
+            if category in config.met_systematics_suffixes:
+                branch = template.split('/')[-1]
+                branch += '_METUncertainties[%s]' % config.met_systematics[category]
+
+            if 'JES_down' in category or 'JES_up' in category:
+                tree += config.categories_and_prefixes[category]
 
         selection = '{0} >= 0'.format(branch)
     else:
