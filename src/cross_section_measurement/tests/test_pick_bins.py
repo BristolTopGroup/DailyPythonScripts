@@ -26,7 +26,7 @@ class Test( unittest.TestCase ):
         self.h2 = Hist2D( 60, 40, 100, 60, 40, 100 )
         self.h3 = Hist2D( 60, 40, 100, 60, 40, 100 )
     
-        n_1 = 1000000
+        n_1 = 10000
         n_2 = int( n_1 / 5 )
         x_1 = 60 + 10 * np.random.randn( n_1 )
         x_2 = 60 + 10 * np.random.randn( n_2 )
@@ -77,7 +77,7 @@ class Test( unittest.TestCase ):
                  'channel':'test_3'},
                    ]
         # requirements for new binning
-        self.p_min, self.s_min, self.n_min = 0.5, 0.5, 400
+        self.p_min, self.s_min, self.n_min = 0.5, 0.5, 100
         self.bin_edges_1, _ = pick_bins.get_best_binning( 
                                         self.histogram_information_1, 
                                         self.p_min, 
@@ -108,7 +108,6 @@ class Test( unittest.TestCase ):
                                         self.s_min, 
                                         self.n_min 
                                         )
-        
         
         self.h1_rebinned = rebin_2d(self.h1, self.bin_edges_1, self.bin_edges_1)
         self.h2_rebinned = rebin_2d(self.h2, self.bin_edges_2, self.bin_edges_2)

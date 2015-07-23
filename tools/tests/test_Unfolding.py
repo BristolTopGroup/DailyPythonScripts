@@ -5,19 +5,17 @@ Created on 15 May 2014
 '''
 from __future__ import division
 import unittest
-import importlib
 from rootpy.io import File
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 from tools.ROOT_utils import set_root_defaults
-from tools.file_utilities import read_data_from_JSON
 from config.variable_binning import bin_edges
 
 class Test( unittest.TestCase ):
 
     def setUp( self ):
         # load histograms
-        self.input_file = File('test/data/unfolding_merged_asymmetric.root')
+        self.input_file = File('tests/data/unfolding_merged_asymmetric.root')
         self.k_value = 3
         self.unfold_method = 'RooUnfoldSvd'
         self.met_type = 'patType1CorrectedPFMet'
@@ -83,7 +81,7 @@ class Test( unittest.TestCase ):
                 # the difference between the truth and unfolded result should be within the unfolding error
                 for (value, error), (true_value, _) in zip(unfolded_result, truth):
                     self.assertAlmostEquals(value, true_value, delta = error)
-                    print value, '+-', error, '   true:', true_value
+#                     print value, '+-', error, '   true:', true_value
 
     def test_k_to_tau(self):
         data = self.dict['electron']['MET']['h_measured']

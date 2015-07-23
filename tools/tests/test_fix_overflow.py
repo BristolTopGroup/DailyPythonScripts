@@ -127,4 +127,5 @@ def check_equal_lists(list1, list2):
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testTemplates']
-    unittest.main()
+    import nose2
+    nose2.main()

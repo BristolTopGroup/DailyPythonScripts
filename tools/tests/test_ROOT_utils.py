@@ -2,7 +2,7 @@ import unittest
 
 import tools.ROOT_utils as ru
 from rootpy.io import File
-from test.data import create_test_tree
+from tests.data import create_test_tree
 
 
 

@@ -25,4 +25,4 @@ sudo rm -rf /dev/shm && sudo ln -s /run/shm /dev/shm
 #- sudo chmod a+w /dev/shm
 ls -la /dev/shm
 
-time nosetests -v test/*.py
+time nose2 -v

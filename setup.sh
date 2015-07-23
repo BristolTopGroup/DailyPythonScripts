@@ -65,9 +65,9 @@ success $? dateutil
 echo "Installing PrettyTable"
 pip install PrettyTable &> /dev/null
 success $? PrettyTable
-echo "Installing nose unit test framework"
-pip install nose &> /dev/null
-success $? nose
+echo "Installing nose2 unit test framework"
+pip install nose2 &> /dev/null
+success $? nose2
 echo "Installing tabulate (latex table printing, etc)"
 pip install tabulate &> /dev/null
 success $? tabulate
@@ -84,7 +84,7 @@ pip install -e $base/external/rootpy &> /dev/null
 success $? rootpy
 
 echo "Installing root_numpy"
-pip install root_numpy &> /dev/null
+pip install --upgrade root_numpy &> /dev/null
 success $? root_numpy
 
 if [ ! -d "$base/external/lib" ]; then

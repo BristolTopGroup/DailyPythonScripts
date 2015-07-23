@@ -4,8 +4,8 @@ Created on 21 Jul 2015
 @author: phxlk
 '''
 import unittest
-from test.data import create_test_hist, create_test_tree
-from rootpy.io.file import Directory, File
+from tests.data import create_test_hist, create_test_tree
+from rootpy.io.file import File
 
 class Test(unittest.TestCase):
 
@@ -37,4 +37,5 @@ class Test(unittest.TestCase):
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()
+    import nose2
+    nose2.main()

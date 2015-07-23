@@ -77,7 +77,7 @@ class Test( unittest.TestCase ):
         for p in purities:
             self.assertGreater( p, 0 )
             # allow for 10% error due to randomness
-            self.assertLess( p, 0.5 + 0.05)
+            self.assertLess( p, 0.5 + 0.1)
             
     def test_random_elipse_stability( self ):
         stabilities = calculate_stabilities( self.random_elipse )
