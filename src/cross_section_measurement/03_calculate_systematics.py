@@ -14,6 +14,7 @@ This module produces several results for the three channels (electron, muon, com
 2) can be used to compare systematics (both in tables and plots)
 3) + 4) for more fine-grained analysis
 '''
+from __future__ import division, print_function
 from optparse import OptionParser
 from copy import deepcopy
 
@@ -26,7 +27,7 @@ def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties_list
     filename = ''
     
-    filename = path_to_JSON + '/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+    filename = path_to_JSON + '/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     normalised_xsection = read_data_from_JSON( filename )
     
@@ -182,6 +183,7 @@ if __name__ == "__main__":
     translate_options = measurement_config.translate_options
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
+    met_systematics_suffixes = measurement_config.met_systematics_suffixes
     met_systematics = measurement_config.met_systematics
 
     variable = options.variable
@@ -195,50 +197,48 @@ if __name__ == "__main__":
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results_%s/' % phaseSpaceSuffix
-    print options.path
-    print path_to_JSON
     symmetrise_errors = options.symmetrise_errors
     
-    ### # set up lists for systematics
+    # set up lists for systematics
     ttbar_generator_systematics_list = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     ### vjets_generator_systematics_list = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
 
-    ### # ttbar theory systematics: ptreweighting, hadronisation systematic (powheg_pythia - powheg_herwig)
-    ### # ttbar_ptreweight_systematic_list = [ttbar_theory_systematic_prefix + 'ptreweight']
+    # ttbar theory systematics: ptreweighting, hadronisation systematic (powheg_pythia - powheg_herwig)
+    # ttbar_ptreweight_systematic_list = [ttbar_theory_systematic_prefix + 'ptreweight']
     ### ttbar_hadronisation_systematic_list = [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig']
 
-    ### # 45 PDF uncertainties
-    ### pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
+    # 52 PDF uncertainties
+    # pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
 
-    ### # all MET uncertainties except JES and JER as this is already included
-    ### met_uncertainties_list = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    # all MET uncertainties except JES and JER as this is already included
+    met_uncertainties_list = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
 
     # rate changing systematics (luminosity, ttbar/single top cross section uncertainties)
-    rate_changing_systematics_list = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
+    rate_changing_systematics_list = [systematic for systematic in measurement_config.rate_changing_systematics_names]
 
     # all other uncertainties (including JES and JER)
     other_uncertainties_list = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ### other_uncertainties_list.extend( vjets_generator_systematics_list )
-    ### other_uncertainties_list.append( 'QCD_shape' )
+    other_uncertainties_list.append( 'QCD_shape' )
     other_uncertainties_list.extend( rate_changing_systematics_list )
 
     for channel in ['electron', 'muon', 'combined']:
-#         print "channel = ", channel
+#         print("channel = ", channel)
         # read central measurement
         central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement( 'central', channel )
         
-        ### # read groups of systematics
+        # read groups of systematics
         ttbar_generator_systematics, ttbar_generator_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_generator_systematics_list, channel = channel )
-        ### # ttbar_ptreweight_systematic, ttbar_ptreweight_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_ptreweight_systematic_list, channel = channel )
-        ### ttbar_hadronisation_systematic, ttbar_hadronisation_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_hadronisation_systematic_list, channel = channel )
-        ### # top mass systematic
-        ### ttbar_mass_systematic, ttbar_mass_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_mass_systematics_list, channel = channel )
-        ### # k Value systematics
-        ### kValue_systematic, kValue_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = kValue_systematic_list, channel = channel )
-        ### pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = pdf_uncertainties, channel = channel )
-        ### met_systematics, met_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = met_uncertainties_list, channel = channel )
+        # ttbar_ptreweight_systematic, ttbar_ptreweight_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_ptreweight_systematic_list, channel = channel )
+        # ttbar_hadronisation_systematic, ttbar_hadronisation_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_hadronisation_systematic_list, channel = channel )
+        # top mass systematic
+        # ttbar_mass_systematic, ttbar_mass_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_mass_systematics_list, channel = channel )
+        # k Value systematics
+        # kValue_systematic, kValue_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = kValue_systematic_list, channel = channel )
+        # pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = pdf_uncertainties, channel = channel )
+#         met_systematics, met_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = met_uncertainties_list, channel = channel )
         other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = other_uncertainties_list, channel = channel )
-        
+
         ### # get the minimal and maximal deviation for each group of systematics
         ### # ttbar generator systematics (factorisation scale and matching threshold)
         ttbar_generator_min, ttbar_generator_max = summarise_systematics( central_measurement, ttbar_generator_systematics )
@@ -257,13 +257,13 @@ if __name__ == "__main__":
         ### # Take up variation as the down variation also.
         ### kValue_systematic['kValue_down'] = kValue_systematic['kValue_up']
         ### kValue_systematic_unfolded['kValue_down'] = kValue_systematic_unfolded['kValue_up']
-        ### # 45 PDFs
+        ### # 52 PDFs
         ### pdf_min, pdf_max = summarise_systematics( central_measurement, pdf_systematics, pdf_calculation = True )
         ### pdf_min_unfolded, pdf_max_unfolded = summarise_systematics( central_measurement_unfolded, pdf_systematics_unfolded, pdf_calculation = True )
 
-        ### # MET
-        ### met_min, met_max = summarise_systematics( central_measurement, met_systematics )
-        ### met_min_unfolded, met_max_unfolded = summarise_systematics( central_measurement_unfolded, met_systematics_unfolded )
+        # MET
+#         met_min, met_max = summarise_systematics( central_measurement, met_systematics )
+#         met_min_unfolded, met_max_unfolded = summarise_systematics( central_measurement_unfolded, met_systematics_unfolded )
         # other
         other_min, other_max = summarise_systematics( central_measurement, other_systematics )
         other_min_unfolded, other_max_unfolded = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
@@ -360,14 +360,14 @@ if __name__ == "__main__":
         # replace measurement with deviation from central
         ttbar_generator_systematics = replace_measurement_with_deviation_from_central( central_measurement, ttbar_generator_systematics )
         ###pdf_systematics = replace_measurement_with_deviation_from_central( central_measurement, pdf_systematics )
-        ###met_systematics = replace_measurement_with_deviation_from_central( central_measurement, met_systematics )
+#         met_systematics = replace_measurement_with_deviation_from_central( central_measurement, met_systematics )
         ###ttbar_mass_systematic = replace_measurement_with_deviation_from_central( central_measurement, ttbar_mass_systematic )
         ###kValue_systematic = replace_measurement_with_deviation_from_central( central_measurement, kValue_systematic )
         other_systematics = replace_measurement_with_deviation_from_central( central_measurement, other_systematics )
         
         ttbar_generator_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, ttbar_generator_systematics_unfolded )
         ###pdf_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, pdf_systematics_unfolded )
-        ###met_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, met_systematics_unfolded )
+#         met_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, met_systematics_unfolded )
         ###ttbar_mass_systematic_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, ttbar_mass_systematic_unfolded )
         ###kValue_systematic_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, kValue_systematic_unfolded )
         other_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, other_systematics_unfolded )
@@ -384,8 +384,8 @@ if __name__ == "__main__":
         ###pdf_systematics['PDF_total_lower'], pdf_systematics['PDF_total_upper'] = pdf_min, pdf_max
         ###pdf_systematics_unfolded['PDF_total_lower'], pdf_systematics_unfolded['PDF_total_upper'] = pdf_min_unfolded, pdf_max_unfolded
 
-        ###met_systematics['total_lower'], met_systematics['total_upper'] = met_min, met_max
-        ###met_systematics_unfolded['total_lower'], met_systematics_unfolded['total_upper'] = met_min_unfolded, met_max_unfolded
+#         met_systematics['total_lower'], met_systematics['total_upper'] = met_min, met_max
+#         met_systematics_unfolded['total_lower'], met_systematics_unfolded['total_upper'] = met_min_unfolded, met_max_unfolded
 
         ###ttbar_mass_systematic['total_lower'], ttbar_mass_systematic['total_upper'] = ttbar_mass_min, ttbar_mass_max
         ###ttbar_mass_systematic_unfolded['total_lower'], ttbar_mass_systematic_unfolded['total_upper'] = ttbar_mass_min_unfolded, ttbar_mass_max_unfolded
@@ -409,7 +409,7 @@ if __name__ == "__main__":
         ###
         write_normalised_xsection_measurement( ttbar_generator_systematics, ttbar_generator_systematics_unfolded, channel, summary = 'ttbar_generator' )
         ###write_normalised_xsection_measurement( pdf_systematics, pdf_systematics_unfolded, channel, summary = 'PDF' )
-        ###write_normalised_xsection_measurement( met_systematics, met_systematics_unfolded, channel, summary = 'MET' )
+#         write_normalised_xsection_measurement( met_systematics, met_systematics_unfolded, channel, summary = 'MET' )
         ###write_normalised_xsection_measurement( ttbar_mass_systematic, ttbar_mass_systematic_unfolded, channel, summary = 'topMass' )
         ###write_normalised_xsection_measurement( kValue_systematic, kValue_systematic_unfolded, channel, summary = 'kValue' )
         write_normalised_xsection_measurement( other_systematics, other_systematics_unfolded, channel, summary = 'other' )

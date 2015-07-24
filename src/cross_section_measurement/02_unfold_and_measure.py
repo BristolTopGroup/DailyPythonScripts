@@ -439,13 +439,13 @@ if __name__ == '__main__':
 
     ### pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics_names]
-
+    #  all MET uncertainties except JES as this is already included
+    met_uncertainties = [suffix for suffix in measurement_config.met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy( categories )
     ### all_measurements.extend( pdf_uncertainties )
-    ### all_measurements.extend( ['QCD_shape'] )
+    all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
 
-    print all_measurements
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
         print 'Doing category ',category
@@ -459,14 +459,16 @@ if __name__ == '__main__':
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
 
-        # if category == 'JES_up':
-        #     met_type += 'JetEnUp'
-        #     if met_type == 'PFMETJetEnUp':
-        #         met_type = 'patPFMetJetEnUp'
-        # elif category == 'JES_down':
-        #     met_type += 'JetEnDown'
-        #     if met_type == 'PFMETJetEnDown':
-        #         met_type = 'patPFMetJetEnDown'
+        if category == 'JES_up':
+            met_type += 'JetEnUp'
+        elif category == 'JES_down':
+            met_type += 'JetEnDown'
+        elif category == 'JER_up':
+            met_type += 'JetResUp'
+        elif category == 'JER_down':
+            met_type += 'JetResDown'
+        if category in met_uncertainties:
+            met_type += category
 
         # read fit results from JSON
         electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
@@ -488,7 +490,7 @@ if __name__ == '__main__':
         # TTJet_fit_results_combined = fit_results_combined['TTJet']
 
     #     # change back to original MET type for the unfolding
-    #     met_type = translate_options[options.metType]
+        met_type = translate_options[options.metType]
     #     # ad-hoc switch for PFMET -> patMETsPFlow
     #     if met_type == 'PFMET':
     #         met_type = 'patMETsPFlow'
