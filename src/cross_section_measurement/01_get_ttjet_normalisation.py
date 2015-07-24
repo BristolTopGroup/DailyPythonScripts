@@ -209,7 +209,7 @@ def main():
         if met_unc in measurement_config.met_systematics_suffixes:
             categories.remove(met_unc)
 
-    for channel in ['electron']:
+    for channel in ['electron', 'muon']:
         inputs = {
             'energy': options.CoM,
             'channel': channel,

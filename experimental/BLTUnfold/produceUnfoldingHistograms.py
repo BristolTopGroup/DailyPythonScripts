@@ -103,7 +103,7 @@ def main():
     
     parser = OptionParser()
     parser.add_option('--topPtReweighting', action='store_true', dest='applyTopPtReweighting', default=False )
-    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', default=13 )
+    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
     parser.add_option('--generatorWeight', type='int', dest='generatorWeight', default=-1 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)

@@ -359,8 +359,8 @@ class XSectionConfig():
         self.electron_control_region = 'QCDConversions'
         self.electron_control_region_systematic = 'QCD non iso e+jets'
 
-        self.muon_control_region = 'QCD non iso mu+jets ge3j'
-        self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
+        self.muon_control_region = 'QCD non iso mu+jets'
+        self.muon_control_region_systematic = 'QCD non iso mu+jets'  # no systematic yet
 
         self.include_higgs = False
 
@@ -578,13 +578,14 @@ class XSectionConfig():
                    }
 
         self.tau_values_electron = {
+"WPT" : 1.0235310219,
+"MET" : 2.36448941265,
+"HT" : 0.932603346883,
+"ST" : 0.849753435909,
+
                     "hadTopRap" : 10.0,
                     "lepTopPt" : 53.3669923121,
-"WPT" : 16.681005372,
-"HT" : 2.5950242114,
-"ST" : 11.497569954,
                     "hadTopPt" : 58.5702081806,
-"MET" : 20.0923300257,
                     "ttbarPt" : 27.8255940221,
                     "ttbarM" : 21.0490414451,
                     "lepTopRap" : 10.0,
@@ -592,13 +593,14 @@ class XSectionConfig():
         }
 
         self.tau_values_muon = {
+"WPT" : 0.849753435909,
+"MET" : 1.78864952906,
+"HT" : 0.774263682681,
+"ST" : 0.774263682681,
+
                     "hadTopRap" : 10.0,
                     "lepTopPt" : 546.227721768,
-"WPT" : 16.681005372,
-"HT" : 9.54548456662,
-"ST" : 26.5608778295,
                     "hadTopPt" : 453.487850813,
-"MET" : 38.5352859371,
                     "ttbarPt" : 312.571584969,
                     "ttbarM" : 196.304065004,
                     "lepTopRap" : 10.0,
