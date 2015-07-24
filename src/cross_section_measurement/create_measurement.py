@@ -26,14 +26,8 @@ def main():
     categories = ['QCD_shape']
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)
-    categories.extend(measurement_config.met_systematics_suffixes)
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not 'mass' in systematic])
-    for met_unc in ['JetEnUp', 'JetEnDown', 'JetResUp', 'JetResDown']:
-        # the above ones are done together with
-        # categories_and_prefixes, see get_met_type
-        if met_unc in measurement_config.met_systematics_suffixes:
-            categories.remove(met_unc)
 
     for variable in ['MET', 'HT', 'ST', 'WPT']:
         for category in categories:
@@ -50,8 +44,9 @@ def create_measurement(com, category, variable, channel):
             return
     config = XSectionConfig(com)
     met_type = get_met_type(category, config)
-    if category in config.met_systematics_suffixes and variable == 'HT':
+    if category in config.met_systematics_suffixes and category not in ['JES_up', 'JES_down', 'JER_up', 'JER_down'] and variable == 'HT':
         # no MET uncertainty on HT
+        # But JES/JER still done
         return
 
     m = None
@@ -201,7 +196,7 @@ def create_measurement(com, category, variable, channel):
             inputs['type'] = 'shape_systematic'
         else:
             inputs['type'] = 'rate_systematic'
-        if category in config.met_systematics_suffixes:
+        if category in config.met_systematics_suffixes and category not in ['JES_up', 'JES_down', 'JER_up', 'JER_down']:
             inputs['category'] = met_type
 
         m.toJSON(
@@ -305,7 +300,7 @@ def create_input(config, sample, variable, category, channel, template, input_fi
         tree = template.replace('/' + branch, '')
 
         if sample != 'data':
-            if category in config.met_systematics_suffixes:
+            if category in config.met_systematics_suffixes and variable != 'HT':
                 branch = template.split('/')[-1]
                 branch += '_METUncertainties[%s]' % config.met_systematics[category]
 
