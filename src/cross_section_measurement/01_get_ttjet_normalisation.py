@@ -200,14 +200,8 @@ def main():
     categories = ['QCD_shape']
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)
-    categories.extend(measurement_config.met_systematics_suffixes)
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics])
-    for met_unc in ['JetEnUp', 'JetEnDown', 'JetResUp', 'JetResDown']:
-        # the above ones are done together with
-        # categories_and_prefixes, see get_met_type
-        if met_unc in measurement_config.met_systematics_suffixes:
-            categories.remove(met_unc)
 
     for channel in ['electron', 'muon']:
         inputs = {
