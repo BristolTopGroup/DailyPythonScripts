@@ -102,6 +102,8 @@ measurements_latex = {
     'SingleTop_cross_section+': 'Single top cross section \ensuremath{+1\sigma}',
     'luminosity-': 'Luminosity \ensuremath{-1\sigma}',
     'luminosity+': 'Luminosity \ensuremath{+1\sigma}',
+    'massdown': '\ensuremath{t\\bar{t}} (top mass down)',
+    'massup': '\ensuremath{t\\bar{t}} (top mass up)',
 }
 
 met_systematics_latex = {
