@@ -92,6 +92,16 @@ measurements_latex = {
     'Muon_up': 'Muon efficiency $+1\sigma$',
     'kValue_up': 'k Value $+1$',
     'kValue_down': 'k Value $-1$',
+    'V+Jets_cross_section-': 'V+jets cross section \ensuremath{-1\sigma}',
+    'V+Jets_cross_section+': 'V+jets cross section \ensuremath{+1\sigma}',
+    'TTJet_cross_section-': '\ensuremath{t\\bar{t}} cross section \ensuremath{-1\sigma}',
+    'TTJet_cross_section+': '\ensuremath{t\\bar{t}} cross section \ensuremath{+1\sigma}',
+    'QCD_cross_section-': 'QCD cross section \ensuremath{-1\sigma}',
+    'QCD_cross_section+': 'QCD cross section \ensuremath{+1\sigma}',
+    'SingleTop_cross_section-': 'Single top cross section \ensuremath{-1\sigma}',
+    'SingleTop_cross_section+': 'Single top cross section \ensuremath{+1\sigma}',
+    'luminosity-': 'Luminosity \ensuremath{-1\sigma}',
+    'luminosity+': 'Luminosity \ensuremath{+1\sigma}',
 }
 
 met_systematics_latex = {

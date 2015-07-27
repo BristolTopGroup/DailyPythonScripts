@@ -26,8 +26,10 @@ calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties_list
     filename = ''
-    
-    filename = path_to_JSON + '/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+    if category in met_systematics_suffixes and variable == 'HT':
+        filename = path_to_JSON + '/' + channel + '/central/normalised_xsection_' + met_type + '.txt'
+    else:
+        filename = path_to_JSON + '/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     normalised_xsection = read_data_from_JSON( filename )
     
