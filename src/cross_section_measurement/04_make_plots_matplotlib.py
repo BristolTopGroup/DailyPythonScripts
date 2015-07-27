@@ -465,13 +465,13 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'HT' or variable == 'ST':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+            ax1.set_ylim( ymin = 0., ymax = 2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.75, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
+            ax1.set_ylim( ymin = 0., ymax = 2 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
 
     if CMS.tight_layout:
@@ -654,8 +654,11 @@ if __name__ == '__main__':
                 met_type = 'patMETsPFlow'
             
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
-            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators' )
-#             make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
+            histname = '{variable}_normalised_xsection_{channel}_{phase_space}'
+            histname = histname.format(variable = variable, channel = channel,
+                            phase_space = phaseSpaceSuffix)
+            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators' )
+            make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, histname + '_systematics_shifts' )
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
