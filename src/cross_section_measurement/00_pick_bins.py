@@ -39,7 +39,7 @@ N^{\text{rec\&gen}}_0
  _ | _ | _
  X | X | X
 '''
-
+from __future__ import print_function
 from rootpy import asrootpy
 from rootpy.io import File
 from tools.Calculation import calculate_purities, calculate_stabilities
@@ -66,32 +66,37 @@ def main():
     s_min = 0.5
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 30
+    n_min = 50
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
 
     for variable in bin_edges.keys():
-        print '--- Doing variable',variable
+        print('--- Doing variable',variable)
         variableToUse = variable
         if 'Rap' in variable:
             variableToUse = 'abs_%s' % variable
         histogram_information = get_histograms( variableToUse, options )
 
-        best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
+        if variable == 'HT':
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=100. )
+        elif variable == 'ST':
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=130. )
+        else:
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
 
         if 'Rap' in variable:
-            for bin in list(best_binning):
-                if bin != 0.0:
-                    best_binning.append(-1.0*bin)
+            for b in list(best_binning):
+                if b != 0.0:
+                    best_binning.append(-1.0*b)
             best_binning.sort()
 
         bin_choices[variable] = best_binning
-        print 'The best binning for', variable, 'is:'
-        print 'bin edges =', best_binning
-        print 'N_bins    =', len( best_binning ) - 1
-        print '-' * 120
-        print 'The corresponding purities and stabilities are:'
+        print('The best binning for', variable, 'is:')
+        print('bin edges =', best_binning)
+        print('N_bins    =', len( best_binning ) - 1)
+        print('-' * 120)
+        print('The corresponding purities and stabilities are:')
         for info in histogram_information:
             print_latex_table(info, variable, best_binning)
             outputInfo = {}
@@ -102,16 +107,16 @@ def main():
             if options.visiblePhaseSpace:
                 outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
             write_data_to_JSON( outputInfo, outputJsonFile )
-        print '=' * 120
+        print('=' * 120)
 
 
-        print outputInfo
+        print(outputInfo)
 
-    print '=' * 120
-    print 'For config/variable_binning.py'
-    print '=' * 120
+    print('=' * 120)
+    print('For config/variable_binning.py')
+    print('=' * 120)
     for variable in bin_choices:
-        print '\''+variable+'\' : '+str(bin_choices[variable])+','
+        print('\''+variable+'\' : '+str(bin_choices[variable])+',')
 
 def get_histograms( variable, options ):
     config = XSectionConfig( 13 )
@@ -161,7 +166,7 @@ def get_histograms( variable, options ):
     return histogram_information
     
 
-def get_best_binning( histogram_information, p_min, s_min, n_min ):
+def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
     Step 3: Check if it is true for all other histograms. If not back to step 2
@@ -174,9 +179,13 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
     
     current_bin_start = 0
     current_bin_end = 0
+        
 
     first_hist = histograms[0]
     n_bins = first_hist.GetNbinsX()
+    if x_min:
+        current_bin_start = first_hist.ProjectionX().FindBin(x_min) - 1
+        current_bin_end = current_bin_start
     
     while current_bin_end < n_bins:
         current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min )
@@ -185,7 +194,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min ):
             bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
         bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_end ) + first_hist.GetXaxis().GetBinWidth( current_bin_end ) )
         current_bin_start = current_bin_end
-    
     # add the purity and stability values for the final binning
     for info in histogram_information:
         new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )
@@ -238,7 +246,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
             if n_gen > 0:
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
-            # print 'New bin : ',current_bin_start,current_bin_end,p,s
+            # print('New bin : ',current_bin_start,current_bin_end,p,s
             if p >= p_min and s >= s_min and n_gen_and_reco >= n_min:
                 current_bin_end = bin_i
                 break
@@ -247,21 +255,21 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
     return current_bin_end, p, s, n_gen_and_reco
 
 def print_console(info, old_purities, old_stabilities, print_old = False):
-    print 'CoM =', info['CoM'], 'channel =', info['channel']
-    print 'p_i =', info['p_i']
+    print('CoM =', info['CoM'], 'channel =', info['channel'])
+    print('p_i =', info['p_i'])
     if print_old:
-        print 'p_i (old) =', old_purities
-    print 's_i =', info['s_i']
+        print('p_i (old) =', old_purities)
+    print('s_i =', info['s_i'])
     if print_old:
-        print 's_i (old) =', old_stabilities
-    print 'N   =', info['N']
-    print '*' * 120
+        print('s_i (old) =', old_stabilities)
+    print('N   =', info['N'])
+    print('*' * 120)
     
 def print_latex_table( info, variable, best_binning ):
-    print 'CoM =', info['CoM'], 'channel =', info['channel']
+    print('CoM =', info['CoM'], 'channel =', info['channel'])
     header = """\%s bin (\GeV) &  purity & stability & number of events\\\\
     \hline""" % variable.lower()
-    print header
+    print(header)
     firstBin = 0
     lastBin = len( best_binning ) - 1
     if 'Rap' in variable :
@@ -273,8 +281,8 @@ def print_latex_table( info, variable, best_binning ):
             bin_range = '$\geq %d$' % best_binning[i]
         else:
             bin_range = '%d - %d' % ( best_binning[i], best_binning[i + 1] )
-        print '%s & %.3f & %.3f & %d\\\\' % (bin_range, info['p_i'][i], info['s_i'][i], info['N'][i])
-    print '\hline'
+        print('%s & %.3f & %.3f & %d\\\\' % (bin_range, info['p_i'][i], info['s_i'][i], info['N'][i]))
+    print('\hline')
     
 if __name__ == '__main__':
     main()
