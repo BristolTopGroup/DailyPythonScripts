@@ -72,7 +72,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               centre_of_mass = centre_of_mass,
                                                                               ttbar_xsection = ttbar_xsection,
                                                                               luminosity = luminosity,
-                                                                              load_fakes = load_fakes
+                                                                              load_fakes = load_fakes,
+                                                                              visiblePS = visiblePS,
                                                                               )
     # Systematics where you change input MC
     else:
@@ -84,7 +85,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               ttbar_xsection = ttbar_xsection,
                                                                               luminosity = luminosity,
                                                                               load_fakes = load_fakes,
-                                                                              visiblePS = visiblePS
+                                                                              visiblePS = visiblePS,
                                                                               )
 
     #
@@ -116,7 +117,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes
+                                                load_fakes = load_fakes,
+                                                visiblePS = visiblePS,
                                                 )
     h_truth_scaleup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_scaleup,
                                                 variable = variable,
@@ -125,7 +127,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes
+                                                load_fakes = load_fakes,
+                                                visiblePS = visiblePS,
                                                 )
 
     h_truth_massdown, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_massdown,
@@ -135,7 +138,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes
+                                                load_fakes = load_fakes,
+                                                visiblePS = visiblePS,
                                                 )
     h_truth_massup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_massup,
                                                 variable = variable,
@@ -144,7 +148,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes
+                                                load_fakes = load_fakes,
+                                                visiblePS = visiblePS,
                                                 )
 
     h_truth_powhegPythia8, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powhegPythia8,
@@ -154,7 +159,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                             centre_of_mass = centre_of_mass,
                                             ttbar_xsection = ttbar_xsection,
                                             luminosity = luminosity,
-                                            load_fakes = load_fakes
+                                            load_fakes = load_fakes,
+                                            visiblePS = visiblePS,
                                             )
 
     h_truth_amcatnlo, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_amcatnlo,
@@ -164,7 +170,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                             centre_of_mass = centre_of_mass,
                                             ttbar_xsection = ttbar_xsection,
                                             luminosity = luminosity,
-                                            load_fakes = load_fakes
+                                            load_fakes = load_fakes,
+                                            visiblePS = visiblePS,
                                             )
 
     h_truth_madgraphMLM, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_madgraphMLM,
@@ -453,7 +460,7 @@ if __name__ == '__main__':
         if run_just_central and not category == 'central':
             continue
         # Don't need to consider MET uncertainties for HT
-        if variable == 'HT' and category in measurement_config.met_systematics_suffixes:
+        if variable == 'HT' and (category in measurement_config.met_systematics_suffixes and not category in ['JES_up', 'JES_down', 'JER_up', 'JER_down']):
             continue
         print 'Unfolding category "%s"' % category
         # Setting up systematic MET for JES up/down samples
@@ -467,7 +474,7 @@ if __name__ == '__main__':
             met_type += 'JetResUp'
         elif category == 'JER_down':
             met_type += 'JetResDown'
-        if category in met_uncertainties:
+        if category in met_uncertainties and not 'JES' in category and not 'JER' in category:
             met_type += category
 
         # read fit results from JSON
