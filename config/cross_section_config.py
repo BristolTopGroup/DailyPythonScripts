@@ -5,7 +5,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
     known_centre_of_mass_energies = [7,8,13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584, 13:40.03}
+    luminosities = {7:5050, 8:19584, 13:40.028}
     parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
                   'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -523,11 +523,11 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 40.03  # pb^-1
+        self.new_luminosity = 40.028  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
-                        'luminosity': 0.1,  # new
+                        'luminosity': 0.1,  # Best guess for 13 TeV
                         'SingleTop_cross_section': 0.034,  # Currently same as 8 TeV
                         'TTJet_cross_section': 0.043, # Currently same as 8 TeV
                         'V+Jets_cross_section': 0.3,
