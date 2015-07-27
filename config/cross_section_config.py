@@ -83,10 +83,10 @@ class XSectionConfig():
                                  'MuonEnDown' : 5,
                                  'TauEnUp' : 8,
                                  'TauEnDown' : 9,
-                                 'JetResUp' : 0,
-                                 'JetResDown' : 1,
-                                 'JES_up' : 2,
-                                 'JES_down' : 3,
+#                                  'JetResUp' : 0,
+#                                  'JetResDown' : 1,
+                                'JES_up' : 2,
+                                'JES_down' : 3,
                                  'UnclusteredEnUp' : 10,
                                  'UnclusteredEnDown' : 11,
                                 }
@@ -523,7 +523,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 56.830  # pb^-1
+        self.new_luminosity = 40.03  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
