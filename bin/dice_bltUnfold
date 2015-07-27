@@ -1,8 +1,7 @@
 #!/bin/bash
-echo "Tarring DailyPythonScripts..."
-tar -cf dps.tar ../DailyPythonScripts/ --exclude ../DailyPythonScripts/data --exclude ../DailyPythonScripts/plots --exclude ../DailyPythonScripts/tables
+./condor/prepare_dps.sh
+
 echo "Submitting jobs to DICE..."
 condor_submit experimental/BLTUnfold/submitBLTUnfold.description
 echo "Done."
 condor_q `whoami`
-
