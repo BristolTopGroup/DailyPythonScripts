@@ -398,6 +398,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     # channel text
     axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
         verticalalignment='top',horizontalalignment='right')
+    ylim = axes.get_ylim()
+    if ylim[0] < 0:
+        axes.set_ylim( ymin = 0.)
 
 
     if show_ratio:
