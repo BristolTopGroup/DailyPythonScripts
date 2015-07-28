@@ -30,13 +30,15 @@ variables_latex = {
 }
 
 control_plots_latex = {
-                       'NJets': '$N_{Jets}$',
-                       'NBJets': '$N_{B Jets}$',
-                       'pt' : '$p_{T}$',
-                       'eta' : '$\eta$',
-                       'relIso' : "RelIso",
-                       'NVertex' : '$N_{Vertices}$',
-                       }
+    'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
+    'NBJets': '\ensuremath{N_{\mathrm{B Jets}}}',
+    'pt': '\ensuremath{p_{\mathrm{T}}}',
+    'eta': '\ensuremath{\eta}',
+    'relIso_03_deltaBeta': "RelIso",
+    'relIso_04_deltaBeta': "RelIso",
+    'relIso': "RelIso",
+    'NVertex' : '\# Vertex',
+}
 
 measurements_latex = {
     'unfolded': 'unfolded',

@@ -13,7 +13,7 @@ from tools.latex import setup_matplotlib
 # latex, font, etc
 setup_matplotlib()
 
-title_template = '$%.1f$ pb$^{-1}$ (%d TeV)'
+title_template = '$%.0f$ pb$^{-1}$ (%d TeV)'
 
 def compare_shapes( channel, x_axis_title, y_axis_title,
               control_region_1, name_region_1, samples_region_1,
@@ -122,7 +122,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
         if normalise_to_fit:
             normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
-            qcd_data_region = 'QCD non iso mu+jets ge3j'
+            qcd_data_region = 'QCD non iso mu+jets'
 
     # Get all histograms
     # multi = isinstance( signal_region, list )
@@ -147,13 +147,17 @@ def make_plot( channel, x_axis_title, y_axis_title,
     #     signal_region = signal_region_sum
     #     qcd_control_region = qcd_control_region_sum
     # else:
-    #     qcd_control_region = signal_region.replace( 'Ref selection', qcd_data_region )
     #     qcd_control_region = qcd_control_region.replace( b_tag_bin, qcd_data_region_btag )
     #     if qcd_data_region:
     #         histograms = get_histograms_from_files( [signal_region, qcd_control_region], histogram_files )
     #     else:
     #         histograms = get_histograms_from_files( [signal_region], histogram_files )
     histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+
+    histograms_QCDControlRegion = None
+    if use_qcd_data_region:
+        qcd_control_region = signal_region_tree.replace( 'Ref selection', qcd_data_region )
+        histograms_QCDControlRegion = get_histograms_from_trees( trees = [qcd_control_region], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
 
     # Split histograms up into signal/control (?)
     signal_region_hists = {}
@@ -170,7 +174,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
                 del signal_region_hists[sample]
 
         if use_qcd_data_region:
-            inclusive_control_region_hists[sample] = histograms[sample][control_region_tree]
+            inclusive_control_region_hists[sample] = histograms_QCDControlRegion[sample][qcd_control_region]
 
     # Prepare histograms
     if normalise_to_fit:
@@ -181,6 +185,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     elif normalise_to_data:
         totalMC = 0
         for sample in signal_region_hists:
+            if sample is 'data' : continue
             totalMC += signal_region_hists[sample].Integral()
         newScale = signal_region_hists['data'].Integral() / totalMC
         prepare_histograms( signal_region_hists, rebin = rebin,
@@ -220,21 +225,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
                               signal_region_hists['SingleTop'],
                               signal_region_hists['TTJet']]
         histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
-        histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
-
-    # # # if channel == 'electron':
-    # if compare_qcd_signal_with_data_control:
-    #     histograms_to_draw.remove(signal_region_hists['V+Jets'])
-    #     histograms_to_draw.remove(signal_region_hists['SingleTop'])
-    #     histograms_to_draw.remove(signal_region_hists['TTJet'])
-
-    #     histogram_lables.remove('V+Jets')
-    #     histogram_lables.remove('Single-Top')
-    #     histogram_lables.remove(samples_latex['TTJet'])
-
-    #     histogram_colors.remove('green')
-    #     histogram_colors.remove('magenta')
-    #     histogram_colors.remove('red')
+        histogram_colors = ['black',  ROOT.EColor.kYellow-10,  ROOT.EColor.kGreen-3, ROOT.EColor.kMagenta, ROOT.EColor.kRed+1]
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = name_prefix + b_tag_bin
@@ -272,9 +263,15 @@ def make_plot( channel, x_axis_title, y_axis_title,
     if normalise_to_data:
             histogram_properties.name += '_normToData'
 
+    output_folder_to_use = output_folder
+    if use_qcd_data_region:
+        output_folder_to_use += 'WithQCDFromControl/'
+        make_folder_if_not_exists(output_folder_to_use)
+        print output_folder_to_use
+
     # Actually draw histograms
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder,
+                                 histogram_properties, save_folder = output_folder_to_use,
                                  show_ratio = False, normalise = normalise,
                                  )
     histogram_properties.name += '_with_ratio'
@@ -282,7 +279,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # adjust legend location as it is relative to canvas!
     histogram_properties.legend_location = ( loc[0], loc[1] + 0.05 )
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder,
+                                 histogram_properties, save_folder = output_folder_to_use,
                                  show_ratio = True, normalise = normalise,
                                  )
 
@@ -352,35 +349,36 @@ if __name__ == '__main__':
             # 'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
             }
     preliminary = True
-    
+    useQCDControl = True
     b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        # 'HT',
-                        # 'MET',
-                        # 'ST',
-                        # 'WPT',
-                        # 'Mjj',
-                        # 'M3',
+                        'HT',
+                        'MET',
+                        'ST',
+                        'WPT',
+                        'Mjj',
+                        'M3',
                         # 'angle_bl',
-                        # 'NJets',
-                        # 'NBJets',
+                        'NJets',
+                        'NBJets',
                         # 'JetPt',
                         # 'NVertex',
                         # 'LeptonPt',
                         # 'LeptonEta',
-                        # 'QCDHT',
-                        # 'QCDMET',
-                        # 'QCDST',
-                        # 'QCDWPT',
-                        'QCDLeptonEta',
+                        ]
+
+    additional_qcd_plots = [
+                        'QCDHT',
+                        'QCDMET',
+                        'QCDST',
+                        'QCDWPT',
+                        # 'QCDLeptonEta',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
                         ]
-    print include_plots
-    additional_qcd_plots = [
-                            ]
+
     if make_additional_QCD_plots:
         include_plots.extend( additional_qcd_plots )
 
@@ -411,6 +409,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
         ###################################################
@@ -431,6 +430,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
         ###################################################
@@ -451,6 +451,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
         ###################################################
@@ -471,6 +472,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
         # Set folder for this batch of plots
@@ -513,6 +515,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
         ###################################################
@@ -532,6 +535,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
         # Set folder for this batch of plots
@@ -555,6 +559,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
             make_plot( channel,
@@ -569,6 +574,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       log_y = True,
                       )
         ###################################################
@@ -588,6 +594,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
             make_plot( channel,
@@ -603,6 +610,7 @@ if __name__ == '__main__':
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
                       log_y = True,
+                      use_qcd_data_region = useQCDControl,
                       )
         ###################################################
         # Jet Pt
@@ -625,6 +633,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
         ###################################################
         # NVertex
@@ -643,6 +652,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
         ###################################################
         # Lepton Pt
@@ -665,6 +675,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
         ###################################################
         # Lepton Eta
@@ -687,6 +698,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
 
     ###################################################
@@ -724,7 +736,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % channel,
-                      x_limits = bin_edges['HT'],
+                      x_limits = control_plots_bins['HT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -741,7 +753,7 @@ if __name__ == '__main__':
                       compare_qcd_signal_with_data_control = True,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % channel,
-                      x_limits = bin_edges['HT'],
+                      x_limits = control_plots_bins['HT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -761,7 +773,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'MET',
                       name_prefix = '%s_MET_' % channel,
-                      x_limits = bin_edges['MET'],
+                      x_limits = control_plots_bins['MET'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -781,7 +793,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'ST',
                       name_prefix = '%s_ST_' % channel,
-                      x_limits = bin_edges['ST'],
+                      x_limits = control_plots_bins['ST'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -801,7 +813,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'WPT',
                       name_prefix = '%s_WPT_' % channel,
-                      x_limits = bin_edges['WPT'],
+                      x_limits = control_plots_bins['WPT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
