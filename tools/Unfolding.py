@@ -232,7 +232,7 @@ def get_unfold_histogram_tuple(
 
         if visiblePS:
             h_truth = asrootpy( folder.truthVis.Clone() )
-            h_measured = asrootpy( folder.measured.Clone() )
+            h_measured = asrootpy( folder.measuredVis.Clone() )
             # response matrix is always without fakes
             # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
             # or manually for TSVDUnfold

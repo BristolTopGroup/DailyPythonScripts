@@ -197,10 +197,10 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
     # add the purity and stability values for the final binning
     for info in histogram_information:
         new_hist = rebin_2d( info['hist'], bin_edges, bin_edges ).Clone( info['channel'] + '_' + str( info['CoM'] ) )
-        get_bin_content = new_hist.GetBinContent
+        get_bin_content = new_hist.ProjectionX().GetBinContent
         purities = calculate_purities( new_hist.Clone() )
         stabilities = calculate_stabilities( new_hist.Clone() )
-        n_events = [int( get_bin_content( i, i ) ) for i in range( 1, len( bin_edges ) )]
+        n_events = [int( get_bin_content( i) ) for i in range( 1, len( bin_edges ) )]
         # Now check if the last bin also fulfils the requirements
         if purities[-1] < p_min or stabilities[-1] < s_min or n_events[-1] < n_min:
             # if not, merge last two bins 
@@ -210,7 +210,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
             get_bin_content = new_hist.GetBinContent
             purities = calculate_purities( new_hist.Clone() )
             stabilities = calculate_stabilities( new_hist.Clone() )
-            n_events = [int( get_bin_content( i, i ) ) for i in range( 1, len( bin_edges ) )]
+            n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
             
         info['p_i'] = purities
         info['s_i'] = stabilities
@@ -247,12 +247,12 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
             # print('New bin : ',current_bin_start,current_bin_end,p,s
-            if p >= p_min and s >= s_min and n_gen_and_reco >= n_min:
+            if p >= p_min and s >= s_min and n_reco >= n_min:
                 current_bin_end = bin_i
                 break
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
-    return current_bin_end, p, s, n_gen_and_reco
+    return current_bin_end, p, s, n_reco
 
 def print_console(info, old_purities, old_stabilities, print_old = False):
     print('CoM =', info['CoM'], 'channel =', info['channel'])

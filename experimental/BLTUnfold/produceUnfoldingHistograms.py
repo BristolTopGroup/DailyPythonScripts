@@ -4,7 +4,7 @@ from rootpy.io import root_open, File
 #from rootpy.interactive import wait
 from optparse import OptionParser
 from config import XSectionConfig
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges, bin_edges_vis
 from config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from tools.file_utilities import make_folder_if_not_exists
 from math import trunc
@@ -250,9 +250,10 @@ def main():
                 #
                 # 1D histograms
                 truth = Hist( allVariablesBins[variable], name='truth')
-                truthVis = Hist( allVariablesBins[variable], name='truthVis')
+                truthVis = Hist( bin_edges_vis[variable], name='truthVis')
                 truth_parton = Hist( allVariablesBins[variable], name='truth_parton')                
                 measured = Hist( allVariablesBins[variable], name='measured')
+                measuredVis = Hist( bin_edges_vis[variable], name='measuredVis')
                 fake = Hist( allVariablesBins[variable], name='fake')
                 
                 # 2D histograms
@@ -260,8 +261,8 @@ def main():
                 response_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes')
                 response_only_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes')
 
-                responseVis_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_without_fakes')
-                responseVis_only_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_only_fakes')
+                responseVis_without_fakes = Hist2D( bin_edges_vis[variable], bin_edges_vis[variable], name='responseVis_without_fakes')
+                responseVis_only_fakes = Hist2D( bin_edges_vis[variable], bin_edges_vis[variable], name='responseVis_only_fakes')
 
                 response_parton = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_parton')
                 response_without_fakes_parton = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes_parton')
@@ -288,6 +289,7 @@ def main():
                     truthVis = Hist( nBins, minVar, maxVar, name='truthVis')
                     truth_parton = Hist( nBins, minVar, maxVar, name='truth_parton')
                     measured = Hist( nBins, minVar, maxVar, name='measured')
+                    measuredVis = Hist( nBins, minVar, maxVar, name='measuredVis')
                     fake = Hist( nBins, minVar, maxVar, name='fake')
                     response = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
                     response_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
@@ -314,6 +316,7 @@ def main():
                     if genVariable_parton != None:
                         tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton)
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
+                    tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measuredVis)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
                     # 2D
                     tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+offlineSelection,hist=response)
@@ -340,6 +343,7 @@ def main():
                 truthVis.Write()
                 truth_parton.Write()
                 measured.Write()
+                measuredVis.Write()
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()

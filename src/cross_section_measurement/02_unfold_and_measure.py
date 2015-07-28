@@ -7,7 +7,7 @@ from rootpy.io import File
 from rootpy.plotting import Hist2D
 # DailyPythonScripts
 import config.RooUnfold as unfoldCfg
-from config.variable_binning import bin_widths, bin_edges
+from config.variable_binning import bin_widths, bin_edges, bin_edges_vis
 from config import XSectionConfig
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, \
 combine_complex_results
@@ -18,9 +18,12 @@ from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
 
-def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method ):
+def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method, visiblePS ):
     global variable, path_to_JSON, options
-    h_data = value_error_tuplelist_to_hist( results, bin_edges[variable] )
+    edges = bin_edges[variable]
+    if visiblePS:
+        edges = bin_edges_vis[variable]
+    h_data = value_error_tuplelist_to_hist( results, edges )
     unfolding = Unfolding( h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
 
     # turning off the unfolding errors for systematic samples
@@ -209,7 +212,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 h_measured,
                                                 h_response,
                                                 h_fakes,
-                                                method
+                                                method,
+                                                visiblePS,
                                                 )
 
     normalisation_unfolded = {
@@ -235,7 +239,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
 
     return normalisation_unfolded
 
-def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
+def calculate_xsections( normalisation, category, channel ):
     global variable, met_type, path_to_JSON
     # calculate the x-sections
     branching_ratio = 0.15
@@ -285,11 +289,11 @@ def calculate_xsections( normalisation, category, channel, phaseSpaceSuffix ):
     ### elif not channel == 'combined':
     ###     raise ValueError( 'Invalid k-value for variable %s, channel %s, category %s.' % ( variable, channel, category ) )
     ### else:
-    filename = path_to_JSON + '/xsection_measurement_results_%s/%s/%s/xsection_%s.txt' % ( phaseSpaceSuffix, channel, category, met_type )
+    filename = path_to_JSON + '/xsection_measurement_results/%s/%s/xsection_%s.txt' % ( channel, category, met_type )
 
     write_data_to_JSON( xsection_unfolded, filename )
 
-def calculate_normalised_xsections( normalisation, category, channel, phaseSpaceSuffix, normalise_to_one = False ):
+def calculate_normalised_xsections( normalisation, category, channel, normalise_to_one = False ):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one )
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection( normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one )
@@ -332,7 +336,7 @@ def calculate_normalised_xsections( normalisation, category, channel, phaseSpace
     ### if not channel == 'combined':
     ###     filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )
     ### else:
-    filename = path_to_JSON + '/xsection_measurement_results_%s/%s/%s/normalised_xsection_%s.txt' % ( phaseSpaceSuffix, channel, category, met_type )
+    filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
 
     if normalise_to_one:
         filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
@@ -415,6 +419,9 @@ if __name__ == '__main__':
     tau_value_muon = measurement_config.tau_values_muon[variable]
 
     visiblePS = options.visiblePS
+    phase_space = 'FullPS'
+    if visiblePS:
+        phase_space = "VisiblePS"
 
     load_fakes = options.load_fakes
     unfoldCfg.Hreco = options.Hreco
@@ -422,7 +429,12 @@ if __name__ == '__main__':
     combine_before_unfolding = options.combine_before_unfolding
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
+    path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'.format( 
+            path = options.path,
+            com = measurement_config.centre_of_mass_energy,
+            variable = variable,
+            phase_space = phase_space,
+            )
 
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     # No generator or theory systematics yet
@@ -503,37 +515,34 @@ if __name__ == '__main__':
     #         met_type = 'patMETsPFlow'
 
         filename = ''
-        phaseSpaceSuffix = 'FullPS'
-        if visiblePS:
-            phaseSpaceSuffix = "VisiblePS"
 
     #     # get unfolded normalisation
         unfolded_normalisation_electron = {}
         unfolded_normalisation_muon = {}
 
         unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron, visiblePS = visiblePS )
-        filename = path_to_JSON + '/xsection_measurement_results_%s/electron/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results/electron/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_electron, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, 'electron', phaseSpaceSuffix )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', phaseSpaceSuffix )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', phaseSpaceSuffix , True )
+        calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' , True )
 
         unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon, visiblePS = visiblePS )
-        filename = path_to_JSON + '/xsection_measurement_results_%s/muon/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results/muon/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, 'muon', phaseSpaceSuffix )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', phaseSpaceSuffix )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', phaseSpaceSuffix , True )
+        calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' , True )
 
         # # if combine_before_unfolding:
         # #     unfolded_normalisation_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
         # # else:
         unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
-        filename = path_to_JSON + '/xsection_measurement_results_%s/combined/%s/normalisation_%s.txt' % ( phaseSpaceSuffix, category, met_type )
+        filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
-        calculate_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', phaseSpaceSuffix , True )
+        calculate_xsections( unfolded_normalisation_combined, category, 'combined' )
+        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined' )
+        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined' , True )

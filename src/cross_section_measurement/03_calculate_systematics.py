@@ -196,13 +196,19 @@ if __name__ == "__main__":
 
     visiblePS = options.visiblePS
 
-    phaseSpaceSuffix = 'FullPS'
+    phase_space = 'FullPS'
     if visiblePS:
-        phaseSpaceSuffix = 'VisiblePS'
+        phase_space = 'VisiblePS'
 
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results_%s/' % phaseSpaceSuffix
+    path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'
+    path_to_JSON += 'xsection_measurement_results/'
+    path_to_JSON = path_to_JSON.format(path = options.path, com = options.CoM,
+                                       variable = variable,
+                                       phase_space = phase_space,
+                                       )
+#     path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results_%s/' % phase_space
     symmetrise_errors = options.symmetrise_errors
     
     # set up lists for systematics
