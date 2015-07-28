@@ -1,4 +1,5 @@
-from __future__ import division  # the result of the division will be always a float
+# the result of the division will be always a float
+from __future__ import division, print_function  
 from optparse import OptionParser
 import os, gc
 from copy import deepcopy
@@ -31,7 +32,6 @@ import matplotlib.patches as mpatches
 def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, met_type, phaseSpaceSuffix
     
-    filename = ''
     filename = path_to_JSON + '/xsection_measurement_results_' + phaseSpaceSuffix +'/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
@@ -212,11 +212,11 @@ def make_template_plots( histograms, category, channel ):
             if ( h_VJets.Integral() != 0 ):
                 rplt.hist( h_VJets, axes = axes, label = 'V+Jets' )
             else:
-                print "WARNING: in %s bin %s, %s category, %s channel, V+Jets template is empty: not plotting." % ( variable, variable_bin, category, channel )
+                print("WARNING: in %s bin %s, %s category, %s channel, V+Jets template is empty: not plotting." % ( variable, variable_bin, category, channel ))
             if ( h_QCD.Integral() != 0 ):
                 rplt.hist( h_QCD, axes = axes, label = 'QCD' )
             else:
-                print "WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel )
+                print("WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel ))
             y_max = get_best_max_y([h_ttjet, h_single_top, h_VJets, h_QCD])
             axes.set_ylim( [0, y_max * 1.1] )
             axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
@@ -284,8 +284,8 @@ def get_cms_labels( channel ):
         lepton = 'e, $\mu$ + jets combined'
 #     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
     channel_label = lepton
-    template = '%.1f fb$^{-1}$ (%d TeV)'
-    label = template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy)
+    template = '%.0f pb$^{-1}$ (%d TeV)'
+    label = template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy)
     return label, channel_label
     
     
@@ -341,7 +341,8 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
     
-    for key, hist in sorted( histograms.iteritems() ):
+    for key, hist in sorted( histograms.items() ):
+        zorder = sorted( histograms, reverse = True ).index( key )
         if not 'unfolded' in key and not 'measured' in key:
             hist.linewidth = 4
             # setting colours
@@ -363,7 +364,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             elif 'MCATNLO'  in key or 'madgraphMLM' in key or 'scaleup' in key:
                 hist.linestyle = 'dotted'
                 hist.SetLineColor( kMagenta + 3 )
-            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
+            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
             
     handles, labels = axes.get_legend_handles_labels()
     # making data first in the list
@@ -448,29 +449,29 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         # legend for ratio plot
         p_stat = mpatches.Patch(facecolor='0.75', label='Stat.',alpha = 0.5, edgecolor='black' )
         p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5, edgecolor='black' )
-        l1 = ax1.legend([p_stat], loc = 'upper left',
+        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
                      frameon = False, prop = {'size':26})
         
-        ax1.legend([p_stat_and_syst], loc = 'lower left',
+        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
                      frameon = False, prop = {'size':26})
         ax1.add_artist(l1)
 
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax1.set_ylim( ymin = 0.0, ymax = 2 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
 #             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
             ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'HT' or variable == 'ST':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+            ax1.set_ylim( ymin = 0., ymax = 2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.75, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
+            ax1.set_ylim( ymin = 0., ymax = 2 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
 
     if CMS.tight_layout:
@@ -635,12 +636,8 @@ if __name__ == '__main__':
             met_type = translate_options[options.metType]
             if category == 'JES_up':
                 met_type += 'JetEnUp'
-                if met_type == 'PFMETJetEnUp':
-                    met_type = 'patPFMetJetEnUp'
             elif category == 'JES_down':
                 met_type += 'JetEnDown'
-                if met_type == 'PFMETJetEnDown':
-                    met_type = 'patPFMetJetEnDown'
             
             # if not channel == 'combined':
             #     #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
@@ -657,29 +654,31 @@ if __name__ == '__main__':
                 met_type = 'patMETsPFlow'
             
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
-    
-            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators' )
-            make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
+            histname = '{variable}_normalised_xsection_{channel}_{phase_space}'
+            histname = histname.format(variable = variable, channel = channel,
+                            phase_space = phaseSpaceSuffix)
+            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators' )
+            make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, histname + '_systematics_shifts' )
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
         if options.additional_plots:
             plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
-            
+
             plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
               
-            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
-            plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
-              
-            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
-            plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
-              
-            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
-            plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
-              
-            exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_45 ) )
-            plot_central_and_systematics( channel, pdf_uncertainties_34_to_45, exclude = exclude, suffix = 'PDF_34_to_45' )
-              
-            plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
-            plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
+#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
+#             plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
+#
+#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
+#             plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
+#
+#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
+#             plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
+#
+#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_45 ) )
+#             plot_central_and_systematics( channel, pdf_uncertainties_34_to_45, exclude = exclude, suffix = 'PDF_34_to_45' )
+#
+#             plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
+#             plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
             plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )

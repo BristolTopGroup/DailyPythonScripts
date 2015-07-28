@@ -44,9 +44,9 @@ def create_measurement(com, category, variable, channel):
             return
     config = XSectionConfig(com)
     met_type = get_met_type(category, config)
-    if category in config.met_systematics_suffixes and category not in ['JES_up', 'JES_down', 'JER_up', 'JER_down'] and variable == 'HT':
-        # no MET uncertainty on HT
-        # But JES/JER still done
+    should_not_run_systematic = category in config.met_systematics_suffixes and variable == 'HT' and not 'JES' in category and not 'JER' in category
+    if should_not_run_systematic:
+        # no MET uncertainty on HT (but JES and JER of course)
         return
 
     m = None
@@ -205,19 +205,22 @@ def create_measurement(com, category, variable, channel):
 
 def get_met_type(category, config):
     met_type = config.translate_options['type1']
-    if category in ['JES_up', 'JES_down', 'JER_up', 'JER_down']:
-        if category == 'JES_up':
-            met_type += 'JetEnUp'
-        elif category == 'JES_down':
-            met_type += 'JetEnDown'
-        elif category == 'JER_up':
-            met_type += 'JetResUp'
-        elif category == 'JER_down':
-            met_type += 'JetResDown'
+    if category == 'JES_up':
+        met_type += 'JetEnUp'
+    elif category == 'JES_down':
+        met_type += 'JetEnDown'
+    elif category == 'JER_up':
+        met_type += 'JetResUp'
+    elif category == 'JER_down':
+        met_type += 'JetResDown'
+
+    isJetSystematic = 'JetEn' in category or 'JetRes' in category
+    isJetSystematic = isJetSystematic or 'JES' in category
+    isJetSystematic = isJetSystematic or 'JER' in category
 
     if category in config.met_systematics_suffixes:
         # already done them
-        if not category in ['JetEnUp', 'JetEnDown', 'JetResUp', 'JetResDown']:
+        if not isJetSystematic:
             met_type = met_type + category
 
     return met_type
@@ -302,7 +305,8 @@ def create_input(config, sample, variable, category, channel, template, input_fi
         if sample != 'data':
             if category in config.met_systematics_suffixes and variable != 'HT':
                 branch = template.split('/')[-1]
-                branch += '_METUncertainties[%s]' % config.met_systematics[category]
+                branch += '_METUncertainties[%s]' % config.met_systematics[
+                    category]
 
             if 'JES_down' in category or 'JES_up' in category:
                 tree += config.categories_and_prefixes[category]

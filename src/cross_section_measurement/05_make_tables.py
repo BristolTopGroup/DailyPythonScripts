@@ -1,7 +1,7 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
 from copy import deepcopy
-from config.latex_labels import variables_latex, measurements_latex, samples_latex, typical_systematics_latex
+from config.latex_labels import variables_latex, measurements_latex, samples_latex, typical_systematics_latex, met_systematics_latex
 from config.variable_binning import variable_bins_latex, variable_bins_ROOT
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
@@ -225,7 +225,7 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     printout += '\\end{table}\n'
 
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
+        path = output_folder + '/'  + variable
         make_folder_if_not_exists(path)
         file_template = path + '/%s_fit_results_table_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
         output_file = open(file_template, 'w')
@@ -292,7 +292,7 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     printout += '\\end{table}\n'
     
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable
+        path = output_folder + '/' + variable
         make_folder_if_not_exists(path)
         file_template = path + '/%s_normalised_xsection_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
 
@@ -350,6 +350,8 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             central_value = central_values['unfolded'][bin_i][0]
 
         for source in all_measurements:
+            if variable == 'HT' and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
+                continue
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
             text = '%.2f' % (relative_error*100)
@@ -358,7 +360,10 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             elif met_type in source:
                 rows[source] = [measurements_latex[source.replace(met_type, '')] + ' (\%)', text]
             else:
-                rows[source] = [measurements_latex[source] + ' (\%)', text]
+                if source in met_systematics_latex.keys():
+                    rows[source] = [met_systematics_latex[source] + ' (\%)', text]
+                else:
+                    rows[source] = [measurements_latex[source] + ' (\%)', text]
 
     header += ' \\\\'
     printout += header
@@ -390,7 +395,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     printout += '\\end{table}\n'
     
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'  + variable + '/' + phaseSpaceSuffix
+        path = output_folder + '/'  + variable + '/'
         make_folder_if_not_exists(path)
         file_template = path + '/%s_systematics_%dTeV_%s.tex' % (variable, measurement_config.centre_of_mass_energy, channel)
 
@@ -516,7 +521,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
     printout += '\\end{table}\n'
 
     if toFile:
-        path = output_folder + '/'  + str(measurement_config.centre_of_mass_energy) + 'TeV/'
+        path = output_folder + '/'
         make_folder_if_not_exists(path)
         file_template = path + '/typical_systematics_%dTeV_%s.tex' % (measurement_config.centre_of_mass_energy, channel)
 
@@ -575,8 +580,6 @@ if __name__ == '__main__':
 
     variable = options.variable
     output_folder = options.output_folder
-    if not output_folder.endswith('/'):
-        output_folder += '/'
 
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
@@ -586,6 +589,7 @@ if __name__ == '__main__':
     phaseSpaceSuffix = 'FullPS'
     if visiblePS:
         phaseSpaceSuffix = 'VisiblePS'
+    output_folder += '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/' + phaseSpaceSuffix + '/'
 
     #remove btag mistagging rate systematic - new btagging method has only one, all-inclusive sytematic
     categories_and_prefixes = measurement_config.categories_and_prefixes
@@ -610,7 +614,7 @@ if __name__ == '__main__':
     ### # all MET uncertainties except JES as this is already included
     ### met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
     ### new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
-    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
+    rate_changing_systematics = measurement_config.rate_changing_systematics_names
     all_measurements = deepcopy(categories)
     ### all_measurements.extend(met_uncertainties)
     ### all_measurements.extend(new_uncertainties)

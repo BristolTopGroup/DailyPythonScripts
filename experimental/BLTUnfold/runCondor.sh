@@ -1,28 +1,46 @@
 #!/bin/bash
-scramv1 project CMSSW CMSSW_7_4_0_pre7
-cd CMSSW_7_4_0_pre7/src
+cmssw_version=CMSSW_7_4_7
+git_branch=master
+echo "Setting up ${cmssw_version} ..."
+echo "... sourcing CMS default environment from CVMFS"
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+echo "... creating CMSSW project area"
+scramv1 project CMSSW ${cmssw_version}
+cd ${cmssw_version}/src
 eval `scramv1 runtime -sh`
-tar -xf ../../dps.tar
+echo "${cmssw_version} has been set up"
+
+echo "Setting up DailyPythonScripts from tar file ..."
+echo "... getting ${git_branch} branch"
+>&2 echo "... getting ${git_branch} branch"
+time git clone https://github.com/BristolTopGroup/DailyPythonScripts.git
 cd DailyPythonScripts/
-cd external/
-rm -r vpython/
-cd ../
-git submodule init && git submodule update
-echo "Running setup.sh"
-./setup.sh
-eval `scramv1 runtime -sh`
-. environment.sh
-rm -r unfolding
-mkdir unfolding
-mkdir unfolding/13TeV
+git checkout ${git_branch}
+echo "... setting up git submodules"
+>&2 echo "... setting up git submodules"
+time git submodule init && git submodule update
+echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
+tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
+echo "... running setup routine"
+>&2 "... running setup routine"
+time source setup_with_conda.sh
+#echo "... enforcing virtual python environment"
+#source environment.sh
+echo "... enforcing conda python environment"
+source environment_conda.sh
+echo "DailyPythonScripts are set up"
+
+echo "Running payload"
+>&2 echo "Running payload"
+mkdir -p unfolding/13TeV
 echo "Running script"
 time python experimental/BLTUnfold/runJobsCrab.py -j $1
 
 echo "Unfolding folder contents:"
-ls unfolding
+ls -l unfolding
 tar -cf unfolding.$2.$1.tar unfolding
-mv unfolding.$2.$1.tar ../../../
+cp unfolding.$2.$1.tar ${_CONDOR_JOB_IWD}/.
 echo "DailyPythonScripts folder contents:"
-ls
+ls -l
 echo "Base folder contents:"
-ls ../../../
+ls -l ${_CONDOR_JOB_IWD}/
