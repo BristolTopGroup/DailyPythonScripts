@@ -82,6 +82,8 @@ def main():
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=100. )
         elif variable == 'ST':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=130. )
+        elif variable == 'NJets':
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=3.5 )
         else:
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
 
@@ -200,7 +202,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
         get_bin_content = new_hist.ProjectionX().GetBinContent
         purities = calculate_purities( new_hist.Clone() )
         stabilities = calculate_stabilities( new_hist.Clone() )
-        n_events = [int( get_bin_content( i) ) for i in range( 1, len( bin_edges ) )]
+        n_events = [int( new_hist.ProjectionX().GetBinContent( i ) ) for i in range( 1, len( bin_edges ) )]
         # Now check if the last bin also fulfils the requirements
         if purities[-1] < p_min or stabilities[-1] < s_min or n_events[-1] < n_min:
             # if not, merge last two bins 
@@ -211,7 +213,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
             purities = calculate_purities( new_hist.Clone() )
             stabilities = calculate_stabilities( new_hist.Clone() )
             n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
-            
         info['p_i'] = purities
         info['s_i'] = stabilities
         info['N'] = n_events
