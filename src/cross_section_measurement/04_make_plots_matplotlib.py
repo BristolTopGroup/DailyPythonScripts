@@ -6,7 +6,8 @@ from copy import deepcopy
 
 from config.latex_labels import variables_latex, measurements_latex, \
 b_tag_bins_latex, fit_variables_latex
-from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges
+from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges,\
+    bin_edges_vis
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, \
@@ -30,14 +31,16 @@ setup_matplotlib()
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
-    global path_to_JSON, variable, met_type, phaseSpaceSuffix
+    global path_to_JSON, variable, met_type, phase_space
     
-    filename = path_to_JSON + '/xsection_measurement_results_' + phaseSpaceSuffix +'/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+    filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
-        
-    h_normalised_xsection = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable] )
-    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable] )
+    edges = bin_edges[variable]
+    if phase_space == 'VisiblePS':
+        edges = bin_edges_vis[variable]
+    h_normalised_xsection = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], edges )
+    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], edges )
     
     
     histograms_normalised_xsection_different_generators = {'measured':h_normalised_xsection,
@@ -48,16 +51,16 @@ def read_xsection_measurement_results( category, channel ):
     
     if category == 'central':
         # true distributions
-        h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], bin_edges[variable] )
-        h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], bin_edges[variable] )
-        h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], bin_edges[variable] )
+        h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
+        h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
+        h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
 
-        ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
-        ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
-        h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
-        h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], bin_edges[variable] )
-        h_normalised_xsection_massup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], bin_edges[variable] )
-        h_normalised_xsection_massdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], bin_edges[variable] )
+        ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], edges )
+        ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], edges )
+        h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
+        h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
+        h_normalised_xsection_massup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
+        h_normalised_xsection_massdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
 
         histograms_normalised_xsection_different_generators.update( {
                                                                      'powhegPythia8':h_normalised_xsection_powhegPythia8,
@@ -80,7 +83,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                   'massup': h_normalised_xsection_massup
                                                                   })
         
-        file_template = path_to_JSON + '/xsection_measurement_results_' + phaseSpaceSuffix + '/' + channel + '/' + category + '/normalised_xsection_' + met_type
+        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type
 
         normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
         ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
@@ -89,17 +92,17 @@ def read_xsection_measurement_results( category, channel ):
         # a rootpy.Graph with asymmetric errors!
         ### h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
         ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_measured'],
-        ###                                                         bin_edges[variable] )
+        ###                                                         edges )
         ### h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded = value_errors_tuplelist_to_graph( 
         ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'],
-        ###                                                         bin_edges[variable] )
+        ###                                                         edges )
         
         h_normalised_xsection_with_systematics_but_without_generator = value_errors_tuplelist_to_graph( 
                                                                 normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_measured'],
-                                                                bin_edges[variable] )
+                                                                edges )
         h_normalised_xsection_with_systematics_but_without_generator_unfolded = value_errors_tuplelist_to_graph( 
                                                                 normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_unfolded'],
-                                                                bin_edges[variable] )
+                                                                edges )
         
         
         # histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
@@ -290,7 +293,7 @@ def get_cms_labels( channel ):
     
     
 def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
-    global variable, phaseSpaceSuffix
+    global variable, phase_space
     
     channel = 'electron'
     if 'electron' in histname:
@@ -480,7 +483,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if CMS.tight_layout:
         plt.tight_layout()
 
-    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/' + phaseSpaceSuffix
+    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/' + phase_space
     make_folder_if_not_exists( path )
     for output_format in output_formats:
         filename = path + '/' + histname + '.' + output_format
@@ -597,16 +600,21 @@ if __name__ == '__main__':
     variable = options.variable
 
     visiblePS = options.visiblePS
-    phaseSpaceSuffix = 'FullPS'
+    phase_space = 'FullPS'
     if visiblePS:
-        phaseSpaceSuffix = 'VisiblePS'
+        phase_space = 'VisiblePS'
 
     output_folder = options.output_folder
     if not output_folder.endswith( '/' ):
         output_folder += '/'
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
+    path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'
+    path_to_JSON = path_to_JSON.format(path = options.path, com = options.CoM,
+                                       variable = variable,
+                                       phase_space = phase_space,
+                                       )
+#     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
     
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
@@ -659,7 +667,7 @@ if __name__ == '__main__':
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
             histname = '{variable}_normalised_xsection_{channel}_{phase_space}'
             histname = histname.format(variable = variable, channel = channel,
-                            phase_space = phaseSpaceSuffix)
+                            phase_space = phase_space)
             make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators' )
             make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, histname + '_systematics_shifts' )
 

@@ -33,10 +33,15 @@ def main():
         for category in categories:
             for channel in ['electron', 'muon']:
                 create_measurement(
-                    centre_of_mass_energy, category, variable, channel)
+                    centre_of_mass_energy, category, variable, channel,
+                    phase_space='FullPS', norm_method='background_subtraction')
+                # and the visible phase space
+                create_measurement(
+                    centre_of_mass_energy, category, variable, channel,
+                    phase_space='VisiblePS', norm_method='background_subtraction')
 
 
-def create_measurement(com, category, variable, channel):
+def create_measurement(com, category, variable, channel, phase_space, norm_method):
     if com == 13:
         # exclude non existing systematics
         if 'VJets' in category and 'scale' in category:
@@ -84,6 +89,8 @@ def create_measurement(com, category, variable, channel):
         'energy': com,
         'variable': variable,
         'category': category,
+        'phase_space': phase_space,
+        'norm_method': norm_method,
     }
     variable_template = config.variable_path_templates[
         variable].format(**inputs)
@@ -96,25 +103,29 @@ def create_measurement(com, category, variable, channel):
         'TTJet',
         False,
         input=create_input(
-            config, 'TTJet', variable, template_category, channel, variable_template),
+            config, 'TTJet', variable, template_category, channel,
+            variable_template, phase_space = phase_space),
     )
     m.addSample(
         'V+Jets',
         False,
         input=create_input(
-            config, 'V+Jets', variable, template_category, channel, variable_template),
+            config, 'V+Jets', variable, template_category, channel,
+            variable_template, phase_space = phase_space),
     )
     m.addSample(
         'SingleTop',
         False,
         input=create_input(
-            config, 'SingleTop', variable, template_category, channel, variable_template),
+            config, 'SingleTop', variable, template_category, channel,
+            variable_template, phase_space = phase_space),
     )
     m.addSample(
         'QCD',
         False,
         input=create_input(
-            config, 'QCD', variable, template_category, channel, variable_template),
+            config, 'QCD', variable, template_category, channel,
+            variable_template, phase_space = phase_space),
     )
     variable_template_data = variable_template.replace(
         met_type, config.translate_options['type1'])
@@ -122,7 +133,8 @@ def create_measurement(com, category, variable, channel):
         'data',
         False,
         input=create_input(
-            config, 'data', variable, template_category, channel, variable_template_data),
+            config, 'data', variable, template_category, channel, 
+            variable_template_data, phase_space = phase_space),
     )
 
     m_qcd = tools.measurement.Measurement(category)
@@ -135,25 +147,29 @@ def create_measurement(com, category, variable, channel):
         'TTJet',
         False,
         input=create_input(
-            config, 'TTJet', variable, template_category, channel, qcd_template),
+            config, 'TTJet', variable, template_category, channel,
+            qcd_template, phase_space = phase_space),
     )
     m_qcd.addSample(
         'V+Jets',
         False,
         input=create_input(
-            config, 'V+Jets', variable, template_category, channel, qcd_template),
+            config, 'V+Jets', variable, template_category, channel,
+            qcd_template, phase_space = phase_space),
     )
     m_qcd.addSample(
         'SingleTop',
         False,
         input=create_input(
-            config, 'SingleTop', variable, template_category, channel, qcd_template),
+            config, 'SingleTop', variable, template_category, channel,
+            qcd_template, phase_space = phase_space),
     )
     m_qcd.addSample(
         'QCD',
         False,
         input=create_input(
-            config, 'data', variable, template_category, channel, qcd_template),
+            config, 'data', variable, template_category, channel,
+            qcd_template, phase_space = phase_space),
     )
 
     m.addShapeForSample('QCD', m_qcd, False)
@@ -173,7 +189,8 @@ def create_measurement(com, category, variable, channel):
                     config, 'V+Jets', variable, v_template_category,
                     channel,
                     variable_template,
-                    config8.generator_systematic_vjets_templates[v_template_category])
+                    config8.generator_systematic_vjets_templates[v_template_category],
+                    phase_space = phase_space)
             )
         else:
             m_vjets.addSample(
@@ -184,13 +201,16 @@ def create_measurement(com, category, variable, channel):
                     channel,
                     variable_template,
                     config.generator_systematic_vjets_templates[
-                        v_template_category]))
+                        v_template_category]),
+                    phase_space = phase_space)
         m.addShapeForSample('V+Jets', m_vjets, False)
 
     inputs['channel'] = channel
+    base_path = 'config/measurements/{norm_method}/{energy}TeV/'
+    base_path += '{channel}/{variable}/{phase_space}/'
     if category == 'central':
-        m.toJSON(
-            'config/measurements/background_subtraction/{energy}TeV/{channel}/{variable}/{category}.json'.format(**inputs))
+        path = base_path + '{category}.json'
+        m.toJSON(path.format(**inputs))
     else:
         if m.type == tools.measurement.Systematic.SHAPE:
             inputs['type'] = 'shape_systematic'
@@ -198,9 +218,8 @@ def create_measurement(com, category, variable, channel):
             inputs['type'] = 'rate_systematic'
         if category in config.met_systematics_suffixes and category not in ['JES_up', 'JES_down', 'JER_up', 'JER_down']:
             inputs['category'] = met_type
-
-        m.toJSON(
-            'config/measurements/background_subtraction/{energy}TeV/{channel}/{variable}/{category}_{type}.json'.format(**inputs))
+        path = base_path + '{category}_{type}.json'
+        m.toJSON(path.format(**inputs))
 
 
 def get_met_type(category, config):
@@ -292,7 +311,8 @@ def get_qcd_template(config, variable, category, channel):
     return qcd_template
 
 
-def create_input(config, sample, variable, category, channel, template, input_file=None):
+def create_input(config, sample, variable, category, channel, template,
+                 input_file=None, phase_space = None):
     tree, branch, hist = None, None, None
     selection = '1'
     if not input_file:
@@ -317,6 +337,13 @@ def create_input(config, sample, variable, category, channel, template, input_fi
     lumi_scale = 1.
     if not sample == 'data':
         lumi_scale = config.luminosity_scale
+        if channel == 'electron':
+            lumi_scale = lumi_scale * 0.84
+        if channel == 'muon':
+            lumi_scale = lumi_scale * 0.63
+    edges = variable_binning.bin_edges[variable]
+    if phase_space == 'VisiblePS':
+        edges = variable_binning.bin_edges_vis[variable]
 
     i = Input(
         input_file=input_file,
@@ -324,7 +351,7 @@ def create_input(config, sample, variable, category, channel, template, input_fi
         tree=tree,
         branch=branch,
         selection=selection,
-        bin_edges=variable_binning.bin_edges[variable],
+        bin_edges=edges,
         lumi_scale=lumi_scale,
     )
     return i

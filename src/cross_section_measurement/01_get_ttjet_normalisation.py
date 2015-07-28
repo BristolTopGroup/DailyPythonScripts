@@ -61,18 +61,20 @@ class TTJetNormalisation:
     def __init__(self,
                  config,
                  measurement,
-                 method=BACKGROUND_SUBTRACTION):
+                 method=BACKGROUND_SUBTRACTION,
+                 phase_space='FullPS'):
         self.config = config
         self.variable = measurement.variable
         self.category = measurement.name
         self.channel = measurement.channel
         self.method = method
+        self.phase_space = phase_space
         self.measurement = measurement
         self.measurement.read_samples()
         self.measurement.read_shapes()
 
         self.met_type = measurement.met_type
-        self.fit_variables = ''
+        self.fit_variables = ['M3']
 
         self.normalisation = {}
         self.initial_normalisation = {}
@@ -97,9 +99,10 @@ class TTJetNormalisation:
         if self.measurement.__class__ == tools.measurement.Systematic:
             self.measurement.scale_histograms()
         histograms = self.measurement.histograms
-        for sample, hist in histograms.items():
-            bin_edges = variable_bin_edges[self.variable]
-            histograms[sample] = rebin_asymmetric(hist, bin_edges)
+        # now moved to tools/input
+#         for sample, hist in histograms.items():
+#             bin_edges = variable_bin_edges[self.variable]
+#             histograms[sample] = rebin_asymmetric(hist, bin_edges)
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
@@ -109,10 +112,9 @@ class TTJetNormalisation:
                 self.normalisation[sample] = self.initial_normalisation[sample]
 
         if self.method == self.BACKGROUND_SUBTRACTION:
-            ttjet_hist = clean_control_region(histograms,
-                                              subtract=['QCD', 'V+Jets', 'SingleTop'])
-            self.normalisation[
-                'TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
+            self.background_subtraction(histograms)
+        if self.method == self.SIMULTANEOUS_FIT:
+            self.simultaneous_fit(histograms)
 
         # next, let's round all numbers (they are event numbers after all
         for sample, values in self.normalisation.items():
@@ -121,18 +123,53 @@ class TTJetNormalisation:
 
         self.have_normalisation = True
 
+    def background_subtraction(self, histograms):
+        ttjet_hist = clean_control_region(histograms,
+                                          subtract=['QCD', 'V+Jets', 'SingleTop'])
+        self.normalisation[
+            'TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
+
+    @mylog.trace()
+    def simultaneous_fit(self, histograms):
+        from tools.Fitting import FitData, FitDataCollection, Minuit
+        print('not in production yet')
+        fitter = None
+        fit_data_collection = FitDataCollection()
+        for fit_variable in self.fit_variables:
+            mc_histograms = {
+                'TTJet': histograms['TTJet'],
+                'SingleTop': histograms['SingleTop'],
+                'V+Jets': histograms['V+Jets'],
+                'QCD': histograms['QCD'],
+            }
+            h_data = histograms['data']
+            fit_data = FitData(h_data, mc_histograms,
+                               fit_boundaries=self.config.fit_boundaries[fit_variable])
+            fit_data_collection.add(fit_data, name=fit_variable)
+        fitter = Minuit(fit_data_collection)
+        fitter.fit()
+        fit_results = fitter.readResults()
+
+        normalisation = fit_data_collection.mc_normalisation(
+            self.fit_variables[0])
+        normalisation_errors = fit_data_collection.mc_normalisation_errors(
+            self.fit_variables[0])
+        print normalisation, normalisation_errors
+
     @mylog.trace()
     def save(self, output_path):
         if not self.have_normalisation:
             self.calculate_normalisation()
 
-        folder_template = '{path}/normalisation/{method}/{CoM}TeV/{variable}/{category}/'
+        folder_template = '{path}/normalisation/{method}/{CoM}TeV/{variable}/'
+        folder_template += '{phase_space}/{category}/'
         inputs = {
             'path': output_path,
             'CoM': self.config.centre_of_mass_energy,
             'variable': self.variable,
             'category': self.category,
             'method': self.method_string(),
+            'phase_space': self.phase_space,
         }
         output_folder = folder_template.format(**inputs)
 
@@ -181,6 +218,8 @@ def parse_options():
                       help="Type of closure test (relative normalisation):" + '|'.join(closure_tests.keys()))
     parser.add_option('--test', dest="test", action="store_true",
                       help="Just run the central measurement")
+    parser.add_option('--visiblePS', dest="visiblePS", action="store_true",
+                      help="Unfold to visible phase space")
 
     (options, args) = parser.parse_args()
     # fix some of the inputs
@@ -195,7 +234,8 @@ def parse_options():
 @mylog.trace()
 def main():
     # construct categories from files:
-    input_template = options.input + '{energy}TeV/{channel}/{variable}/*.json'
+    input_template = options.input + '{energy}TeV/{channel}/{variable}/'
+    input_template += '{phase_space}/*.json'
 
     categories = ['QCD_shape']
     categories.extend(measurement_config.categories_and_prefixes.keys())
@@ -203,12 +243,15 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics])
 
+    phase_space = 'FullPS'
+    if options.visiblePS:
+        phase_space = 'VisiblePS'
     for channel in ['electron', 'muon']:
         inputs = {
             'energy': options.CoM,
             'channel': channel,
             'variable': variable,
-
+            'phase_space': phase_space,
         }
         measurement_files = glob.glob(input_template.format(**inputs))
         for f in measurement_files:
@@ -219,6 +262,7 @@ def main():
                 config=measurement_config,
                 measurement=measurement,
                 method=TTJetNormalisation.BACKGROUND_SUBTRACTION,
+                phase_space=phase_space,
             )
             norm.calculate_normalisation()
             norm.save(output_path)
