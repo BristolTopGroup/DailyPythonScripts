@@ -182,6 +182,9 @@ def make_plot( channel, x_axis_title, y_axis_title,
         prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = measurement_config.luminosity_scale,
                             normalisation = normalisation )
+        prepare_histograms( inclusive_control_region_hists, rebin = rebin,
+                                scale_factor = measurement_config.luminosity_scale,
+                                normalisation = normalisation )
     elif normalise_to_data:
         totalMC = 0
         for sample in signal_region_hists:
@@ -190,11 +193,18 @@ def make_plot( channel, x_axis_title, y_axis_title,
         newScale = signal_region_hists['data'].Integral() / totalMC
         prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = newScale,
-                            )        
+                            )
+        if inclusive_control_region_hists != {}:
+            for sample in inclusive_control_region_hists:
+                if sample is 'data' : continue
+                totalMC += inclusive_control_region_hists[sample].Integral()
+            newScale = inclusive_control_region_hists['data'].Integral() / totalMC
+            prepare_histograms( inclusive_control_region_hists, rebin = rebin,
+                                scale_factor = newScale )
     else:
         prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = measurement_config.luminosity_scale )
-    prepare_histograms( inclusive_control_region_hists, rebin = rebin,
+        prepare_histograms( inclusive_control_region_hists, rebin = rebin,
                             scale_factor = measurement_config.luminosity_scale )
 
     # Use qcd from data control region or not
@@ -202,7 +212,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     if use_qcd_data_region:
         qcd_from_data = clean_control_region( inclusive_control_region_hists,
                           subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
-        # Normalise contorl region correctly
+        # Normalise control region correctly
         n_qcd_predicted_mc = histograms['QCD'][signal_region_tree].Integral()
         n_qcd_control_region = qcd_from_data.Integral()
         if not n_qcd_control_region == 0:
@@ -387,6 +397,8 @@ if __name__ == '__main__':
                             'electron' : 'EPlusJets', 
                             'muon' : 'MuPlusJets'
                             }.iteritems() :
+        b_tag_bin = '2orMoreBtags'
+
         # Set folder for this batch of plots
         output_folder = output_folder_base + "/Variables/"
         make_folder_if_not_exists(output_folder)
@@ -709,6 +721,8 @@ if __name__ == '__main__':
                             'electronQCDConversions' : 'EPlusJets/QCDConversions', 
                             'muonQCDNonIso' : 'MuPlusJets/QCD non iso mu+jets'
                             }.iteritems() :
+        b_tag_bin = '0btag'
+
         # Set folder for this batch of plots
         output_folder = output_folder_base + "QCDControl/Variables/%s/" % channel
         make_folder_if_not_exists(output_folder)
