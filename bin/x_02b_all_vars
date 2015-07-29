@@ -1,0 +1,31 @@
+#!/bin/bash
+echo "This will take a while ... grab a coffee/tea/water"
+mkdir -p logs
+N_JOBS=4
+
+i=0
+for var in MET HT ST WPT; do
+	echo "Unfolding distribution: $var"
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/02_${var}_unfold_13TeV.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+
+echo "Visible phase space"
+for var in MET HT ST WPT; do
+	echo "Unfolding distribution: $var"
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/02_${var}_unfold_13TeV.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+
+wait;
+echo "All done! Time to run x_03b_all_vars."
