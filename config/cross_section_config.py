@@ -355,6 +355,7 @@ class XSectionConfig():
                             'ST': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/ST',
                             'MT': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/MT',
                             'WPT': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/WPT',
+                            'NJets': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/Jets/NJets',
                             }
 
         self.electron_control_region = 'QCDConversions'
@@ -549,6 +550,7 @@ class XSectionConfig():
                    'ttbarPt' : 2,
                    'ttbarRap' : 2,
                    'ttbarM' : 2,
+                   'NJets' : 2,
                    }
 
         self.k_values_muon = {
@@ -564,6 +566,7 @@ class XSectionConfig():
                    'ttbarPt' : 1,
                    'ttbarRap' : 1,
                    'ttbarM' : 1,
+                   'NJets' : 2,
                    }
         #keeping combined values for backward compatibility
         self.k_values_combined = {
@@ -579,6 +582,7 @@ class XSectionConfig():
                    'ttbarPt' : 1,
                    'ttbarRap' : 1,
                    'ttbarM' : 1,
+                   'NJets' : 2,
                    }
 
         self.tau_values_electron = {
@@ -586,7 +590,7 @@ class XSectionConfig():
 "MET" : 2.36448941265,
 "HT" : 0.932603346883,
 "ST" : 0.849753435909,
-
+"NJets" : 0.849753435909,
                     "hadTopRap" : 10.0,
                     "lepTopPt" : 53.3669923121,
                     "hadTopPt" : 58.5702081806,
@@ -601,7 +605,7 @@ class XSectionConfig():
 "MET" : 1.78864952906,
 "HT" : 0.774263682681,
 "ST" : 0.774263682681,
-
+"NJets" : 1.23284673944,
                     "hadTopRap" : 10.0,
                     "lepTopPt" : 546.227721768,
                     "hadTopPt" : 453.487850813,
