@@ -283,7 +283,11 @@ def main():
                     elif 'Rap' in variable:
                         maxVar = 3.0
                         minVar = -3.0
-                        nBins = 1000                       
+                        nBins = 1000
+                    elif 'NJets' in variable:
+                        maxVar = 20.5
+                        minVar = -0.5
+                        nBins = 21
 
                     truth = Hist( nBins, minVar, maxVar, name='truth')
                     truthVis = Hist( nBins, minVar, maxVar, name='truthVis')

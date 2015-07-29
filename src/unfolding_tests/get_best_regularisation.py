@@ -34,7 +34,7 @@ from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 #from src.cross_section_measurement.lib import get_unfold_histogram_tuple
 from tools.ROOT_utils import set_root_defaults, get_histogram_from_file
 from config import XSectionConfig
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges, bin_edges_vis
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from tools.table import PrintTable
 import matplotlib.pyplot as plt
@@ -54,6 +54,7 @@ class RegularisationSettings():
         self.measurement_config = XSectionConfig( self.centre_of_mass_energy )
         self.channel = input_values['channel']
         self.variable = input_values['variable']
+        self.phaseSpace = input_values['phaseSpace']
         self.output_folder = input_values['output_folder']
         self.output_format = input_values['output_format']
         self.truth = input_values['truth']
@@ -97,7 +98,11 @@ class RegularisationSettings():
         elif data_file.endswith('.json') or data_file.endswith('.txt'):
             data_key = self.data['histogram']
             # assume configured bin edges
-            edges = bin_edges[self.variable]
+            edges = []
+            if self.phaseSpace == 'FullPS':
+                edges = bin_edges[self.variable]
+            elif self.phaseSpace == 'VisiblePS':
+                edges = bin_edges_vis[self.variable]
             json_input = read_data_from_JSON(data_file)
             if data_key == "": # JSON file == histogram
                 self.h_data = value_error_tuplelist_to_hist(json_input, edges)
@@ -140,6 +145,7 @@ def parse_options():
                       help = "Compare to current values (k vs tau)", default = False )
     parser.add_option( "-t", "--table-style", dest = "style", default = 'simple',
                       help = "Style for table printing: simple|latex|twiki (default = simple)" )
+
     ( options, args ) = parser.parse_args()
     
     input_values_sets = []

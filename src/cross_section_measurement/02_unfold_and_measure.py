@@ -472,7 +472,7 @@ if __name__ == '__main__':
         if run_just_central and not category == 'central':
             continue
         # Don't need to consider MET uncertainties for HT
-        if variable == 'HT' and (category in measurement_config.met_systematics_suffixes and not category in ['JES_up', 'JES_down', 'JER_up', 'JER_down']):
+        if ( variable == 'HT' or variable == 'NJets' ) and (category in measurement_config.met_systematics_suffixes and not category in ['JES_up', 'JES_down', 'JER_up', 'JER_down']):
             continue
         print 'Unfolding category "%s"' % category
         # Setting up systematic MET for JES up/down samples

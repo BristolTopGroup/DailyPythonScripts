@@ -20,6 +20,8 @@ branchNames = {
     'abs_lepTopRap' : 'abs(lepTopRap)',
     'abs_hadTopRap' : 'abs(hadTopRap)',
     'abs_ttbarRap' : 'abs(ttbarRap)',
+
+    'NJets' : 'NJets',
 }
 
 genBranchNames_particle = {
@@ -45,6 +47,8 @@ genBranchNames_particle = {
     'abs_lepTopRap' : 'abs(pseudoTop_y)',
     'abs_hadTopRap' : 'abs(pseudoTop_y)',
     'abs_ttbarRap' : 'abs(pseudoTTbar_y)',
+
+    'NJets' : 'NPseudoJets',
 }
 
 genBranchNames_parton = {
@@ -64,4 +68,6 @@ genBranchNames_parton = {
     'abs_lepTopRap' : 'abs(lepTopRap_parton)',
     'abs_hadTopRap' : 'abs(hadTopRap_parton)',
     'abs_ttbarRap' : 'abs(ttbarRap)',
+
+    'NJets' : 'NPseudoJets',
 }

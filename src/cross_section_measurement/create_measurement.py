@@ -29,7 +29,8 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not 'mass' in systematic])
 
-    for variable in ['MET', 'HT', 'ST', 'WPT']:
+    for variable in ['MET', 'HT', 'ST', 'WPT', 'NJets']:
+
         for category in categories:
             for channel in ['electron', 'muon']:
                 create_measurement(
@@ -49,7 +50,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
             return
     config = XSectionConfig(com)
     met_type = get_met_type(category, config)
-    should_not_run_systematic = category in config.met_systematics_suffixes and variable == 'HT' and not 'JES' in category and not 'JER' in category
+    should_not_run_systematic = category in config.met_systematics_suffixes and ( variable == 'HT' or variable == 'NJets') and not 'JES' in category and not 'JER' in category
     if should_not_run_systematic:
         # no MET uncertainty on HT (but JES and JER of course)
         return
@@ -323,7 +324,8 @@ def create_input(config, sample, variable, category, channel, template,
         tree = template.replace('/' + branch, '')
 
         if sample != 'data':
-            if category in config.met_systematics_suffixes and variable != 'HT':
+            if category in config.met_systematics_suffixes and not (variable == 'HT' or variable == 'NJets'):
+                print variable, category
                 branch = template.split('/')[-1]
                 branch += '_METUncertainties[%s]' % config.met_systematics[
                     category]

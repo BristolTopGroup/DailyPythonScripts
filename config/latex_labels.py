@@ -27,6 +27,8 @@ variables_latex = {
     'ttbarPt': '\ensuremath{p^\mathrm{t\\bar{t}}_{\mathrm{T}}}',
     'ttbarM': '\ensuremath{M_\mathrm{t\\bar{t}}}',
     'ttbarRap': '\ensuremath{y_{\mathrm{t\\bar{t}}}}',
+    'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
+
 }
 
 control_plots_latex = {
