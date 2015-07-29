@@ -26,7 +26,7 @@ calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties_list
     filename = '{path}/{channel}/{category}/normalised_xsection_{met_type}.txt'
-    if category in met_systematics_suffixes and variable == 'HT' and not ('JES' in category or 'JER' in category):
+    if category in met_systematics_suffixes and ( variable == 'HT' or variable == 'NJets' ) and not ('JES' in category or 'JER' in category):
         filename = filename.format(path = path_to_JSON, channel = channel,
                                    category = 'central',
                                    met_type = met_type)

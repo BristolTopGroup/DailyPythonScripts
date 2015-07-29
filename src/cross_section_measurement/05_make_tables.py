@@ -350,7 +350,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             central_value = central_values['unfolded'][bin_i][0]
 
         for source in all_measurements:
-            if variable == 'HT' and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
+            if ( variable == 'HT' or variable == 'NJets' ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
                 continue
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
