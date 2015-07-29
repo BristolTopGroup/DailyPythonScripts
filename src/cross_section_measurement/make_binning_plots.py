@@ -105,7 +105,8 @@ def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisible
     plt.tick_params( **CMS.axis_label_minor )
     ax0.xaxis.labelpad = 12
     ax0.yaxis.labelpad = 12
-    im = rplt.hist( [hist_stability, hist_purity], stacked=False, axes = ax0, cmap = my_cmap, vmin = 1 )
+    rplt.hist( hist_stability , stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'Stability' )
+    rplt.hist( hist_purity, stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'Purity' )
 
     ax0.set_xlim( x_limits )
     ax0.set_ylim( y_limits )
@@ -115,6 +116,8 @@ def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisible
 
     x_title = '$' + variables_latex[variable] + '$ [GeV]'
     plt.xlabel( x_title, CMS.x_axis_title )
+
+    leg = plt.legend(loc=4,prop={'size':40})
 
     plt.tight_layout()
 
@@ -173,4 +176,4 @@ if __name__ == '__main__':
                 histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
             make_scatter_plot( hist_file, histogram_path, bin_edges_to_use, channel, variable, title )
 
-            makePurityStabilityPlots(options.input_path, bin_edges_to_use, channel, variable, options.visiblePhaseSpace)
+            makePurityStabilityPlots( measurement_config.path_to_unfolding_histograms, bin_edges_to_use, channel, variable, options.visiblePhaseSpace)

@@ -33,8 +33,11 @@ control_plots_latex = {
     'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
     'NBJets': '\ensuremath{N_{\mathrm{B Jets}}}',
     'pt': '\ensuremath{p_{\mathrm{T}}}',
+    'eta': '\ensuremath{\eta}',
     'relIso_03_deltaBeta': "RelIso",
     'relIso_04_deltaBeta': "RelIso",
+    'relIso': "RelIso",
+    'NVertex' : '\# Vertex',
 }
 
 measurements_latex = {
@@ -156,10 +159,14 @@ typical_systematics_latex = {
 }
 
 channel_latex = {
-    'electron': r"e + jets",
-    'muon': r"$\mu$ + jets",
-    'combined': r"e, $\mu$ + jets combined",
-}
+                 'electron' : r"e + jets",
+                 'muon' : r"$\mu$ + jets",
+                 'combined' : r"e, $\mu$ + jets combined",
+
+                 'electronQCDNonIso' : r"Non-iso e + jets",
+                 'electronQCDConversions' : r"Conversion e + jets",
+                 'muonQCDNonIso' : r"Non-iso $\mu$ + jets",
+                 }
 
 fit_variables_units_latex = {
     'absolute_eta': '',
