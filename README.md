@@ -16,10 +16,10 @@ cd DailyPythonScripts
 git submodule init && git submodule update
 
 # setup run:
-./setup.sh
+source setup_conda.sh
 
 # setup environment (using virtualenv for python):
-source environment.sh
+source environment_conda.sh
 
 # make sure matplotlib is up to date (should return 1.3.1 or above):
 python -c 'import matplotlib; print matplotlib.__version__'
@@ -30,8 +30,8 @@ If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not
 ```
 # install CMSSW and setup environment:
 export SCRAM_ARCH=slc6_amd64_gcc491
-scram p -n CMSSW_7_5_0_pre4_DailyPythonScripts CMSSW_7_5_0_pre4
-cd CMSSW_7_5_0_pre4_DailyPythonScripts/src/
+scram p -n CMSSW_7_4_7_DPS_ CMSSW_7_4_7
+cd CMSSW_7_4_7_DPS/src/
 cmsenv
 # This version comes with ROOT 6.02/05
 

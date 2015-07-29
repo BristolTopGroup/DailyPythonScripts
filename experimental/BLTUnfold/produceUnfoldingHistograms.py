@@ -172,7 +172,7 @@ def main():
             # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
             allVariablesBins = bin_edges.copy()
             for variable in bin_edges:
-                if 'Rap' in variable:
+                if 'Rap' in variable or 'eta' in variable:
                     allVariablesBins['abs_%s' % variable] = [0,bin_edges[variable][-1]]
 
             for variable in allVariablesBins:
@@ -272,11 +272,11 @@ def main():
                     minVar = trunc( allVariablesBins[variable][0] )
                     maxVar = trunc( max( tree.GetMaximum(genVariable_particle), tree.GetMaximum( recoVariable ) ) * 1.2 )
                     nBins = int(maxVar - minVar)
-                    if variable is 'leptonEta' or variable is 'bEta':
+                    if variable is 'lepton_eta' or variable is 'bjets_eta':
                         maxVar = 2.5
                         minVar = -2.5
                         nBins = 1000
-                    elif 'abs' in variable:
+                    elif 'abs' in variable and 'eta' in variable:
                         maxVar = 3.0
                         minVar = 0.
                         nBins = 1000
