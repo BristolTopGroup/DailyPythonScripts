@@ -2,6 +2,7 @@ from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex, channel_latex, \
     variables_latex, fit_variables_latex, control_plots_latex
 from config.variable_binning import variable_bins_ROOT, bin_edges, fit_variable_bin_edges, control_plots_bins
+from config.histogram_colours import histogram_colours as colours
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
@@ -10,6 +11,7 @@ from rootpy.plotting import Hist
 from tools.hist_utilities import prepare_histograms, clean_control_region, get_normalisation_error, get_fitted_normalisation
 from tools.ROOT_utils import get_histograms_from_trees, set_root_defaults
 from tools.latex import setup_matplotlib
+
 # latex, font, etc
 setup_matplotlib()
 
@@ -164,7 +166,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
                               signal_region_hists['SingleTop'],
                               signal_region_hists['TTJet']]
         histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
-        histogram_colors = ['black',  ROOT.EColor.kYellow-10,  ROOT.EColor.kGreen-3, ROOT.EColor.kMagenta, ROOT.EColor.kRed+1]
+        histogram_colors = [colours['data'], colours['QCD'], colours['V+Jets'], colours['Single-Top'], colours['TTJet'] ]
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = name_prefix + b_tag_bin

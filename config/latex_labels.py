@@ -47,11 +47,11 @@ measurements_latex = {
     'measured': 'measured',
     'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
     'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
-    'amcatnlo': '$t\\bar{t}$ (MC@NLO+Herwig)',
-    'madgraphMLM': '\ensuremath{t\\bar{t}} (MADGRAPH+Pythia)',
+    'amcatnlo': 'aMC@NLO',
+    'madgraphMLM': 'MADGRAPHMLM',
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
     'POWHEG_HERWIG': '$t\\bar{t}$ (POWHEG+Herwig)',
-    'powhegPythia8': '$t\\bar{t}$ (Pythia8)',
+    'powhegPythia8': 'POWHEG+Pythia8',
     'pythia8': '$t\\bar{t}$ (Pythia8)',
     'matchingdown': '$t\\bar{t}$ (matching down)',
     'matchingup': '$t\\bar{t}$ (matching up)',
@@ -137,10 +137,10 @@ samples_latex = {
 }
 
 fit_variables_latex = {
-    'absolute_eta': r'lepton $|\eta|$',
-    'M3': r'$M3$',
-    'M_bl': r'$M(b,l)$',
-    'angle_bl': r'$\alpha$',
+    'absolute_eta': '\ensuremath{ \mathrm{lepton} |\eta| }',
+    'M3': '\ensuremath{ M3 }',
+    'M_bl': '\ensuremath{ M(b,l) }',
+    'angle_bl': '\ensuremath{ \alpha }',
 }
 
 typical_systematics_latex = {
