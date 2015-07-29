@@ -21,6 +21,16 @@ fi
 
 echo "Activating conda environment ${conda_env}"
 source activate ${conda_env}
+# the following should only be done on soolin
+# otherwise DICE jobs might interfere with each other
+if [ "$HOSTNAME" = "soolin.phy.bris.ac.uk" ]; then
+	echo "Installing/upgrading rootpy"
+	pip install -U rootpy
+	echo "Applying local rootpy changes on top"
+	cp -r external/rootpy/rootpy /software/miniconda/envs/${conda_env}/lib/python2.7/site-packages/.
+	# and fix the permissions
+	chmod g+w -R /software/miniconda/envs/${conda_env}/lib/python2.7/site-packages/rootpy*
+fi
 
 if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib
