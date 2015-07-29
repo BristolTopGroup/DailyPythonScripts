@@ -94,6 +94,18 @@ def main():
             best_binning.sort()
 
         bin_choices[variable] = best_binning
+
+        # Make last bin smaller if huge
+        # Won't change final results
+        if len(best_binning) >= 4:
+            lastBinWidth = best_binning[-1] - best_binning[-2]
+            penultimateBinWidth = best_binning[-2] - best_binning[-3]
+            if lastBinWidth / penultimateBinWidth > 4:
+                print ('Changing bins from ',best_binning)
+                newLastBinWidth = penultimateBinWidth * 4
+                best_binning[-1] = best_binning[-2] + newLastBinWidth
+                print ('To',best_binning)
+
         print('The best binning for', variable, 'is:')
         print('bin edges =', best_binning)
         print('N_bins    =', len( best_binning ) - 1)
