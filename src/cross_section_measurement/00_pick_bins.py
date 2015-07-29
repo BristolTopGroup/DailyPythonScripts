@@ -60,7 +60,7 @@ def main():
     parser = OptionParser()
     parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
                       help = "Consider visible phase space or not" )
-    ( options, args ) = parser.parse_args()
+    ( options, _ ) = parser.parse_args()
 
     p_min = 0.5
     s_min = 0.5
@@ -70,8 +70,8 @@ def main():
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
-
-    for variable in bin_edges.keys():
+    variables = bin_edges.keys()
+    for variable in variables:
         print('--- Doing variable',variable)
         variableToUse = variable
         if 'Rap' in variable:
@@ -84,6 +84,8 @@ def main():
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=130. )
         elif variable == 'NJets':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=3.5 )
+        elif variable == 'lepton_pt':
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=30. )
         else:
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
 

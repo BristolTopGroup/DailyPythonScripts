@@ -29,7 +29,8 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not 'mass' in systematic])
 
-    for variable in ['MET', 'HT', 'ST', 'WPT', 'NJets']:
+    for variable in ['MET', 'HT', 'ST', 'WPT', 'NJets', 'lepton_pt',
+                     'lepton_abs_eta']:
 
         for category in categories:
             for channel in ['electron', 'muon']:
@@ -50,7 +51,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
             return
     config = XSectionConfig(com)
     met_type = get_met_type(category, config)
-    should_not_run_systematic = category in config.met_systematics_suffixes and ( variable == 'HT' or variable == 'NJets') and not 'JES' in category and not 'JER' in category
+    should_not_run_systematic = category in config.met_systematics_suffixes and variable in config.variables_no_met and not 'JES' in category and not 'JER' in category
     if should_not_run_systematic:
         # no MET uncertainty on HT (but JES and JER of course)
         return
@@ -92,6 +93,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         'category': category,
         'phase_space': phase_space,
         'norm_method': norm_method,
+        'lepton': channel,
     }
     variable_template = config.variable_path_templates[
         variable].format(**inputs)
@@ -105,28 +107,28 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         False,
         input=create_input(
             config, 'TTJet', variable, template_category, channel,
-            variable_template, phase_space = phase_space),
+            variable_template, phase_space=phase_space),
     )
     m.addSample(
         'V+Jets',
         False,
         input=create_input(
             config, 'V+Jets', variable, template_category, channel,
-            variable_template, phase_space = phase_space),
+            variable_template, phase_space=phase_space),
     )
     m.addSample(
         'SingleTop',
         False,
         input=create_input(
             config, 'SingleTop', variable, template_category, channel,
-            variable_template, phase_space = phase_space),
+            variable_template, phase_space=phase_space),
     )
     m.addSample(
         'QCD',
         False,
         input=create_input(
             config, 'QCD', variable, template_category, channel,
-            variable_template, phase_space = phase_space),
+            variable_template, phase_space=phase_space),
     )
     variable_template_data = variable_template.replace(
         met_type, config.translate_options['type1'])
@@ -134,8 +136,8 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         'data',
         False,
         input=create_input(
-            config, 'data', variable, template_category, channel, 
-            variable_template_data, phase_space = phase_space),
+            config, 'data', variable, template_category, channel,
+            variable_template_data, phase_space=phase_space),
     )
 
     m_qcd = tools.measurement.Measurement(category)
@@ -149,28 +151,28 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         False,
         input=create_input(
             config, 'TTJet', variable, template_category, channel,
-            qcd_template, phase_space = phase_space),
+            qcd_template, phase_space=phase_space),
     )
     m_qcd.addSample(
         'V+Jets',
         False,
         input=create_input(
             config, 'V+Jets', variable, template_category, channel,
-            qcd_template, phase_space = phase_space),
+            qcd_template, phase_space=phase_space),
     )
     m_qcd.addSample(
         'SingleTop',
         False,
         input=create_input(
             config, 'SingleTop', variable, template_category, channel,
-            qcd_template, phase_space = phase_space),
+            qcd_template, phase_space=phase_space),
     )
     m_qcd.addSample(
         'QCD',
         False,
         input=create_input(
             config, 'data', variable, template_category, channel,
-            qcd_template, phase_space = phase_space),
+            qcd_template, phase_space=phase_space),
     )
 
     m.addShapeForSample('QCD', m_qcd, False)
@@ -190,8 +192,9 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
                     config, 'V+Jets', variable, v_template_category,
                     channel,
                     variable_template,
-                    config8.generator_systematic_vjets_templates[v_template_category],
-                    phase_space = phase_space)
+                    config8.generator_systematic_vjets_templates[
+                        v_template_category],
+                    phase_space=phase_space)
             )
         else:
             m_vjets.addSample(
@@ -203,7 +206,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
                     variable_template,
                     config.generator_systematic_vjets_templates[
                         v_template_category]),
-                    phase_space = phase_space)
+                phase_space=phase_space)
         m.addShapeForSample('V+Jets', m_vjets, False)
 
     inputs['channel'] = channel
@@ -313,7 +316,7 @@ def get_qcd_template(config, variable, category, channel):
 
 
 def create_input(config, sample, variable, category, channel, template,
-                 input_file=None, phase_space = None):
+                 input_file=None, phase_space=None):
     tree, branch, hist = None, None, None
     selection = '1'
     if not input_file:
@@ -324,7 +327,7 @@ def create_input(config, sample, variable, category, channel, template,
         tree = template.replace('/' + branch, '')
 
         if sample != 'data':
-            if category in config.met_systematics_suffixes and not (variable == 'HT' or variable == 'NJets'):
+            if category in config.met_systematics_suffixes and not variable in config.variables_no_met:
                 print variable, category
                 branch = template.split('/')[-1]
                 branch += '_METUncertainties[%s]' % config.met_systematics[

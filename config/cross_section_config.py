@@ -54,6 +54,9 @@ class XSectionConfig():
                   'vjets_theory_systematic_prefix'
                   ]
     samples = ['TTJet', 'V+Jets', 'SingleTop', 'QCD']
+    variables_no_met = ['HT', 'NJets', 'lepton_pt', 'lepton_eta',
+                        'abs_lepton_eta', 'bjets_pt', 'bjets_eta',
+                        'abs_bjets_eta']
 
     def __init__( self, centre_of_mass_energy ):
         if not centre_of_mass_energy in self.known_centre_of_mass_energies:
@@ -355,6 +358,11 @@ class XSectionConfig():
                             'MT': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/MT',
                             'WPT': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/WPT',
                             'NJets': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/Jets/NJets',
+                            'lepton_pt': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/pt',
+                            'lepton_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/eta',
+                            'lepton_abs_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/absolute_eta',
+                            'bjets_pt': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/pt',
+                            'bjets_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/eta',
                             }
 
         self.electron_control_region = 'QCDConversions'
@@ -550,6 +558,10 @@ class XSectionConfig():
                    'ttbarRap' : 2,
                    'ttbarM' : 2,
                    'NJets' : 2,
+                   'bjets_pt': 2,
+                   'bjets_eta': 2,
+                   'lepton_pt': 2,
+                   'lepton_eta': 2,
                    }
 
         self.k_values_muon = {
@@ -566,6 +578,10 @@ class XSectionConfig():
                    'ttbarRap' : 1,
                    'ttbarM' : 1,
                    'NJets' : 2,
+                   'bjets_pt': 2,
+                   'bjets_eta': 2,
+                   'lepton_pt': 2,
+                   'lepton_eta': 2,
                    }
         #keeping combined values for backward compatibility
         self.k_values_combined = {
@@ -582,36 +598,48 @@ class XSectionConfig():
                    'ttbarRap' : 1,
                    'ttbarM' : 1,
                    'NJets' : 2,
+                   'bjets_pt': 2,
+                   'bjets_eta': 2,
+                   'lepton_pt': 2,
+                   'lepton_eta': 2,
                    }
 
         self.tau_values_electron = {
-"WPT" : 1.0235310219,
-"MET" : 2.36448941265,
-"HT" : 0.932603346883,
-"ST" : 0.849753435909,
-"NJets" : 1.23284673944,
-                    "hadTopRap" : 10.0,
-                    "lepTopPt" : 53.3669923121,
-                    "hadTopPt" : 58.5702081806,
-                    "ttbarPt" : 27.8255940221,
-                    "ttbarM" : 21.0490414451,
-                    "lepTopRap" : 10.0,
-                    "ttbarRap" : 93.2603346883,
+            "WPT" : 1.0235310219,
+            "MET" : 2.36448941265,
+            "HT" : 0.932603346883,
+            "ST" : 0.849753435909,
+            "NJets" : 1.23284673944,
+            'bjets_pt': 0.,
+            'bjets_eta': 0.,
+            'lepton_pt': 0.,
+            'lepton_eta': 0.,
+            "hadTopRap" : 10.0,
+            "lepTopPt" : 53.3669923121,
+            "hadTopPt" : 58.5702081806,
+            "ttbarPt" : 27.8255940221,
+            "ttbarM" : 21.0490414451,
+            "lepTopRap" : 10.0,
+            "ttbarRap" : 93.2603346883,
         }
 
         self.tau_values_muon = {
-"WPT" : 0.849753435909,
-"MET" : 1.78864952906,
-"HT" : 0.774263682681,
-"ST" : 0.774263682681,
-"NJets" : 1.62975083462,
-                    "hadTopRap" : 10.0,
-                    "lepTopPt" : 546.227721768,
-                    "hadTopPt" : 453.487850813,
-                    "ttbarPt" : 312.571584969,
-                    "ttbarM" : 196.304065004,
-                    "lepTopRap" : 10.0,
-                    "ttbarRap" : 236.448941265,  
+            "WPT" : 0.849753435909,
+            "MET" : 1.78864952906,
+            "HT" : 0.774263682681,
+            "ST" : 0.774263682681,
+            "NJets" : 1.62975083462,
+            'bjets_pt': 0.,
+            'bjets_eta': 0.,
+            'lepton_pt': 0.,
+            'lepton_eta': 0.,
+            "hadTopRap" : 10.0,
+            "lepTopPt" : 546.227721768,
+            "hadTopPt" : 453.487850813,
+            "ttbarPt" : 312.571584969,
+            "ttbarM" : 196.304065004,
+            "lepTopRap" : 10.0,
+            "ttbarRap" : 236.448941265,
         }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
