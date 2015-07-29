@@ -93,7 +93,6 @@ def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisible
     hist_stability.linewidth = 4
     hist_purity.linewidth = 4
 
-
     x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
     y_limits = [0,1]
     plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
@@ -119,16 +118,6 @@ def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisible
     plt.xlabel( x_title, CMS.x_axis_title )
 
     leg = plt.legend(loc=4,prop={'size':40})
-
-    # handles, labels = ax0.get_legend_handles_labels()
-    # ax0.legend(handles, labels)
-    # l1 = ax0.legend( handles, labels, numpoints = 1,
-    #                  # frameon = histogram_properties.legend_color,
-    #             # bbox_to_anchor = histogram_properties.legend_location,
-    #             # bbox_transform=plt.gcf().transFigure,
-    #             # prop = CMS.legend_properties,
-    #             # ncol = histogram_properties.legend_columns
-    #              )
 
     plt.tight_layout()
 
