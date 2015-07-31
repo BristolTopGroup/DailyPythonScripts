@@ -29,11 +29,16 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not 'mass' in systematic])
 
-    for variable in ['MET', 'HT', 'ST', 'WPT', 'NJets', 'lepton_pt',
-                     'lepton_abs_eta']:
+    for variable in ['MET', 'HT', 'ST', 'WPT', 'NJets', #'lepton_pt',
+                     #'lepton_abs_eta'
+                     ]:
 
         for category in categories:
             for channel in ['electron', 'muon']:
+                if channel == 'electron' and (category == 'Muon_down' or category == 'Muon_up'):
+                    continue
+                elif channel == 'muon' and (category == 'Electron_down' or category == 'Electron_up'):
+                    continue
                 create_measurement(
                     centre_of_mass_energy, category, variable, channel,
                     phase_space='FullPS', norm_method='background_subtraction')
@@ -295,6 +300,7 @@ def get_qcd_template(config, variable, category, channel):
         'variable': variable,
         'category': 'central',  # always central
     }
+
     qcd_template = config.variable_path_templates[
         variable].format(**qcd_inputs)
     if channel == 'electron':
@@ -340,15 +346,22 @@ def create_input(config, sample, variable, category, channel, template,
     else:
         hist = template
     lumi_scale = 1.
-    if not sample == 'data':
-        lumi_scale = config.luminosity_scale
-        if channel == 'electron':
-            lumi_scale = lumi_scale * 0.84
-        if channel == 'muon':
-            lumi_scale = lumi_scale * 0.63
+
     edges = variable_binning.bin_edges[variable]
     if phase_space == 'VisiblePS':
         edges = variable_binning.bin_edges_vis[variable]
+
+    weight_branch = 'EventWeight'
+    # if variable in ['HT','MET','ST','WPT'] and not 'QCD' in tree:
+    #     if channel == 'muon':
+    #         weight_branch += ' * MuonEfficiencyCorrection'
+    #     elif channel == 'electron':
+    #         weight_branch += ' * ElectronEfficiencyCorrection'
+
+    #     if category == 'Muon_down' or category == 'Electron_down':
+    #         weight_branch += ' * 0.96'
+    #     elif category == 'Muon_up' or category == 'Electron_up':
+    #         weight_branch += ' * 1.04'
 
     i = Input(
         input_file=input_file,
@@ -358,6 +371,7 @@ def create_input(config, sample, variable, category, channel, template,
         selection=selection,
         bin_edges=edges,
         lumi_scale=lumi_scale,
+        weight_branch=weight_branch,
     )
     return i
 
