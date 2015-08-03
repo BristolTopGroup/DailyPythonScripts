@@ -147,8 +147,10 @@ def get_histograms_from_trees(
 
 def get_histogram_from_tree(**kwargs):
     branch = kwargs.pop('branch')
-    weight_branch = kwargs.pop('weight_branch')
-    branches = [branch, weight_branch]
+    weight_branches = kwargs.pop('weight_branches')
+    weight_branch = ' * '.join(weight_branches)
+    branches = [branch]
+    branches.extend(weight_branches)
     selection_branches = []
     if kwargs.has_key('selection_branches'):
         selection_branches = kwargs.pop('selection_branches')

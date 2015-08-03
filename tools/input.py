@@ -26,7 +26,7 @@ class Input():
             @param tree: input tree
             @param branch: branch to be used
             @param selection: selection to be used
-            @param weight_branch: branch to be used as event weight
+            @param weight_branches: branches to be (multiplicatively) used as event weight
             @param n_bins: number of bins for histogram if from tree
             @param x_min: min value for histogram from tree
             @param x_max: max value for histogram from tree 
@@ -45,7 +45,7 @@ class Input():
         self.tree = None
         self.tree_name = None
         self.selection = '1'
-        self.weight_branch = 'EventWeight'
+        self.weight_branches = ['EventWeight']
         self.selection_branches = []
         self.lumi_scale = 1
 
@@ -56,8 +56,8 @@ class Input():
             self.branch = kwargs.pop('branch')
         if kwargs.has_key('selection'):
             self.selection = kwargs.pop('selection')
-        if kwargs.has_key('weight_branch'):
-            self.weight_branch = kwargs.pop('weight_branch')
+        if kwargs.has_key('weight_branches'):
+            self.weight_branches = kwargs.pop('weight_branches')
         if kwargs.has_key('selection_branches'):
             self.selection_branches = kwargs.pop('selection_branches')
         if kwargs.has_key('lumi_scale'):
@@ -106,7 +106,7 @@ class Input():
             self.hist = tools.ROOT_utils.get_histogram_from_tree(
                 tree=self.tree_name,
                 branch=self.branch,
-                weight_branch=self.weight_branch,
+                weight_branches=self.weight_branches,
                 selection=self.selection,
                 input_file=self.file,
                 **self.kwargs
@@ -136,7 +136,7 @@ class Input():
             d['tree'] = self.tree_name
             d['branch'] = self.branch
             d['selection'] = self.selection
-            d['weight_branch'] = self.weight_branch
+            d['weight_branches'] = self.weight_branches
             d['selection_branches'] = self.selection_branches
             d['lumi_scale'] = self.lumi_scale
         return d
