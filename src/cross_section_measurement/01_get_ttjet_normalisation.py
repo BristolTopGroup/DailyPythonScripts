@@ -286,7 +286,7 @@ if __name__ == '__main__':
     # set global variables
     debug = options.debug
     if debug:
-        mylog.setLevel(log.DEBUG)
+        log.setLevel(log.DEBUG)
 
     measurement_config = XSectionConfig(options.CoM)
     # caching of variables for shorter access
