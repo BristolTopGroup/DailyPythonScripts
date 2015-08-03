@@ -69,20 +69,27 @@ class Input():
     def isValid(self):
         # file has to exists
         if not os.path.exists(self.file):
+            input_log.debug('File does not exist: ' + self.file)
             return False
         if self.hist_name:
             with File.open(self.file) as f:
                 if not f.__contains__(self.hist_name):
+                    msg = 'File "{0}" does not contain histogram "{1}"'
+                    input_log.debug(msg.format(self.file, self.hist_name))
                     return False
         if self.tree_name:
             with File.open(self.file) as f:
                 if not f.__contains__(self.tree_name):
+                    msg = 'File "{0}" does not contain tree "{1}"'
+                    input_log.debug(msg.format(self.file, self.tree_name))
                     return False
                 tree = f[self.tree_name]
                 branchToCheck = self.branch
                 if '[' in branchToCheck and ']' in branchToCheck:
                     branchToCheck = branchToCheck.split('[')[0]
                 if not tree.has_branch(branchToCheck):
+                    msg = 'Tree "{0}" does not contain branch "{1}"'
+                    input_log.debug(msg.format(self.tree_name, branchToCheck))
                     return False
         return True
 
