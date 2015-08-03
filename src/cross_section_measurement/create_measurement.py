@@ -367,17 +367,17 @@ def create_input(config, sample, variable, category, channel, template,
     if phase_space == 'VisiblePS':
         edges = variable_binning.bin_edges_vis[variable]
 
-    weight_branch = 'EventWeight'
-    # if variable in ['HT','MET','ST','WPT'] and not 'QCD' in tree:
-    #     if channel == 'muon':
-    #         weight_branch += ' * MuonEfficiencyCorrection'
-    #     elif channel == 'electron':
-    #         weight_branch += ' * ElectronEfficiencyCorrection'
+    weight_branches = ['EventWeight']
+    if variable in ['HT','MET','ST','WPT'] and not 'QCD' in tree:
+        if channel == 'muon':
+            weight_branches.append('MuonEfficiencyCorrection')
+        elif channel == 'electron':
+            weight_branches.append('ElectronEfficiencyCorrection')
 
-    #     if category == 'Muon_down' or category == 'Electron_down':
-    #         weight_branch += ' * 0.96'
-    #     elif category == 'Muon_up' or category == 'Electron_up':
-    #         weight_branch += ' * 1.04'
+        if category == 'Muon_down' or category == 'Electron_down':
+            lumi_scale *= 0.96
+        elif category == 'Muon_up' or category == 'Electron_up':
+            lumi_scale *= 1.04
 
     i = Input(
         input_file=input_file,
@@ -387,7 +387,7 @@ def create_input(config, sample, variable, category, channel, template,
         selection=selection,
         bin_edges=edges,
         lumi_scale=lumi_scale,
-        weight_branch=weight_branch,
+        weight_branches=weight_branches,
     )
     return i
 
