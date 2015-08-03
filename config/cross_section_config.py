@@ -360,9 +360,10 @@ class XSectionConfig():
                             'NJets': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/Jets/NJets',
                             'lepton_pt': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/pt',
                             'lepton_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/eta',
-                            'lepton_abs_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/absolute_eta',
-                            'bjets_pt': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/pt',
-                            'bjets_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/{lepton}/{lepton}s/eta',
+                            'abs_lepton_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/absolute_eta',
+                            'bjets_pt': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/bjet_pt',
+                            'bjets_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/bjet_eta',
+                            'abs_bjets_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/abs(bjet_eta)',
                             }
 
         self.electron_control_region = 'QCDConversions'

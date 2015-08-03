@@ -14,14 +14,27 @@ from optparse import OptionParser
 import tools.measurement
 from config import XSectionConfig, variable_binning
 from tools.input import Input
+from tools.logger import log
+
+# define logger for this module
+create_measurement_log = log["01b_get_ttjet_normalisation"]
+cml = create_measurement_log  # alias
 
 
+@cml.trace()
 def main():
     parser = OptionParser(__doc__)
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
                       help="set the centre of mass energy for analysis. Default = 13 [TeV]")
+    parser.add_option('-d', '--debug', dest="debug", action="store_true",
+                      help="Print the debug information")
     (options, _) = parser.parse_args()
     centre_of_mass_energy = options.CoM
+    # set global variables
+    debug = options.debug
+    if debug:
+        log.setLevel(log.DEBUG)
+
     measurement_config = XSectionConfig(centre_of_mass_energy)
     categories = ['QCD_shape']
     categories.extend(measurement_config.categories_and_prefixes.keys())
@@ -29,10 +42,7 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not 'mass' in systematic])
 
-    for variable in ['MET', 'HT', 'ST', 'WPT', 'NJets', #'lepton_pt',
-                     #'lepton_abs_eta'
-                     ]:
-
+    for variable in variable_binning.bin_edges.keys():
         for category in categories:
             for channel in ['electron', 'muon']:
                 if channel == 'electron' and (category == 'Muon_down' or category == 'Muon_up'):
@@ -48,6 +58,7 @@ def main():
                     phase_space='VisiblePS', norm_method='background_subtraction')
 
 
+@cml.trace()
 def create_measurement(com, category, variable, channel, phase_space, norm_method):
     if com == 13:
         # exclude non existing systematics
@@ -98,7 +109,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         'category': category,
         'phase_space': phase_space,
         'norm_method': norm_method,
-        'lepton': channel,
+        'lepton': channel.title(),
     }
     variable_template = config.variable_path_templates[
         variable].format(**inputs)
@@ -231,6 +242,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         m.toJSON(path.format(**inputs))
 
 
+@cml.trace()
 def get_met_type(category, config):
     met_type = config.translate_options['type1']
     if category == 'JES_up':
@@ -254,6 +266,7 @@ def get_met_type(category, config):
     return met_type
 
 
+@cml.trace()
 def get_file(config, sample, category, channel):
     use_trees = True if config.centre_of_mass_energy == 13 else False
     if channel == 'electron':
@@ -290,6 +303,7 @@ def get_file(config, sample, category, channel):
         return files[sample]
 
 
+@cml.trace()
 def get_qcd_template(config, variable, category, channel):
     qcd_inputs = {
         'channel': config.analysis_types[channel],
@@ -299,6 +313,7 @@ def get_qcd_template(config, variable, category, channel):
         'energy': config.centre_of_mass_energy,
         'variable': variable,
         'category': 'central',  # always central
+        'lepton': channel.title(),
     }
 
     qcd_template = config.variable_path_templates[
@@ -321,6 +336,7 @@ def get_qcd_template(config, variable, category, channel):
     return qcd_template
 
 
+@cml.trace()
 def create_input(config, sample, variable, category, channel, template,
                  input_file=None, phase_space=None):
     tree, branch, hist = None, None, None
@@ -334,7 +350,7 @@ def create_input(config, sample, variable, category, channel, template,
 
         if sample != 'data':
             if category in config.met_systematics_suffixes and not variable in config.variables_no_met:
-                print variable, category
+                #                 print variable, category
                 branch = template.split('/')[-1]
                 branch += '_METUncertainties[%s]' % config.met_systematics[
                     category]
