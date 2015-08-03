@@ -28,6 +28,10 @@ variables_latex = {
     'ttbarM': '\ensuremath{M_\mathrm{t\\bar{t}}}',
     'ttbarRap': '\ensuremath{y_{\mathrm{t\\bar{t}}}}',
     'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
+    'lepton_pt': '\ensuremath{ \mathrm{lepton} p_{\mathrm{T}} }',
+    'lepton_eta': '\ensuremath{ \mathrm{lepton} \eta }',
+    'bjets_pt': '\ensuremath{ \mathrm{b-jet} p_{\mathrm{T}} }',
+    'bjets_eta': '\ensuremath{ \mathrm{b-jet} \eta }',
 
 }
 
