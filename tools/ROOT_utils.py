@@ -9,7 +9,14 @@ from ROOT import gROOT, TH1F
 from rootpy.plotting import Hist
 gcd = gROOT.cd
 import config.summations_common as sumations
+from tools.logger import log
 
+# define logger for this module
+root_utils_log = log["ROOT_Utils"]
+rul = root_utils_log  # alias
+
+
+@rul.trace()
 def get_histogram_from_file( histogram_path, input_file ):
     current_btag, found_btag = find_btag(histogram_path)
 
@@ -46,6 +53,7 @@ def get_histogram_from_file( histogram_path, input_file ):
     root_file.Close()
     return histogram
 
+@rul.trace()
 def is_valid_histogram( histogram, histogram_name, file_name ):
     if not histogram:
         logging.error( 'Histogram \n"%s" \ncould not be found in root_file:\n%s' % ( histogram_name, file_name ) )
@@ -54,6 +62,7 @@ def is_valid_histogram( histogram, histogram_name, file_name ):
 
 # Reads a single histogram from each given rootFile
 # and returns a dictionary with the same naming as 'files'
+@rul.trace()
 def get_histogram_dictionary( histogram_path, files = {} ):
     hists = {}
     for sample, file_name in files.iteritems():
@@ -61,6 +70,7 @@ def get_histogram_dictionary( histogram_path, files = {} ):
     return hists
 
 # Reads a list of histograms from each given file
+@rul.trace()
 def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False ):
     histograms = {}
     nHistograms = 0
@@ -100,6 +110,7 @@ def get_histograms_from_files( histogram_paths = [], files = {}, verbose = False
     return histograms
 
 # Reads a list of histograms from each given file
+@rul.trace()
 def get_histograms_from_trees(
                               trees = [],
                               branch = 'var',
@@ -145,10 +156,12 @@ def get_histograms_from_trees(
         root_file.Close()
     return histograms
 
+@rul.trace()
 def get_histogram_from_tree(**kwargs):
     branch = kwargs.pop('branch')
     weight_branches = kwargs.pop('weight_branches')
     weight_branch = ' * '.join(weight_branches)
+    rul.debug('Weight branch expression: "{0}"'.format(weight_branch))
     branches = [branch]
     branches.extend(weight_branches)
     selection_branches = []
@@ -177,11 +190,12 @@ def get_histogram_from_tree(**kwargs):
                     branchesToActivate.append( branch.replace('(','').replace(')','').replace(' ',''))
             else : 
                 branchesToActivate.append(b)
-
+        rul.debug('Activating branches: {0}'.format(branchesToActivate))
         t.activate(branchesToActivate, exclusive = True)
         t.Draw(branch, selection = weight_and_selection, hist = hist)
     return hist
 
+@rul.trace()
 def get_histogram_info_tuple( histogram_in_path ):
     histogram_name = histogram_in_path.split( '/' )[-1]
     directory = ''.join( histogram_in_path.rsplit( histogram_name, 1 )[:-1] )
@@ -189,6 +203,7 @@ def get_histogram_info_tuple( histogram_in_path ):
 
     return directory, histogram_name, b_tag_bin
 
+@rul.trace()
 def set_root_defaults( set_batch = True, msg_ignore_level = 1001 ):
     # set to batch mode (or not)
     gROOT.SetBatch( set_batch )
@@ -197,6 +212,7 @@ def set_root_defaults( set_batch = True, msg_ignore_level = 1001 ):
     # turn of the stupid ROOT pointer handling, seriously
     TH1F.AddDirectory(False)
 
+@rul.trace()
 def root_mkdir(file_handle, path):
     '''
         Equivalent to mkdir -p but for ROOT files.
@@ -222,6 +238,7 @@ def root_mkdir(file_handle, path):
             continue
         file_handle.mkdir(current_dir)
 
+@rul.trace()
 def root_exists(file_handle, path):
     pointer_to_directory = None
     try:
@@ -230,6 +247,7 @@ def root_exists(file_handle, path):
         return False
     return not (pointer_to_directory is None)
 
+@rul.trace()
 def find_btag( histogram_path ):
     '''
         function to determine if the histogram path contains a valid b-tag
