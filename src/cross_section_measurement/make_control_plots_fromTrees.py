@@ -40,6 +40,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     qcd_data_region = ''
     title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
     normalisation = None
+    weightBranchSignalRegion = 'EventWeight'
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron_trees
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
@@ -47,6 +48,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = 'QCDConversions'
+        weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
@@ -54,6 +56,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
             normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = 'QCD non iso mu+jets'
+        weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
 
     # Get all histograms
     # multi = isinstance( signal_region, list )
@@ -83,7 +86,8 @@ def make_plot( channel, x_axis_title, y_axis_title,
     #         histograms = get_histograms_from_files( [signal_region, qcd_control_region], histogram_files )
     #     else:
     #         histograms = get_histograms_from_files( [signal_region], histogram_files )
-    histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+
+    histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, selection = 'HT >= 0', weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
 
     histograms_QCDControlRegion = None
     if use_qcd_data_region:
@@ -122,21 +126,26 @@ def make_plot( channel, x_axis_title, y_axis_title,
             if sample is 'data' : continue
             totalMC += signal_region_hists[sample].Integral()
         newScale = signal_region_hists['data'].Integral() / totalMC
+
         prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = newScale,
-                            )
-        if inclusive_control_region_hists != {}:
-            for sample in inclusive_control_region_hists:
-                if sample is 'data' : continue
-                totalMC += inclusive_control_region_hists[sample].Integral()
-            newScale = inclusive_control_region_hists['data'].Integral() / totalMC
-            prepare_histograms( inclusive_control_region_hists, rebin = rebin,
-                                scale_factor = newScale )
+                           )
     else:
         prepare_histograms( signal_region_hists, rebin = rebin,
                             scale_factor = measurement_config.luminosity_scale )
+        # prepare_histograms( inclusive_control_region_hists, rebin = rebin,
+        #                     scale_factor = measurement_config.luminosity_scale )
+
+    if inclusive_control_region_hists != {}:
+        totalMC = 0
+        for sample in inclusive_control_region_hists:
+            if sample is 'data' : continue
+            totalMC += inclusive_control_region_hists[sample].Integral()
+        newScale = 1
+        if totalMC >0:
+            newScale = inclusive_control_region_hists['data'].Integral() / totalMC
         prepare_histograms( inclusive_control_region_hists, rebin = rebin,
-                            scale_factor = measurement_config.luminosity_scale )
+                            scale_factor = newScale )
 
     # Use qcd from data control region or not
     qcd_from_data = None
@@ -299,13 +308,13 @@ if __name__ == '__main__':
                         'MET',
                         'ST',
                         'WPT',
-                        'Mjj',
-                        'M3',
+                        # 'Mjj',
+                        # 'M3',
                         # 'angle_bl',
                         'NJets',
                         'NBJets',
                         # 'JetPt',
-                        # 'NVertex',
+                        'NVertex',
                         # 'LeptonPt',
                         # 'LeptonEta',
                         ]
@@ -595,7 +604,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = False,
                       )
         ###################################################
         # Lepton Pt
@@ -681,7 +690,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % channel,
-                      x_limits = control_plots_bins['HT'],
+                      x_limits = bin_edges['HT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -718,7 +727,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'MET',
                       name_prefix = '%s_MET_' % channel,
-                      x_limits = control_plots_bins['MET'],
+                      x_limits = bin_edges['MET'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -738,7 +747,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'ST',
                       name_prefix = '%s_ST_' % channel,
-                      x_limits = control_plots_bins['ST'],
+                      x_limits = bin_edges['ST'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -758,7 +767,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'WPT',
                       name_prefix = '%s_WPT_' % channel,
-                      x_limits = control_plots_bins['WPT'],
+                      x_limits = bin_edges['WPT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),

@@ -215,7 +215,9 @@ def main():
 
                 # Offline level
                 # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
-                offlineWeight = '( EventWeight * %.4f)' % measurement_config.luminosity_scale
+                leptonWeight = '1'
+
+                offlineWeight = '( EventWeight * %s * %.4f)' % ( leptonWeight, measurement_config.luminosity_scale )
                 offlineSelection = ''
                 if channel.channelName is 'muPlusJets' :
                     offlineSelection = '( passSelection == 1 )'
