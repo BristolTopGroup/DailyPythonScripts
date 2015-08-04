@@ -77,6 +77,7 @@ if __name__ == '__main__':
         1000,
         13,
     )
-    jobs = j.split(2)
-    for job in jobs:
+    jobs = j.split(4)
+    for i,job in enumerate(jobs):
         job.run()
+        print 'Output file:', job.tar_output(i)

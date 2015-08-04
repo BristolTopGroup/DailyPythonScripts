@@ -40,6 +40,6 @@ subjobs = job.split(n_jobs)
 j = subjobs[job_id]
 j.run()
 
-output_tar_file = job.tar_output(job_id)
+output_tar_file = j.tar_output(job_id)
 output_file_name = output_tar_file.split('/')[-1]
 shutil.copyfile(output_tar_file, base_dir + '/' + output_file_name)
