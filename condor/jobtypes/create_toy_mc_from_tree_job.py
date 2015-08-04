@@ -60,7 +60,6 @@ class CreateToyMCFromTreeJob(Job):
         import src.unfolding_tests.create_toy_mc_from_tree as toy
         import shutil
         output_file = toy.get_output_file_name(self.output_folder,
-                                               self.variable,
                                                self.n_toy,
                                                self.start_at,
                                                self.n_input_mc,

@@ -62,6 +62,7 @@ def create_toy_mc(input_file, output_folder, variable, n_toy, centre_of_mass, tt
     output_file_name = get_output_file_name(
         output_folder, variable, start_at, n_toy, centre_of_mass)
     output = File(output_file_name, 'recreate')
+    print('This module is deprecated, please use "create_toy_mc_from_tree" instead.')
 
     for channel in ['electron', 'muon']:
         # first get the weights
