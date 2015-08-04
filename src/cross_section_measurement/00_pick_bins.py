@@ -102,9 +102,9 @@ def main():
         if len(best_binning) >= 4:
             lastBinWidth = best_binning[-1] - best_binning[-2]
             penultimateBinWidth = best_binning[-2] - best_binning[-3]
-            if lastBinWidth / penultimateBinWidth > 4:
+            if lastBinWidth / penultimateBinWidth > 6:
                 print ('Changing bins from ',best_binning)
-                newLastBinWidth = penultimateBinWidth * 4
+                newLastBinWidth = penultimateBinWidth * 6
                 best_binning[-1] = best_binning[-2] + newLastBinWidth
                 print ('To',best_binning)
 

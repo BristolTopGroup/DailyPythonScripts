@@ -62,7 +62,8 @@ control_plots_bins = {
   'AbsLeptonEta' : [0.0, 0.5, 1.0, 1.5, 2.0, 2.1, 2.5, 3.0],  
   'NBJets' : [i + 0.5 for i in range ( 1, 6 + 1 )],
   'NVertex' : [i*2 for i in range ( 0,20 + 1 )],
-  'relIso' : [i*0.05 for i in range ( 0, 20 )],
+  'relIso' : [i*0.01 for i in range(0,15)],
+  'relIsoQCD' : [i*0.2 for i in range(0,15)],
 }
 
 
