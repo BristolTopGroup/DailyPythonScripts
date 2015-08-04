@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+'''
+    Submission script to DICE for src/unfolding_tests/create_unfolding_pull_data.py
+'''
+from __future__ import print_function
+from optparse import OptionParser
+from condor import job
+from condor.jobtypes.create_toy_mc_from_tree_job import CreateToyMCFromTreeJob
+import os
+import sys
+
+
+def main():
+    parser = OptionParser(__doc__)
+    parser.add_option("-c", "--com", dest="com", type=int,
+                      help="Centre-of-mass energy to be used for submission")
+    (options, _) = parser.parse_args()
+
+    # first the global variables
+    centre_of_mass_energy = options.com
+    n_toy_mc = 300
+    n_input_mc = 6000000
+    output_folder = 'data/toy_mc/'
+    mc_job = CreateToyMCFromTreeJob(output_folder, n_toy_mc, n_input_mc, centre_of_mass_energy, 0, 1)
+    
+    n_jobs = 600 # 10000 events per job
+    condor_job = job.Condor(n_jobs, request_memory=50)
+    condor_job.add_job(mc_job)
+    condor_job.submit()
+    print('All jobs submitted')
+
+
+if __name__ == '__main__':
+    main()

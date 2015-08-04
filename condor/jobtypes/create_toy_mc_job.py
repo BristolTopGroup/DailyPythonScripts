@@ -36,7 +36,6 @@ class CreateToyMCJob(Job):
         # otherwise create subjobs
         subjobs = []
         for start_i, n_toy_i in self.get_mapping(n):
-            print start_i, n_toy_i
             j = CreateToyMCJob(self.input_file,
                                self.output_folder,
                                self.variable,
@@ -53,7 +52,6 @@ class CreateToyMCJob(Job):
             splits the current n_toy into n packages
         '''
         # construct a yield of
-        print self.n_toy, n
         new_n = int(self.n_toy / n)
         l = range(self.n_toy)
         for i in xrange(0, self.n_toy, new_n):
