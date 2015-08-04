@@ -172,7 +172,7 @@ def main():
             # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
             allVariablesBins = bin_edges.copy()
             for variable in bin_edges:
-                if 'Rap' in variable or 'eta' in variable:
+                if 'Rap' in variable:
                     allVariablesBins['abs_%s' % variable] = [0,bin_edges[variable][-1]]
 
             for variable in allVariablesBins:
