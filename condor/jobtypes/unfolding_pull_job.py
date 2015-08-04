@@ -149,7 +149,7 @@ class UnfoldingPullJob(Job):
 if __name__ == '__main__':
     # a test example
     import pickle
-    j = UnfoldingPullJob('data/toy_mc/toy_mc_MET_N_from_1_to_300_13TeV.root',
+    j = UnfoldingPullJob('data/toy_mc/toy_mc_N_300_from_0_to_1000_13TeV.root',
                          'RooUnfoldSvd',
                          'electron',
                          13,

@@ -109,8 +109,9 @@ def create_unfolding_pull_data(input_file_name, method, channel,
     print('Output folder: {0}'.format(output_folder))
 
     check_multiple_data_multiple_unfolding(
-        input_file, method, channel, n_toy_mc, n_toy_data, output_folder,
-        offset_toy_mc, offset_toy_data, k_value, tau_value, run_matrix,
+        input_file, method, channel, variable, n_toy_mc, n_toy_data,
+        output_folder, offset_toy_mc, offset_toy_data, k_value, tau_value,
+        run_matrix,
     )
     print('Runtime', timer.elapsed_time())
 
@@ -123,11 +124,12 @@ def create_run_matrix(n_toy_mc, n_toy_data, offset_toy_mc, offset_toy_data):
             yield (mc, data)
 
 
-def check_multiple_data_multiple_unfolding(input_file, method, channel,
-                                           n_toy_mc, n_toy_data, output_folder,
-                                           offset_toy_mc, offset_toy_data,
-                                           k_value, tau_value=-1,
-                                           run_matrix=None):
+def check_multiple_data_multiple_unfolding(
+        input_file, method, channel, variable,
+        n_toy_mc, n_toy_data, output_folder,
+        offset_toy_mc, offset_toy_data,
+        k_value, tau_value=-1,
+        run_matrix=None):
     '''
         Loops through a n_toy_mc x n_toy_data matrix of pseudo data versus
         simulation, unfolds the pseudo data and compares it to the MC truth
@@ -145,7 +147,10 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel,
     data_range = range(offset_toy_data + 1, offset_toy_data + n_toy_data + 1)
     for nth_toy_mc in range(1, 10000 + 1):  # read all of them (easier)
         if nth_toy_mc in mc_range or nth_toy_mc in data_range:
-            folder_mc = get_folder(channel + '/toy_%d' % nth_toy_mc)
+            tpl = '{channel}/{variable}/toy_{nth}'
+            folder_mc = tpl.format(channel=channel, variable=variable,
+                                   nth=nth_toy_mc)
+            folder_mc = get_folder(folder_mc)
             add_histograms(get_histograms(folder_mc))
         else:
             add_histograms((0, 0, 0))
@@ -188,42 +193,6 @@ def check_multiple_data_multiple_unfolding(input_file, method, channel,
         add_pull(all_data)
         reset()
 
-
-#     for nth_toy_mc in range(offset_toy_mc + 1, offset_toy_mc + use_n_toy + 1):
-#         print('Doing MC no', nth_toy_mc)
-#         h_truth, h_measured, h_response = histograms[nth_toy_mc - 1]
-#         if tau_value >= 0:
-#             unfolding_obj = Unfolding(
-#                 h_truth, h_measured, h_response, method=method, k_value=-1,
-#                 tau=tau_value)
-#         else:
-#             unfolding_obj = Unfolding(
-#                 h_truth, h_measured, h_response, method=method, k_value=k_value)
-#         unfold, get_pull = unfolding_obj.unfold, unfolding_obj.pull
-#         reset = unfolding_obj.Reset
-#
-#         begin, end = offset_toy_data + 1, offset_toy_data + use_n_toy + 1
-#         for nth_toy_data in range(begin, end):
-#             if nth_toy_data == nth_toy_mc:
-#                 continue
-#             print(
-#                 'Doing MC no, ' + str(nth_toy_mc) + ', data no', nth_toy_data)
-#             h_data = histograms[nth_toy_data - 1][1]
-#             unfold(h_data)
-#             pull = get_pull()
-#             diff = unfolding_obj.unfolded_data - unfolding_obj.truth
-#             diff_tuple = hist_to_value_error_tuplelist(diff)
-#             unfolded = unfolding_obj.unfolded_data
-#             unfolded_tuple = hist_to_value_error_tuplelist(unfolded)
-#             all_data = {'unfolded': unfolded_tuple,
-#                         'difference': diff_tuple,
-#                         'pull': pull,
-#                         'nth_toy_mc': nth_toy_mc,
-#                         'nth_toy_data': nth_toy_data
-#                         }
-#
-#             add_pull(all_data)
-#             reset()
     save_pulls(pulls, 'multiple_data_multiple_unfolding', method,
                channel, output_folder, n_toy_mc, n_toy_data, offset_toy_mc,
                offset_toy_data)
