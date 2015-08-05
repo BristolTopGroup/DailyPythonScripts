@@ -21,8 +21,11 @@ fi
 
 echo "Activating conda environment ${conda_env}"
 source activate ${conda_env}
+echo "setting up BOOST_INCLUDEDIR"
+export BOOST_INCLUDEDIR=/software/miniconda/envs/${conda_env}/include
 # the following should only be done on soolin
 # otherwise DICE jobs might interfere with each other
+echo "I am running on machine ${HOSTNAME}"
 if [ "$HOSTNAME" = "soolin.phy.bris.ac.uk" ]; then
 	echo "Installing/upgrading rootpy"
 	pip install -U rootpy
@@ -49,7 +52,5 @@ if [ ! -d "$base/external/lib" ]; then
 fi
 
 cd $base
-echo "setting up BOOST_INCLUDEDIR"
-export BOOST_INCLUDEDIR=/software/miniconda/envs/${conda_env}/include
 echo "Adding ${base}/bin to path"
 export PATH=$PATH:$base/bin

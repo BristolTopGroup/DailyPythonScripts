@@ -21,7 +21,7 @@ def main():
                       help="Toy MC input file")
     parser.add_option("-f", "--filter_jobs", dest="filter_jobs",
                       help="Only submit jobs that match the IDs specified here. Multiple values separated by comma.",
-                      default = '')
+                      default='')
     (options, _) = parser.parse_args()
 
     # first the global variables
@@ -57,17 +57,20 @@ def main():
                 else:
                     k_value = config.k_values_muon[variable]
 
-            pull_job = UnfoldingPullJob(input_file_name, method, channel,
-                                        centre_of_mass_energy,
-                                        variable,
-                                        n_toy_mc,
-                                        n_toy_data,
-                                        output_folder,
-                                        offset_toy_mc,
-                                        offset_toy_data,
-                                        k_value,
-                                        tau_value
-                                        )
+            pull_job = UnfoldingPullJob(
+                input_file_name=input_file_name,
+                method=method,
+                channel=channel,
+                centre_of_mass=centre_of_mass_energy,
+                variable=variable,
+                n_toy_mc=n_toy_mc,
+                n_toy_data=n_toy_data,
+                output_folder=output_folder,
+                offset_toy_mc=offset_toy_mc,
+                offset_toy_data=offset_toy_data,
+                k_value=k_value,
+                tau_value=tau_value,
+            )
             pull_jobs.append(pull_job)
 
     # Since we are analysing 300 x 300 = 90000 samples and one 10x10 sample

@@ -16,6 +16,7 @@ class UnfoldingPullJob(Job):
         '''
             Constructor
         '''
+        Job.__init__(self)
         self.input_file_name = input_file_name
         self.method = method
         self.channel = channel

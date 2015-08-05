@@ -21,10 +21,11 @@ echo "... setting up git submodules"
 time git submodule init && git submodule update
 echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
 tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
-#echo "... running setup routine"
-#>&2 "... running setup routine"
-#time source setup_with_conda.sh
+echo "... running setup routine"
+>&2 "... running setup routine"
+time source setup_with_conda.sh
 echo "... enforcing conda python environment"
+# this is safe, as the dangerous part is only executed on soolin
 source environment_conda.sh
 echo "DailyPythonScripts are set up"
 
