@@ -34,8 +34,10 @@ class CreateToyMCFromTreeJob(Job):
             return [self]
         # otherwise create subjobs
         subjobs = []
-
-        for start_i, n_input_mc_i in self.get_mapping(n):
+        print self.filter_jobs
+        for count, (start_i, n_input_mc_i) in enumerate(self.get_mapping(n)):
+            if count in self.filter_jobs:
+                continue
             j = CreateToyMCFromTreeJob(
                 self.output_folder,
                 self.n_toy,
@@ -54,7 +56,7 @@ class CreateToyMCFromTreeJob(Job):
         new_n = int(self.n_input_mc / n)
         l = range(self.n_input_mc)
         for i in xrange(0, self.n_input_mc, new_n):
-            yield i + 1, len(l[i:i + new_n])
+            yield i, len(l[i:i + new_n])
 
     def tar_output(self, job_id):
         import src.unfolding_tests.create_toy_mc_from_tree as toy
@@ -77,6 +79,7 @@ if __name__ == '__main__':
         1000,
         13,
     )
+    j.filter_jobs = [0,3]
     jobs = j.split(4)
     for i,job in enumerate(jobs):
         job.run()

@@ -14,17 +14,25 @@ def main():
     parser = OptionParser(__doc__)
     parser.add_option("-c", "--com", dest="com", type=int,
                       help="Centre-of-mass energy to be used for submission")
+    parser.add_option("-f", "--filter_jobs", dest="filter_jobs",
+                      help="Only submit jobs that match the IDs specified here. Multiple values separated by comma.",
+                      default='')
     (options, _) = parser.parse_args()
 
     # first the global variables
     centre_of_mass_energy = options.com
+    filter_jobs = job.parse_filter_jobs(options.filter_jobs)
     n_toy_mc = 300
     n_input_mc = 6000000
     output_folder = 'data/toy_mc/'
-    mc_job = CreateToyMCFromTreeJob(output_folder, n_toy_mc, n_input_mc, centre_of_mass_energy, 0, 1)
-    
-    n_jobs = 600 # 10000 events per job
-    condor_job = job.Condor(n_jobs, request_memory=50)
+    mc_job = CreateToyMCFromTreeJob(
+        output_folder, n_toy_mc, n_input_mc, centre_of_mass_energy, 0, 1)
+    mc_job.filter_jobs = filter_jobs
+    n_jobs_to_run = 120  # 50000 events per job
+    n_jobs_to_split = 120  # 50000 events per job
+    if filter_jobs:
+        n_jobs_to_run = len(filter_jobs)
+    condor_job = job.Condor(n_jobs_to_run, n_jobs_to_split, request_memory=500)
     condor_job.add_job(mc_job)
     condor_job.submit()
     print('All jobs submitted')
