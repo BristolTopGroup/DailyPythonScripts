@@ -348,6 +348,9 @@ def create_input(config, sample, variable, category, channel, template,
         branch = template.split('/')[-1]
         tree = template.replace('/' + branch, '')
 
+        if 'absolute_eta' in branch:
+            branch = 'abs(lepton_eta)'
+
         if sample != 'data':
             if category in config.met_systematics_suffixes and not variable in config.variables_no_met:
                 #                 print variable, category
@@ -368,11 +371,21 @@ def create_input(config, sample, variable, category, channel, template,
         edges = variable_binning.bin_edges_vis[variable]
 
     weight_branches = ['EventWeight']
-    if variable in ['HT','MET','ST','WPT'] and not 'QCD' in tree:
+    if not 'QCD' in tree:
         if channel == 'muon':
-            weight_branches.append('MuonEfficiencyCorrection')
+            if category == 'Muon_down':
+                weight_branches.append('MuonDown')
+            elif category == 'Muon_up':
+                weight_branches.append('MuonUp')
+            else :
+                weight_branches.append('MuonEfficiencyCorrection')
         elif channel == 'electron':
-            weight_branches.append('ElectronEfficiencyCorrection')
+            if category == 'Electron_down':
+                weight_branches.append('ElectronDown')
+            elif category == 'Electron_up':
+                weight_branches.append('ElectronUp')
+            else :
+                weight_branches.append('ElectronEfficiencyCorrection')
 
         if category == 'Muon_down' or category == 'Electron_down':
             lumi_scale *= 0.96
