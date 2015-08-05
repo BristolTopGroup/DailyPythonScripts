@@ -37,7 +37,7 @@ class ToySet():
         self.f_out = f_out
         self.n_toy = n_toy
 
-        self.output_dir = f_out.mkdir(channel + '/' + variable, recurse = True)
+        self.output_dir = f_out.mkdir(channel + '/' + variable, recurse=True)
 #             'unfolding_' + variable + '_analyser_' + channel + '_channel_patType1CorrectedPFMet')
         self.create_histograms()
 
@@ -288,14 +288,16 @@ def generate_toy(n_toy, n_input_mc, config, output_folder, start_at=0, split=1):
             weighted_entries = get_weighted_entries(tree, selection)
             weighted_entries_vis = get_weighted_entries(tree, selection_vis)
 
-            mc_weights = get_mc_weight(weighted_entries, n_toy)
-            mc_weights_vis = get_mc_weight(weighted_entries_vis, n_toy)
             toy_mc_sets = []
             for variable in ['MET', 'HT', 'ST', 'WPT']:  # variable_bins:
                 toy_mc = ToySet(f_out, variable, channel, n_toy)
                 toy_mc_sets.append(toy_mc)
             count = 0
             for event in tree:
+                # generate 300 weights for each event
+                mc_weights = get_mc_weight(weighted_entries, n_toy)
+                mc_weights_vis = get_mc_weight(weighted_entries_vis, n_toy)
+
                 if count >= n_input_mc:
                     break
                 count += 1
