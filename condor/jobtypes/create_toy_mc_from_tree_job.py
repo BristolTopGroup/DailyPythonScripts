@@ -34,10 +34,7 @@ class CreateToyMCFromTreeJob(Job):
             return [self]
         # otherwise create subjobs
         subjobs = []
-        print self.filter_jobs
-        for count, (start_i, n_input_mc_i) in enumerate(self.get_mapping(n)):
-            if count in self.filter_jobs:
-                continue
+        for start_i, n_input_mc_i in self.get_mapping(n):
             j = CreateToyMCFromTreeJob(
                 self.output_folder,
                 self.n_toy,

@@ -26,8 +26,8 @@ def main():
     mc_job = CreateToyMCFromTreeJob(
         output_folder, n_toy_mc, n_input_mc, centre_of_mass_energy, 0, 1)
     mc_job.filter_jobs = filter_jobs
-    n_jobs_to_run = 120  # 50000 events per job
-    n_jobs_to_split = 120  # 50000 events per job
+    n_jobs_to_run = 12  # 500000 events per job
+    n_jobs_to_split = 12  # 500000 events per job
     if filter_jobs:
         n_jobs_to_run = len(filter_jobs)
     condor_job = job.Condor(n_jobs_to_run, n_jobs_to_split, request_memory=500)
