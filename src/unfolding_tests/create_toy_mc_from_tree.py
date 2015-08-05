@@ -106,9 +106,9 @@ class ToySet():
             histograms['eventWeightVis'] = Hist(
                 100, -2, 2, name='EventWeightVis')
             histograms['toy_mc_weight'] = Hist(
-                100, -2, 2, name='toy_mc_weight')
+                200, 0, 2, name='toy_mc_weight')
             histograms['toy_mc_weight_vis'] = Hist(
-                100, -2, 2, name='toy_mc_weight_vis')
+                200, 0, 2, name='toy_mc_weight_vis')
             self.histograms.append(histograms)
 
     def fill(self, event, weight, mc_weights, mc_weights_vis):
@@ -259,6 +259,7 @@ def main(argv=None):
 
 
 def generate_toy(n_toy, n_input_mc, config, output_folder, start_at=0, split=1):
+    from progressbar import Percentage, Bar, ProgressBar, ETA
     set_root_defaults()
     genWeight = '( EventWeight * {0})'.format(config.luminosity_scale)
     file_name = config.ttbar_category_templates_trees['central']
@@ -267,7 +268,10 @@ def generate_toy(n_toy, n_input_mc, config, output_folder, start_at=0, split=1):
         output_folder, n_toy, start_at, n_input_mc, config.centre_of_mass_energy)
 
     variable_bins = bin_edges.copy()
-
+    
+    widgets = ['Progress: ', Percentage(), ' ', Bar(),
+           ' ', ETA()]
+    
     with root_open(file_name, 'read') as f_in, root_open(outfile, 'recreate') as f_out:
         tree = f_in.Get("TTbar_plus_X_analysis/Unfolding/Unfolding")
         n_events = tree.GetEntries()
@@ -287,6 +291,7 @@ def generate_toy(n_toy, n_input_mc, config, output_folder, start_at=0, split=1):
                                                        gen_selection_vis)
             weighted_entries = get_weighted_entries(tree, selection)
             weighted_entries_vis = get_weighted_entries(tree, selection_vis)
+            pbar = ProgressBar(widgets=widgets, maxval=n_input_mc).start()
 
             toy_mc_sets = []
             for variable in ['MET', 'HT', 'ST', 'WPT']:  # variable_bins:
@@ -303,15 +308,17 @@ def generate_toy(n_toy, n_input_mc, config, output_folder, start_at=0, split=1):
                 count += 1
                 if count < start_at:
                     continue
-                weight = event.EventWeight * config.luminosity_scale
-                # rescale to N input events
-                weight *= n_events / n_input_mc / split
+#                 weight = event.EventWeight * config.luminosity_scale
+#                 # rescale to N input events
+#                 weight *= n_events / n_input_mc / split
+                weight = 1
 
                 for toy_mc in toy_mc_sets:
                     toy_mc.fill(event, weight, mc_weights, mc_weights_vis)
-                if count % 10000 == 1:
+                if count % 1000 == 1:
+                    pbar.update(count)
                     print('Processed {0} events'.format(count))
-
+            pbar.finish()
             for toy_mc in toy_mc_sets:
                 toy_mc.write()
     print('Toy MC was saved to file:', outfile)
@@ -323,9 +330,9 @@ def get_weighted_entries(tree, selection):
 
 
 def get_mc_weight(weighted_entries, n_toy=1):
-    sqrt_error = math.sqrt(weighted_entries)
-    mc_weight = np.random.normal(
-        weighted_entries, sqrt_error, n_toy) / weighted_entries
+#     sqrt_error = math.sqrt(weighted_entries)
+    mc_weight = np.random.poisson(
+        weighted_entries, n_toy) / weighted_entries
     return mc_weight
 
 
