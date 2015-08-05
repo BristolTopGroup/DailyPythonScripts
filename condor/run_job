@@ -38,8 +38,9 @@ for f in additional_input_files:
 
 subjobs = job.split(n_jobs)
 # pick the correct subjob
-j = subjobs[job.filter_jobs[job_id]]
+j = subjobs[job_id]
 if job.filter_jobs:
+    print 'Job filter:', job.filter_jobs
     job_id = job.filter_jobs[job_id]
     j = subjobs[job_id]
     print 'new job ID:', job_id
