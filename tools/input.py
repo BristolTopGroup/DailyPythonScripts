@@ -87,6 +87,8 @@ class Input():
                 branchToCheck = self.branch
                 if '[' in branchToCheck and ']' in branchToCheck:
                     branchToCheck = branchToCheck.split('[')[0]
+                elif 'abs(' in branchToCheck:
+                    branchToCheck = branchToCheck.split('(')[-1].split(')')[0]
                 if not tree.has_branch(branchToCheck):
                     msg = 'Tree "{0}" does not contain branch "{1}"'
                     input_log.debug(msg.format(self.tree_name, branchToCheck))

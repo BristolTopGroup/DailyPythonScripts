@@ -151,8 +151,8 @@ def main():
 
             # Get the tree
             tree = f.Get("TTbar_plus_X_analysis/Unfolding/Unfolding")
-
-            print "Number of entries in tree : ", tree.GetEntries()
+            nEntries = tree.GetEntries()
+            print "Number of entries in tree : ", nEntries
 
             # Keep record of generator weight
             # if options.generatorWeight >= 0:
@@ -240,6 +240,8 @@ def main():
                     generatorWeight = '( generatorSystematicWeight[%i] )' % options.generatorWeight
                     offlineWeight += ' * '+generatorWeight
                     genWeight += ' * '+generatorWeight
+                    nEntries = 1000000
+                    print 'Changing nEntries to ',nEntries
                     pass
 
                 # Scale factors
@@ -315,27 +317,27 @@ def main():
                 # Fill histograms
                 #
                 if not options.donothing:
-                    tree.Draw('(EventWeight * %.4f)' % measurement_config.luminosity_scale,'1',hist=eventWeight)
+                    # tree.Draw('(EventWeight * %.4f)' % measurement_config.luminosity_scale,'1',hist=eventWeight)
                     # 1D
-                    tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth)
-                    tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis)
+                    tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth, nentries=nEntries)
+                    tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis, nentries=nEntries)
                     if genVariable_parton != None:
-                        tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton)
-                    tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
-                    tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measuredVis)
-                    tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
+                        tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton, nentries=nEntries)
+                    tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured, nentries=nEntries)
+                    tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measuredVis, nentries=nEntries)
+                    tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake, nentries=nEntries)
                     # 2D
-                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+offlineSelection,hist=response)
-                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
-                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=response_only_fakes)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+offlineSelection,hist=response, nentries=nEntries)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes, nentries=nEntries)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=response_only_fakes, nentries=nEntries)
 
-                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes)
-                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes, nentries=nEntries)
+                    tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes, nentries=nEntries)
 
                     if genVariable_parton != None:
                         tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+offlineSelection,hist=response_parton)
-                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes_parton)
-                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+fakeSelection,hist=response_only_fakes_parton)
+                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes_parton, nentries=nEntries)
+                        tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+fakeSelection,hist=response_only_fakes_parton, nentries=nEntries)
 
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)

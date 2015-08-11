@@ -500,9 +500,19 @@ if __name__ == '__main__':
                 electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
                 muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'
             # combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'
+
+        fit_results_electron = None
+        fit_results_muon = None
         
-        fit_results_electron = read_data_from_JSON( electron_file )
-        fit_results_muon = read_data_from_JSON( muon_file )
+        if category == 'Muon_up' or category == 'Muon_down':
+            fit_results_electron = read_data_from_JSON( path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt' )
+            fit_results_muon = read_data_from_JSON( muon_file )
+        elif category == 'Electron_up' or category == 'Electron_down':
+            fit_results_electron = read_data_from_JSON( electron_file )
+            fit_results_muon = read_data_from_JSON( path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt' )
+        else:
+            fit_results_electron = read_data_from_JSON( electron_file )
+            fit_results_muon = read_data_from_JSON( muon_file )
         # fit_results_combined = read_data_from_JSON( combined_file )
         TTJet_fit_results_electron = fit_results_electron['TTJet']
         TTJet_fit_results_muon = fit_results_muon['TTJet']

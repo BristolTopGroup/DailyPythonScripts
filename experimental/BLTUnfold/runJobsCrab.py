@@ -16,8 +16,8 @@ jobs = [
         '--centreOfMassEnergy 13 -s massdown',
         ]
 
-# #  Add pdf variations to list of jobs
-# for variation in range(0,249):
+# # #  Add pdf variations to list of jobs
+# for variation in range(0,110):
 #     jobs.append('--centreOfMassEnergy 13 --generatorWeight %i' % variation)
 #     pass
 
