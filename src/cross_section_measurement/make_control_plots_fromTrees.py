@@ -11,11 +11,36 @@ from rootpy.plotting import Hist
 from tools.hist_utilities import prepare_histograms, clean_control_region, get_normalisation_error, get_fitted_normalisation
 from tools.ROOT_utils import get_histograms_from_trees, set_root_defaults
 from tools.latex import setup_matplotlib
+from uncertainties import ufloat
 
 # latex, font, etc
 setup_matplotlib()
 
 title_template = '$%.0f$ pb$^{-1}$ (%d TeV)'
+
+def getPUWeights(histograms_to_draw, histogram_lables) :
+    print 'In get pu weights'
+    # hists = dict(zip(histogram_lables, histograms_to_draw))
+    hists = {}
+    print histogram_lables
+    dataHist = None
+    mcHist = None
+    for label, histogram in zip(histogram_lables, histograms_to_draw):
+        print label
+        if label == 'data':
+            dataHist = histogram.Clone()
+        else :
+            if mcHist == None:
+                mcHist = histogram.Clone()
+            else:
+                mcHist += histogram
+    dataValues = list(dataHist.y())
+    mcValues = list(mcHist.y())
+
+    weights = [ data / mc for data, mc in zip(dataValues, mcValues)]
+    print list(dataHist.x())
+    print list(dataHist.xedges())
+    print weights
 
 def make_plot( channel, x_axis_title, y_axis_title,
               signal_region_tree,
@@ -48,6 +73,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = 'QCDConversions'
+            # qcd_data_region = 'QCD non iso e+jets'
         if not 'QCD' in channel and not 'NPU' in branchName:
             weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
@@ -142,20 +168,34 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
                           subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
         # Normalise control region correctly
-        n_qcd_predicted_mc_signal = signal_region_hists['QCD'].Integral()
-        n_qcd_predicted_mc_control = control_region_hists['QCD'].Integral()
-        n_qcd_control_region = qcd_from_data.Integral()
+        nBins = signal_region_hists['QCD'].GetNbinsX()
+        n, error = signal_region_hists['QCD'].integral(0,nBins+1,error=True)
+        n_qcd_predicted_mc_signal = ufloat( n, error)
+
+        n, error = control_region_hists['QCD'].integral(0,nBins+1,error=True)
+        n_qcd_predicted_mc_control = ufloat( n, error)
+
+        n, error = qcd_from_data.integral(0,nBins+1,error=True)
+        n_qcd_control_region = ufloat( n, error)
+
+        print n_qcd_predicted_mc_signal
+        print n_qcd_predicted_mc_control
+        print n_qcd_control_region
+        # n_qcd_predicted_mc_signal = signal_region_hists['QCD'].Integral()
+        # n_qcd_predicted_mc_control = control_region_hists['QCD'].Integral()
+        # n_qcd_control_region = qcd_from_data.Integral()
 
         if not n_qcd_control_region == 0:
             dataDrivenQCDScale = n_qcd_predicted_mc_signal / n_qcd_predicted_mc_control
             print 'Overall scale : ',dataDrivenQCDScale
-            qcd_from_data.Scale( dataDrivenQCDScale )
+            qcd_from_data.Scale( dataDrivenQCDScale.nominal_value )
             signalToControlScale = n_qcd_predicted_mc_signal / n_qcd_control_region
             dataToMCscale = n_qcd_control_region / n_qcd_predicted_mc_control
             print "Signal to control :",signalToControlScale
             print "QCD scale : ",dataToMCscale
     else:
         qcd_from_data = signal_region_hists['QCD']
+        print qcd_from_data.Integral()
 
     # Which histograms to draw, and properties
     histograms_to_draw = []
@@ -206,7 +246,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
     #     histogram_properties.mc_error = mc_uncertainty
     #     histogram_properties.mc_errors_label = 'MC unc.'
 
-
     if normalise_to_data:
             histogram_properties.name += '_normToData'
     print histogram_properties.name
@@ -215,6 +254,9 @@ def make_plot( channel, x_axis_title, y_axis_title,
         output_folder_to_use += 'WithQCDFromControl/'
         make_folder_if_not_exists(output_folder_to_use)
     print output_folder_to_use
+
+    if branchName == 'NPU':
+        getPUWeights(histograms_to_draw, histogram_lables)
 
     # Actually draw histograms
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
@@ -229,6 +271,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
                                  histogram_properties, save_folder = output_folder_to_use,
                                  show_ratio = True, normalise = normalise,
                                  )
+
 
 if __name__ == '__main__':
     set_root_defaults()
@@ -313,7 +356,7 @@ if __name__ == '__main__':
                         # 'JetPt',
                         'NVertex',
                         'LeptonPt',
-                        'LeptonEta',
+                        # 'LeptonEta',
                         # 'RelIso',
                         ]
 
@@ -322,7 +365,7 @@ if __name__ == '__main__':
                         'QCDMET',
                         'QCDST',
                         'QCDWPT',
-                        'QCDLeptonEta',
+                        # 'QCDLeptonEta',
                         'QCDLeptonPt',
                         'QCDNJets',
                         # 'QCDRelIso',
@@ -546,7 +589,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = False,
                       )
 
             make_plot( channel,
@@ -562,7 +605,7 @@ if __name__ == '__main__':
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
                       log_y = True,
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = False,
                       )
         ###################################################
         # Jet Pt
