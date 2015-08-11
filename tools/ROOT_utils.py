@@ -184,6 +184,8 @@ def get_histogram_from_tree(**kwargs):
         for b in branches:
             if '[' in b and ']' in b:
                 branchesToActivate.append( b.split('[')[0] )
+            elif 'abs(' in b:
+                branchesToActivate.append( b.split('(')[-1].split(')')[0] )
             elif '*' in b:
                 branchesToAdd = b.split('*')
                 for branch in branchesToAdd:
