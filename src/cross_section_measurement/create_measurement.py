@@ -364,7 +364,10 @@ def create_input(config, sample, variable, category, channel, template,
         selection = '{0} >= 0'.format(branch)
     else:
         hist = template
+
     lumi_scale = 1.
+    if 'QCD' in tree:
+        lumi_scale = 1.13
 
     edges = variable_binning.bin_edges[variable]
     if phase_space == 'VisiblePS':
@@ -386,11 +389,6 @@ def create_input(config, sample, variable, category, channel, template,
                 weight_branches.append('ElectronUp')
             else :
                 weight_branches.append('ElectronEfficiencyCorrection')
-
-        if category == 'Muon_down' or category == 'Electron_down':
-            lumi_scale *= 0.96
-        elif category == 'Muon_up' or category == 'Electron_up':
-            lumi_scale *= 1.04
 
     i = Input(
         input_file=input_file,

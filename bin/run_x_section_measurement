@@ -1,14 +1,14 @@
 #!/bin/bash
-echo "Running differential cross-section analysis for 7 and 8 TeV data"
-time bash x_01_all_vars
+echo "Running differential cross-section analysis for 13 TeV data"
+# time bash x_01_all_vars
+# wait
+time bash x_02b_all_vars
 wait
-time bash x_02_all_vars
+time bash x_03b_all_vars
 wait
-time bash x_03_all_vars
+time bash x_04b_all_vars
 wait
-time bash x_04_all_vars
-wait
-time bash x_05_all_vars
-wait
+# time bash x_05_all_vars
+# wait
 
 echo "Everything is done. Time to run make_analysis_note and go home!"
