@@ -358,7 +358,7 @@ def create_input(config, sample, variable, category, channel, template,
                 branch += '_METUncertainties[%s]' % config.met_systematics[
                     category]
 
-            if 'JES_down' in category or 'JES_up' in category:
+            if 'JES_down' in category or 'JES_up' in category or 'JER_down' in category or 'JER_up' in category:
                 tree += config.categories_and_prefixes[category]
 
         selection = '{0} >= 0'.format(branch)
@@ -366,8 +366,11 @@ def create_input(config, sample, variable, category, channel, template,
         hist = template
 
     lumi_scale = 1.
-    if 'QCD' in tree:
-        lumi_scale = 1.13
+    if sample == 'QCD' and not 'QCD' in tree:
+        if channel == 'muon':
+            lumi_scale = 1.13
+        else :
+            lumi_scale = 0.97
 
     edges = variable_binning.bin_edges[variable]
     if phase_space == 'VisiblePS':
