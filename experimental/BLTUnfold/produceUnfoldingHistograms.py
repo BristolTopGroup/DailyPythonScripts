@@ -319,17 +319,14 @@ def main():
                 if not options.donothing:
                     # tree.Draw('(EventWeight * %.4f)' % measurement_config.luminosity_scale,'1',hist=eventWeight)
                     # 1D
-                    print 'True'
                     tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth, nentries=nEntries)
                     tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis, nentries=nEntries)
                     if genVariable_parton != None:
                         tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton, nentries=nEntries)
-                    print "Measured"
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured, nentries=nEntries)
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measuredVis, nentries=nEntries)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake, nentries=nEntries)
                     # 2D
-                    print 'Response'
                     tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+offlineSelection,hist=response, nentries=nEntries)
                     tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes, nentries=nEntries)
                     tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=response_only_fakes, nentries=nEntries)

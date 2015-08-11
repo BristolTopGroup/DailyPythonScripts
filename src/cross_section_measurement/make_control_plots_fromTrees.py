@@ -19,14 +19,11 @@ setup_matplotlib()
 title_template = '$%.0f$ pb$^{-1}$ (%d TeV)'
 
 def getPUWeights(histograms_to_draw, histogram_lables) :
-    print 'In get pu weights'
     # hists = dict(zip(histogram_lables, histograms_to_draw))
     hists = {}
-    print histogram_lables
     dataHist = None
     mcHist = None
     for label, histogram in zip(histogram_lables, histograms_to_draw):
-        print label
         if label == 'data':
             dataHist = histogram.Clone()
         else :
@@ -38,9 +35,9 @@ def getPUWeights(histograms_to_draw, histogram_lables) :
     mcValues = list(mcHist.y())
 
     weights = [ data / mc for data, mc in zip(dataValues, mcValues)]
-    print list(dataHist.x())
-    print list(dataHist.xedges())
-    print weights
+    print 'PU weights'
+    print 'Bin edges :',list(dataHist.xedges())
+    print 'Weights : ',weights
 
 def make_plot( channel, x_axis_title, y_axis_title,
               signal_region_tree,
@@ -178,13 +175,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
         n, error = qcd_from_data.integral(0,nBins+1,error=True)
         n_qcd_control_region = ufloat( n, error)
 
-        print n_qcd_predicted_mc_signal
-        print n_qcd_predicted_mc_control
-        print n_qcd_control_region
-        # n_qcd_predicted_mc_signal = signal_region_hists['QCD'].Integral()
-        # n_qcd_predicted_mc_control = control_region_hists['QCD'].Integral()
-        # n_qcd_control_region = qcd_from_data.Integral()
-
         if not n_qcd_control_region == 0:
             dataDrivenQCDScale = n_qcd_predicted_mc_signal / n_qcd_predicted_mc_control
             print 'Overall scale : ',dataDrivenQCDScale
@@ -195,7 +185,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
             print "QCD scale : ",dataToMCscale
     else:
         qcd_from_data = signal_region_hists['QCD']
-        print qcd_from_data.Integral()
 
     # Which histograms to draw, and properties
     histograms_to_draw = []
