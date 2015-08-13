@@ -90,3 +90,23 @@ for variable in bin_edges.keys():
             bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
         variable_bins_ROOT[variable].append( bin_name )
         variable_bins_latex[bin_name] = bin_name_latex
+
+bin_widths_visiblePS = {}
+variable_bins_visiblePS_ROOT = {}
+variable_bins_visiblePS_latex = {}
+# calculate all the other variables
+for variable in bin_edges_vis.keys():
+    bin_widths_visiblePS[variable] = []
+    variable_bins_visiblePS_ROOT[variable] = []
+    number_of_edges = len( bin_edges_vis[variable] )
+    for i in range( number_of_edges - 1 ):
+        lower_edge = bin_edges_vis[variable][i]
+        upper_edge = bin_edges_vis[variable][i + 1]
+        bin_widths_visiblePS[variable].append( upper_edge - lower_edge )
+        bin_name = '%d-%d' % ( int( lower_edge ), int( upper_edge ) )
+        bin_name_latex = '%d--%d~\GeV' % ( int( lower_edge ), int( upper_edge ) )
+        if ( i + 1 ) == number_of_edges - 1:
+            bin_name = '%d-inf' % int( lower_edge )
+            bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
+        variable_bins_visiblePS_ROOT[variable].append( bin_name )
+        variable_bins_visiblePS_latex[bin_name] = bin_name_latex
