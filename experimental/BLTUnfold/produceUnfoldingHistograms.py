@@ -85,6 +85,7 @@ def getFileName( com, sample, measurementConfig ) :
                         'central' : measurementConfig.ttbar_category_templates_trees['central'],
                         'amcatnlo' : measurementConfig.ttbar_amc_category_templates_trees,
                         'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
+                        'herwigpp' : measurementConfig.ttbar_herwigpp_category_templates_trees,
                         'scaleup' : measurementConfig.ttbar_scaleup_category_templates_trees,
                         'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
                         'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
@@ -133,6 +134,10 @@ def main():
         
     if options.applyTopPtReweighting:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
+    elif options.generatorWeight == 4:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_scaleUpWeight.root' % ( energySuffix )
+    elif options.generatorWeight == 8:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_scaleUpWeight.root' % ( energySuffix )
     elif options.generatorWeight >= 0:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_generatorWeight_%i.root' % ( energySuffix, options.generatorWeight )
     elif options.sample != 'central':

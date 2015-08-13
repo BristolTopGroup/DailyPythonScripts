@@ -5,19 +5,25 @@ jobs = [
         # 13 TeV
         # '--centreOfMassEnergy 13 -f',
 
-        '--centreOfMassEnergy 13 -s central',
-        '--centreOfMassEnergy 13 -s amcatnlo',
-        '--centreOfMassEnergy 13 -s madgraph',
+        # '--centreOfMassEnergy 13 -s central',
+        # '--centreOfMassEnergy 13 -s amcatnlo',
+        # '--centreOfMassEnergy 13 -s madgraph',
 
-        '--centreOfMassEnergy 13 -s scaleup',
-        '--centreOfMassEnergy 13 -s scaledown',
+        # # PS scale samples
+        # '--centreOfMassEnergy 13 -s scaleup',
+        # '--centreOfMassEnergy 13 -s scaledown',
+        # ME scale weights
+        '--centreOfMassEnergy 13 --generatorWeight 4',
+        '--centreOfMassEnergy 13 --generatorWeight 8',
 
-        '--centreOfMassEnergy 13 -s massup',
-        '--centreOfMassEnergy 13 -s massdown',
+        # '--centreOfMassEnergy 13 -s massup',
+        # '--centreOfMassEnergy 13 -s massdown',
+
+
         ]
 
 # # #  Add pdf variations to list of jobs
-# for variation in range(0,110):
+# for variation in range(9,110):
 #     jobs.append('--centreOfMassEnergy 13 --generatorWeight %i' % variation)
 #     pass
 
