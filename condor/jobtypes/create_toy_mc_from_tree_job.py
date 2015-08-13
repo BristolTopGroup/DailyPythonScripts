@@ -55,7 +55,7 @@ class CreateToyMCFromTreeJob(Job):
         for i in xrange(0, self.n_input_mc, new_n):
             yield i, len(l[i:i + new_n])
 
-    def tar_output(self, job_id):
+    def tar_output(self, job_id, subjob_id):
         import src.unfolding_tests.create_toy_mc_from_tree as toy
         import shutil
         output_file = toy.get_output_file_name(self.output_folder,
@@ -63,7 +63,7 @@ class CreateToyMCFromTreeJob(Job):
                                                self.start_at,
                                                self.n_input_mc,
                                                self.centre_of_mass)
-        suffix = '_{0}.root'.format(job_id)
+        suffix = '_{0}.{1}.root'.format(job_id, subjob_id)
         new_file = output_file.replace('.root', suffix)
         shutil.move(output_file, new_file)
 

@@ -17,12 +17,14 @@ parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
 (options, args) = parser.parse_args()
 pickle_file_name = args[0]
 job_id = args[1]
-n_jobs = args[2]
+subjob_id = args[2]
+n_jobs = args[3]
 print 'Job file:', pickle_file_name
+print 'sub job ID:', subjob_id
 print 'job ID:', job_id
 print 'n_jobs:', n_jobs
-job_id = int(job_id)
-output_job_id = job_id
+subjob_id = int(subjob_id)
+output_subjob_id = subjob_id
 n_jobs = int(n_jobs)
 
 pickle_file = open(pickle_file_name)
@@ -38,15 +40,15 @@ for f in additional_input_files:
 
 subjobs = job.split(n_jobs)
 # pick the correct subjob
-j = subjobs[job_id]
+j = subjobs[subjob_id]
 if job.filter_jobs:
     print 'Job filter:', job.filter_jobs
-    job_id = job.filter_jobs[job_id]
-    j = subjobs[job_id]
-    print 'new job ID:', job_id
+    subjob_id = job.filter_jobs[subjob_id]
+    j = subjobs[subjob_id]
+    print 'new sub job ID:', subjob_id
 
 j.run()
 
-output_tar_file = j.tar_output(job_id)
+output_tar_file = j.tar_output(job_id, subjob_id)
 output_file_name = output_tar_file.split('/')[-1]
 shutil.copyfile(output_tar_file, base_dir + '/' + output_file_name)

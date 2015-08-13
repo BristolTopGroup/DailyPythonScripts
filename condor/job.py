@@ -139,7 +139,7 @@ class Job():
         if n == 1:
             return self
 
-    def tar_output(self, job_id):
+    def tar_output(self, job_id, subjob_id):
         '''
             Collects all output (if needed) into a single tar file.
         '''
