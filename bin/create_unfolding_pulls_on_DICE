@@ -22,12 +22,15 @@ def main():
     parser.add_option("-f", "--filter_jobs", dest="filter_jobs",
                       help="Only submit jobs that match the IDs specified here. Multiple values separated by comma.",
                       default='')
+    parser.add_option("-m", "--method", dest="method",
+                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes",
+                      default='RooUnfoldSvd')
     (options, _) = parser.parse_args()
 
     # first the global variables
     centre_of_mass_energy = options.com
     config = XSectionConfig(centre_of_mass_energy)
-    method = 'RooUnfoldSvd'
+    method = options.method
     n_toy_mc = n_toy_data = 300
     output_folder = 'data/pull_data/'
     offset_toy_mc = offset_toy_data = 0
