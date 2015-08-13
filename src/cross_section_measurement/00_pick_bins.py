@@ -81,7 +81,7 @@ def main():
         if variable == 'HT':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=100. )
         elif variable == 'ST':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=130. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=123. )
         elif variable == 'NJets':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=3.5 )
         elif variable == 'lepton_pt':
@@ -102,9 +102,9 @@ def main():
         if len(best_binning) >= 4:
             lastBinWidth = best_binning[-1] - best_binning[-2]
             penultimateBinWidth = best_binning[-2] - best_binning[-3]
-            if lastBinWidth / penultimateBinWidth > 6:
+            if lastBinWidth / penultimateBinWidth > 4:
                 print ('Changing bins from ',best_binning)
-                newLastBinWidth = penultimateBinWidth * 6
+                newLastBinWidth = penultimateBinWidth * 4
                 best_binning[-1] = best_binning[-2] + newLastBinWidth
                 print ('To',best_binning)
 
@@ -219,7 +219,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
         n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
         # Now check if the last bin also fulfils the requirements
         if ( purities[-1] < p_min or stabilities[-1] < s_min or n_events[-1] < n_min ) and len(purities) > 3:
-        # if ( purities[-1] < p_min or stabilities[-1] < s_min ) and len(purities) > 3:
             print ('MERGING LAST BIN')
             print (n_events[-1],n_events[-2])
             print (purities[-1],purities[-2])
