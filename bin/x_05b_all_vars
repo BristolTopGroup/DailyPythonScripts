@@ -5,7 +5,7 @@ mkdir -p plots
 N_JOBS=4
 
 i=0
-for var in MET HT ST WPT; do
+for var in MET HT ST WPT lepton_pt NJets; do
 	echo "Tabulating diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p data/normalisation/background_subtraction/ -a -o tables/background_subtraction &> logs/05_${var}_table_13TeV.log &
 	let i+=1
@@ -18,7 +18,7 @@ done
 
 echo "Now visible phase space"
 
-for var in MET HT ST WPT; do
+for var in MET HT ST WPT lepton_pt NJets; do
 	echo "Tabulating diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p data/normalisation/background_subtraction/ -a --visiblePS -o tables/background_subtraction &> logs/05_${var}_table_13TeV.log &
 	let i+=1
