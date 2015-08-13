@@ -25,7 +25,6 @@ from src.cross_section_measurement.lib import closure_tests
 from tools.file_utilities import write_data_to_JSON
 from tools.hist_utilities import clean_control_region, rebin_asymmetric, \
     hist_to_value_error_tuplelist
-from config.variable_binning import bin_edges as variable_bin_edges
 
 import glob
 import tools.measurement
@@ -99,10 +98,6 @@ class TTJetNormalisation:
         if self.measurement.__class__ == tools.measurement.Systematic:
             self.measurement.scale_histograms()
         histograms = self.measurement.histograms
-        # now moved to tools/input
-#         for sample, hist in histograms.items():
-#             bin_edges = variable_bin_edges[self.variable]
-#             histograms[sample] = rebin_asymmetric(hist, bin_edges)
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
