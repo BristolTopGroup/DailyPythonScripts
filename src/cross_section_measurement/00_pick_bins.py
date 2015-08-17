@@ -85,7 +85,7 @@ def main():
         elif variable == 'NJets':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=3.5 )
         elif variable == 'lepton_pt':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=30. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=23. )
         else:
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
 
