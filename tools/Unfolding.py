@@ -218,6 +218,7 @@ def get_unfold_histogram_tuple(
                 load_fakes = False,
                 scale_to_lumi = False,
                 visiblePS = False,
+                scale = 1,
                 ):
     folder = None
     h_truth = None
@@ -259,6 +260,7 @@ def get_unfold_histogram_tuple(
                                                    load_fakes = load_fakes,
                                                    scale_to_lumi = scale_to_lumi,
                                                    visiblePS = visiblePS,
+                                                   scale = 1,
                                                    )
 
     if scale_to_lumi:
@@ -275,6 +277,13 @@ def get_unfold_histogram_tuple(
         h_measured.Scale( lumiweight )
         h_response.Scale( lumiweight )
 
+    if not scale ==1:
+        if load_fakes:
+            h_fakes.Scale( scale )
+        h_truth.Scale( scale )
+        h_measured.Scale( scale )
+        h_response.Scale( scale )
+
     h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
     if load_fakes:
         h_fakes = fix_overflow( h_fakes )
@@ -290,7 +299,8 @@ def get_combined_unfold_histogram_tuple(
                 luminosity = 19712,
                 load_fakes = False,
                 scale_to_lumi = True,
-                visiblePS = False
+                visiblePS = False,
+                scale = 1,
                 ):
 
     h_truth_e, h_measured_e, h_response_e, h_fakes_e = get_unfold_histogram_tuple( inputfile = inputfile,
@@ -303,6 +313,7 @@ def get_combined_unfold_histogram_tuple(
                                                                                   load_fakes = load_fakes,
                                                                                   scale_to_lumi = scale_to_lumi,
                                                                                   visiblePS = visiblePS,
+                                                                                  scale = scale,
                                                                                   )
     h_truth_mu, h_measured_mu, h_response_mu, h_fakes_mu = get_unfold_histogram_tuple( inputfile = inputfile,
                                                                                   variable = variable,
@@ -314,6 +325,7 @@ def get_combined_unfold_histogram_tuple(
                                                                                   load_fakes = load_fakes,
                                                                                   scale_to_lumi = scale_to_lumi,
                                                                                   visiblePS = visiblePS,
+                                                                                  scale = scale,
                                                                                   )
     # summing histograms, the errors are added in quadrature
     h_truth = h_truth_e + h_truth_mu

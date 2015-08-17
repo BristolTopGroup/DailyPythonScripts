@@ -16,6 +16,7 @@ class UnfoldingPullJob(Job):
         '''
             Constructor
         '''
+        Job.__init__(self)
         self.input_file_name = input_file_name
         self.method = method
         self.channel = channel
@@ -127,19 +128,21 @@ class UnfoldingPullJob(Job):
 
         return offset_toy_mc, offset_toy_data, n_toy_mc, n_toy_data
     
-    def tar_output(self, job_id):
+    def tar_output(self, job_id, subjob_id):
         '''
             Creates a tar file from the output of the job
         '''
         import tarfile
         import os
-        file_template = 'UnfoldingPullJob_{variable}_{channel}_{com}TeV'
-        file_template += '_{job_id}.tar.gz'
+        file_template = 'UnfoldingPullJob_{method}_{variable}_{channel}'
+        file_template += '_{com}TeV_{job_id}.{subjob_id}.tar.gz'
         output_file = file_template.format(
                                            variable = self.variable,
                                            channel = self.channel,
                                            com = self.centre_of_mass,
                                            job_id = job_id,
+                                           subjob_id = subjob_id,
+                                           method = self.method,
                                            )
         with tarfile.open(output_file, 'w:gz') as tar:
             source_dir = self.output_folder
@@ -149,7 +152,7 @@ class UnfoldingPullJob(Job):
 if __name__ == '__main__':
     # a test example
     import pickle
-    j = UnfoldingPullJob('data/toy_mc/toy_mc_MET_N_from_1_to_300_13TeV.root',
+    j = UnfoldingPullJob('data/toy_mc/toy_mc_N_300_from_0_to_1000_13TeV.root',
                          'RooUnfoldSvd',
                          'electron',
                          13,

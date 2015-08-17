@@ -241,8 +241,10 @@ def plot_pull(pulls, centre_of_mass, channel, variable, k_value, tau_value,
               bin_index=None, n_bins=1):
     min_x, max_x = min(pulls), max(pulls)
     abs_max = int(max(abs(min_x), max_x))
+    if abs_max < 1:
+        abs_max = 1
     n_x_bins = 2 * abs_max * 10  # bin width = 0.1
-#    printn_x_bins, -abs_max, abs_max
+#     print(n_x_bins, -abs_max, abs_max)
     h_pull = Hist(n_x_bins, -abs_max, abs_max)
     filling = h_pull.Fill
     stats = 0

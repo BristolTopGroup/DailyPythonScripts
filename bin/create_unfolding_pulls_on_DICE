@@ -15,31 +15,35 @@ def main():
     parser = OptionParser(__doc__)
     parser.add_option("-c", "--com", dest="com", type=int,
                       help="Centre-of-mass energy to be used for submission")
+    parser.add_option("-v", "--variables", dest="variables",
+                      help="Variables to be analysed, separated by commas")
+    parser.add_option("-i", "--input_file", dest="input_file",
+                      help="Toy MC input file")
+    parser.add_option("-f", "--filter_jobs", dest="filter_jobs",
+                      help="Only submit jobs that match the IDs specified here. Multiple values separated by comma.",
+                      default='')
+    parser.add_option("-m", "--method", dest="method",
+                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes",
+                      default='RooUnfoldSvd')
     (options, _) = parser.parse_args()
 
     # first the global variables
     centre_of_mass_energy = options.com
     config = XSectionConfig(centre_of_mass_energy)
-    method = 'RooUnfoldSvd'
+    method = options.method
     n_toy_mc = n_toy_data = 300
     output_folder = 'data/pull_data/'
     offset_toy_mc = offset_toy_data = 0
     tau_value = -1
     k_value = -1
 
-    if centre_of_mass_energy == 13:
-        variables = config.tau_values_electron.keys()
-        # lets exclude the reco stuff for now
-        variables = ['MET', 'HT', 'ST', 'WPT']
-    else:
-        variables = config.k_values_electron.keys()
+    variables = options.variables.split(',')
+    filter_jobs = job.parse_filter_jobs(options.filter_jobs)
+    input_file_name = options.input_file
 
-    input_template = 'data/toy_mc/toy_mc_{0}_N_from_1_to_{1}_{2}TeV.root'
     pull_jobs = []
 
     for variable in variables:
-        input_file_name = input_template.format(variable, n_toy_mc,
-                                                centre_of_mass_energy)
         # check if file exists
         if not os.path.exists(input_file_name):
             print('Input file {0} does not exist'.format(input_file_name))
@@ -56,24 +60,30 @@ def main():
                 else:
                     k_value = config.k_values_muon[variable]
 
-            pull_job = UnfoldingPullJob(input_file_name, method, channel,
-                                        centre_of_mass_energy,
-                                        variable,
-                                        n_toy_mc,
-                                        n_toy_data,
-                                        output_folder,
-                                        offset_toy_mc,
-                                        offset_toy_data,
-                                        k_value,
-                                        tau_value
-                                        )
+            pull_job = UnfoldingPullJob(
+                input_file_name=input_file_name,
+                method=method,
+                channel=channel,
+                centre_of_mass=centre_of_mass_energy,
+                variable=variable,
+                n_toy_mc=n_toy_mc,
+                n_toy_data=n_toy_data,
+                output_folder=output_folder,
+                offset_toy_mc=offset_toy_mc,
+                offset_toy_data=offset_toy_data,
+                k_value=k_value,
+                tau_value=tau_value,
+            )
             pull_jobs.append(pull_job)
 
-    # Since we are analysing 300 x 300 = 90000 samples and one 10x10 sample 
-    # takes around 7 seconds it will take 1.75h in a single job. 
+    # Since we are analysing 300 x 300 = 90000 samples and one 10x10 sample
+    # takes around 7 seconds it will take 1.75h in a single job.
     # For very fast (~1 min) processing we want at least 100 jobs.
-    n_jobs = 100  # this is per pull_job
-    condor_job = job.Condor(n_jobs, request_memory=50)
+    n_jobs_to_run = 100  # this is per pull_job
+    n_jobs_to_split = 100
+    if filter_jobs:
+        n_jobs_to_run = len(filter_jobs)
+    condor_job = job.Condor(n_jobs_to_run, n_jobs_to_split, request_memory=50)
     for j in pull_jobs:
         condor_job.add_job(j)
     condor_job.submit()

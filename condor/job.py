@@ -13,12 +13,16 @@ class Condor():
         Class to control condor work flows
     '''
 
-    def __init__(self, n_jobs = 1, request_memory=200):
+    def __init__(self, n_jobs_to_run=1, n_jobs_to_split = -1, request_memory=200):
         '''
-            @n_jobs: Number of subjobs to submit per job
+            @n_jobs_to_run: Number of subjobs to submit per job
             @request_memory: the amount of memory the job will use (in MB)
         '''
-        self.n_jobs = n_jobs
+        self.n_jobs_to_run = n_jobs_to_run
+        if n_jobs_to_split == -1:
+            self.n_jobs_to_split = n_jobs_to_run
+        else:
+            self.n_jobs_to_split = n_jobs_to_split
         self.request_memory = request_memory
 
         self.constructed_jobs = False
@@ -48,8 +52,10 @@ class Condor():
             job_description = job_template.replace('%pkl_file%', job_file)
             job_description = job_description.replace('%total_memory%',
                                                       str(self.request_memory))
-            job_description = job_description.replace('%n_jobs%',
-                                                      str(self.n_jobs))
+            job_description = job_description.replace('%n_jobs_to_run%',
+                                                      str(self.n_jobs_to_run))
+            job_description = job_description.replace('%n_jobs_to_split%',
+                                                      str(self.n_jobs_to_split))
             input_files = ['dps.tar']
             if hasattr(job, 'additional_input_files'):
                 input_files.extend(job.additional_input_files)
@@ -62,14 +68,14 @@ class Condor():
                 pickle.dump(job, jf)
             with open(job_desc_file, 'w+') as jdf:
                 jdf.write(job_description)
-            
+
             condor_jobs.append(job_desc_file)
         # prepare DPS for submission
         subprocess.Popen(['./condor/prepare_dps.sh'])
         # submit jobs
         for j in condor_jobs:
             p = subprocess.Popen(['condor_submit', j])
-            p.communicate() # wait until command completed
+            p.communicate()  # wait until command completed
 
     def submit_with_htcondor(self, job):
         '''
@@ -104,13 +110,12 @@ class Condor():
 
         for job in self.unprepared_jobs:
             # do any preparation you wish
-            #             subjobs = job.split(self.n_jobs)
-            #             self.prepared_jobs.extend(subjobs)
             self.prepared_jobs.append(job)
         self.constructed_jobs = True
 
 
 class Job():
+
     '''
         Base class for Condor jobs. The job will be pickled and submited
         to a worker node.
@@ -118,6 +123,7 @@ class Job():
 
     def __init__(self):
         self.additional_input_files = []
+        self.filter_jobs = []
 
     def run(self):
         '''
@@ -133,8 +139,17 @@ class Job():
         if n == 1:
             return self
 
-    def tar_output(self, job_id):
+    def tar_output(self, job_id, subjob_id):
         '''
             Collects all output (if needed) into a single tar file.
         '''
         pass
+
+
+def parse_filter_jobs(filter_jobs):
+    result = []
+    if not filter_jobs:
+        return result
+    jobs = filter_jobs.split(',')
+    result = [int(j) for j in jobs]
+    return result

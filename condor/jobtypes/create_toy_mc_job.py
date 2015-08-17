@@ -36,7 +36,6 @@ class CreateToyMCJob(Job):
         # otherwise create subjobs
         subjobs = []
         for start_i, n_toy_i in self.get_mapping(n):
-            print start_i, n_toy_i
             j = CreateToyMCJob(self.input_file,
                                self.output_folder,
                                self.variable,
@@ -53,21 +52,19 @@ class CreateToyMCJob(Job):
             splits the current n_toy into n packages
         '''
         # construct a yield of
-        print self.n_toy, n
         new_n = int(self.n_toy / n)
         l = range(self.n_toy)
         for i in xrange(0, self.n_toy, new_n):
             yield i + 1, len(l[i:i + new_n])
 
-    def tar_output(self, job_id):
+    def tar_output(self, job_id, subjob_id):
         import src.unfolding_tests.create_toy_mc as toy
         import shutil
         output_file = toy.get_output_file_name(self.output_folder,
-                                               self.variable,
                                                self.start_at,
                                                self.n_toy,
                                                self.centre_of_mass)
-        suffix = '_{0}.root'.format(job_id)
+        suffix = '_{0}.{1}.root'.format(job_id, subjob_id)
         new_file = output_file.replace('.root', suffix)
         shutil.move(output_file, new_file)
 

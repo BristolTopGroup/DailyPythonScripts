@@ -254,7 +254,7 @@ def main():
             'phase_space': phase_space,
         }
         measurement_files = glob.glob(input_template.format(**inputs))
-        for f in measurement_files:
+        for f in sorted(measurement_files):
             print('Processing file ' + f)
             measurement = tools.measurement.Measurement.fromJSON(f)
             # for each measurement
