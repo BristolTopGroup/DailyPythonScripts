@@ -207,7 +207,7 @@ def plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value,
         h_sigma.SetBinContent(i + 1, fr.sigma)
         h_sigma.SetBinError(i + 1, fr.sigmaError)
     histogram_properties = Histogram_properties()
-    name_mpt = 'pull_distributino_mean_and_sigma_{0}_{1}_{2}TeV'
+    name_mpt = 'pull_distribution_mean_and_sigma_{0}_{1}_{2}TeV'
     histogram_properties.name = name_mpt.format(
         variable,
         channel,
@@ -218,7 +218,7 @@ def plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value,
     value = get_value_title(k_value, tau_value)
     title = 'pull distribution mean \& sigma for {0}'.format(value)
     histogram_properties.title = title
-    histogram_properties.y_limits = [-1, 2]
+    histogram_properties.y_limits = [-0.5, 2]
     histogram_properties.xerr = True
 
     compare_measurements(
