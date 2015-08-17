@@ -26,8 +26,8 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_with_errors.txt')
     normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
 
-    ###file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
-    ###normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
+    file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
+    normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
 
     ###file_name = file_template.replace('.txt', '_MET_errors.txt')
     ###normalised_xsection_MET_errors = read_data_from_JSON( file_name )
@@ -52,7 +52,7 @@ def read_xsection_measurement_results_with_errors(channel):
     
     normalised_xsection_measured_errors = normalised_xsection_other_errors['TTJet_measured']
 
-    ### normalised_xsection_measured_errors = normalised_xsection_ttbar_generator_errors['TTJet_measured']
+    normalised_xsection_measured_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
@@ -61,7 +61,7 @@ def read_xsection_measurement_results_with_errors(channel):
     ### normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
 
     normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
-    ### normalised_xsection_unfolded_errors = normalised_xsection_ttbar_generator_errors['TTJet_unfolded']
+    normalised_xsection_unfolded_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
@@ -632,9 +632,9 @@ if __name__ == '__main__':
 
     categories = deepcopy(categories_and_prefixes.keys())
 
-    ### ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
+    ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     ### vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    ### categories.extend(ttbar_generator_systematics)
+    categories.extend(ttbar_generator_systematics)
     ### categories.extend(vjets_generator_systematics)
 
     ### # Add mass systematics
