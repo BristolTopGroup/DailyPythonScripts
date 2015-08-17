@@ -413,7 +413,7 @@ if __name__ == '__main__':
     # Not unfolding with other files at the moment
     ###
     ###    # file_for_powheg_pythia = File( measurement_config.unfolding_powheg_pythia, 'read' )
-   file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
+    file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
     ###    # file_for_mcatnlo = None
     ###    # if centre_of_mass == 8:
     ###    #     file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
@@ -464,9 +464,9 @@ if __name__ == '__main__':
     ### categories.extend( vjets_generator_systematics )
 
     ### ttbar theory systematics, including pt reweighting and hadronisation systematic
-    ### ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
-    ### ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
-    ### categories.extend( ttbar_theory_systematics )
+    ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
+    ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
+    categories.extend( ttbar_theory_systematics )
 
     ### Add mass systematics
     ### ttbar_mass_systematics = measurement_config.topMass_systematics
@@ -515,7 +515,7 @@ if __name__ == '__main__':
     #     combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
-        if category in ttbar_generator_systematics :
+        if category in ttbar_generator_systematics or category in ttbar_theory_systematics:
             # or category in ttbar_mass_systematics 
                 electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
                 muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'

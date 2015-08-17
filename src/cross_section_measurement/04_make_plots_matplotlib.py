@@ -54,6 +54,7 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
         h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
         h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
+        h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], edges )
 
         ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], edges )
         ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], edges )
@@ -66,6 +67,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                      'powhegPythia8':h_normalised_xsection_powhegPythia8,
                                                                      'amcatnlo':h_normalised_xsection_amcatnlo,
                                                                      'madgraphMLM':h_normalised_xsection_madgraphMLM,
+                                                                     'POWHEG_HERWIG':h_normalised_xsection_powhegHerwigpp,
         ###                                                         # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
         ###                                                         # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
         ###                                                         # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
@@ -382,7 +384,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             elif 'powhegPythia8' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor( kRed + 1 )
-            elif 'massup' in key:
+            elif 'massup' in key or 'POWHEG_HERWIG' in key:
                 hist.linestyle = 'verylongdashdot'
                 hist.linecolor = 'orange'
             elif 'MCATNLO'  in key or 'madgraphMLM' in key or 'scaleup' in key:
