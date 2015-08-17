@@ -61,7 +61,6 @@ class CreateToyMCJob(Job):
         import src.unfolding_tests.create_toy_mc as toy
         import shutil
         output_file = toy.get_output_file_name(self.output_folder,
-                                               self.variable,
                                                self.start_at,
                                                self.n_toy,
                                                self.centre_of_mass)
