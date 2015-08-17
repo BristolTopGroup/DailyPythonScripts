@@ -6,7 +6,8 @@ N_JOBS=4
 
 i=0
 echo "Visible phase space"
-for var in MET HT ST WPT lepton_pt NJets; do
+# for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
+for var in abs_lepton_eta; do
 	echo "Plotting diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04_${var}_plot_13TeV_vis.log & # -a  <--add this option for additional plots
 	let i+=1
@@ -18,7 +19,8 @@ for var in MET HT ST WPT lepton_pt NJets; do
 done
 
 echo "Full phase space"
-for var in MET HT ST WPT lepton_pt NJets; do
+# for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
+for var in abs_lepton_eta; do
 	echo "Plotting diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04_${var}_plot_13TeV.log & # -a  <--add this option for additional plots
 	let i+=1

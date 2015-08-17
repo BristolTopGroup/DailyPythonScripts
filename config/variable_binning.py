@@ -14,15 +14,21 @@ bin_edges = {
 # 'lepTopRap' : [-3.0, -0.441, 0.0, 0.441, 3.0],
 # 'ttbarRap' : [-3.0, -1.452, -0.771, -0.264, 0.0, 0.264, 0.771, 1.452, 3.0],
 
-'MET' : [0.0, 40.0, 86.0, 181.0, 750.0],
-'WPT' : [0.0, 40.0, 77.0, 117.0, 163.0, 248.0, 758.0],
-'NJets' : [3.5, 4.5, 5.5, 6.5, 12.5],
-'HT' : [100.0, 208.0, 251.0, 297.0, 350.0, 412.0, 522.0, 1321.0, 3265.0],
-'ST' : [130.0, 314.0, 366.0, 424.0, 486.0, 560.0, 688.0, 1477.0, 3370.0],
-'lepton_pt' : [30.0, 37.0, 44.0, 52.0, 61.0, 73.0, 90.0, 123.0, 321.0],
+# 'MET' : [0.0, 44.0, 102.0, 334.0],
+# 'WPT' : [0.0, 44.0, 85.0, 131.0, 315.0],
+# 'NJets' : [3.5, 4.5, 5.5, 9.5],
+# 'HT' : [100.0, 212.0, 251.0, 294.0, 341.0, 391.0, 465.0, 761.0],
+# 'ST' : [123.0, 319.0, 379.0, 446.0, 522.0, 606.0, 942.0],
+# 'lepton_pt' : [23.0, 36.0, 43.0, 50.0, 58.0, 68.0, 81.0, 101.0, 181.0],
+# 'abs_lepton_eta' : [0.0, 0.159, 0.315, 0.48000000000000004, 0.648, 0.8310000000000001, 1.0319999999999998, 1.272, 2.232000000000001],
 
-# # 'lepton_eta' : [-2.5, -1.15, -0.7, -0.35, 0, 0.35, 0.7, 1.15, 2.5],
-# 'abs_lepton_eta' : [0, 0.35, 0.7, 1.15, 2.5],
+'MET' : [0.0, 51.0, 97.0, 281.0],
+'WPT' : [0.0, 57.0, 99.0, 146.0, 334.0],
+'NJets' : [3.5, 4.5, 5.5, 9.5],
+'HT' : [100.0, 243.0, 300.0, 375.0, 675.0],
+'ST' : [123.0, 360.0, 431.0, 524.0, 896.0],
+'lepton_pt' : [23.0, 39.0, 50.0, 66.0, 130.0],
+'abs_lepton_eta' : [0.0, 0.28800000000000003, 0.588, 0.927, 2.2830000000000004],
 
 # 'bjets_pt' : [30.0, 45.0, 62.0, 82.0, 106.0, 135.0, 250.0],
 # 'bjets_eta' : [-2.0, -1.0, 0.0, 1.0, 2.0],
@@ -38,14 +44,14 @@ bin_edges_vis = {
 # 'lepTopRap' : [-3.0, -1.0979999999999999, -0.438, 0.0, 0.438, 1.0979999999999999, 3.0],
 # 'ttbarRap' : [-3.0, -1.3679999999999999, -0.93, -0.54, -0.195, 0.0, 0.195, 0.54, 0.93, 1.3679999999999999, 3.0],
 
-'MET' : [0.0, 48.0, 86.0, 174.0, 702.0],
-'WPT' : [0.0, 56.0, 94.0, 135.0, 228.0, 786.0],
-'NJets' : [3.5, 4.5, 5.5, 9.5, 20.5],
-'HT' : [100.0, 237.0, 297.0, 382.0, 592.0, 1852.0],
-'ST' : [130.0, 353.0, 426.0, 529.0, 773.0, 2237.0],
-'lepton_pt' : [30.0, 40.0, 52.0, 71.0, 124.0, 442.0],
-# # 'lepton_eta' : [-2.5, -0.7, 0, 0.7, 2.5],
-# 'abs_lepton_eta' : [0, 0.7, 2.5],
+'MET' : [0.0, 51.0, 97.0, 281.0],
+'WPT' : [0.0, 57.0, 99.0, 146.0, 334.0],
+'NJets' : [3.5, 4.5, 5.5, 9.5],
+'HT' : [100.0, 243.0, 300.0, 375.0, 675.0],
+'ST' : [123.0, 360.0, 431.0, 524.0, 896.0],
+'lepton_pt' : [23.0, 39.0, 50.0, 66.0, 130.0],
+'abs_lepton_eta' : [0.0, 0.28800000000000003, 0.588, 0.927, 2.2830000000000004],
+
 
 # 'bjets_pt' : [30, 50, 70, 100, 300],
 # 'bjets_eta' : [-2.0, -1.0, 0.0, 1.0, 2.0],
@@ -62,6 +68,10 @@ control_plots_bins = {
   'NVertex' : [i*2 for i in range ( 0,20 + 1 )],
   'relIso' : [i*0.01 for i in range(0,15)],
   'relIsoQCD' : [i*0.2 for i in range(0,15)],
+  'MET' : [i * 20  for i in range ( 0, 16 )],
+  'WPT' : [i * 25  for i in range ( 0, 17 )],
+  'HT' : [i * 50  for i in range ( 0, 21 )],
+  'ST' : [i * 50  for i in range ( 0, 21 )],
 }
 
 
@@ -90,3 +100,23 @@ for variable in bin_edges.keys():
             bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
         variable_bins_ROOT[variable].append( bin_name )
         variable_bins_latex[bin_name] = bin_name_latex
+
+bin_widths_visiblePS = {}
+variable_bins_visiblePS_ROOT = {}
+variable_bins_visiblePS_latex = {}
+# calculate all the other variables
+for variable in bin_edges_vis.keys():
+    bin_widths_visiblePS[variable] = []
+    variable_bins_visiblePS_ROOT[variable] = []
+    number_of_edges = len( bin_edges_vis[variable] )
+    for i in range( number_of_edges - 1 ):
+        lower_edge = bin_edges_vis[variable][i]
+        upper_edge = bin_edges_vis[variable][i + 1]
+        bin_widths_visiblePS[variable].append( upper_edge - lower_edge )
+        bin_name = '%d-%d' % ( int( lower_edge ), int( upper_edge ) )
+        bin_name_latex = '%d--%d~\GeV' % ( int( lower_edge ), int( upper_edge ) )
+        if ( i + 1 ) == number_of_edges - 1:
+            bin_name = '%d-inf' % int( lower_edge )
+            bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
+        variable_bins_visiblePS_ROOT[variable].append( bin_name )
+        variable_bins_visiblePS_latex[bin_name] = bin_name_latex

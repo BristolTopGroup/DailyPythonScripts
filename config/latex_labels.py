@@ -86,7 +86,7 @@ measurements_latex = {
     'PU_up': 'Pile-up $+1\sigma$',
     'central': 'central',
     #'ptreweight_max': '$p_\mathrm{T}(t,\\bar{t})$ reweighting',
-    'hadronisation': 'Hadronisation uncertainty',
+    'TTJets_hadronisation': 'Hadronisation uncertainty',
     'PDF_total_lower': 'PDF uncertainty $-1\sigma$',
     'PDF_total_upper': 'PDF uncertainty $+1\sigma$',
     'QCD_shape': 'QCD shape uncertainty',

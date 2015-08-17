@@ -46,7 +46,7 @@ def read_from_fit_results_folder(path_to_JSON='data',
                                  channel='combined',
                                  met_type='patType1CorrectedPFMet',
                                  data_type='fit_results'):
-    filename = path_to_JSON + '/' + variable + '/' + category + '/'
+    filename = path_to_JSON  + '/' + category + '/'
     filename += data_type + '_' + channel + '_' + met_type + '.txt'
     results = read_data_from_JSON(filename)
 

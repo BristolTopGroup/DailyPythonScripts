@@ -6,7 +6,7 @@ from copy import deepcopy
 
 from config.latex_labels import variables_latex, measurements_latex, \
 b_tag_bins_latex, fit_variables_latex
-from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges,\
+from config.variable_binning import bin_edges, variable_bins_ROOT, variable_bins_visiblePS_ROOT, fit_variable_bin_edges,\
     bin_edges_vis
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
@@ -54,6 +54,7 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
         h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
         h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
+        h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], edges )
 
         ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], edges )
         ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], edges )
@@ -66,6 +67,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                      'powhegPythia8':h_normalised_xsection_powhegPythia8,
                                                                      'amcatnlo':h_normalised_xsection_amcatnlo,
                                                                      'madgraphMLM':h_normalised_xsection_madgraphMLM,
+                                                                     'POWHEG_HERWIG':h_normalised_xsection_powhegHerwigpp,
         ###                                                         # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
         ###                                                         # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
         ###                                                         # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
@@ -116,7 +118,7 @@ def read_xsection_measurement_results( category, channel ):
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
 def read_fit_templates_and_results_as_histograms( category, channel ):
-    global path_to_JSON, variable, met_type
+    global path_to_JSON, variable, met_type, phase_space
     templates = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt' )
 
     data_values = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt' )['data']
@@ -124,7 +126,14 @@ def read_fit_templates_and_results_as_histograms( category, channel ):
     fit_variables = templates.keys()
     template_histograms = {fit_variable: {} for fit_variable in fit_variables}
     fit_results_histograms = {fit_variable: {} for fit_variable in fit_variables}
-    for bin_i, variable_bin in enumerate( variable_bins_ROOT[variable] ):
+
+    variableBins = None
+    if phase_space == 'VisiblePS':
+        variableBins = variable_bins_visiblePS_ROOT
+    elif phase_space == 'FullPS':
+        variableBins = variable_bins_ROOT
+
+    for bin_i, variable_bin in enumerate( variableBins[variable] ):
         for fit_variable in fit_variables:
             h_template_data = value_tuplelist_to_hist( templates[fit_variable]['data'][bin_i], fit_variable_bin_edges[fit_variable] )
             h_template_ttjet =  value_tuplelist_to_hist( templates[fit_variable]['TTJet'][bin_i], fit_variable_bin_edges[fit_variable] )
@@ -168,9 +177,16 @@ def read_fit_templates_and_results_as_histograms( category, channel ):
     return template_histograms, fit_results_histograms
 
 def make_template_plots( histograms, category, channel ):
-    global variable, output_folder
+    global variable, output_folder, phase_space
     fit_variables = histograms.keys()
-    for variable_bin in variable_bins_ROOT[variable]:
+
+    variableBins = None
+    if phase_space == 'VisiblePS':
+        variableBins = variable_bins_visiblePS_ROOT
+    elif phase_space == 'FullPS':
+        variableBins = variable_bins_ROOT
+
+    for variable_bin in variableBins[variable]:
         path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_templates/'
         make_folder_if_not_exists( path )
         for fit_variable in fit_variables:
@@ -245,10 +261,17 @@ def make_template_plots( histograms, category, channel ):
 
 
 def plot_fit_results( histograms, category, channel ):
-    global variable, b_tag_bin, output_folder
+    global variable, b_tag_bin, output_folder, phase_space
     from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
     fit_variables = histograms.keys()
-    for variable_bin in variable_bins_ROOT[variable]:
+
+    variableBins = None
+    if phase_space == 'VisiblePS':
+        variableBins = variable_bins_visiblePS_ROOT
+    elif phase_space == 'FullPS':
+        variableBins = variable_bins_ROOT
+        
+    for variable_bin in variableBins[variable]:
         path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_results/'
         make_folder_if_not_exists( path )
         for fit_variable in fit_variables:
@@ -361,7 +384,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             elif 'powhegPythia8' in key:
                 hist.linestyle = 'solid'
                 hist.SetLineColor( kRed + 1 )
-            elif 'massup' in key:
+            elif 'massup' in key or 'POWHEG_HERWIG' in key:
                 hist.linestyle = 'verylongdashdot'
                 hist.linecolor = 'orange'
             elif 'MCATNLO'  in key or 'madgraphMLM' in key or 'scaleup' in key:

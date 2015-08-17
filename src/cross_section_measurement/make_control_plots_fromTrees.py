@@ -1,7 +1,7 @@
 from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex, channel_latex, \
     variables_latex, fit_variables_latex, control_plots_latex
-from config.variable_binning import variable_bins_ROOT, bin_edges, fit_variable_bin_edges, control_plots_bins
+from config.variable_binning import bin_edges, fit_variable_bin_edges, control_plots_bins
 from config.histogram_colours import histogram_colours as colours
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
@@ -344,7 +344,7 @@ if __name__ == '__main__':
                         'NBJets',
                         # 'JetPt',
                         'NVertex',
-                        'LeptonPt',
+                        # 'LeptonPt',
                         # 'LeptonEta',
                         # 'RelIso',
                         ]
@@ -355,8 +355,8 @@ if __name__ == '__main__':
                         'QCDST',
                         'QCDWPT',
                         # 'QCDLeptonEta',
-                        'QCDLeptonPt',
-                        'QCDNJets',
+                        # 'QCDLeptonPt',
+                        # 'QCDNJets',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
                         ]
@@ -383,12 +383,12 @@ if __name__ == '__main__':
             print '---> HT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(50 GeV)',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % label,
-                      x_limits = bin_edges['HT'],
+                      x_limits = control_plots_bins['HT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -409,8 +409,8 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'MET',
                       name_prefix = '%s_MET_' % label,
-                      x_limits = bin_edges['MET'],
-                      nBins = 20,
+                      x_limits = control_plots_bins['MET'],
+                      nBins = 15,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
@@ -425,12 +425,12 @@ if __name__ == '__main__':
             print '---> ST'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(50 GeV)',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'ST',
                       name_prefix = '%s_ST_' % label,
-                      x_limits = bin_edges['ST'],
+                      x_limits = control_plots_bins['ST'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -446,13 +446,13 @@ if __name__ == '__main__':
             print '---> WPT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(25 GeV)',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'WPT',
                       name_prefix = '%s_WPT_' % label,
-                      x_limits = bin_edges['WPT'],
-                      nBins = 20,
+                      x_limits = control_plots_bins['WPT'],
+                      nBins = 16,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
@@ -748,7 +748,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % channel,
-                      x_limits = bin_edges['HT'],
+                      x_limits = control_plots_bins['HT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -785,7 +785,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'MET',
                       name_prefix = '%s_MET_' % channel,
-                      x_limits = bin_edges['MET'],
+                      x_limits = control_plots_bins['MET'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -805,7 +805,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'ST',
                       name_prefix = '%s_ST_' % channel,
-                      x_limits = bin_edges['ST'],
+                      x_limits = control_plots_bins['ST'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -825,7 +825,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'WPT',
                       name_prefix = '%s_WPT_' % channel,
-                      x_limits = bin_edges['WPT'],
+                      x_limits = control_plots_bins['WPT'],
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
