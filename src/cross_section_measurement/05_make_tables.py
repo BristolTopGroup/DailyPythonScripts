@@ -374,7 +374,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             central_value = central_values['unfolded'][bin_i][0]
 
         for source in all_measurements:
-            if ( variable == 'HT' or variable == 'NJets' ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
+            if ( variable == 'HT' or variable == 'NJets' or variable == 'lepton_pt' or variable == 'abs_lepton_eta'  ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
                 continue
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
@@ -646,11 +646,11 @@ if __name__ == '__main__':
     ###categories.extend( measurement_config.kValueSystematic )
 
     ### # all MET uncertainties except JES as this is already included
-    ### met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    met_uncertainties = [suffix for suffix in met_systematics if not 'JES' in suffix and not 'JER' in suffix]
     ### new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = measurement_config.rate_changing_systematics_names
     all_measurements = deepcopy(categories)
-    ### all_measurements.extend(met_uncertainties)
+    all_measurements.extend(met_uncertainties)
     ### all_measurements.extend(new_uncertainties)
 
     all_measurements.extend(rate_changing_systematics)
