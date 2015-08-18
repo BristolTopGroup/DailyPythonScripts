@@ -22,10 +22,9 @@ def read_xsection_measurement_results_with_errors(channel):
     
     normalised_xsection_measured_unfolded = {'measured':normalised_xsection_unfolded['TTJet_measured'],
                                             'unfolded':normalised_xsection_unfolded['TTJet_unfolded']}
-    
+
     file_name = file_template.replace('.txt', '_with_errors.txt')
     normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
-
     file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
     normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
 
@@ -44,12 +43,15 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_other_errors.txt')
     normalised_xsection_other_errors = read_data_from_JSON( file_name )
 
+    file_name = file_template.replace('.txt', '_with_systematics_only_errors.txt')
+    normalised_xsection_systematics_only = read_data_from_JSON( file_name )
     ###file_name = file_template.replace('.txt', '_new_errors.txt')
     ###normalised_xsection_new_errors = read_data_from_JSON( file_name )
-    
     normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
-                                                'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded']})
-    
+                                                'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
+                                                'measured_with_systematics_only':normalised_xsection_systematics_only['TTJet_measured'],
+                                                'unfolded_with_systematics_only':normalised_xsection_systematics_only['TTJet_unfolded'],
+                                                })
     normalised_xsection_measured_errors = normalised_xsection_other_errors['TTJet_measured']
 
     normalised_xsection_measured_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_measured'])
@@ -326,6 +328,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     global output_folder, variable, met_type, b_tag_bin, all_measurements, phase_space
     bins = None
     bins_latex = None
+    variable_latex = variables_latex[variable]
     if phase_space == 'VisiblePS':
         bins = variable_bins_visiblePS_ROOT[variable]
         bins_latex = variable_bins_visiblePS_latex
@@ -343,7 +346,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
 
     printout += '\\begin{table}[htbp]\n'
     printout += '\\centering\n'
-    printout += '\\caption{Systematic uncertainties for the normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
+    printout += '\\caption{Systematic uncertainties for the normalised \\ttbar cross section measurement with respect to %s variable\n' % variable_latex
     printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
     if channel == 'combined':
         printout += '(combination of electron and muon channels).}\n'
@@ -373,9 +376,13 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         else:
             central_value = central_values['unfolded'][bin_i][0]
 
+        print bins_latex[variable_bin]
         for source in all_measurements:
-            if ( variable == 'HT' or variable == 'NJets' ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
+            if ( variable == 'HT' or variable == 'NJets' or variable == 'lepton_pt' or variable == 'abs_lepton_eta'  ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
                 continue
+
+            if source in measurement_config.met_systematics:
+                print source
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
             text = '%.2f' % (relative_error*100)
@@ -388,7 +395,8 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
                     rows[source] = [met_systematics_latex[source] + ' (\%)', text]
                 else:
                     rows[source] = [measurements_latex[source] + ' (\%)', text]
-
+            if source in measurement_config.met_systematics:
+                print rows[source]
     header += ' \\\\'
     printout += header
     printout += '\n\\hline\n'
@@ -400,6 +408,30 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             printout += item + ' & '
         printout = printout.rstrip('& ')
         printout += ' \\\\ \n'
+
+    #append the total statistical error to the table
+    printout += '\\hline \n'
+    total_line = 'Total Stat. (\%)'
+    for bin_i, variable_bin in enumerate(bins):
+        if print_before_unfolding:
+            value, error = central_values['measured'][bin_i]
+        else:
+            value, error = central_values['unfolded'][bin_i]
+        relativeError = getRelativeError(value, error)
+        total_line += ' & %.2f ' % (relativeError * 100)
+    printout += total_line + '\\\\ \n'
+
+    #append the total systematic error to the table
+    total_line = 'Total Sys. (\%)'
+    for bin_i, variable_bin in enumerate(bins):
+        if print_before_unfolding:
+            value, error_up, error_down = central_values['measured_with_systematics_only'][bin_i]
+        else:
+            value, error_up, error_down = central_values['unfolded_with_systematics_only'][bin_i]
+        error = max(error_up, error_down)
+        relativeError = getRelativeError(value, error)
+        total_line += ' & %.2f ' % (relativeError * 100)
+    printout += total_line + '\\\\ \n'
 
     #append the total error to the table
     printout += '\\hline \n'
@@ -646,11 +678,11 @@ if __name__ == '__main__':
     ###categories.extend( measurement_config.kValueSystematic )
 
     ### # all MET uncertainties except JES as this is already included
-    ### met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    # met_uncertainties = [suffix for suffix in met_systematics if not 'JES' in suffix and not 'JER' in suffix]
     ### new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = measurement_config.rate_changing_systematics_names
     all_measurements = deepcopy(categories)
-    ### all_measurements.extend(met_uncertainties)
+    # all_measurements.extend(met_uncertainties)
     ### all_measurements.extend(new_uncertainties)
 
     all_measurements.extend(rate_changing_systematics)

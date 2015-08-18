@@ -122,7 +122,7 @@ def scaleTopMassSystematicErrors( error_down, error_up ):
         error_up_new.append( up * measurement_config.topMassUncertainty / upMassDifference )
     return error_down_new, error_up_new
 
-def get_measurement_with_lower_and_upper_errors( list_of_central_measurements, lists_of_lower_systematic_errors, lists_of_upper_systematic_errors ):
+def get_measurement_with_lower_and_upper_errors( list_of_central_measurements, lists_of_lower_systematic_errors, lists_of_upper_systematic_errors, systematicErrorsOnly = False ):
     '''
     Combines a list of systematic errors with the error from the measurement in quadrature.
     @param list_of_central_measurements: A list of measurements - one per bin - of the type (value,error)
@@ -138,8 +138,10 @@ def get_measurement_with_lower_and_upper_errors( list_of_central_measurements, l
         lower_errors = [error[index] for error in lists_of_lower_systematic_errors]
         upper_errors = [error[index] for error in lists_of_upper_systematic_errors]
         # add central error to the list
-        lower_errors.append( central_error )
-        upper_errors.append( central_error )
+        if not systematicErrorsOnly:
+            lower_errors.append( central_error )
+            upper_errors.append( central_error )
+
         # calculate total errors
         total_lower_error = combine_errors_in_quadrature( lower_errors )
         total_upper_error = combine_errors_in_quadrature( upper_errors )
@@ -286,14 +288,14 @@ if __name__ == "__main__":
         # get the central measurement with fit, unfolding and systematic errors combined
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [
-                                                                                                ### ttbar_generator_min, #ttbar_ptreweight_min,
+                                                                                                ttbar_generator_min, #ttbar_ptreweight_min,
                                                                                                 # ttbar_hadronisation_min,
                                                                                                 ### ttbar_mass_min,
 #                                                                                               ###   kValue_min,
                                                                                                 ### pdf_min, met_min, 
                                                                                                 other_min],
                                                                                                 [
-                                                                                                ### ttbar_generator_max, #ttbar_ptreweight_max,
+                                                                                                ttbar_generator_max, #ttbar_ptreweight_max,
                                                                                                 # ttbar_hadronisation_max,
                                                                                                 ### ttbar_mass_max,
 #                                                                                               ###   kValue_max,
@@ -324,16 +326,25 @@ if __name__ == "__main__":
                                                                                                 ### pdf_max, met_max, 
                                                                                                  other_max] )
 
+        central_measurement_with_systematics_only = get_measurement_with_lower_and_upper_errors( central_measurement,
+                                                                                                [
+                                                                                                ttbar_generator_min,
+                                                                                                other_min],
+                                                                                                [
+                                                                                                ttbar_generator_max,
+                                                                                                 other_max],
+                                                                                                 systematicErrorsOnly = True )
+
         central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
                                                                                                 [
-                                                                                                ###ttbar_generator_min_unfolded, #ttbar_ptreweight_min_unfolded,
+                                                                                                ttbar_generator_min_unfolded, #ttbar_ptreweight_min_unfolded,
                                                                                                 # ttbar_hadronisation_min_unfolded,
                                                                                                 ###ttbar_mass_min_unfolded,
 #                                                                                               ###  kValue_min_unfolded,
                                                                                                 ###pdf_min_unfolded, met_min_unfolded,
                                                                                                 other_min_unfolded],
                                                                                                 [
-                                                                                                ###ttbar_generator_max_unfolded, #ttbar_ptreweight_max_unfolded,
+                                                                                                ttbar_generator_max_unfolded, #ttbar_ptreweight_max_unfolded,
                                                                                                 # ttbar_hadronisation_max_unfolded,
                                                                                                 ###ttbar_mass_max_unfolded,
 #                                                                                               ###  kValue_max_unfolded,
@@ -363,7 +374,16 @@ if __name__ == "__main__":
 #                                                                                               ###  kValue_max_unfolded,
                                                                                                 ### pdf_max_unfolded, met_max_unfolded, 
                                                                                                  other_max_unfolded] )
-        
+
+        central_measurement_unfolded_with_systematics_only = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
+                                                                                                [
+                                                                                                ttbar_generator_min_unfolded,
+                                                                                                 other_min_unfolded],
+                                                                                                [
+                                                                                                ttbar_generator_max_unfolded,
+                                                                                                 other_max_unfolded],
+                                                                                                 systematicErrorsOnly = True )
+
         write_normalised_xsection_measurement( central_measurement_with_systematics,
                                                central_measurement_unfolded_with_systematics,
                                                channel )
@@ -375,7 +395,12 @@ if __name__ == "__main__":
                                                central_measurement_unfolded_with_systematics_but_without_generator,
                                                channel,
                                                summary = 'with_systematics_but_without_generator' )
-        
+
+        write_normalised_xsection_measurement( central_measurement_with_systematics_only,
+                                               central_measurement_unfolded_with_systematics_only,
+                                               channel,
+                                               summary = 'with_systematics_only' )
+
         # create entries in the previous dictionary
         # replace measurement with deviation from central
         ttbar_generator_systematics = replace_measurement_with_deviation_from_central( central_measurement, ttbar_generator_systematics )
