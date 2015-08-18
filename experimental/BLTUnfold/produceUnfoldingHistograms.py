@@ -159,6 +159,11 @@ def main():
             nEntries = tree.GetEntries()
             print "Number of entries in tree : ", nEntries
 
+            if options.generatorWeight >= 0 :
+                tree.AddFriend('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
+                tree.SetBranchStatus('genWeight_*',0)
+                tree.SetBranchStatus('genWeight_%i' % options.generatorWeight, 1)
+
             # Keep record of generator weight
             # if options.generatorWeight >= 0:
             #     generatorWeight = '( generatorSystematicWeight[%i] )' % options.generatorWeight
@@ -242,11 +247,11 @@ def main():
                 
                 # Apply generator weight
                 if options.generatorWeight >= 0:
-                    generatorWeight = '( generatorSystematicWeight[%i] )' % options.generatorWeight
+                    generatorWeight = '( genWeight_%i )' % options.generatorWeight
                     offlineWeight += ' * '+generatorWeight
                     genWeight += ' * '+generatorWeight
                     nEntries = 1000000
-                    print 'Changing nEntries to ',nEntries
+                    print 'Changing nEntries to ',nEntries, "<---- DOES NOT SEEM TO DO ANYTHING"
                     pass
 
                 # Scale factors
