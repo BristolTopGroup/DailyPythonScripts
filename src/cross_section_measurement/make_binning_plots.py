@@ -19,6 +19,8 @@ from tools.ROOT_utils import get_histogram_from_file
 from tools.file_utilities import make_folder_if_not_exists
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_tuplelist_to_hist
+from tools.Calculation import calculate_purities, calculate_stabilities
+from tools.hist_utilities import rebin_2d
 
 from matplotlib import rc
 rc( 'font', **CMS.font )
@@ -76,16 +78,18 @@ def make_scatter_plot( input_file, histogram, bin_edges, channel, variable, titl
     for output_format in output_formats:
         plt.savefig( output_folder + save_as_name + '.' + output_format )
 
-def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisiblePhaseSpace):
+def makePurityStabilityPlots(input_file, histogram, bin_edges, channel, variable, isVisiblePhaseSpace):
     global output_folder, output_formats
  
-    inputFile = '%s/binningInfo_%s_%s_FullPS.txt' % ( input_path, variable, channel)
-    if isVisiblePhaseSpace:
-        inputFile = '%s/binningInfo_%s_%s_VisiblePS.txt' % ( input_path, variable, channel)        
+    hist = get_histogram_from_file( histogram, input_file )
 
-    info = read_data_from_JSON(inputFile)
-    hist_stability = value_tuplelist_to_hist(info['s_i'], bin_edges[variable])
-    hist_purity = value_tuplelist_to_hist(info['p_i'], bin_edges[variable])
+    # get_bin_content = hist.ProjectionX().GetBinContent
+    purities = calculate_purities( hist.Clone() )
+    stabilities = calculate_stabilities( hist.Clone() )
+    # n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
+
+    hist_stability = value_tuplelist_to_hist(stabilities, bin_edges)
+    hist_purity = value_tuplelist_to_hist(purities, bin_edges)
 
     hist_purity.color = 'red'
     hist_stability.color = 'blue'
@@ -93,7 +97,7 @@ def makePurityStabilityPlots(input_path, bin_edges, channel, variable, isVisible
     hist_stability.linewidth = 4
     hist_purity.linewidth = 4
 
-    x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
+    x_limits = [bin_edges[0], bin_edges[-1]]
     y_limits = [0,1]
     plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
 
@@ -176,4 +180,4 @@ if __name__ == '__main__':
                 histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
             make_scatter_plot( hist_file, histogram_path, bin_edges_to_use, channel, variable, title )
 
-            makePurityStabilityPlots( measurement_config.path_to_unfolding_histograms, bin_edges_to_use, channel, variable, options.visiblePhaseSpace)
+            makePurityStabilityPlots( measurement_config.unfolding_central, histogram_path, bin_edges_to_use[variable], channel, variable, options.visiblePhaseSpace)

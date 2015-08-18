@@ -282,7 +282,7 @@ class XSectionConfig():
         
         self.ttbar_amc_category_templates_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_category_templates_trees = path_to_files + '/TTJets_madgraph_tree.root'
-        self.ttbar_herwigpp_category_templates_trees = path_to_files + '/TTJets_herwigpp_tree.root'
+        self.ttbar_herwigpp_category_templates_trees = path_to_files + '/TTJets_PowhegHerwigpp_tree.root'
         self.ttbar_scaleup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaleup_tree.root'
         self.ttbar_scaledown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaledown_tree.root'
         self.ttbar_mtop1695_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1695_tree.root'
@@ -611,14 +611,14 @@ class XSectionConfig():
                    }
 
         self.tau_values_electron = {
-"NJets" : 0.849753435909,
+"NJets" : 0.774263682681,
 
 "WPT" : 0.849753435909,
 "MET" : 1.78864952906,
 "HT" : 0.443062145758,
 "ST" : 0.533669923121,
 
-"lepton_pt" : 0.1,
+"lepton_pt" : 0.705480231072,
 "abs_lepton_eta" : 0.001,
 
             'bjets_pt': 0.,
@@ -635,14 +635,14 @@ class XSectionConfig():
            }
 
         self.tau_values_muon = {
-"NJets" : 1.48496826225,
+"NJets" : 0.932603346883,
 
 "WPT" : 1.0235310219,
 "MET" : 2.36448941265,
 "HT" : 0.486260158007,
 "ST" : 0.774263682681,
 
-"lepton_pt" : 0.486260158007,
+"lepton_pt" : 0.705480231072,
 "abs_lepton_eta" : 0.001,
 
             'bjets_pt': 0.,

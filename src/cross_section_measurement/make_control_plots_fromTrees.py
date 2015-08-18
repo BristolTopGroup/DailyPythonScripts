@@ -112,12 +112,15 @@ def make_plot( channel, x_axis_title, y_axis_title,
     #     else:
     #         histograms = get_histograms_from_files( [signal_region], histogram_files )
 
-    histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+    selection = '1'
+    if branchName == 'abs(lepton_eta)' :
+        selection = 'lepton_eta > -10'
+    histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
 
     histograms_QCDControlRegion = None
     if use_qcd_data_region:
         qcd_control_region = signal_region_tree.replace( 'Ref selection', qcd_data_region )
-        histograms_QCDControlRegion = get_histograms_from_trees( trees = [qcd_control_region], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1] )
+        histograms_QCDControlRegion = get_histograms_from_trees( trees = [qcd_control_region], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
 
     # Split histograms up into signal/control (?)
     signal_region_hists = {}
@@ -237,12 +240,10 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
     if normalise_to_data:
             histogram_properties.name += '_normToData'
-    print histogram_properties.name
     output_folder_to_use = output_folder
     if use_qcd_data_region:
         output_folder_to_use += 'WithQCDFromControl/'
         make_folder_if_not_exists(output_folder_to_use)
-    print output_folder_to_use
 
     if branchName == 'NPU':
         getPUWeights(histograms_to_draw, histogram_lables)
@@ -337,15 +338,16 @@ if __name__ == '__main__':
                         'MET',
                         'ST',
                         'WPT',
+                        'NVertex',
+                        'LeptonPt',
+                        'LeptonEta',
                         # 'Mjj',
                         # 'M3',
                         # 'angle_bl',
-                        'NJets',
-                        'NBJets',
+                        # 'NJets',
+                        # 'NBJets',
                         # 'JetPt',
-                        'NVertex',
-                        # 'LeptonPt',
-                        # 'LeptonEta',
+                        # 'AbsLeptonEta',
                         # 'RelIso',
                         ]
 
@@ -354,9 +356,9 @@ if __name__ == '__main__':
                         'QCDMET',
                         'QCDST',
                         'QCDWPT',
-                        # 'QCDLeptonEta',
-                        # 'QCDLeptonPt',
-                        # 'QCDNJets',
+                        'QCDAbsLeptonEta',
+                        'QCDLeptonPt',
+                        'QCDNJets',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
                         ]
@@ -643,19 +645,18 @@ if __name__ == '__main__':
         ###################################################
         if 'LeptonPt' in include_plots:
             print '---> Lepton Pt'
-            treeName = 'Electron/Electrons'
+            binsLabel = 'ElectronPt'
             if channel == 'muon':
-                treeName = 'Muon/Muons'
-
+                binsLabel = 'MuonPt'
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['pt'],
                       y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % ( label, treeName),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % (label, treeName),
-                      branchName = 'pt',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
+                      branchName = 'lepton_pt',
                       name_prefix = '%s_LeptonPt_' % label,
-                      x_limits = control_plots_bins['LeptonPt'],
-                      nBins = len(control_plots_bins['LeptonPt'])-1,
+                      x_limits = control_plots_bins[binsLabel],
+                      nBins = len(control_plots_bins[binsLabel])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
@@ -675,7 +676,7 @@ if __name__ == '__main__':
                       y_axis_title = 'Events',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % ( label, treeName),
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % (label, treeName),
-                      branchName = 'eta',
+                      branchName = 'lepton_eta',
                       name_prefix = '%s_LeptonEta_' % label,
                       x_limits = control_plots_bins['LeptonEta'],
                       nBins = len(control_plots_bins['LeptonEta'])-1,
@@ -685,6 +686,26 @@ if __name__ == '__main__':
                       use_qcd_data_region = useQCDControl,
                       )
 
+        ###################################################
+        # AbsLepton Eta
+        ###################################################
+        if 'AbsLeptonEta' in include_plots:
+            print '---> Abs Lepton Eta'
+
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['eta'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
+                      branchName = 'abs(lepton_eta)',
+                      name_prefix = '%s_AbsLeptonEta_' % label,
+                      x_limits = control_plots_bins['AbsLeptonEta'],
+                      nBins = len(control_plots_bins['AbsLeptonEta'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
+                      )
 
         ###################################################
         # Rel iso
@@ -836,10 +857,10 @@ if __name__ == '__main__':
         output_folder =  output_folder_base + "QCDControl/Control/%s" % channel
         make_folder_if_not_exists(output_folder)
         ###################################################
-        # Lepton Eta
+        # Abs Lepton Eta
         ###################################################
-        if 'QCDLeptonEta' in include_plots:
-            print '---> QCD Lepton Eta'
+        if 'QCDAbsLeptonEta' in include_plots:
+            print '---> QCD Abs Lepton Eta'
             channelTreeName = 'Electron/Electrons'
             if channel == 'muonQCDNonIso':
                 channelTreeName = 'Muon/Muons'
@@ -847,12 +868,12 @@ if __name__ == '__main__':
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['eta'],
                       y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      branchName = 'eta',
-                      name_prefix = '%s_LeptonEta_' % channel,
-                      x_limits = control_plots_bins['LeptonEta'],
-                      nBins = len(control_plots_bins['LeptonEta'])-1,
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+                      branchName = 'abs(lepton_eta)',
+                      name_prefix = '%s_AbsLeptonEta_' % channel,
+                      x_limits = control_plots_bins['AbsLeptonEta'],
+                      nBins = len(control_plots_bins['AbsLeptonEta'])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
@@ -863,19 +884,19 @@ if __name__ == '__main__':
         ###################################################
         if 'QCDLeptonPt' in include_plots:
             print '---> QCD Lepton Pt'
-            channelTreeName = 'Electron/Electrons'
-            if channel == 'muonQCDNonIso':
-                channelTreeName = 'Muon/Muons'
+            binsLabel = 'ElectronPt'
+            if channel == 'muon':
+                binsLabel = 'MuonPt'
 
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['pt'],
                       y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      branchName = 'pt',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+                      branchName = 'lepton_pt',
                       name_prefix = '%s_LeptonPt_' % channel,
-                      x_limits = control_plots_bins['LeptonPt'],
-                      nBins = len(control_plots_bins['LeptonPt'])-1,
+                      x_limits = control_plots_bins[binsLabel],
+                      nBins = len(control_plots_bins[binsLabel])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',

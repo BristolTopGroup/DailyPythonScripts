@@ -40,7 +40,7 @@ def main():
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
-                       systematic for systematic in measurement_config.generator_systematics if not 'mass' in systematic])
+                       systematic for systematic in measurement_config.generator_systematics if not ( 'mass' in systematic or 'hadronisation' in systematic )])
 
     for variable in variable_binning.bin_edges.keys():
         for category in categories:
