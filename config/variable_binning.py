@@ -69,7 +69,7 @@ control_plots_bins = {
   'NVertex' : [i*2 for i in range ( 0,20 + 1 )],
   'relIso' : [i*0.01 for i in range(0,15)],
   'relIsoQCD' : [i*0.2 for i in range(0,15)],
-  'MET' : [i * 20  for i in range ( 0, 16 )],
+  'MET' : [i * 15  for i in range ( 0, 21 )],
   'WPT' : [i * 25  for i in range ( 0, 17 )],
   'HT' : [i * 50  for i in range ( 0, 21 )],
   'ST' : [i * 50  for i in range ( 0, 21 )],
