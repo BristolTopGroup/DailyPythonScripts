@@ -18,6 +18,10 @@ setup_matplotlib()
 
 title_template = '$%.0f$ pb$^{-1}$ (%d TeV)'
 
+def binWidth(binning):
+    return  ( binning[-1] - binning[0] ) / ( len(binning)-1 )
+
+
 def getPUWeights(histograms_to_draw, histogram_lables) :
     # hists = dict(zip(histogram_lables, histograms_to_draw))
     hists = {}
@@ -334,13 +338,14 @@ if __name__ == '__main__':
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        'HT',
+                        # 'HT',
                         'MET',
-                        'ST',
-                        'WPT',
-                        'NVertex',
-                        'LeptonPt',
-                        'LeptonEta',
+                        'METNoHF',
+                        # 'ST',
+                        # 'WPT',
+                        # 'NVertex',
+                        # 'LeptonPt',
+                        # 'LeptonEta',
                         # 'Mjj',
                         # 'M3',
                         # 'angle_bl',
@@ -352,13 +357,13 @@ if __name__ == '__main__':
                         ]
 
     additional_qcd_plots = [
-                        'QCDHT',
-                        'QCDMET',
-                        'QCDST',
-                        'QCDWPT',
-                        'QCDAbsLeptonEta',
-                        'QCDLeptonPt',
-                        'QCDNJets',
+                        # 'QCDHT',
+                        # 'QCDMET',
+                        # 'QCDST',
+                        # 'QCDWPT',
+                        # 'QCDAbsLeptonEta',
+                        # 'QCDLeptonPt',
+                        # 'QCDNJets',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
                         ]
@@ -385,7 +390,7 @@ if __name__ == '__main__':
             print '---> HT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(50 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'HT',
@@ -406,13 +411,34 @@ if __name__ == '__main__':
             print '---> MET'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'MET',
                       name_prefix = '%s_MET_' % label,
                       x_limits = control_plots_bins['MET'],
-                      nBins = 15,
+                      nBins = len(control_plots_bins['MET'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
+                      )
+
+        ###################################################
+        # MET
+        ###################################################
+        norm_variable = 'MET'
+        if 'METNoHF' in include_plots:
+            print '---> METNoHF'
+            make_plot( channel,
+                      x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'METNoHF',
+                      name_prefix = '%s_METNoHF_' % label,
+                      x_limits = control_plots_bins['MET'],
+                      nBins = len(control_plots_bins['MET'])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
@@ -427,7 +453,7 @@ if __name__ == '__main__':
             print '---> ST'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                      y_axis_title = 'Events/(50 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'ST',
@@ -448,7 +474,7 @@ if __name__ == '__main__':
             print '---> WPT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                      y_axis_title = 'Events/(25 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'WPT',
@@ -472,7 +498,7 @@ if __name__ == '__main__':
             print '---> Mjj'
             make_plot( channel,
                       x_axis_title = 'M(jj) [GeV]',
-                      y_axis_title = 'Events/(X GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
                       branchName = 'mjj',
@@ -491,7 +517,7 @@ if __name__ == '__main__':
             print '---> M3'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % fit_variables_latex['M3'],
-                      y_axis_title = 'Events/(X GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'M3',
@@ -609,7 +635,7 @@ if __name__ == '__main__':
 
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % ( label ),
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % (label ),
                       branchName = 'pt',
@@ -650,7 +676,7 @@ if __name__ == '__main__':
                 binsLabel = 'MuonPt'
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
                       branchName = 'lepton_pt',
@@ -764,7 +790,7 @@ if __name__ == '__main__':
             print '---> QCD HT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'HT',
@@ -780,7 +806,7 @@ if __name__ == '__main__':
             print '---> QCD HT data to signal QCD'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % signalTreeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       compare_qcd_signal_with_data_control = True,
@@ -801,7 +827,7 @@ if __name__ == '__main__':
             print '---> QCD MET'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'MET',
@@ -821,7 +847,7 @@ if __name__ == '__main__':
             print '---> QCD ST'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'ST',
@@ -841,7 +867,7 @@ if __name__ == '__main__':
             print '---> QCD WPT'
             make_plot( channel,
                       x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                      y_axis_title = 'Events/(20 GeV)',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       branchName = 'WPT',
@@ -890,7 +916,7 @@ if __name__ == '__main__':
 
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events',
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
                       branchName = 'lepton_pt',
