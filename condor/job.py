@@ -7,7 +7,7 @@ import time
 import subprocess
 
 
-class Condor():
+class Condor(object):
 
     '''
         Class to control condor work flows
@@ -114,7 +114,7 @@ class Condor():
         self.constructed_jobs = True
 
 
-class Job():
+class Job(object):
 
     '''
         Base class for Condor jobs. The job will be pickled and submited

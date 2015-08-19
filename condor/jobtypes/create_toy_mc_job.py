@@ -8,6 +8,7 @@ class CreateToyMCJob(Job):
 
     def __init__(self, input_file, output_folder, variable, n_toy,
                  centre_of_mass, ttbar_xsection, met_type, start_at=1):
+        Job.__init__(self)
         self.input_file = input_file
         self.output_folder = output_folder
         self.n_toy = n_toy
