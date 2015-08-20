@@ -126,8 +126,6 @@ def main():
         file_name = getFileName('13TeV', options.sample, measurement_config)
         if options.generatorWeight >= 0:
             file_name = 'localInputFile.root'
-        print file_name
-
     else:
         print "Error: Unrecognised centre of mass energy."
 

@@ -116,7 +116,6 @@ def calculate_lower_and_upper_PDFuncertainty(central_measurement, pdf_uncertaint
     for index in range(0, 100):
         pdf_weight = 'PDFWeights_%d' % index
         pdf_uncertainty = pdf_uncertainty_values[pdf_weight]
-        print index,central_measurement, pdf_uncertainty
         if index % 2 == 0:  # even == negative
             negative.append(pdf_uncertainty)
         else:

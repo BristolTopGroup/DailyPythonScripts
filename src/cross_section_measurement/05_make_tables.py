@@ -678,7 +678,6 @@ if __name__ == '__main__':
     rate_changing_systematics = measurement_config.rate_changing_systematics_names
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
-    print all_measurements
     # all_measurements.extend(met_uncertainties)
     ### all_measurements.extend(new_uncertainties)
 
