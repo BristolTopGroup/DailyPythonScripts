@@ -318,8 +318,8 @@ class XSectionConfig():
         self.unfolding_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pythia8.root' % self.centre_of_mass_energy
 
 
-        self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaledown.root' % self.centre_of_mass_energy
-        self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleup.root' % self.centre_of_mass_energy
+        self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleDownWeight.root' % self.centre_of_mass_energy
+        self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleUpWeight.root' % self.centre_of_mass_energy
         self.unfolding_matching_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingdown.root' % self.centre_of_mass_energy
         self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
 
@@ -336,14 +336,14 @@ class XSectionConfig():
         self.unfolding_ptreweight = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting.root' % self.centre_of_mass_energy
         self.unfolding_pythia8 = self.unfolding_pythia8_raw.replace( '.root', '_asymmetric.root' )
 
-        self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '_scaleDown', '_asymmetric_scaleDown' )
+        self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '_scaleUp', '_asymmetric_scaleUp' )
         self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
 
-        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_generatorWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 9, 109 )}
 
         self.tree_path_templates = {
                                     'electron' : 'TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables',

@@ -11,6 +11,9 @@ from math import trunc
 
 from scaleFactors import *
 
+import ROOT as ROOT
+ROOT.gROOT.SetBatch(True)
+
 class channel:
     def __init__(self, channelName, treeName, outputDirName):
         self.channelName = channelName
@@ -121,7 +124,8 @@ def main():
     if int(options.centreOfMassEnergy) == 13:
         # file_name = fileNames['13TeV'][options.sample]
         file_name = getFileName('13TeV', options.sample, measurement_config)
-        print getFileName('13TeV', options.sample, measurement_config)
+        if options.generatorWeight >= 0:
+            file_name = 'localInputFile.root'
     else:
         print "Error: Unrecognised centre of mass energy."
 
@@ -137,7 +141,7 @@ def main():
     elif options.generatorWeight == 4:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_scaleUpWeight.root' % ( energySuffix )
     elif options.generatorWeight == 8:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_scaleUpWeight.root' % ( energySuffix )
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_scaleDownWeight.root' % ( energySuffix )
     elif options.generatorWeight >= 0:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_generatorWeight_%i.root' % ( energySuffix, options.generatorWeight )
     elif options.sample != 'central':
@@ -159,20 +163,25 @@ def main():
             nEntries = tree.GetEntries()
             print "Number of entries in tree : ", nEntries
 
+            if options.generatorWeight >= 0 :
+                tree.AddFriend('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
+                tree.SetBranchStatus('genWeight_*',0)
+                tree.SetBranchStatus('genWeight_%i' % options.generatorWeight, 1)
+
             # Keep record of generator weight
-            # if options.generatorWeight >= 0:
-            #     generatorWeight = '( generatorSystematicWeight[%i] )' % options.generatorWeight
-            #     generatorWeightHist = Hist( 10, 0.8, 1.2, name='generatorWeights_'+channel.channelName )
-            #     if not options.donothing:
-            #         tree.Draw( generatorWeight, hist=generatorWeightHist)
-            #     outputDir = 0
-            #     if not ( out.FindObject('generatorWeights') ):
-            #         outputDir = out.mkdir('generatorWeights')
-            #     else :
-            #         outputDir = out.Get('generatorWeights')
-            #     outputDir.cd()
-            #     generatorWeightHist.Write()
-            #     pass
+            if options.generatorWeight >= 0:
+                generatorWeight = '( genWeight_%i )' % options.generatorWeight
+                generatorWeightHist = Hist( 50, 0.4, 1.6, name='generatorWeights_'+channel.channelName )
+                if not options.donothing:
+                    tree.Draw( generatorWeight, hist=generatorWeightHist)
+                outputDir = 0
+                if not ( out.FindObject('generatorWeights') ):
+                    outputDir = out.mkdir('generatorWeights')
+                else :
+                    outputDir = out.Get('generatorWeights')
+                outputDir.cd()
+                generatorWeightHist.Write()
+                pass
 
             # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
             allVariablesBins = bin_edges.copy()
@@ -242,11 +251,11 @@ def main():
                 
                 # Apply generator weight
                 if options.generatorWeight >= 0:
-                    generatorWeight = '( generatorSystematicWeight[%i] )' % options.generatorWeight
+                    generatorWeight = '( genWeight_%i )' % options.generatorWeight
                     offlineWeight += ' * '+generatorWeight
                     genWeight += ' * '+generatorWeight
                     nEntries = 1000000
-                    print 'Changing nEntries to ',nEntries
+                    print 'Changing nEntries to ',nEntries, "<---- DOES NOT SEEM TO DO ANYTHING"
                     pass
 
                 # Scale factors
@@ -317,7 +326,18 @@ def main():
                 # Some interesting histograms
                 puOffline = Hist( 20, 0, 2, name='puWeights_offline')
                 eventWeight = Hist( 100, -2, 2, name='EventWeight')
-                 
+
+                phaseSpaceInfoHist = Hist( 10, 0, 1, name='phaseSpaceInfoHist')
+                if options.sample == 'central' and options.generatorWeight == -1 :
+                    nVis = ( tree.Draw( '1', genWeight+'*'+genSelectionVis ) ).Integral()
+                    nVisNotOffline = ( tree.Draw( '1', genWeight+'* ( '+genSelectionVis+'&& !'+offlineSelection+')' ) ).Integral()
+                    nOffline = ( tree.Draw( '1', offlineWeight+'*'+offlineSelection ) ).Integral()
+                    nOfflineNotVis = ( tree.Draw( '1', offlineWeight+'* ( '+offlineSelection+'&& !'+genSelectionVis+')' ) ).Integral()
+                    nFull = ( tree.Draw( '1', genWeight+'*'+genSelection ) ).Integral()
+                    phaseSpaceInfoHist.SetBinContent(1, nVisNotOffline / nVis)
+                    phaseSpaceInfoHist.SetBinContent(2, nOfflineNotVis / nOffline)
+                    phaseSpaceInfoHist.SetBinContent(3, nVis / nFull)
+
                 #
                 # Fill histograms
                 #
@@ -347,7 +367,6 @@ def main():
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
                         pass
-                
                 #
                 # Output histgorams to file
                 #
@@ -367,6 +386,7 @@ def main():
                 responseVis_without_fakes.Write()
                 responseVis_only_fakes.Write()
 
+                phaseSpaceInfoHist.Write()
                 eventWeight.Write()
                 if options.extraHists:
                     puOffline.Write()
