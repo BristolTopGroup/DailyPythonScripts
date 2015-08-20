@@ -37,8 +37,8 @@ def read_xsection_measurement_results_with_errors(channel):
     ###file_name = file_template.replace('.txt', '_kValue_errors.txt')
     ###normalised_xsection_kValue_errors = read_data_from_JSON( file_name )
 
-    ###file_name = file_template.replace('.txt', '_PDF_errors.txt')
-    ###normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
+    file_name = file_template.replace('.txt', '_PDF_errors.txt')
+    normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
 
     file_name = file_template.replace('.txt', '_other_errors.txt')
     normalised_xsection_other_errors = read_data_from_JSON( file_name )
@@ -55,7 +55,7 @@ def read_xsection_measurement_results_with_errors(channel):
     normalised_xsection_measured_errors = normalised_xsection_other_errors['TTJet_measured']
 
     normalised_xsection_measured_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_measured'])
-    ### normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
@@ -64,7 +64,7 @@ def read_xsection_measurement_results_with_errors(channel):
 
     normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
     normalised_xsection_unfolded_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_unfolded'])
-    ### normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
@@ -280,8 +280,6 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
         bins = variable_ROOT[variable]
         bins_latex = variable_bins_latex
 
-    print phase_space
-    print bins
     assert(len(bins) == len(xsections['unfolded_with_systematics']))
     
     for bin_i, variable_bin in enumerate(bins):
@@ -376,13 +374,10 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         else:
             central_value = central_values['unfolded'][bin_i][0]
 
-        print bins_latex[variable_bin]
         for source in all_measurements:
             if ( variable == 'HT' or variable == 'NJets' or variable == 'lepton_pt' or variable == 'abs_lepton_eta'  ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
                 continue
 
-            if source in measurement_config.met_systematics:
-                print source
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
             text = '%.2f' % (relative_error*100)
@@ -395,8 +390,6 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
                     rows[source] = [met_systematics_latex[source] + ' (\%)', text]
                 else:
                     rows[source] = [measurements_latex[source] + ' (\%)', text]
-            if source in measurement_config.met_systematics:
-                print rows[source]
     header += ' \\\\'
     printout += header
     printout += '\n\\hline\n'
@@ -677,11 +670,15 @@ if __name__ == '__main__':
     ###kValue_systematics = measurement_config.kValueSystematic
     ###categories.extend( measurement_config.kValueSystematic )
 
+    pdf_uncertainties = ['PDF_total_lower', 'PDF_total_upper']
+
     ### # all MET uncertainties except JES as this is already included
     # met_uncertainties = [suffix for suffix in met_systematics if not 'JES' in suffix and not 'JER' in suffix]
     ### new_uncertainties = ['hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
     rate_changing_systematics = measurement_config.rate_changing_systematics_names
     all_measurements = deepcopy(categories)
+    all_measurements.extend(pdf_uncertainties)
+    print all_measurements
     # all_measurements.extend(met_uncertainties)
     ### all_measurements.extend(new_uncertainties)
 
