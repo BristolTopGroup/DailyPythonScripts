@@ -7,6 +7,9 @@ from tools.hist_utilities import value_error_tuplelist_to_hist, value_errors_tup
 from tools.file_utilities import read_data_from_JSON
 from tools.Timer import Timer
 
+from tools.logger import log
+mylog = log["src.cross_section_measurement.lib"]
+
 closure_tests = {
     'simple': {'V+Jets': 1.1, 'SingleTop': 1.2, 'TTJet': 1.3, 'QCD': 1.5},
     'ttbar_only': {'V+Jets': 0, 'SingleTop': 0, 'TTJet': 1, 'QCD': 0},
@@ -16,22 +19,44 @@ closure_tests = {
 }
 
 
-def read_fit_results(path_to_JSON='data',
-                     variable='MET',
-                     category='central',
-                     channel='combined',
-                     met_type='patType1CorrectedPFMet'):
+@mylog.trace()
+def read_normalisation(path_to_JSON='data',
+                       variable='MET',
+                       category='central',
+                       channel='combined',
+                       met_type='patType1CorrectedPFMet'):
     return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'normalisation')
 
 
-def read_fit_input(path_to_JSON='data',
-                   variable='MET',
-                   category='central',
-                   channel='combined',
-                   met_type='patType1CorrectedPFMet'):
+@mylog.trace()
+def read_initial_normalisation(path_to_JSON='data',
+                               variable='MET',
+                               category='central',
+                               channel='combined',
+                               met_type='patType1CorrectedPFMet',
+                               phase_space='FullPS'):
     return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'initial_normalisation')
 
 
+@mylog.trace()
+def read_unfolded_normalisation(
+        path_to_JSON='data',
+        variable='MET',
+        category='central',
+        channel='combined',
+        met_type='patType1CorrectedPFMet'):
+    new_path = '{path}/xsection_measurement_results/{channel}/{category}/{file}'
+    result_file = 'normalisation_{0}.txt'.format(met_type)
+    new_path = new_path.format(
+        path=path_to_JSON,
+        channel=channel,
+        category=category,
+        file=result_file,
+    )
+    return read_data_from_JSON(new_path)
+
+
+@mylog.trace()
 def read_fit_templates(path_to_JSON='data',
                        variable='MET',
                        category='central',
@@ -40,19 +65,21 @@ def read_fit_templates(path_to_JSON='data',
     return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'templates')
 
 
+@mylog.trace()
 def read_from_fit_results_folder(path_to_JSON='data',
                                  variable='MET',
                                  category='central',
                                  channel='combined',
                                  met_type='patType1CorrectedPFMet',
                                  data_type='fit_results'):
-    filename = path_to_JSON  + '/' + category + '/'
+    filename = path_to_JSON + '/' + category + '/'
     filename += data_type + '_' + channel + '_' + met_type + '.txt'
     results = read_data_from_JSON(filename)
 
     return results
 
 
+@mylog.trace()
 def read_xsection_measurement_results(path_to_JSON, variable, bin_edges,
                                       category,
                                       channel,
@@ -158,6 +185,7 @@ def read_xsection_measurement_results(path_to_JSON, variable, bin_edges,
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
 
+@mylog.trace()
 def convert_unfolding_histograms(file_name,
                                  histograms_to_load=['truth',
                                                      'fake', 'measured', 'response',

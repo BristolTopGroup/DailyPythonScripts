@@ -1,4 +1,4 @@
-from src.cross_section_measurement.lib import read_fit_results, read_fit_templates, read_fit_input, closure_tests
+from src.cross_section_measurement.lib import read_normalisation, read_fit_templates, read_initial_normalisation, closure_tests
 from config.variable_binning import bin_edges
 from config.latex_labels import samples_latex
 
@@ -34,7 +34,7 @@ def makeClosureErrorTable():
                         # Read fit results
                         dir = 'data/'+fitVariable+'/'+com+'/'
                         if closureTest : dir = 'data/closure_test/simple/'+fitVariable+'/'+com+'/'
-                        fit_results_ = read_fit_results( dir,
+                        fit_results_ = read_normalisation( dir,
                                                     variable,
                                                     'central',
                                                     channel,
@@ -68,13 +68,13 @@ def makeClosureTestTable():
             # Read fit results
             dir = 'data/'+fitVariable+'/'+com+'/'
             if closureTest : dir = 'data/closure_test/simple/'+fitVariable+'/'+com+'/'
-            fit_results = read_fit_results( dir,
+            fit_results = read_normalisation( dir,
                                         variable,
                                         'central',
                                         channel,
                                         'patType1CorrectedPFMet' )
             # Read initial values
-            initial_values = read_fit_input( dir,
+            initial_values = read_initial_normalisation( dir,
                                         variable,
                                         'central',
                                         channel,
