@@ -87,6 +87,10 @@ def make_plot( channel, x_axis_title, y_axis_title,
         if not 'QCD' in channel and not 'NPU' in branchName:
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
 
+    print name_prefix
+    if "NPUReweight" in name_prefix:
+        weightBranchSignalRegion += ' * PUWeight'
+    print weightBranchSignalRegion
     # Get all histograms
     # multi = isinstance( signal_region, list )
     # histograms = {}
@@ -344,6 +348,7 @@ if __name__ == '__main__':
                         # 'ST',
                         # 'WPT',
                         # 'NVertex',
+                        'NVertexReweight',
                         # 'LeptonPt',
                         # 'LeptonEta',
                         # 'Mjj',
@@ -655,16 +660,33 @@ if __name__ == '__main__':
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['NVertex'],
                       y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
-                      branchName = 'NPU',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'NVertices',
                       name_prefix = '%s_NPU_' % label,
                       x_limits = control_plots_bins['NVertex'],
                       nBins = len(control_plots_bins['NVertex'])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      use_qcd_data_region = False,
+                      use_qcd_data_region = useQCDControl,
+                      )
+
+        if 'NVertexReweight' in include_plots:
+            print '---> NVertexReweight'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'NVertices',
+                      name_prefix = '%s_NPUReweight_' % label,
+                      x_limits = control_plots_bins['NVertex'],
+                      nBins = len(control_plots_bins['NVertex'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
                       )
         ###################################################
         # Lepton Pt
