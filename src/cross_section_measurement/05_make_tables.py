@@ -6,7 +6,7 @@ from config.variable_binning import variable_bins_latex, variable_bins_ROOT, var
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from lib import read_fit_results, read_fit_input
+from lib import read_normalisation, read_initial_normalisation
 import math
 import os.path
 from numpy import median
@@ -697,8 +697,8 @@ if __name__ == '__main__':
 #             print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
 
         if not channel == 'combined':
-            fit_input = read_fit_input(path_to_JSON, variable, 'central', channel, met_type)
-            fit_results = read_fit_results(path_to_JSON, variable, 'central', channel, met_type)
+            fit_input = read_initial_normalisation(path_to_JSON, variable, 'central', channel, met_type)
+            fit_results = read_normalisation(path_to_JSON, variable, 'central', channel, met_type)
             print_fit_results_table(fit_input, fit_results, channel, toFile = True)
 
     

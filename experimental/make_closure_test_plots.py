@@ -1,4 +1,4 @@
-from src.cross_section_measurement.lib import read_fit_results, read_fit_templates, read_fit_input, closure_tests
+from src.cross_section_measurement.lib import read_normalisation, read_fit_templates, read_initial_normalisation, closure_tests
 from rootpy.plotting import Hist
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties
 
@@ -17,7 +17,7 @@ for test in closure_tests:
     if test != 'qcd_only' : continue;
     for variable in variables:
         
-        fit_results_ = read_fit_results( 'data/closure_test/'+test+'/absolute_eta_M3_angle_bl/8TeV/',
+        fit_results_ = read_normalisation( 'data/closure_test/'+test+'/absolute_eta_M3_angle_bl/8TeV/',
                                     variable,
                                     'central',
                                     'electron',
@@ -29,7 +29,7 @@ for test in closure_tests:
                                         'electron',
                                          'patType1CorrectedPFMet' )
         
-        initial_values_ = read_fit_input( 'data/closure_test/'+test+'/absolute_eta_M3_angle_bl/8TeV/',
+        initial_values_ = read_initial_normalisation( 'data/closure_test/'+test+'/absolute_eta_M3_angle_bl/8TeV/',
                                         variable,
                                         'central',
                                         'electron',

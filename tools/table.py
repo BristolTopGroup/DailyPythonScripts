@@ -4,6 +4,9 @@ Created on 25 Mar 2015
 @author: kreczko
 '''
 from tabulate import tabulate
+from tools.logger import log
+mylog = log["tools.table"]
+
 
 class PrintTable():
     '''
@@ -23,7 +26,7 @@ class PrintTable():
             print t.latex()
     '''
 
-
+    @mylog.trace()
     def __init__(self, data, headers):
         '''
             @param data: a list of columns
@@ -31,7 +34,8 @@ class PrintTable():
         '''
         self.data = data
         self.headers = headers
-        
+
+    @mylog.trace()
     def twiki(self):
         '''
             return the table as a string in twiki format
@@ -39,34 +43,38 @@ class PrintTable():
         # add bold for twiki headers
         headers = ['*' + h + '*' for h in self.headers]
         # use Emacs org-mode as baseline
-        table = tabulate(self.data, headers = headers, tablefmt='orgtbl')
+        table = tabulate(self.data, headers=headers, tablefmt='orgtbl')
         table = str(table).split('\n')
         twiki_table = []
         for line in table:
             # remove header delimiter
             if not line.startswith('|--'):
                 twiki_table.append(line)
-        
+
         return ''.join([line + '\n' for line in twiki_table])
-        
-    
+
+    @mylog.trace()
     def simple(self):
         '''
             return the table as a pretty string
         '''
-        table = tabulate(self.data, headers = self.headers, tablefmt='simple')
+        table = tabulate(self.data, headers=self.headers, tablefmt='simple')
         return str(table)
-    
+
+    @mylog.trace()
     def latex(self):
         '''
             return the table as a string in latex format
         '''
-        table = tabulate(self.data, headers = self.headers, tablefmt='latex')
-        return str(table)
-    
-    
+        table = tabulate(self.data, headers=self.headers, tablefmt='latex')
+        string = str(table)
+        string = string.replace('\\textbackslash{}', '\\')
+        string = string.replace('\\$', '$')
+        return string
+
+
 if __name__ == '__main__':
-    data = [['MET','X', ' '], ['MT',' ', 'x']]
+    data = [['MET', 'X', ' '], ['MT', ' ', 'x']]
     headers = ['variable', 'fun', 'not fun']
     table = PrintTable(data, headers)
     print table.twiki()

@@ -50,7 +50,8 @@ class Histogram_properties:
     emptybins = False
 
     
-    def __init__( self, dictionary = {} ):
+    def __init__( self, dictionary = {}, **kwargs ):
+        dictionary.update(kwargs)
         for name, value in dictionary.iteritems():
             if hasattr( self, name ):
                 setattr( self, name, value )

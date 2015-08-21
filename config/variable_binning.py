@@ -89,18 +89,22 @@ variable_bins_latex = {}
 for variable in bin_edges.keys():
     bin_widths[variable] = []
     variable_bins_ROOT[variable] = []
+    variable_bins_latex[variable] = {}
     number_of_edges = len( bin_edges[variable] )
+    unit = '\GeV'
+    if 'lepton' in variable or variable == 'NJets':
+        unit = ''
     for i in range( number_of_edges - 1 ):
         lower_edge = bin_edges[variable][i]
         upper_edge = bin_edges[variable][i + 1]
         bin_widths[variable].append( upper_edge - lower_edge )
         bin_name = '%d-%d' % ( int( lower_edge ), int( upper_edge ) )
-        bin_name_latex = '%d--%d~\GeV' % ( int( lower_edge ), int( upper_edge ) )
+        bin_name_latex = '%d--%d%s' % ( int( lower_edge ), int( upper_edge ), unit )
         if ( i + 1 ) == number_of_edges - 1:
             bin_name = '%d-inf' % int( lower_edge )
-            bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
+            bin_name_latex = '$\\geq %d$%s' % (int( lower_edge ), unit)
         variable_bins_ROOT[variable].append( bin_name )
-        variable_bins_latex[bin_name] = bin_name_latex
+        variable_bins_latex[variable][bin_name] = bin_name_latex
 
 bin_widths_visiblePS = {}
 variable_bins_visiblePS_ROOT = {}
@@ -109,15 +113,19 @@ variable_bins_visiblePS_latex = {}
 for variable in bin_edges_vis.keys():
     bin_widths_visiblePS[variable] = []
     variable_bins_visiblePS_ROOT[variable] = []
+    variable_bins_visiblePS_latex[variable] = {}
     number_of_edges = len( bin_edges_vis[variable] )
+    unit = '\GeV'
+    if 'lepton' in variable or variable == 'NJets':
+        unit = ''
     for i in range( number_of_edges - 1 ):
         lower_edge = bin_edges_vis[variable][i]
         upper_edge = bin_edges_vis[variable][i + 1]
         bin_widths_visiblePS[variable].append( upper_edge - lower_edge )
         bin_name = '%d-%d' % ( int( lower_edge ), int( upper_edge ) )
-        bin_name_latex = '%d--%d~\GeV' % ( int( lower_edge ), int( upper_edge ) )
+        bin_name_latex = '%d--%d%s' % ( int( lower_edge ), int( upper_edge ), unit )
         if ( i + 1 ) == number_of_edges - 1:
             bin_name = '%d-inf' % int( lower_edge )
-            bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
+            bin_name_latex = '$\\geq %d$%s' % (int( lower_edge ), unit)
         variable_bins_visiblePS_ROOT[variable].append( bin_name )
-        variable_bins_visiblePS_latex[bin_name] = bin_name_latex
+        variable_bins_visiblePS_latex[variable][bin_name] = bin_name_latex

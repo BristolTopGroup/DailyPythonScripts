@@ -1,7 +1,7 @@
 from optparse import OptionParser
 from config import XSectionConfig, fit_var_inputs
 from config.variable_binning import bin_edges
-from lib import read_fit_results, closure_tests
+from lib import read_normalisation, closure_tests
 # from tools.file_utilities import read_data_from_JSON
 # from tools.plotting import Histogram_properties
 
@@ -11,7 +11,7 @@ from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x, \
     limit_range_y
 from tools.plotting import compare_measurements, Histogram_properties
 from config.latex_labels import fit_variables_latex, samples_latex
-from src.cross_section_measurement.lib import read_fit_input
+from src.cross_section_measurement.lib import read_initial_normalisation
 # import linecache
 # 
 # from config.variable_binning import variable_bins_ROOT
@@ -126,36 +126,36 @@ if __name__ == '__main__':
     initial_values_muon = {}
     for fit_variable in fit_variables:
         path = path_to_JSON + fit_variable + '/' + str( come ) + 'TeV/'
-        fit_results_electron[fit_variable] = read_fit_results( path,
+        fit_results_electron[fit_variable] = read_normalisation( path,
                                                 variable,
                                                 category,
                                                 'electron',
                                                  met_type )
-        fit_results_muon[fit_variable] = read_fit_results( path,
+        fit_results_muon[fit_variable] = read_normalisation( path,
                                                 variable,
                                                 category,
                                                 'muon',
                                                  met_type )
     # it doesn't matter which one to use, all of them are identical
     # so lets use the 2011 and 2012 default, |eta|
-    initial_values_electron = read_fit_input( path_to_JSON + 'absolute_eta' + '/' + str( come ) + 'TeV/',
+    initial_values_electron = read_initial_normalisation( path_to_JSON + 'absolute_eta' + '/' + str( come ) + 'TeV/',
                                              variable,
                                              category,
                                              'electron',
                                              met_type )
-    initial_values_muon = read_fit_input( path_to_JSON + 'absolute_eta' + '/' + str( come ) + 'TeV/',
+    initial_values_muon = read_initial_normalisation( path_to_JSON + 'absolute_eta' + '/' + str( come ) + 'TeV/',
                                              variable,
                                              category,
                                              'muon',
                                              met_type )
     
     if not 'closure' in path_to_JSON:
-        fit_results_electron['before'] =  read_fit_results( 'data_single_var_fit/8TeV/',
+        fit_results_electron['before'] =  read_normalisation( 'data_single_var_fit/8TeV/',
                                                 variable,
                                                 category,
                                                 'electron',
                                                  met_type )
-        fit_results_muon['before'] = read_fit_results( 'data_single_var_fit/8TeV/',
+        fit_results_muon['before'] = read_normalisation( 'data_single_var_fit/8TeV/',
                                                 variable,
                                                 category,
                                                 'muon',

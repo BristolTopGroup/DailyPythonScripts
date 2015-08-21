@@ -65,6 +65,7 @@ class XSectionConfig():
         self.__fill_defaults__()
 
     def __fill_defaults__( self ):
+        self.met_type = 'patType1CorrectedPFMet'
         if self.centre_of_mass_energy != 13:
             self.current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/'
             self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
@@ -657,6 +658,26 @@ class XSectionConfig():
             "lepTopRap" : 10.0,
             "ttbarRap" : 236.448941265,
         }
+        self.tau_values_combined = {
+            "NJets" : 0.849753435909,
+            "WPT" : 0.849753435909,
+            "MET" : 1.78864952906,
+            "HT" : 0.443062145758,
+            "ST" : 0.533669923121,
+            "lepton_pt" : 0.1,
+            "abs_lepton_eta" : 0.001,
+            'bjets_pt': 0.,
+            'bjets_eta': 0.,
+            'lepton_eta': 0.,
+            'abs_lepton_eta':0.,
+            "hadTopRap" : 10.0,
+            "lepTopPt" : 53.3669923121,
+            "hadTopPt" : 58.5702081806,
+            "ttbarPt" : 27.8255940221,
+            "ttbarM" : 21.0490414451,
+            "lepTopRap" : 10.0,
+            "ttbarRap" : 93.2603346883,
+           }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
         # self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
