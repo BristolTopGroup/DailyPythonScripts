@@ -79,10 +79,10 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
     bins_latex = None
     if phase_space == 'VisiblePS':
         bins = variable_bins_visiblePS_ROOT[variable]
-        bins_latex = variable_bins_visiblePS_latex
+        bins_latex = variable_bins_visiblePS_latex[variable]
     elif phase_space == 'FullPS':
-        bins = variable_ROOT[variable]
-        bins_latex = variable_bins_latex
+        bins = variable_bins_ROOT[variable]
+        bins_latex = variable_bins_latex[variable]
 
     printout = '%% ' + '=' * 60
     printout += '\n'
@@ -92,7 +92,7 @@ def print_fit_results_table(initial_values, fit_results, channel, toFile = True)
 
     printout += '\\begin{table}[htbp]\n'
     printout += '\\centering\n'
-    printout += '\\caption{Fit results for the \\%s variable\n' % variable
+    printout += '\\caption{Fit results for the %s variable\n' % variables_latex[variable]
     printout += 'at a centre-of-mass energy of %d TeV (%s channel).}\n' % ( measurement_config.centre_of_mass_energy, channel )
     printout += '\\label{tab:%s_fit_results_%dTeV_%s}\n' % (variable, measurement_config.centre_of_mass_energy, channel)
     printout += '\\resizebox{\\columnwidth}{!} {\n'
@@ -256,7 +256,7 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     printout += '\\begin{table}[htbp]\n'
     printout += '\\setlength{\\tabcolsep}{2pt}\n'
     printout += '\\centering\n'
-    printout += '\\caption{Normalised \\ttbar cross section measurement with respect to \\%s variable\n' % variable
+    printout += '\\caption{Normalised \\ttbar cross section measurement with respect to %s variable\n' % variables_latex[variable]
     printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
     if channel == 'combined':
         printout += '(combination of electron and muon channels).'
@@ -275,10 +275,10 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     bins_latex = None
     if phase_space == 'VisiblePS':
         bins = variable_bins_visiblePS_ROOT[variable]
-        bins_latex = variable_bins_visiblePS_latex
+        bins_latex = variable_bins_visiblePS_latex[variable]
     elif phase_space == 'FullPS':
-        bins = variable_ROOT[variable]
-        bins_latex = variable_bins_latex
+        bins = variable_bins_ROOT[variable]
+        bins_latex = variable_bins_latex[variable]
 
     assert(len(bins) == len(xsections['unfolded_with_systematics']))
     
@@ -329,10 +329,10 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     variable_latex = variables_latex[variable]
     if phase_space == 'VisiblePS':
         bins = variable_bins_visiblePS_ROOT[variable]
-        bins_latex = variable_bins_visiblePS_latex
+        bins_latex = variable_bins_visiblePS_latex[variable]
     elif phase_space == 'FullPS':
-        bins = variable_ROOT[variable]
-        bins_latex = variable_bins_latex
+        bins = variable_bins_ROOT[variable]
+        bins_latex = variable_bins_latex[variable]
 
     printout = '%% ' + '=' * 60
     printout += '\n'
@@ -463,7 +463,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
     if phase_space == 'VisiblePS':
         bins = variable_bins_visiblePS_ROOT[variable]
     elif phase_space == 'FullPS':
-        bins = variable_ROOT[variable]
+        bins = variable_bins_ROOT[variable]
 
     values_for_typical_systematics_table = {}
     
@@ -640,7 +640,6 @@ if __name__ == '__main__':
         phase_space = 'VisiblePS'
     output_folder += '/' + str(measurement_config.centre_of_mass_energy) + 'TeV/' + phase_space + '/'
 
-    print phase_space
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
 
