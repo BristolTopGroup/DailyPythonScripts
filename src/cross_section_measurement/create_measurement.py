@@ -376,7 +376,7 @@ def create_input(config, sample, variable, category, channel, template,
     if phase_space == 'VisiblePS':
         edges = variable_binning.bin_edges_vis[variable]
 
-    weight_branches = ['EventWeight']
+    weight_branches = ['EventWeight', 'PUWeight']
     if not 'QCD' in tree:
         if channel == 'muon':
             if category == 'Muon_down':
