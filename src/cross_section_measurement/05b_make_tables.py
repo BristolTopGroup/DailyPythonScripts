@@ -163,30 +163,38 @@ def print_normalisation_table(config, channel, options, initial_normalisation,
     n_data.extend([int(v) for (v, _) in initial_normalisation['data']])
     data.append(n_data)
     for sample in config.samples:
+        if sample == 'TTJet':
+            continue
         values = initial_normalisation[sample]
         values = [process_values(v) for v in values]
 
         cols = len(values) + 1
-        if sample == 'TTJet':
-            sample = 'tbart MC'
         row = [sample]
         row.extend(values)
         data.append(row)
+    data.append([''] * cols)
+
     headers = [variable]
     bins = variable_bins_latex[variable]
     if options.visiblePS:
         bins = variable_bins_visiblePS_latex[variable]
     headers.extend(bins.itervalues())  # replace with bins
 
-    measured = ['tbart meas.']
+    measured = ['\\ttbar event yield']
     measured.extend([process_values(v)
                      for v in unfolded_normalisation['TTJet_measured']])
+    mc_pred = ['MC prediction']
+    mc_pred.extend([process_values(v)
+                    for v in initial_normalisation['TTJet']])
+
     data.append(measured)
+    data.append(mc_pred)
     data.append([''] * cols)
-    unfolded = ['tbart unf.']
+
+    unfolded = ['\\ttbar event yield']
     unfolded.extend([process_values(v)
                      for v in unfolded_normalisation['TTJet_unfolded']])
-    mc_pred = ['tbart MC']
+    mc_pred = ['MC prediction']
     mc_pred.extend([process_values(v)
                     for v in unfolded_normalisation['POWHEG_HERWIG']])
     data.append(unfolded)
