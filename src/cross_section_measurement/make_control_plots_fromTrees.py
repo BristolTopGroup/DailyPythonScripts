@@ -342,19 +342,19 @@ if __name__ == '__main__':
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        # 'HT',
+                        'HT',
                         'MET',
                         'METNoHF',
-                        # 'ST',
-                        # 'WPT',
-                        # 'NVertex',
+                        'ST',
+                        'WPT',
+                        'NVertex',
                         'NVertexReweight',
                         # 'LeptonPt',
-                        # 'LeptonEta',
+                        'AbsLeptonEta',
                         # 'Mjj',
                         # 'M3',
                         # 'angle_bl',
-                        # 'NJets',
+                        'NJets',
                         # 'NBJets',
                         # 'JetPt',
                         # 'AbsLeptonEta',
@@ -362,13 +362,13 @@ if __name__ == '__main__':
                         ]
 
     additional_qcd_plots = [
-                        # 'QCDHT',
-                        # 'QCDMET',
-                        # 'QCDST',
-                        # 'QCDWPT',
-                        # 'QCDAbsLeptonEta',
-                        # 'QCDLeptonPt',
-                        # 'QCDNJets',
+                        'QCDHT',
+                        'QCDMET',
+                        'QCDST',
+                        'QCDWPT',
+                        'QCDAbsLeptonEta',
+                        'QCDLeptonPt',
+                        'QCDNJets',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
                         ]
@@ -379,7 +379,7 @@ if __name__ == '__main__':
 
     for channel, label in {
                             'electron' : 'EPlusJets', 
-                            'muon' : 'MuPlusJets'
+                            # 'muon' : 'MuPlusJets'
                             }.iteritems() :
         b_tag_bin = '2orMoreBtags'
 
@@ -461,7 +461,7 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'ST',
+                      branchName = 'STNoHF',
                       name_prefix = '%s_ST_' % label,
                       x_limits = control_plots_bins['ST'],
                       nBins = 20,
@@ -482,7 +482,7 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'WPT',
+                      branchName = 'WPTNoHF',
                       name_prefix = '%s_WPT_' % label,
                       x_limits = control_plots_bins['WPT'],
                       nBins = 16,
@@ -852,7 +852,7 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'MET',
+                      branchName = 'METNoHF',
                       name_prefix = '%s_MET_' % channel,
                       x_limits = control_plots_bins['MET'],
                       nBins = 20,
@@ -872,7 +872,7 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'ST',
+                      branchName = 'STNoHF',
                       name_prefix = '%s_ST_' % channel,
                       x_limits = control_plots_bins['ST'],
                       nBins = 20,
@@ -892,7 +892,7 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'WPT',
+                      branchName = 'WPTNoHF',
                       name_prefix = '%s_WPT_' % channel,
                       x_limits = control_plots_bins['WPT'],
                       nBins = 20,
