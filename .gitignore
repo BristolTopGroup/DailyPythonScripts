@@ -8,6 +8,7 @@
 *.out
 *.o
 *.tar*
+bltUnfold.job*
 *~
 .DS_Store
 #data, plots and tables potentially include non-approved data == don't make them public
