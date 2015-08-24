@@ -612,15 +612,13 @@ class XSectionConfig():
                    }
 
         self.tau_values_electron = {
-"NJets" : 0.774263682681,
-
-"WPT" : 0.849753435909,
-"MET" : 1.78864952906,
-"HT" : 0.443062145758,
-"ST" : 0.533669923121,
-
-"lepton_pt" : 0.705480231072,
-"abs_lepton_eta" : 0.001,
+"MET" : 0.705480231072,
+"WPT" : 0.932603346883,
+"NJets" : 0.849753435909,
+"abs_lepton_eta" : 0.1,
+"ST" : 0.774263682681,
+"lepton_pt" : 0.533669923121,
+"HT" : 0.932603346883,
 
             'bjets_pt': 0.,
             'bjets_eta': 0.,
@@ -636,15 +634,15 @@ class XSectionConfig():
            }
 
         self.tau_values_muon = {
-"NJets" : 0.932603346883,
 
+"MET" : 0.849753435909,
 "WPT" : 1.0235310219,
-"MET" : 2.36448941265,
-"HT" : 0.486260158007,
-"ST" : 0.774263682681,
+"NJets" : 0.932603346883,
+"abs_lepton_eta" : 0.1,
+"ST" : 0.849753435909,
+"lepton_pt" : 0.585702081806,
+"HT" : 1.12332403298,
 
-"lepton_pt" : 0.705480231072,
-"abs_lepton_eta" : 0.001,
 
             'bjets_pt': 0.,
             'bjets_eta': 0.,
