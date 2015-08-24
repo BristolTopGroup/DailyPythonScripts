@@ -113,11 +113,15 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     }
     variable_template = config.variable_path_templates[
         variable].format(**inputs)
+    if variable in ['MET', 'WPT', 'ST'] and category not in config.met_systematics:
+        variable_template += 'NoHF'
+
     template_category = category
     if category == 'QCD_shape' or category in config.rate_changing_systematics_names:
         template_category = 'central'
     if category in [config.vjets_theory_systematic_prefix + systematic for systematic in config.generator_systematics]:
         template_category = 'central'
+
     m.addSample(
         'TTJet',
         False,
@@ -148,6 +152,9 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     )
     variable_template_data = variable_template.replace(
         met_type, config.translate_options['type1'])
+
+    if variable in ['MET', 'WPT', 'ST'] and category in config.met_systematics:
+        variable_template_data += 'NoHF'
     m.addSample(
         'data',
         False,
@@ -368,9 +375,9 @@ def create_input(config, sample, variable, category, channel, template,
     lumi_scale = 1.
     if sample == 'QCD' and not 'QCD' in tree:
         if channel == 'muon':
-            lumi_scale = 1.13
+            lumi_scale = 1.10
         else :
-            lumi_scale = 0.97
+            lumi_scale = 0.87
 
     edges = variable_binning.bin_edges[variable]
     if phase_space == 'VisiblePS':
