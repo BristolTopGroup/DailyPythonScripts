@@ -3,31 +3,34 @@ import ROOT
 from ROOT import gROOT, gPad, gStyle, TChain, TFile, TTree, TMath, TH1, TH1F, TH2F, TCanvas, TPad, TAxis, TLegend, TLatex, kRed, kBlue, kGreen, kMagenta
 from array import array
 import math
-
+ROOT.gROOT.SetBatch(True)
 if __name__ == '__main__':
 
 
 	########## 			SETUP 			##########
 	gStyle.SetOptStat("")
-	input_file = "/storage/db0268/TopCrossSections/AnalysisSoftware/CMSSW_7_5_0/src/tree_TTJets_amcatnloFXFX_1000pb_PFElectron_PFMuon_PF2PATJets_MET.root"
+	input_file = "/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_tree.root"
 	file = TFile("BTagEfficiency.root", "RECREATE")
 
 	# pt_binning = array ( 'f' , [25., 30., 40., 50., 60., 70., 80., 100., 120., 160., 210., 260., 320., 400., 500., 600., 800.] )
 	# eta_binning = array ( 'f', [ -2.4, 2.4 ] )
-	pt_binning = array ( 'f' , [25, 30, 40, 50, 100] )
-	eta_binning = array ( 'f', [-2.5, -1.478, -0.8, 0, 0.8, 1.478, 2.5] )
+	pt_binning = array ( 'f' , [30, 50, 70, 100, 140, 200, 300, 670] )
+	eta_binning = array ( 'f', [-2.4, 2.4] )
 
-	bQuarkJets_Total_Hist = TH2F("bQuarkJets_Total_Hist", "bQuarkJets_Total_Hist", 4, pt_binning, 6, eta_binning)
-	bQuarkJets_BTags_Hist = TH2F("bQuarkJets_BTags_Hist", "bQuarkJets_BTags_Hist", 4, pt_binning, 6, eta_binning)
 
-	cQuarkJets_Total_Hist = TH2F("cQuarkJets_Total_Hist", "cQuarkJets_Total_Hist", 4, pt_binning, 6, eta_binning)
-	cQuarkJets_BTags_Hist = TH2F("cQuarkJets_BTags_Hist", "cQuarkJets_BTags_Hist", 4, pt_binning, 6, eta_binning)
+	nPtBins = len( pt_binning )	- 1
+	nEtaBins = len( eta_binning )	- 1
+	bQuarkJets_Total_Hist = TH2F("bQuarkJets_Total_Hist", "bQuarkJets_Total_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
+	bQuarkJets_BTags_Hist = TH2F("bQuarkJets_BTags_Hist", "bQuarkJets_BTags_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
 
-	udsQuarkJets_Total_Hist = TH2F("udsQuarkJets_Total_Hist", "udsQuarkJets_Total_Hist", 4, pt_binning, 6, eta_binning)
-	udsQuarkJets_BTags_Hist = TH2F("udsQuarkJets_BTags_Hist", "udsQuarkJets_BTags_Hist", 4, pt_binning, 6, eta_binning)
+	cQuarkJets_Total_Hist = TH2F("cQuarkJets_Total_Hist", "cQuarkJets_Total_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
+	cQuarkJets_BTags_Hist = TH2F("cQuarkJets_BTags_Hist", "cQuarkJets_BTags_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
 
-	gluonQuarkJets_Total_Hist = TH2F("gluonQuarkJets_Total_Hist", "gluonQuarkJets_Total_Hist", 4, pt_binning, 6, eta_binning)
-	gluonQuarkJets_BTags_Hist = TH2F("gluonQuarkJets_BTags_Hist", "gluonQuarkJets_BTags_Hist", 4, pt_binning, 6, eta_binning)
+	udsQuarkJets_Total_Hist = TH2F("udsQuarkJets_Total_Hist", "udsQuarkJets_Total_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
+	udsQuarkJets_BTags_Hist = TH2F("udsQuarkJets_BTags_Hist", "udsQuarkJets_BTags_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
+
+	gluonQuarkJets_Total_Hist = TH2F("gluonQuarkJets_Total_Hist", "gluonQuarkJets_Total_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
+	gluonQuarkJets_BTags_Hist = TH2F("gluonQuarkJets_BTags_Hist", "gluonQuarkJets_BTags_Hist", nPtBins, pt_binning, nEtaBins, eta_binning)
 
 
 
@@ -39,27 +42,36 @@ if __name__ == '__main__':
 	Mu_Chain = TChain(Mu_inputTree)
 	Mu_Chain.Add(input_file)
 
-	E_Chain.SetBranchStatus("*",1)
-	Mu_Chain.SetBranchStatus("*",1)
+	for chain in [E_Chain, Mu_Chain]:
+		chain.SetBranchStatus("*",0)
+		chain.SetBranchStatus("pt",1)
+		chain.SetBranchStatus("eta",1)
+		chain.SetBranchStatus("CSV",1)
+		chain.SetBranchStatus("partonFlavour",1)
+		chain.SetBranchStatus("isLoose",1)
+		chain.SetBranchStatus("isMedium",1)
+		chain.SetBranchStatus("isTight",1)
+		chain.SetBranchStatus("NJets",1)
 
 	# n=0
 
 	########## 			FILL HISTOGRAMS 		##########
+	print 'Electron channel'
 	for event in E_Chain:
 		# n=n+1
 		# if n==1000: break
 		NJets = event.__getattr__("NJets")
 		if (NJets <= 0): continue;
 
-		for JetIndex in range (0,int(NJets)):
+		pt = event.__getattr__("pt")
+		eta = event.__getattr__("eta")
+		CSV = event.__getattr__("CSV")
+		partonFlavour = event.__getattr__("partonFlavour")
+		isLoose = event.__getattr__("isLoose")
+		isMedium = event.__getattr__("isMedium")
+		isTight = event.__getattr__("isTight")
 
-			pt = event.__getattr__("pt")
-			eta = event.__getattr__("eta")
-			CSV = event.__getattr__("CSV")
-			partonFlavour = event.__getattr__("partonFlavour")
-			isLoose = event.__getattr__("isLoose")
-			isMedium = event.__getattr__("isMedium")
-			isTight = event.__getattr__("isTight")
+		for JetIndex in range (0,int(NJets)):
 
 			# print pt[JetIndex]
 			# print eta[JetIndex]
@@ -87,21 +99,24 @@ if __name__ == '__main__':
 				if (isMedium[JetIndex] == 1):
 					gluonQuarkJets_BTags_Hist.Fill(pt[JetIndex], eta[JetIndex])
 
+	print 'Muon channel'
+	# n=0
 	for event in Mu_Chain:
+		# n=n+1
 		# if n==1000: break
 
 		NJets = event.__getattr__("NJets")
 		if (NJets <= 0): continue;
 
-		for JetIndex in range (0,int(NJets)):
+		pt = event.__getattr__("pt")
+		eta = event.__getattr__("eta")
+		CSV = event.__getattr__("CSV")
+		partonFlavour = event.__getattr__("partonFlavour")
+		isLoose = event.__getattr__("isLoose")
+		isMedium = event.__getattr__("isMedium")
+		isTight = event.__getattr__("isTight")
 
-			pt = event.__getattr__("pt")
-			eta = event.__getattr__("eta")
-			CSV = event.__getattr__("CSV")
-			partonFlavour = event.__getattr__("partonFlavour")
-			isLoose = event.__getattr__("isLoose")
-			isMedium = event.__getattr__("isMedium")
-			isTight = event.__getattr__("isTight")
+		for JetIndex in range (0,int(NJets)):
 
 			# print pt[JetIndex]
 			# print eta[JetIndex]
