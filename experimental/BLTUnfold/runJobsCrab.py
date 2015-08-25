@@ -20,13 +20,19 @@ jobs = [
 
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
-
-
         ]
 
 # # #  Add pdf variations to list of jobs
-for variation in range(9,109): # <- 9 to 108 makes 100 jobs
-    jobs.append('--centreOfMassEnergy 13 --generatorWeight %i' % variation)
+nPDFPerJob = 6
+minPDF = 9
+maxPDF = 109
+variation = 9
+while variation < maxPDF :
+    nForThisJob = nPDFPerJob
+    if variation + nPDFPerJob > maxPDF:
+        nForThisJob = maxPDF - variation
+    jobs.append('--centreOfMassEnergy 13 --generatorWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
+    variation += nPDFPerJob
     pass
 
 def parse_args(parameters = []):
