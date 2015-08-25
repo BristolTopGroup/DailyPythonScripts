@@ -87,7 +87,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
         if not 'QCD' in channel and not 'NPU' in branchName:
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
 
-    if "NPUReweight" in name_prefix:
+    if not "_NPU_" in name_prefix:
         weightBranchSignalRegion += ' * PUWeight'
 
     # Get all histograms
