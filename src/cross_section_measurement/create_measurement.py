@@ -15,6 +15,7 @@ import tools.measurement
 from config import XSectionConfig, variable_binning
 from tools.input import Input
 from tools.logger import log
+from copy import deepcopy
 
 # define logger for this module
 create_measurement_log = log["01b_get_ttjet_normalisation"]
@@ -199,6 +200,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     )
 
     m.addShapeForSample('QCD', m_qcd, False)
+    m.addNormForSample('QCD', deepcopy(m_qcd), False)
 
     if category in [config.vjets_theory_systematic_prefix + systematic for systematic in config.generator_systematics]:
         v_template_category = category.replace(
@@ -373,11 +375,6 @@ def create_input(config, sample, variable, category, channel, template,
         hist = template
 
     lumi_scale = 1.
-    if sample == 'QCD' and not 'QCD' in tree:
-        if channel == 'muon':
-            lumi_scale = 1.10
-        else :
-            lumi_scale = 0.87
 
     edges = variable_binning.bin_edges[variable]
     if phase_space == 'VisiblePS':

@@ -23,7 +23,7 @@ from tools.logger import log
 from config import XSectionConfig
 from src.cross_section_measurement.lib import closure_tests
 from tools.file_utilities import write_data_to_JSON
-from tools.hist_utilities import clean_control_region, rebin_asymmetric, \
+from tools.hist_utilities import clean_control_region, \
     hist_to_value_error_tuplelist
 
 import glob
@@ -69,8 +69,7 @@ class TTJetNormalisation:
         self.method = method
         self.phase_space = phase_space
         self.measurement = measurement
-        self.measurement.read_samples()
-        self.measurement.read_shapes()
+        self.measurement.read()
 
         self.met_type = measurement.met_type
         self.fit_variables = ['M3']
