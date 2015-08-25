@@ -348,13 +348,13 @@ if __name__ == '__main__':
                         'WPT',
                         'NVertex',
                         'NVertexReweight',
-                        # 'LeptonPt',
+                        'LeptonPt',
                         'AbsLeptonEta',
                         # 'Mjj',
                         # 'M3',
                         # 'angle_bl',
                         'NJets',
-                        # 'NBJets',
+                        'NBJets',
                         # 'JetPt',
                         # 'AbsLeptonEta',
                         # 'RelIso',
@@ -378,7 +378,7 @@ if __name__ == '__main__':
 
     for channel, label in {
                             'electron' : 'EPlusJets', 
-                            # 'muon' : 'MuPlusJets'
+                            'muon' : 'MuPlusJets'
                             }.iteritems() :
         b_tag_bin = '2orMoreBtags'
 

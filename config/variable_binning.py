@@ -87,7 +87,7 @@ control_plots_bins = {
   'MET' : [i * 15  for i in range ( 0, 21 )],
   'WPT' : [i * 25  for i in range ( 0, 17 )],
   'HT' : [i * 50  for i in range ( 0, 21 )],
-  'ST' : [i * 50  for i in range ( 0, 21 )],
+  'ST' : [i * 50  for i in range ( 2, 25 )],
 }
 
 
