@@ -111,6 +111,7 @@ def make_data_mc_comparison_plot( histograms = [],
     
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    axes=None
     if show_ratio:
         ratio = data.Clone( 'ratio' )
         ratio.Divide( sum( stack.GetHists() ) )
@@ -179,10 +180,11 @@ def make_data_mc_comparison_plot( histograms = [],
 
     x_limits = histogram_properties.x_limits
     y_limits = histogram_properties.y_limits
-    if len( x_limits ) == 2:
-        axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
-    if len( y_limits ) == 2:
-        axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
+
+    if len( x_limits ) >= 2:
+        axes.set_xlim( xmin = x_limits[0], xmax = x_limits[-1] )
+    if len( y_limits ) >= 2:
+        axes.set_ylim( ymin = y_limits[0], ymax = y_limits[-1] )
     else:
         y_max = get_best_max_y(histograms_, x_limits=x_limits) * histogram_properties.y_max_scale
         axes.set_ylim( ymin = 0, ymax = y_max )
@@ -199,18 +201,17 @@ def make_data_mc_comparison_plot( histograms = [],
         ax1 = plt.subplot( gs[1] )
         ax1.minorticks_on()
         ax1.grid( True, 'major', linewidth = 1 )
-        # Add horizontal line at y=1 on ratio plot
         ax1.axhline(y=1, linewidth = 1)
         set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
         plt.ylabel( r'$\frac{\mathrm{data}}{\mathrm{pred.}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
         rplt.errorbar( ratio, emptybins = histogram_properties.emptybins, axes = ax1,
                        xerr = histogram_properties.xerr, )
-        if len( x_limits ) == 2:
-            ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
-        if len( histogram_properties.ratio_y_limits ) == 2:
+        if len( x_limits ) >= 2:
+            ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[-1] )
+        if len( histogram_properties.ratio_y_limits ) >= 2:
             ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
-                      ymax = histogram_properties.ratio_y_limits[1] )
+                      ymax = histogram_properties.ratio_y_limits[-1] )
 
         # dynamic tick placement
         adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
