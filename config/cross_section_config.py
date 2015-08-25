@@ -383,49 +383,28 @@ class XSectionConfig():
 
         self.luminosity_scale = self.new_luminosity / self.luminosity
 
-        self.typical_systematics = {
-        #                               "typical_systematics_electron": ['Electron_down',
-        #                                                   'Electron_up'],
-        #                  "typical_systematics_muon": ['Muon_down',
-        #                                                'Muon_up'],
-        #                  "typical_systematics_btagging": ['BJet_down',
-        #                                                    'BJet_up'],
-        #                  "typical_systematics_JES": ['JES_down',
-        #                                               'JES_up'],
-        #                  "typical_systematics_JER": ['JER_down',
-        #                                               'JER_up'],
-        #                  "typical_systematics_PU": ['PU_down',
-        #                                              'PU_up'],
-        #                 "typical_systematics_hadronisation": ['hadronisation'],
-        #                 "typical_systematics_QCD_shape": ['QCD_shape'],
-        #                  "typical_systematics_PDF": ['PDF_total_lower',
-        #                                               'PDF_total_upper'],
-        #                  "typical_systematics_top_mass": ['TTJets_massdown',
-        #                                                    'TTJets_massup'],
-        #                  "typical_systematics_background_other": ["TTJet_cross_section+",
-        #                                                            "TTJet_cross_section-",
-        #                                                            "SingleTop_cross_section+",
-        #                                                            "SingleTop_cross_section-",
-        #                                                            "luminosity+",
-        #                                                            "luminosity-"],
-        #                 "typical_systematics_theoretical": ["TTJets_matchingup",
-        #                                                      "TTJets_matchingdown",
-        #                                                      "VJets_matchingup",
-        #                                                      'VJets_matchingdown',
-        #                                                      "TTJets_scaleup",
-        #                                                      "TTJets_scaledown",
-        #                                                      "VJets_scaleup",
-        #                                                      "VJets_scaledown"],
-        #                 "typical_systematics_MET": ["patType1CorrectedPFMetElectronEnUp",
-        #                                              "patType1CorrectedPFMetElectronEnDown",
-        #                                              "patType1CorrectedPFMetMuonEnUp",
-        #                                              "patType1CorrectedPFMetMuonEnDown",
-        #                                              "patType1CorrectedPFMetTauEnUp",
-        #                                              "patType1CorrectedPFMetTauEnDown",
-        #                                              "patType1CorrectedPFMetUnclusteredEnUp",
-        #                                              "patType1CorrectedPFMetUnclusteredEnDown"],
-        #                 "typical_systematics_pt_reweight": ['ptreweight_max']
-                       }
+        # structure
+        # { summary_name : [(Electron_down, Electron_up)), (TTJets_hadronisation, TTJets_hadronisation)
+        self.typical_systematics_summary = {
+            'Leptons energy \& scale factors': [('Electron_down', 'Electron_up'), ('Muon_down', 'Muon_up')],
+            'Jet energy \& resolution': [('JES_down', 'JES_up', 'JER_down', 'JER_up')],
+            'Normalisation': [('TTJet_cross_section-', 'TTJet_cross_section+'),
+                              ('SingleTop_cross_section-', 'SingleTop_cross_section+'),
+                              ('luminosity-', 'luminosity+'),
+                              ('QCD_cross_section-', 'QCD_cross_section+'),],
+            'Theory': [('TTJets_scaledown', 'TTJets_scaleup'),
+                       ('TTJets_massdown', 'TTJets_massup')],
+            'Hadronisation': [('TTJets_hadronisation', 'TTJets_hadronisation')],
+            'PDF': [('PDF_total_lower', 'PDF_total_upper')],
+            'others': [('QCD_shape', 'QCD_shape')]
+                                    }
+        self.typical_systematics = []
+        for _, values in self.typical_systematics_summary.items():
+            for tuple in values:
+                if tuple[0] == tuple[1]:
+                    self.typical_systematics.append(tuple[0])
+                else:
+                    self.typical_systematics.extend(tuple)
 
     def __fill_defaults_7TeV__( self ):
         middle = self.middle
