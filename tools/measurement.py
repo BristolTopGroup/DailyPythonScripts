@@ -143,8 +143,9 @@ class Measurement():
     def getCleanedShape(self, sample):
         subtract = copy.copy(self.histograms.keys())
         subtract.remove(sample)
+        subtract.remove('data')
         hist = hu.clean_control_region(self.histograms,
-                                       data_label=sample,
+                                       data_label='data',
                                        subtract=subtract,
                                        fix_to_zero=True)
         return hist

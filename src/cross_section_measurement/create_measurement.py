@@ -195,6 +195,13 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         'QCD',
         False,
         input=create_input(
+            config, 'QCD', variable, template_category, channel,
+            qcd_template, phase_space=phase_space),
+    )
+    m_qcd.addSample(
+        'data',
+        False,
+        input=create_input(
             config, 'data', variable, template_category, channel,
             qcd_template, phase_space=phase_space),
     )
