@@ -7,11 +7,27 @@ nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
 N_JOBS=4
 
 echo "Using the fit variable(s): $fit_var"
+input_folder=/hdfs/TopQuarkGroup/run2/dpsData/data/normalisation/background_subtraction/
+output_folder=tables/background_subtraction/
+com=13
+typical_systematics="${output_folder}/${com}TeV/FullPS/typical_systematics_${com}TeV_combined.tex"
+typical_systematics_vis="${output_folder}/${com}TeV/VisiblePS/typical_systematics_${com}TeV_combined_vis.tex"
+if [ -f $typical_systematics ];
+then
+	echo "Cleaning up old typical systematics file for full phase space"
+	rm $typical_systematics
+fi
+
+if [ -f $typical_systematics_vis ];
+then
+	echo "Cleaning up old typical systematics file for visible phase space"
+	rm $typical_systematics_vis
+fi
 
 i=0
-for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
+for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Tabulating diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p data/$nice_fit_var -a &> logs/05_${var}_table_13TeV_${nice_fit_var}.log &
+	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c $com -p $input_folder -o $output_folder -a &> logs/05_${var}_table_${com}TeV.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -21,4 +37,17 @@ for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM
 done
 
 wait;
+
+echo "Now visible phase space ..."
+i=0
+for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
+	echo "Tabulating diff. x-section for distribution: $var"
+	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p input_folder -o $output_folder -a --visiblePS &> logs/05_${var}_table_13TeV_vis.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
 echo "All done!"
