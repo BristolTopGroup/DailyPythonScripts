@@ -232,11 +232,14 @@ class XSectionConfig():
                         affected_samples = affected_samples,
                         scale = 1 + self.rate_changing_systematics[systematic],
                         )
+            scale = 1 - self.rate_changing_systematics[systematic]
+            if scale <= 0:
+                scale = 10e-5
             sm = tools.measurement.Systematic( 
                         systematic + '-',
                         stype = tools.measurement.Systematic.RATE,
                         affected_samples = affected_samples,
-                        scale = 1 - self.rate_changing_systematics[systematic],
+                        scale = scale,
                         )
             self.rate_changing_systematics_values[sp.name] = sp
             self.rate_changing_systematics_values[sm.name] = sm
