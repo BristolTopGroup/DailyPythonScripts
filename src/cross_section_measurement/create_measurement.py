@@ -387,22 +387,34 @@ def create_input(config, sample, variable, category, channel, template,
     if phase_space == 'VisiblePS':
         edges = variable_binning.bin_edges_vis[variable]
 
-    weight_branches = ['EventWeight', 'PUWeight']
-    if not 'QCD' in tree:
-        if channel == 'muon':
-            if category == 'Muon_down':
-                weight_branches.append('MuonDown')
-            elif category == 'Muon_up':
-                weight_branches.append('MuonUp')
-            else :
-                weight_branches.append('MuonEfficiencyCorrection')
-        elif channel == 'electron':
-            if category == 'Electron_down':
-                weight_branches.append('ElectronDown')
-            elif category == 'Electron_up':
-                weight_branches.append('ElectronUp')
-            else :
-                weight_branches.append('ElectronEfficiencyCorrection')
+    weight_branches = []
+    if sample == 'data':
+        weight_branches.append('1')
+    else :
+        weight_branches.append('EventWeight')
+        weight_branches.append('PUWeight')
+        if category == 'BJet_down' :
+            weight_branches.append('BJetDownWeight')
+        elif category == 'BJet_up' :
+            weight_branches.append('BJetUpWeight')
+        else :
+            weight_branches.append('BJetWeight')
+
+        if not 'QCD' in tree:
+            if channel == 'muon':
+                if category == 'Muon_down':
+                    weight_branches.append('MuonDown')
+                elif category == 'Muon_up':
+                    weight_branches.append('MuonUp')
+                else :
+                    weight_branches.append('MuonEfficiencyCorrection')
+            elif channel == 'electron':
+                if category == 'Electron_down':
+                    weight_branches.append('ElectronDown')
+                elif category == 'Electron_up':
+                    weight_branches.append('ElectronUp')
+                else :
+                    weight_branches.append('ElectronEfficiencyCorrection')
 
     i = Input(
         input_file=input_file,

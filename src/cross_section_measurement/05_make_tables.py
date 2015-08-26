@@ -624,23 +624,13 @@ if __name__ == '__main__':
     categories.extend(ttbar_generator_systematics)
     ### categories.extend(vjets_generator_systematics)
 
-    ### # Add mass systematics
-    ### ttbar_mass_systematics = measurement_config.topMass_systematics
-    ### categories.extend( measurement_config.topMass_systematics )
-
-    ### Add k value systematic - commented out for now because we have decided to remove the k value systematic from the error tables.
-    ###kValue_systematics = measurement_config.kValueSystematic
-    ###categories.extend( measurement_config.kValueSystematic )
-
     pdf_uncertainties = ['PDF_total_lower', 'PDF_total_upper']
 
     ### # all MET uncertainties except JES as this is already included
-    met_uncertainties = [suffix for suffix in met_systematics if not 'JES' in suffix and not 'JER' in suffix]
-    new_uncertainties = ['TTJets_hadronisation', 'QCD_shape', 'PDF_total_lower', 'PDF_total_upper']
+    new_uncertainties = ['QCD_shape']
     rate_changing_systematics = measurement_config.rate_changing_systematics_names
     all_measurements = deepcopy(categories)
     all_measurements.extend(pdf_uncertainties)
-    all_measurements.extend(met_uncertainties)
     all_measurements.extend(new_uncertainties)
 
     all_measurements.extend(rate_changing_systematics)

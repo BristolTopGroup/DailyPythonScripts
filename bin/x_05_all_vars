@@ -7,7 +7,8 @@ nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
 N_JOBS=4
 
 echo "Using the fit variable(s): $fit_var"
-input_folder=/hdfs/TopQuarkGroup/run2/dpsData/data/normalisation/background_subtraction/
+# input_folder=/hdfs/TopQuarkGroup/run2/dpsData/data/normalisation/background_subtraction/
+input_folder=data/normalisation/background_subtraction/
 output_folder=tables/background_subtraction/
 com=13
 typical_systematics="${output_folder}/${com}TeV/FullPS/typical_systematics_${com}TeV_combined.tex"
@@ -42,7 +43,7 @@ echo "Now visible phase space ..."
 i=0
 for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Tabulating diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p input_folder -o $output_folder -a --visiblePS &> logs/05_${var}_table_13TeV_vis.log &
+	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p $input_folder -o $output_folder -a --visiblePS &> logs/05_${var}_table_13TeV_vis.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

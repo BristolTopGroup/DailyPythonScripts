@@ -137,7 +137,6 @@ def get_histograms_from_trees(
 
         for tree in trees:
 
-            # print sample, tree, input_file
             currentTree = get_tree( tree )
             root_histogram = Hist( nBins, xMin, xMax)
             currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
