@@ -389,9 +389,12 @@ class XSectionConfig():
         # structure
         # { summary_name : [(Electron_down, Electron_up)), (TTJets_hadronisation, TTJets_hadronisation)
         self.typical_systematics_summary = {
-            'Leptons energy \& scale factors': [('Electron_down', 'Electron_up'), ('Muon_down', 'Muon_up')],
+            'Lepton selection efficiency': [('Electron_down', 'Electron_up'), ('Muon_down', 'Muon_up')],
             'Jet energy \& resolution': [('JES_down', 'JES_up', 'JER_down', 'JER_up')],
-            'Normalisation': [('TTJet_cross_section-', 'TTJet_cross_section+'),
+            'B-tagging' : [('BJet_down', 'BJet_up')],
+            'MET' : [('ElectronEnDown', 'ElectronEnUp'), ('MuonEnDown','MuonEnUp'),('TauEnDown','TauEnUp'),('UnclusteredEnDown','UnclusteredEnUp')],
+            'Normalisation': [
+            # ('TTJet_cross_section-', 'TTJet_cross_section+'),
                               ('SingleTop_cross_section-', 'SingleTop_cross_section+'),
                               ('luminosity-', 'luminosity+'),
                               ('QCD_cross_section-', 'QCD_cross_section+'),],
@@ -524,9 +527,9 @@ class XSectionConfig():
 
         self.rate_changing_systematics = {#TODO check where this is used
                         'luminosity': 0.1,  # Best guess for 13 TeV
-                        'SingleTop_cross_section': 0.034,  # Currently same as 8 TeV
-                        'TTJet_cross_section': 0.043, # Currently same as 8 TeV
-                        'V+Jets_cross_section': 0.3,
+                        'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
+                        # 'TTJet_cross_section': 0.043, # Currently same as 8 TeV
+                        'V+Jets_cross_section': 0.5,
                         'QCD_cross_section' : 1.,
                          }
 

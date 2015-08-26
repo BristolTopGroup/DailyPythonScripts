@@ -554,7 +554,6 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
                             if line.startswith(group):
                                 new_line = line.replace('\\\\', '')
                                 new_line = new_line.strip()
-                                print line, new_line
                                 lines[line_number] = new_line + '& {:.2f} \\\\ \n'.format(ts)
                 output_file.seek(0)
                 for line in lines:
