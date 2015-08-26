@@ -393,15 +393,14 @@ def create_input(config, sample, variable, category, channel, template,
     else :
         weight_branches.append('EventWeight')
         weight_branches.append('PUWeight')
+        if category == 'BJet_down' :
+            weight_branches.append('BJetDownWeight')
+        elif category == 'BJet_up' :
+            weight_branches.append('BJetUpWeight')
+        else :
+            weight_branches.append('BJetWeight')
+
         if not 'QCD' in tree:
-
-            if category == 'BJet_down' :
-                weight_branches.append('BJetDownWeight')
-            elif category == 'BJet_up' :
-                weight_branches.append('BJetUpWeight')
-            else :
-                weight_branches.append('BJetWeight')
-
             if channel == 'muon':
                 if category == 'Muon_down':
                     weight_branches.append('MuonDown')
