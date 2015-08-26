@@ -38,6 +38,10 @@ class Measurement():
 
         self.met_type = ''
 
+        self.type = 0
+        
+        self.aux_info_norms = {}
+
     @meas_log.trace()
     def addSample(self, sample, read=True, **kwargs):
         self.samples[sample] = kwargs
@@ -238,6 +242,7 @@ class Measurement():
              - apply ratio to process A in signal region
         '''
         measurement = self.norms[sample]
+        self.aux_info_norms[sample] = {}
         # get ratio from control region
         norm = measurement.getCleanedShape(sample)
         mc_in_control = measurement.histograms[sample]
@@ -247,7 +252,11 @@ class Measurement():
             n_mc_control = mc_in_control.Integral()
             ratio = n_data_control / n_mc_control
             meas_log.debug('Ratio from control region {0}'.format(ratio))
+            n_mc_signal_region = self.histograms[sample].integral()
             self.histograms[sample].Scale(ratio)
+            self.aux_info_norms[sample]['norm_factor'] = round(ratio, 2)
+            self.aux_info_norms[sample]['n_mc_control'] = n_mc_control
+            self.aux_info_norms[sample]['n_mc_signal_region'] = n_mc_signal_region
         else:
             meas_log.warning(
                 'No MC entry found for sample "{0}", using control region normalisation'.format(sample))
@@ -288,9 +297,3 @@ class Systematic(Measurement):
         output['scale'] = self.scale
 
         return output
-
-    @meas_log.trace()
-    def scale_histograms(self):
-        if self.type == Systematic.RATE:
-            for sample in self.affected_samples:
-                self.histograms[sample].Scale(self.scale)

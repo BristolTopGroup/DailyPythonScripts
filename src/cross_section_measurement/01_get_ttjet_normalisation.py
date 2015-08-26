@@ -28,6 +28,7 @@ from tools.hist_utilities import clean_control_region, \
 
 import glob
 import tools.measurement
+from copy import deepcopy
 
 # define logger for this module
 mylog = log["01b_get_ttjet_normalisation"]
@@ -80,22 +81,23 @@ class TTJetNormalisation:
 
         self.have_normalisation = False
 
-#         self.template_category = self.category
-#         if self.category in measurement_config.rate_changing_systematics_names:
-#             self.template_category = 'central'
+        for sample, hist in self.measurement.histograms.items():
+            h = deepcopy(hist)
+            h.Scale(1 / h.integral())
+            self.templates[sample] = hist_to_value_error_tuplelist(h)
+        self.auxiliary_info = {}
+        self.auxiliary_info['norms'] = measurement.aux_info_norms
 
     @mylog.trace()
     def calculate_normalisation(self):
         '''
             1. get file names
             2. get histograms from files
-            3. scale histograms
+            3. ???
             4. calculate normalisation based on self.method
         '''
         if self.have_normalisation:
             return
-        if self.measurement.__class__ == tools.measurement.Systematic:
-            self.measurement.scale_histograms()
         histograms = self.measurement.histograms
 
         for sample, hist in histograms.items():
@@ -178,6 +180,8 @@ class TTJetNormalisation:
                            output_folder + file_template.format(type='initial_normalisation', **inputs))
         write_data_to_JSON(self.templates,
                            output_folder + file_template.format(type='templates', **inputs))
+        write_data_to_JSON(self.auxiliary_info,
+                           output_folder + file_template.format(type='auxiliary_info', **inputs))
 
         return output_folder
 
