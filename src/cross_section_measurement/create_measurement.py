@@ -219,7 +219,22 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     )
 
     m.addShapeForSample('QCD', m_qcd, False)
-    m.addNormForSample('QCD', deepcopy(m_qcd), False)
+    norm_qcd = deepcopy(m_qcd)
+    # we want QCD shape and normalisation to be separate
+    if category == 'QCD_shape' and channel == 'electron':
+        for sample in norm_qcd.samples.keys():
+            tree = norm_qcd.samples[sample]['input'].tree_name
+            tree = tree.replace(config.electron_control_region_systematic,
+                                config.electron_control_region)
+            norm_qcd.samples[sample]['input'].tree_name = tree
+    if 'QCD_cross_section' in category and channel == 'electron':
+        for sample in norm_qcd.samples.keys():
+            tree = norm_qcd.samples[sample]['input'].tree_name
+            tree = tree.replace(config.electron_control_region,
+                                config.electron_control_region_systematic)
+            norm_qcd.samples[sample]['input'].tree_name = tree
+
+    m.addNormForSample('QCD', norm_qcd, False)
 
     if category in [config.vjets_theory_systematic_prefix + systematic for systematic in config.generator_systematics]:
         v_template_category = category.replace(
@@ -405,7 +420,7 @@ def create_input(config, sample, variable, category, channel, template,
         else:
             if sample in m.affected_samples:
                 scale = m.scale
-    if sample == 'data': # data is not scaled in any way
+    if sample == 'data':  # data is not scaled in any way
         lumi_scale = 1.
         scale = 1.
 
@@ -416,14 +431,14 @@ def create_input(config, sample, variable, category, channel, template,
     weight_branches = []
     if sample == 'data':
         weight_branches.append('1')
-    else :
+    else:
         weight_branches.append('EventWeight')
         weight_branches.append('PUWeight')
-        if category == 'BJet_down' :
+        if category == 'BJet_down':
             weight_branches.append('BJetDownWeight')
-        elif category == 'BJet_up' :
+        elif category == 'BJet_up':
             weight_branches.append('BJetUpWeight')
-        else :
+        else:
             weight_branches.append('BJetWeight')
 
         if not 'QCD' in tree:
@@ -432,14 +447,14 @@ def create_input(config, sample, variable, category, channel, template,
                     weight_branches.append('MuonDown')
                 elif category == 'Muon_up':
                     weight_branches.append('MuonUp')
-                else :
+                else:
                     weight_branches.append('MuonEfficiencyCorrection')
             elif channel == 'electron':
                 if category == 'Electron_down':
                     weight_branches.append('ElectronDown')
                 elif category == 'Electron_up':
                     weight_branches.append('ElectronUp')
-                else :
+                else:
                     weight_branches.append('ElectronEfficiencyCorrection')
 
     i = Input(
