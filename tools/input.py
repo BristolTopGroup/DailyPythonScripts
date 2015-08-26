@@ -29,7 +29,9 @@ class Input():
             @param weight_branches: branches to be (multiplicatively) used as event weight
             @param n_bins: number of bins for histogram if from tree
             @param x_min: min value for histogram from tree
-            @param x_max: max value for histogram from tree 
+            @param x_max: max value for histogram from tree
+            @param lumi_scale: the lumi scale for this input
+            @param scale: all other scales
         '''
         if kwargs.has_key('input_file'):
             self.file = kwargs.pop('input_file')
@@ -47,7 +49,8 @@ class Input():
         self.selection = '1'
         self.weight_branches = ['EventWeight']
         self.selection_branches = []
-        self.lumi_scale = 1
+        self.lumi_scale = 1.0
+        self.scale = 1.0
 
         if kwargs.has_key('hist'):
             self.hist_name = kwargs.pop('hist')
@@ -62,6 +65,9 @@ class Input():
             self.selection_branches = kwargs.pop('selection_branches')
         if kwargs.has_key('lumi_scale'):
             self.lumi_scale = kwargs.pop('lumi_scale')
+        # all other scales
+        if kwargs.has_key('scale'):
+            self.scale = kwargs.pop('scale')
         # store remaining parameters
         self.kwargs = kwargs
 
@@ -113,7 +119,7 @@ class Input():
                 input_file=self.file,
                 **self.kwargs
             )
-        self.hist.Scale(self.lumi_scale)
+        self.hist.Scale(self.lumi_scale * self.scale)
         return self.hist
 
     @staticmethod
@@ -131,6 +137,7 @@ class Input():
     def toDict(self):
         d = {}
         d.update(self.kwargs)
+        d['class'] = str(self.__class__)
         d['input_file'] = self.file
         if self.hist_name:
             d['hist'] = self.hist_name
@@ -141,4 +148,5 @@ class Input():
             d['weight_branches'] = self.weight_branches
             d['selection_branches'] = self.selection_branches
             d['lumi_scale'] = self.lumi_scale
+            d['scale'] = self.scale
         return d
