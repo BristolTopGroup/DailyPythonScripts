@@ -41,7 +41,7 @@ def main():
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
-                       systematic for systematic in measurement_config.generator_systematics if not ( 'mass' in systematic or 'hadronisation' in systematic )])
+                       systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic)])
 
     for variable in variable_binning.bin_edges.keys():
         for category in categories:
@@ -128,28 +128,32 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         False,
         input=create_input(
             config, 'TTJet', variable, template_category, channel,
-            variable_template, phase_space=phase_space),
+            variable_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m.addSample(
         'V+Jets',
         False,
         input=create_input(
             config, 'V+Jets', variable, template_category, channel,
-            variable_template, phase_space=phase_space),
+            variable_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m.addSample(
         'SingleTop',
         False,
         input=create_input(
             config, 'SingleTop', variable, template_category, channel,
-            variable_template, phase_space=phase_space),
+            variable_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m.addSample(
         'QCD',
         False,
         input=create_input(
             config, 'QCD', variable, template_category, channel,
-            variable_template, phase_space=phase_space),
+            variable_template, phase_space=phase_space, measurement=m,
+        ),
     )
     variable_template_data = variable_template.replace(
         met_type, config.translate_options['type1'])
@@ -161,7 +165,8 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         False,
         input=create_input(
             config, 'data', variable, template_category, channel,
-            variable_template_data, phase_space=phase_space),
+            variable_template_data, phase_space=phase_space, measurement=m,
+        ),
     )
 
     m_qcd = tools.measurement.Measurement(category)
@@ -170,40 +175,47 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
 
     qcd_template = get_qcd_template(config, variable, category, channel)
 
+    # we want "measurement = m" here since all rate systematics should apply
+    # to the control regions as well
     m_qcd.addSample(
         'TTJet',
         False,
         input=create_input(
             config, 'TTJet', variable, template_category, channel,
-            qcd_template, phase_space=phase_space),
+            qcd_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m_qcd.addSample(
         'V+Jets',
         False,
         input=create_input(
             config, 'V+Jets', variable, template_category, channel,
-            qcd_template, phase_space=phase_space),
+            qcd_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m_qcd.addSample(
         'SingleTop',
         False,
         input=create_input(
             config, 'SingleTop', variable, template_category, channel,
-            qcd_template, phase_space=phase_space),
+            qcd_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m_qcd.addSample(
         'QCD',
         False,
         input=create_input(
             config, 'QCD', variable, template_category, channel,
-            qcd_template, phase_space=phase_space),
+            qcd_template, phase_space=phase_space, measurement=m,
+        ),
     )
     m_qcd.addSample(
         'data',
         False,
         input=create_input(
             config, 'data', variable, template_category, channel,
-            qcd_template, phase_space=phase_space),
+            qcd_template, phase_space=phase_space, measurement=m,
+        ),
     )
 
     m.addShapeForSample('QCD', m_qcd, False)
@@ -226,7 +238,8 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
                     variable_template,
                     config8.generator_systematic_vjets_templates[
                         v_template_category],
-                    phase_space=phase_space)
+                    phase_space=phase_space, measurement=m,
+                )
             )
         else:
             m_vjets.addSample(
@@ -238,7 +251,8 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
                     variable_template,
                     config.generator_systematic_vjets_templates[
                         v_template_category]),
-                phase_space=phase_space)
+                phase_space=phase_space, measurement=m,
+            )
         m.addShapeForSample('V+Jets', m_vjets, False)
 
     inputs['channel'] = channel
@@ -354,7 +368,7 @@ def get_qcd_template(config, variable, category, channel):
 
 @cml.trace()
 def create_input(config, sample, variable, category, channel, template,
-                 input_file=None, phase_space=None):
+                 input_file=None, phase_space=None, **kwargs):
     tree, branch, hist = None, None, None
     selection = '1'
     if not input_file:
@@ -382,6 +396,18 @@ def create_input(config, sample, variable, category, channel, template,
         hist = template
 
     lumi_scale = 1.
+    scale = 1.
+
+    m = kwargs['measurement']
+    if m.type == tools.measurement.Systematic.RATE:
+        if 'luminosity' in m.name:
+            lumi_scale = m.scale
+        else:
+            if sample in m.affected_samples:
+                scale = m.scale
+    if sample == 'data': # data is not scaled in any way
+        lumi_scale = 1.
+        scale = 1.
 
     edges = variable_binning.bin_edges[variable]
     if phase_space == 'VisiblePS':
@@ -424,6 +450,7 @@ def create_input(config, sample, variable, category, channel, template,
         selection=selection,
         bin_edges=edges,
         lumi_scale=lumi_scale,
+        scale=scale,
         weight_branches=weight_branches,
     )
     return i
