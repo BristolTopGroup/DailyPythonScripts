@@ -257,6 +257,7 @@ class Measurement():
             self.aux_info_norms[sample]['norm_factor'] = round(ratio, 2)
             self.aux_info_norms[sample]['n_mc_control'] = n_mc_control
             self.aux_info_norms[sample]['n_mc_signal_region'] = n_mc_signal_region
+            self.aux_info_norms[sample]['n_data_control'] = n_data_control
         else:
             meas_log.warning(
                 'No MC entry found for sample "{0}", using control region normalisation'.format(sample))
