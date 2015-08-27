@@ -357,7 +357,7 @@ class XSectionConfig():
 
         self.tree_path_control_templates = {
                                     'electron' : 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/FitVariables',
-                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets/FitVariables'
+                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD iso > 0.3/FitVariables'
                                     }
         self.variable_path_templates = {
                             'MET' : 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/MET',
@@ -380,8 +380,8 @@ class XSectionConfig():
         self.muon_control_region = 'QCD non iso mu+jets ge3j'
         self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
         if self.centre_of_mass_energy == 13:
-            self.muon_control_region = 'QCD non iso mu+jets'
-            self.muon_control_region_systematic = 'QCD non iso mu+jets'
+            self.muon_control_region = 'QCD iso > 0.3'
+            self.muon_control_region_systematic = 'QCD 0.12 < iso <= 0.3'
 
         self.include_higgs = False
 

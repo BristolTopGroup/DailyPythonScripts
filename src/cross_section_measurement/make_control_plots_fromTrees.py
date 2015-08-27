@@ -83,7 +83,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
         if normalise_to_fit:
             normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
-            qcd_data_region = 'QCD non iso mu+jets'
+            qcd_data_region = 'QCD iso > 0.3'
         if not 'QCD' in channel and not 'NPU' in branchName:
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
 
@@ -808,7 +808,8 @@ if __name__ == '__main__':
     for channel, label in {
                             'electronQCDNonIso' : 'EPlusJets/QCD non iso e+jets',
                             'electronQCDConversions' : 'EPlusJets/QCDConversions', 
-                            'muonQCDNonIso' : 'MuPlusJets/QCD non iso mu+jets'
+                            'muonQCDNonIso' : 'MuPlusJets/QCD iso > 0.3',
+                            'muonQCDNonIso2' : 'MuPlusJets/QCD 0.12 < iso <= 0.3',
                             }.iteritems() :
         b_tag_bin = '0btag'
 
@@ -823,7 +824,10 @@ if __name__ == '__main__':
         if channel == 'electronQCDConversions':
             treeName = 'EPlusJets/QCDConversions'
         elif channel == 'muonQCDNonIso':
-            treeName = 'MuPlusJets/QCD non iso mu+jets'
+            treeName = 'MuPlusJets/QCD iso > 0.3'
+            signalTreeName = 'MuPlusJets/Ref selection'
+        elif channel == 'muonQCDNonIso2':
+            treeName = 'MuPlusJets/QCD 0.12 < iso <= 0.3'
             signalTreeName = 'MuPlusJets/Ref selection'
 
         ###################################################
