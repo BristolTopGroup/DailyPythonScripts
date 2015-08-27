@@ -476,7 +476,11 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
         assert(errors.has_key(s))
     
     group_errors = {}
+    for group in measurement_config.typical_systematics_summary:
+        group_errors[group] = []
+
     for bin_i, _ in enumerate(bins):
+
         central_value = central_values[measurement][bin_i][0]
         uncertainties = {}
         # calculate all relative errors
@@ -486,12 +490,13 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
             uncertainties[systematic] = relative_error
         # add errors in a group in quadrature
         for group, u_list in measurement_config.typical_systematics_summary.items():
+
             group_error_squared = 0
             for subgroup in u_list:
                 # use the biggest of up and down
                 subgroup_error = max(uncertainties[subgroup[0]], uncertainties[subgroup[1]])
                 group_error_squared += pow(subgroup_error, 2)
-            group_errors[group] = math.sqrt(group_error_squared)
+            group_errors[group].append(math.sqrt(group_error_squared))
 
     summarised_typical_systematics = {}
     # calculate the median
