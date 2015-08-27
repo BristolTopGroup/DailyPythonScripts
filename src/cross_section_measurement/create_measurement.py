@@ -221,17 +221,25 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     m.addShapeForSample('QCD', m_qcd, False)
     norm_qcd = deepcopy(m_qcd)
     # we want QCD shape and normalisation to be separate
-    if category == 'QCD_shape' and channel == 'electron':
+    if category == 'QCD_shape':
         for sample in norm_qcd.samples.keys():
             tree = norm_qcd.samples[sample]['input'].tree_name
-            tree = tree.replace(config.electron_control_region_systematic,
-                                config.electron_control_region)
+            if channel == 'electron':
+                tree = tree.replace(config.electron_control_region_systematic,
+                                    config.electron_control_region)
+            else:
+                tree = tree.replace(config.muon_control_region_systematic,
+                                    config.muon_control_region)
             norm_qcd.samples[sample]['input'].tree_name = tree
-    if 'QCD_cross_section' in category and channel == 'electron':
+    if 'QCD_cross_section' in category:
         for sample in norm_qcd.samples.keys():
             tree = norm_qcd.samples[sample]['input'].tree_name
-            tree = tree.replace(config.electron_control_region,
-                                config.electron_control_region_systematic)
+            if channel == 'electron':
+                tree = tree.replace(config.electron_control_region,
+                                    config.electron_control_region_systematic)
+            else:
+                tree = tree.replace(config.muon_control_region,
+                                    config.muon_control_region_systematic)
             norm_qcd.samples[sample]['input'].tree_name = tree
 
     m.addNormForSample('QCD', norm_qcd, False)
