@@ -1,6 +1,6 @@
 #!/bin/bash
-scramv1 project CMSSW CMSSW_6_2_12
-cd CMSSW_6_2_12/src
+scramv1 project CMSSW CMSSW_7_4_7
+cd CMSSW_7_4_7/src
 eval `scramv1 runtime -sh`
 tar -xf ../../dps.tar
 cd DailyPythonScripts/
@@ -19,7 +19,7 @@ eval `scramv1 runtime -sh`
 . environment.sh
 rm -r unfolding
 mkdir unfolding
-time python experimental/BLTUnfold/runJobsCrab.py -j $1
+time python experimental/BLTUnfold/createAsymmetricBinningUnfoldingFiles/runJobsCrab.py -j $1
 
 echo "Unfolding folder contents:"
 ls unfolding

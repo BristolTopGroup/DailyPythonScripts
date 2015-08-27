@@ -1,0 +1,18 @@
+Executable = DailyPythonScripts/experimental/BLTUnfold/createAsymmetricBinningUnfoldingFiles/runCondor.sh
+Universe = vanilla
+Output = bltUnfoldAsymm.job.$(cluster).$(process).out
+Error = bltUnfoldAsymm.job.$(cluster).$(process).err
+Log = bltUnfoldAsymm.job.$(cluster).$(process).log
+arguments = $(process) $(cluster)
+
+transfer_input_files = dps.tar
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+request_cpus = 1
+request_memory=500
+
+# use the ENV that is provided
+getenv = true
+
+queue 2

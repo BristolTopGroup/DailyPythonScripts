@@ -11,4 +11,4 @@ git submodule init && git submodule update
 ./setup.sh
 eval `scramv1 runtime -sh`
 . environment.sh
-python experimental/merge_samples_onDICE.py -n $1 -c $2
+python experimental/mergeBATOutputFilesOnDICE/merge_samples_onDICE.py -n $1 -c $2
