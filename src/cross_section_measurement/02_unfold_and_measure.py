@@ -64,6 +64,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                              ttbar_theory_systematic_prefix + 'massdown'        :  file_for_massdown,
                              ttbar_theory_systematic_prefix + 'massup'          :  file_for_massup,
                              ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_powheg_herwig,
+                             ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
                              }
 
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
@@ -438,25 +439,17 @@ if __name__ == '__main__':
     categories.extend( ttbar_generator_systematics )
     ### categories.extend( vjets_generator_systematics )
 
-    ### ttbar theory systematics, including pt reweighting and hadronisation systematic
-    ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
-    ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
-    categories.extend( ttbar_theory_systematics )
-
-    ### Add mass systematics
-    ### ttbar_mass_systematics = measurement_config.topMass_systematics
-    ### categories.extend( measurement_config.topMass_systematics )
-
-    ### Add k Value systematic
-    ### kValue_systematics = measurement_config.kValueSystematic
-    ### categories.extend( measurement_config.kValueSystematic )
+    # ### ttbar theory systematics, including pt reweighting and hadronisation systematic
+    # ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
+    # ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
+    # categories.extend( ttbar_theory_systematics )
 
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 0, 100 )]
     rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics_names]
     #  all MET uncertainties except JES as this is already included
     met_uncertainties = [suffix for suffix in measurement_config.met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy( categories )
-    all_measurements.extend( pdf_uncertainties )
+    # all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
 

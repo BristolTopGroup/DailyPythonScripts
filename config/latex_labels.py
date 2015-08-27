@@ -87,6 +87,7 @@ measurements_latex = {
     'central': 'central',
     #'ptreweight_max': '$p_\mathrm{T}(t,\\bar{t})$ reweighting',
     'TTJets_hadronisation': 'Hadronisation uncertainty',
+    'TTJets_NLOgenerator': 'NLO generator',
     'PDF_total_lower': 'PDF uncertainty $-1\sigma$',
     'PDF_total_upper': 'PDF uncertainty $+1\sigma$',
     'QCD_shape': 'QCD shape uncertainty',

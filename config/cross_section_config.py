@@ -209,7 +209,8 @@ class XSectionConfig():
                                         # 'matchingup', 'matchingdown', 
                                         'scaleup', 'scaledown',
                                         'massup', 'massdown',
-                                        'hadronisation'
+                                        'hadronisation',
+                                        'NLOgenerator'
                                       ]
         self.k_values = {
                          'electron' : self.k_values_electron,
@@ -251,7 +252,7 @@ class XSectionConfig():
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = {}
         for systematic in self.generator_systematics:
-            if 'mass' in systematic or 'hadronisation' in systematic:
+            if 'mass' in systematic or 'hadronisation' in systematic or 'NLOgenerator' in systematic:
                 continue
             tmp = path_to_files + 'central/VJets-{0}_{1}pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
             tmp = tmp.format(systematic, self.luminosity)
@@ -401,8 +402,9 @@ class XSectionConfig():
             'Theory': [('TTJets_scaledown', 'TTJets_scaleup'),
                        ('TTJets_massdown', 'TTJets_massup')],
             'Hadronisation': [('TTJets_hadronisation', 'TTJets_hadronisation')],
+            'NLO generator': [('TTJets_NLOgenerator', 'TTJets_NLOgenerator')],
             'PDF': [('PDF_total_lower', 'PDF_total_upper')],
-            'others': [('QCD_shape', 'QCD_shape')]
+            'QCD shape': [('QCD_shape', 'QCD_shape')]
                                     }
         self.typical_systematics = []
         for _, values in self.typical_systematics_summary.items():
