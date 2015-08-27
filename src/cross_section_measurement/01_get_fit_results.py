@@ -331,7 +331,7 @@ def get_fitted_normalisation_from_ROOT( channel, input_files, variable, met_type
 
 def write_fit_results_and_initial_values( channel, category, fit_results, initial_values, templates ):
     global variable, met_type, output_path
-    folder_template = '%(path)s/%(fit_vars)s/%(CoM)dTeV/%(variable)s/fit_results/%(category)s/'
+    folder_template = '%(path)s/%(fit_vars)s/%(CoM)dTeV/%(variable)s/%(category)s/'
     inputs = {
               'path':output_path,
               'CoM': measurement_config.centre_of_mass_energy,
@@ -523,11 +523,6 @@ if __name__ == '__main__':
  
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
-        if category in ['JES_up', 'JES_down']:  # these systematics affect the data as well
-            data_file_electron.Close()
-            data_file_muon.Close()
-            data_file_electron = File( measurement_config.data_electron_category_templates[category] )
-            data_file_muon = File( measurement_config.data_muon_category_templates[category] )
  
         if category == 'JES_up':
             met_type += 'JetEnUp'
@@ -590,7 +585,8 @@ if __name__ == '__main__':
     for met_systematic in met_systematics_suffixes:
         if run_just_central: 
             continue
-        # all MET uncertainties except JES & JER - as this is already included
+        # all MET uncertainties except those relating to JES & JER
+        # because they are included in the jet energy scale and jet energy resolution systematics
         if 'JetEn' in met_systematic or 'JetRes' in met_systematic or variable == 'HT':  # HT is not dependent on MET!
             continue
         category = met_type + met_systematic

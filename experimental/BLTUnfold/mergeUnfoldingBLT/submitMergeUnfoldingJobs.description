@@ -1,0 +1,18 @@
+Executable = DailyPythonScripts/experimental/BLTUnfold/mergeUnfoldingBLT/merge_unfolding_BLT.sh
+Universe = vanilla
+Output = mergeBLTUnfold.job.$(cluster).$(process).out
+Error = mergeBLTUnfold.job.$(cluster).$(process).err
+Log = mergeBLTUnfold.job.$(cluster).$(process).log
+arguments = $(process) $(cluster) 7 jjacob
+
+transfer_input_files = dps.tar
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT_OR_EVICT
+
+request_cpus = 1
+request_memory=2000
+
+# use the ENV that is provided
+getenv = true
+
+queue 1
