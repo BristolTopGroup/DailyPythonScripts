@@ -499,10 +499,7 @@ if __name__ == '__main__':
             k_value_combined = k_value_combined_central-1
             if k_value_combined < 2 : k_value_combined = 2
 
-        # read fit results from JSON
-#         electron_file = path_to_JSON + '/fit_results/' + category + '/fit_results_electron_' + met_type + '.txt'
-#         muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
-#         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
+        # read normalisation from JSON
         electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
         muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'
         combined_file = path_to_JSON + '/' + category + '/normalisation_combined_' + met_type + '.txt'
@@ -511,9 +508,6 @@ if __name__ == '__main__':
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
         if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties or category in ttbar_mass_systematics or category in kValue_systematics:
-#             electron_file = path_to_JSON + '/fit_results/central/fit_results_electron_' + met_type + '.txt'
-#             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
-#             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
             electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
             muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'
             combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'
