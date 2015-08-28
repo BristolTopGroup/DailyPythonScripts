@@ -503,8 +503,8 @@ if __name__ == '__main__':
 #         muon_file = path_to_JSON + '/fit_results/' + category + '/fit_results_muon_' + met_type + '.txt'
 #         combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
         electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
-        muon_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
-        combined_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+        muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'
+        combined_file = path_to_JSON + '/' + category + '/normalisation_combined_' + met_type + '.txt'
 
 
 
@@ -514,9 +514,8 @@ if __name__ == '__main__':
 #             muon_file = path_to_JSON + '/fit_results/central/fit_results_muon_' + met_type + '.txt'
 #             combined_file = path_to_JSON + '/fit_results/central/fit_results_combined_' + met_type + '.txt'
             electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
-            muon_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
-            combined_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
-
+            muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'
+            combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'
         
         fit_results_electron = read_data_from_JSON( electron_file )
         fit_results_muon = read_data_from_JSON( muon_file )
