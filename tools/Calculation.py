@@ -96,9 +96,10 @@ def combine_complex_results(result1, result2):
     for sample in samples:
         results = []
         for entry1, entry2 in zip(result1[sample], result2[sample]):
-            value1, error1 = entry1
-            value2, error2 = entry2
-            results.append( ( value1 + value2, sqrt( error1**2 + error2**2 ) ) )
+            v1 = ufloat(entry1[0], entry1[1])
+            v2 = ufloat(entry2[0], entry2[1])
+            s = v1 + v2
+            results.append( ( s.nominal_value, s.std_dev ) )
         combined_result[sample] = results
     return combined_result
 
