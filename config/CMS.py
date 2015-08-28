@@ -43,7 +43,7 @@ axis_label_minor = {
               'pad': 12
               }
 
-legend_properties = {'size':40}
+legend_properties = {'size':42}
 
 figsize = (16,16)
 dpi = 400
