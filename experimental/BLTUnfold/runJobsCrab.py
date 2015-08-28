@@ -30,7 +30,6 @@ variation = 9
 while variation < maxPDF :
     nForThisJob = nPDFPerJob
     if variation + nPDFPerJob > maxPDF:
-        print variation, maxPDF
         nForThisJob = maxPDF - variation
     jobs.append('--centreOfMassEnergy 13 --generatorWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
     variation += nPDFPerJob
