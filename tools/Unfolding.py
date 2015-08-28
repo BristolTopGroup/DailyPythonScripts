@@ -142,8 +142,8 @@ class Unfolding:
     def Reset( self ):
         if self.unfoldObject:
             self.unfoldObject = None
-        if self.closure_test:
-            self.closure_test = None
+#         if self.closure_test:
+#             self.closure_test = None
             
     def chi2( self ):
         chi2 = 99999999, 0
