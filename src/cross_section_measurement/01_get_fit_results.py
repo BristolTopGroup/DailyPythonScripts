@@ -341,13 +341,13 @@ def write_fit_results_and_initial_values( channel, category, fit_results, initia
               }
     output_folder = folder_template % inputs
 
-    write_data_to_JSON( fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt' )
+    write_data_to_JSON( fit_results, output_folder + 'normalisation_' + channel + '_' + met_type + '.txt' )
     write_data_to_JSON( initial_values, output_folder + 'initial_values_' + channel + '_' + met_type + '.txt' )
     write_data_to_JSON( templates, output_folder + 'templates_' + channel + '_' + met_type + '.txt' )
 
 def write_fit_results( channel, category, fit_results ):
     global variable, met_type, output_path
-    folder_template = '%(path)s/%(fit_vars)s/%(CoM)dTeV/%(variable)s/fit_results/%(category)s/'
+    folder_template = '%(path)s/%(fit_vars)s/%(CoM)dTeV/%(variable)s/%(category)s/'
     inputs = {
               'path':output_path,
               'CoM': measurement_config.centre_of_mass_energy,
@@ -357,7 +357,7 @@ def write_fit_results( channel, category, fit_results ):
               }
     output_folder = folder_template % inputs
 
-    write_data_to_JSON( fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt' )
+    write_data_to_JSON( fit_results, output_folder + 'normalisation_' + channel + '_' + met_type + '.txt' )
 
 
 if __name__ == '__main__':
