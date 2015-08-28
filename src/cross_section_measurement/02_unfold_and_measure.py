@@ -130,7 +130,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               visiblePS = visiblePS,
                                                                               )
 
-    # central_results = hist_to_value_error_tuplelist( h_truth )
+#     central_results = hist_to_value_error_tuplelist( h_truth )
     TTJet_fit_results_unfolded = unfold_results( TTJet_fit_results,
                                                 category,
                                                 channel,
@@ -463,6 +463,7 @@ if __name__ == '__main__':
 
     tau_value_electron = measurement_config.tau_values_electron[variable]
     tau_value_muon = measurement_config.tau_values_muon[variable]
+    tau_value_combined = measurement_config.tau_values_combined[variable]
 
     visiblePS = options.visiblePS
     phase_space = 'FullPS'
@@ -530,7 +531,6 @@ if __name__ == '__main__':
         # read fit results from JSON
         electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
         muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'
-    #     combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
         if category in ttbar_generator_systematics or category in pdf_uncertainties:
@@ -569,10 +569,10 @@ if __name__ == '__main__':
         else:
             fit_results_electron = read_data_from_JSON( electron_file )
             fit_results_muon = read_data_from_JSON( muon_file )
-        # fit_results_combined = read_data_from_JSON( combined_file )
+        fit_results_combined = combine_complex_results(fit_results_electron, fit_results_muon)
         TTJet_fit_results_electron = fit_results_electron['TTJet']
         TTJet_fit_results_muon = fit_results_muon['TTJet']
-        # TTJet_fit_results_combined = fit_results_combined['TTJet']
+        TTJet_fit_results_combined = fit_results_combined['TTJet']
 
     #     # change back to original MET type for the unfolding
         met_type = translate_options[options.metType]
@@ -602,10 +602,14 @@ if __name__ == '__main__':
         calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' , True )
 
-        # # if combine_before_unfolding:
-        # #     unfolded_normalisation_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
-        # # else:
-        unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
+        if combine_before_unfolding:
+            unfolded_normalisation_combined = get_unfolded_normalisation(
+                    TTJet_fit_results_combined,
+                    category,'combined', tau_value=tau_value_combined,
+                    visiblePS=visiblePS,
+            )
+        else:
+            unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
         filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
