@@ -173,7 +173,8 @@ channel_latex = {
 
                  'electronQCDNonIso' : r"Non-iso e + jets",
                  'electronQCDConversions' : r"Conversion e + jets",
-                 'muonQCDNonIso' : r"Non-iso $\mu$ + jets",
+                 'muonQCDNonIso' : r"Non-iso $\mu$ + jets (iso $>$ 0.3)",
+                 'muonQCDNonIso2' : r"Non-iso $\mu$ + jets (0.12 $<$ iso $<$ 0.3)",
                  }
 
 fit_variables_units_latex = {

@@ -218,12 +218,14 @@ def make_template_plots( histograms, category, channel ):
         
             plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
             axes = plt.axes()
-            axes.minorticks_on()
+            if not variable in ['NJets']:
+                axes.minorticks_on()
             
             plt.xlabel( fit_variables_latex[fit_variable], CMS.x_axis_title )
             plt.ylabel( 'normalised to unit area/(%s)' % get_unit_string(fit_variable), CMS.y_axis_title )
             plt.tick_params( **CMS.axis_label_major )
-            plt.tick_params( **CMS.axis_label_minor )
+            if not variable in ['NJets']:
+                plt.tick_params( **CMS.axis_label_minor )
     
             rplt.hist( h_ttjet, axes = axes, label = 'signal' )
             rplt.hist( h_single_top, axes = axes, label = 'Single Top' )
@@ -349,13 +351,19 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         axes = plt.subplot( gs[0] )
     else:
         axes = plt.axes()
-        plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
-
-    axes.minorticks_on()
-    
-    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
+        if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
+            plt.xlabel( '$%s$' % variables_latex[variable], CMS.x_axis_title )
+        else:
+            plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+    if not variable in ['NJets']:
+        axes.minorticks_on()
+    if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
+        plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}$', CMS.y_axis_title )
+    else:
+        plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
-    plt.tick_params( **CMS.axis_label_minor )
+    if not variable in ['NJets']:
+        plt.tick_params( **CMS.axis_label_minor )
 
     hist_data.visible = True
     if category == 'central':
@@ -407,11 +415,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             new_handles.append( handle )
             new_labels.append( label )
     
-    legend_location = (0.98, 0.88)
+    legend_location = (0.97, 0.88)
     if variable == 'MT':
         legend_location = (0.05, 0.88)
     elif variable == 'ST':
-        legend_location = (0.95, 0.88)
+        legend_location = (0.90, 0.88)
     plt.legend( new_handles, new_labels, numpoints = 1, prop = CMS.legend_properties, frameon = False, bbox_to_anchor=legend_location,
                 bbox_transform=plt.gcf().transFigure )
     label, channel_label = get_cms_labels( channel )
@@ -419,31 +427,45 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     plt.title( label,loc='right', **CMS.title )
     # CMS text
     # note: fontweight/weight does not change anything as we use Latex text!!!
-    plt.text(0.05, 0.98, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
+    logo_location = (0.05, 0.98)
+    prelim_location = (0.05, 0.92)
+    plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='left')
+    # preliminary
+    plt.text(prelim_location[0], prelim_location[1], r"\emph{Preliminary}",
+                 transform=axes.transAxes, fontsize=42,
+                 verticalalignment='top',horizontalalignment='left')
     # channel text
     axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
         verticalalignment='top',horizontalalignment='right')
     ylim = axes.get_ylim()
     if ylim[0] < 0:
         axes.set_ylim( ymin = 0.)
+    axes.set_ylim(ymax = ylim[1]*1.2)
 
 
     if show_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
         ax1 = plt.subplot( gs[1] )
-        ax1.minorticks_on()
+        if not variable in ['NJets']:
+            ax1.minorticks_on()
         #ax1.grid( True, 'major', linewidth = 1 )
         # setting the x_limits identical to the main plot
         x_limits = axes.get_xlim()
         ax1.set_xlim(x_limits)
         ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
-        ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        if not variable in ['NJets']:
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
-        plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+        if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
+            plt.xlabel('$%s$' % variables_latex[variable], CMS.x_axis_title )
+        else:
+            plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+
         plt.tick_params( **CMS.axis_label_major )
-        plt.tick_params( **CMS.axis_label_minor ) 
-        plt.ylabel( '$\\frac{\\textrm{pred.}}{\\textrm{data}}$', CMS.y_axis_title_small )
+        if not variable in ['NJets']:
+            plt.tick_params( **CMS.axis_label_minor )
+        plt.ylabel( '$\\frac{\\textrm{pred.}}{\\textrm{data}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
         #draw a horizontal line at y=1 for data
         plt.axhline(y = 1, color = 'black', linewidth = 2)
@@ -482,11 +504,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                      frameon = False, prop = {'size':26})
         
         ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
-                     frameon = False, prop = {'size':26})
+                     frameon = False, prop = {'size':30})
         ax1.add_artist(l1)
 
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.0, ymax = 2 )
+            ax1.set_ylim( ymin = 0.0, ymax = 2.5 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
 #             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
@@ -501,6 +523,8 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.set_ylim( ymin = 0., ymax = 2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'NJets':
+            ax1.set_ylim( ymin = 0.0, ymax = 2.5 )
 
 
     if CMS.tight_layout:
@@ -521,17 +545,22 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
 
     plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
     axes = plt.axes()
-    axes.minorticks_on()
+    if not variable in ['NJets']:
+        axes.minorticks_on()
     
     hist_data_central = read_xsection_measurement_results( 'central', channel )[0]['unfolded_with_systematics']
     hist_data_central.markersize = 2  # points. Imagine, tangible units!
     hist_data_central.marker = 'o'
-    
-    
-    plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
-    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
+
+    if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
+        plt.xlabel( '$%s$' % variables_latex[variable], CMS.x_axis_title )
+        plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}$', CMS.y_axis_title )
+    else:
+        plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+        plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
-    plt.tick_params( **CMS.axis_label_minor )
+    if not variable in ['NJets']:
+        plt.tick_params( **CMS.axis_label_minor )
 
     rplt.errorbar( hist_data_central, axes = axes, label = 'data', xerr = True )
 
