@@ -589,6 +589,10 @@ def set_labels( plt, histogram_properties, show_x_label = True,
         logo_location = (0.95, 0.98)
         prelim_location = (0.95, 0.92)
         additional_location = (0.95, 0.86)
+    elif loc == 'left':
+        logo_location = (0.05, 0.98)
+        prelim_location = (0.05, 0.92)
+        additional_location = (0.05, 0.86)      
         
     plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", 
              transform=axes.transAxes, fontsize=42,
@@ -601,7 +605,7 @@ def set_labels( plt, histogram_properties, show_x_label = True,
     axes.text(additional_location[0], additional_location[1], 
               r"\emph{%s}" %histogram_properties.additional_text, 
               transform=axes.transAxes, fontsize=40, verticalalignment='top',
-              horizontalalignment='right')
+              horizontalalignment=loc)
 
 def adjust_axis_limits( axes, histogram_properties, histograms = [] ):
     x_limits = histogram_properties.x_limits
