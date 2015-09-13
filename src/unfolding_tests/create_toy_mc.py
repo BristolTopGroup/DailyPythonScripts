@@ -46,7 +46,7 @@ def main():
 #     variable = options.variable
     met_type = measurement_config.translate_options[options.metType]
 
-    create_toy_mc(input_file=measurement_config.unfolding_madgraph,
+    create_toy_mc(input_file=measurement_config.unfolding_central,
                   output_folder=options.output_folder,
 #                   variable=variable,
                   n_toy=options.n_toy_mc,

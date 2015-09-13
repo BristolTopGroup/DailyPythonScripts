@@ -24,7 +24,7 @@ from config import XSectionConfig
 from src.cross_section_measurement.lib import closure_tests
 from tools.file_utilities import write_data_to_JSON
 from tools.hist_utilities import clean_control_region, \
-    hist_to_value_error_tuplelist
+    hist_to_value_error_tuplelist, fix_overflow
 
 import glob
 import tools.measurement
@@ -102,8 +102,9 @@ class TTJetNormalisation:
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
+            print sample,fix_overflow(hist).Integral()
             self.initial_normalisation[
-                sample] = hist_to_value_error_tuplelist(hist)
+                sample] = hist_to_value_error_tuplelist(fix_overflow(hist))
             if self.method == self.BACKGROUND_SUBTRACTION and sample != 'TTJet':
                 self.normalisation[sample] = self.initial_normalisation[sample]
 
@@ -253,6 +254,7 @@ def main():
         }
         measurement_files = glob.glob(input_template.format(**inputs))
         for f in sorted(measurement_files):
+            if not 'central' in f:continue
             print('Processing file ' + f)
             measurement = tools.measurement.Measurement.fromJSON(f)
             # for each measurement

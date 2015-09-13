@@ -42,7 +42,7 @@ def main():
                       help="file with toy MC")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT, WPT)")
-    parser.add_option("-s", "--centre-of-mass-energy", dest="CoM", default=8,
+    parser.add_option("-s", "--centre-of-mass-energy", dest="CoM", default=13,
                       help='''set the centre of mass energy for analysis.
                       Default = 8 [TeV]''', type=int)
     parser.add_option("-c", "--channel", type='string',

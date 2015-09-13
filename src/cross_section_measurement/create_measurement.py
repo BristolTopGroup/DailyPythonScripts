@@ -41,7 +41,7 @@ def main():
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
-                       systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic)])
+                       systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic or 'NLO' in systematic)])
 
     for variable in variable_binning.bin_edges.keys():
         for category in categories:
@@ -414,7 +414,21 @@ def create_input(config, sample, variable, category, channel, template,
             if 'JES_down' in category or 'JES_up' in category or 'JER_down' in category or 'JER_up' in category:
                 tree += config.categories_and_prefixes[category]
 
+            if not sample == 'data':
+                if 'JES_down' in category:
+                    print 'JES_down in category',category
+                    input_file = input_file.replace('tree','minusJES_tree')
+                    print input_file
+                elif 'JES_up' in category:
+                    input_file = input_file.replace('tree','plusJES_tree')
+                elif 'JER_up' in category:
+                    input_file = input_file.replace('tree','plusJER_tree')
+                elif 'JER_down' in category:
+                    input_file = input_file.replace('tree','minusJER_tree')
+
         selection = '{0} >= 0'.format(branch)
+        if variable == 'abs_lepton_eta':
+            selection += ' && {0} <= 3'.format(branch)
     else:
         hist = template
 
@@ -441,7 +455,8 @@ def create_input(config, sample, variable, category, channel, template,
         weight_branches.append('1')
     else:
         weight_branches.append('EventWeight')
-        weight_branches.append('PUWeight')
+        if category != 'PileUpSystematic':
+            weight_branches.append('PUWeight')
         if category == 'BJet_down':
             weight_branches.append('BJetDownWeight')
         elif category == 'BJet_up':

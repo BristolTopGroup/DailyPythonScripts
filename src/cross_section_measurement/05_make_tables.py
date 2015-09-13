@@ -1,15 +1,28 @@
 from __future__ import division  # the result of the division will be always a float
 from optparse import OptionParser
 from copy import deepcopy
-from config.latex_labels import variables_latex, measurements_latex, samples_latex, typical_systematics_latex, met_systematics_latex
-from config.variable_binning import variable_bins_latex, variable_bins_ROOT, variable_bins_visiblePS_ROOT, variable_bins_visiblePS_latex
+from config.latex_labels import variables_latex, variables_NonLatex, measurements_latex, samples_latex, typical_systematics_latex, met_systematics_latex
+from config.variable_binning import variable_bins_latex, variable_bins_ROOT, variable_bins_visiblePS_ROOT, variable_bins_visiblePS_latex, bin_edges_vis, bin_edges
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from tools.hist_utilities import values_and_errors_to_hist
 from lib import read_normalisation, read_initial_normalisation
 import math
 import os.path
 from numpy import median
+import matplotlib as mpl
+mpl.use( 'agg' )
+import matplotlib.pyplot as plt
+import rootpy.plotting.root2matplotlib as rplt
+from config import CMS
+import matplotlib.cm as cm
+# use full stpectrum, yet use white for less than vmin=1 events
+my_cmap = cm.get_cmap( 'jet' )
+my_cmap.set_under( 'w' )
+from matplotlib import rc
+rc( 'font', **CMS.font )
+rc( 'text', usetex = False )
 
 def read_xsection_measurement_results_with_errors(channel):
     global path_to_JSON, variable, met_type, phase_space
@@ -40,6 +53,9 @@ def read_xsection_measurement_results_with_errors(channel):
     file_name = file_template.replace('.txt', '_PDF_errors.txt')
     normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
 
+    file_name = file_template.replace('.txt', '_experimental_errors.txt')
+    normalised_xsection_experimental_errors = read_data_from_JSON( file_name )
+
     file_name = file_template.replace('.txt', '_other_errors.txt')
     normalised_xsection_other_errors = read_data_from_JSON( file_name )
 
@@ -59,7 +75,7 @@ def read_xsection_measurement_results_with_errors(channel):
 #     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
 #     normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_other_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_experimental_errors['TTJet_measured'])
 #     normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
 
     normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
@@ -68,7 +84,7 @@ def read_xsection_measurement_results_with_errors(channel):
 #     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
 #     normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_other_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_experimental_errors['TTJet_unfolded'])
 #     normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
 
     return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
@@ -322,18 +338,102 @@ def print_xsections(xsections, channel, toFile = True, print_before_unfolding = 
     else:
         print printout
 
+def make_error_plot( errorHists, bins ):
+    global output_folder, variable
+    # For each up/down source, reduce to one set of numbers
+    symmetricErrorHists = {}
+    for source, hist in errorHists.iteritems():
+        if ( variable == 'HT' or variable == 'NJets' or variable == 'lepton_pt' or variable == 'abs_lepton_eta'  ) and source in measurement_config.met_systematics and not 'JES' in source and not 'JER' in source:
+            continue
+
+        if 'down' in source or '-' in source or 'lower' in source or 'Down' in source:
+            # Find up version
+            upHist = None
+            newSource = ''
+            if 'down' in source:
+                upHist = errorHists[source.replace('down','up')]
+                newSource = source.replace('down','')
+            elif 'Down' in source:
+                upHist = errorHists[source.replace('Down','Up')]
+                newSource = source.replace('Down','')
+            elif '-' in source:
+                upHist = errorHists[source.replace('-','+')]
+                newSource = source.replace('-','')
+            elif 'lower' in source:
+                upHist = errorHists[source.replace('lower','upper')]
+                newSource = source.replace('lower','')
+
+            if newSource[-1] == '_':
+                newSource = newSource[:-1]
+            # if '_' in newSource:
+            #     newSource = newSource.replace('_','')
+
+            symmetricErrorHists[newSource] = []
+            for errorup, errordown in zip(hist, upHist):
+                newError = max( abs(errorup), abs(errordown) )
+                symmetricErrorHists[newSource].append(newError)
+        elif 'TTJets_hadronisation' in source or 'QCD_shape' in source or 'TTJets_NLOgenerator' in source:        
+            symmetricErrorHists[source] = [ abs(i) for i in hist ]
+
+    x_limits = [bins[0], bins[-1]]
+    y_limits = [0,0.6]
+    plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
+
+    ax0 = plt.axes()
+    ax0.minorticks_on()
+    ax0.xaxis.labelpad = 12
+    ax0.yaxis.labelpad = 12
+    ax0.set_xlim( x_limits )
+    plt.tick_params( **CMS.axis_label_major )
+    plt.tick_params( **CMS.axis_label_minor )
+
+
+    statisticalErrorHists = values_and_errors_to_hist( errorHists['statistical'], [], bins )
+    for source, hist in symmetricErrorHists.iteritems():
+        symmetricErrorHists[source] = values_and_errors_to_hist( hist, [], bins )
+
+    colours = ['silver', 'r', 'tan', 'chartreuse', 'cadetblue', 'dodgerblue', 'pink', 'hotpink', 'coral', 'forestgreen', 'cyan', 'teal', 'crimson', 'darkmagenta', 'olive', 'slateblue', 'deepskyblue', 'orange', 'r' ]
+    for source, colour in zip( symmetricErrorHists.keys(), colours):
+        hist = symmetricErrorHists[source]
+        hist.linewidth = 4
+        hist.color = colour
+        rplt.hist( hist, stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = source )
+
+    statisticalErrorHists.linewidth = 4
+    statisticalErrorHists.color = 'black'
+    statisticalErrorHists.linestyle = 'dashed'
+    rplt.hist( statisticalErrorHists, stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'stat.' )
+
+    ax0.set_ylim( y_limits )
+    leg = plt.legend(loc=1,prop={'size':40},ncol=2)
+    leg.draw_frame(False)
+    x_title = variables_NonLatex[variable]
+    if variable in ['HT', 'MET', 'WPT', 'ST', 'lepton_pt']:
+        x_title += ' [GeV]'
+    plt.xlabel( x_title, CMS.x_axis_title )
+    plt.ylabel( 'Relative Uncertainty', CMS.y_axis_title)
+    plt.tight_layout()
+
+    path = output_folder + '/'  + variable + '/'
+    make_folder_if_not_exists(path)
+    file_template = path + '/%s_systematics_%dTeV_%s.pdf' % (variable, measurement_config.centre_of_mass_energy, channel)
+    plt.savefig(file_template)
+    pass
+
 def print_error_table(central_values, errors, channel, toFile = True, print_before_unfolding = False):
     global output_folder, variable, met_type, b_tag_bin, all_measurements, phase_space
     bins = None
     bins_latex = None
+    binEdges = None
     variable_latex = variables_latex[variable]
     if phase_space == 'VisiblePS':
         bins = variable_bins_visiblePS_ROOT[variable]
         bins_latex = variable_bins_visiblePS_latex[variable]
+        binEdges = bin_edges_vis[variable]
     elif phase_space == 'FullPS':
         bins = variable_bins_ROOT[variable]
         bins_latex = variable_bins_latex[variable]
-
+        binEdges = bin_edges[variable]
     printout = '%% ' + '=' * 60
     printout += '\n'
     printout += '%% Systematics table for %s variable, %s channel, met type %s, %s b-tag region\n' % (variable, channel, met_type, b_tag_bin)
@@ -367,6 +467,11 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     else:
         assert(len(bins) == len(central_values['unfolded']))
     
+    errorHists = {}
+    errorHists['statistical'] = []
+    for source in all_measurements:
+        errorHists[source] = []
+
     for bin_i, variable_bin in enumerate(bins):
         header += '& %s' % (bins_latex[variable_bin])
         if print_before_unfolding:
@@ -380,6 +485,9 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
 
             abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
+
+            errorHists[source].append(relative_error)
+
             text = '%.2f' % (relative_error*100)
             if rows.has_key(source):
                 rows[source].append(text)
@@ -411,8 +519,12 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
         else:
             value, error = central_values['unfolded'][bin_i]
         relativeError = getRelativeError(value, error)
+        errorHists['statistical'].append(relativeError)
         total_line += ' & %.2f ' % (relativeError * 100)
     printout += total_line + '\\\\ \n'
+
+    if not print_before_unfolding:
+        make_error_plot( errorHists, binEdges )
 
     #append the total systematic error to the table
     total_line = 'Total Sys. (\%)'
@@ -640,6 +752,7 @@ if __name__ == '__main__':
     all_measurements.extend(rate_changing_systematics)
 
     for channel in ['electron', 'muon', 'combined']:                        
+    # for channel in ['combined']:                        
         normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors = read_xsection_measurement_results_with_errors(channel)
 
         print_xsections(normalised_xsection_measured_unfolded, channel, toFile = True, print_before_unfolding = False)

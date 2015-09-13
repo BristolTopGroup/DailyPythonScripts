@@ -26,7 +26,7 @@ def hist_to_value_error_tuplelist( hist ):
     return zip( values, errors )
 
 def values_and_errors_to_hist( values, errors, bins ):
-    assert( len( values ) == len( bins ) )
+    assert( len( values ) == len( bins ) - 1 )
     if len( errors ) == 0:
         errors = [0.] * len( values )
     value_error_tuplelist = zip( values, errors )
@@ -298,11 +298,11 @@ def clean_control_region(histograms = {},
      and will subtract all samples given in the parameter "subtract" from the
      data distribution.
      '''
-    data_hist = deepcopy(histograms[data_label])
+    data_hist = fix_overflow(deepcopy(histograms[data_label]))
     # first subtract all necessary samples
     for sample, histogram in histograms.iteritems():
         if sample in subtract:
-            data_hist -= histogram
+            data_hist -= fix_overflow(histogram)
     # next make sure there are no negative events
     if fix_to_zero:
         for bin_i, y in enumerate(data_hist.y(overflow=True)):

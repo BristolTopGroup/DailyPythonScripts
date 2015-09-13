@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
-N_JOBS=3
+N_JOBS=4
 
 i=0
 

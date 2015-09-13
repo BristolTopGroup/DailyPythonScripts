@@ -62,9 +62,14 @@ class Unfolding:
                 self.unfoldObject = RooUnfoldInvert     ( self.unfoldResponse, self.data )
             elif self.method == 'RooUnfoldSvd':
                 if self.k_value > 0:
+                    print 'Using k value'
                     self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
                 else:
                     if self.tau >= 0:
+                        print 'HERE',self.unfoldResponse
+                        print self.data
+                        print self.tau
+                        print self.n_toy
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
             elif self.method == 'RooUnfoldTUnfold':
                 self.unfoldObject = RooUnfoldTUnfold ( self.unfoldResponse, data )
@@ -113,6 +118,8 @@ class Unfolding:
             raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( self.method ) )
 
     def unfold( self, data ):
+        print 'HERE'
+        print self.method
         if data is None:
             raise ValueError('Data histogram is None')
         have_zeros = [value == 0 for value,_ in hist_to_value_error_tuplelist( data )]
@@ -122,6 +129,7 @@ class Unfolding:
         if self.method == 'TSVDUnfold':
             self.unfolded_data = asrootpy( self.unfoldObject.Unfold( self.k_value ) )
         else:
+            print 'Unfolding here, ',self.tau,self.k_value
             # remove unfold reports (faster)
             self.unfoldObject.SetVerbose( self.verbose )
             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.Hreco ) )
