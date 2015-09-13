@@ -232,7 +232,7 @@ def make_control_region_comparison( control_region_1, control_region_2,
                                    histogram_properties = Histogram_properties(),
 #                                   show_ratio = True,
                                    save_folder = 'plots/',
-                                   save_as = ['pdf', 'png'] ):
+                                   save_as = ['pdf'] ):
     save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
     control_region_1 = deepcopy( control_region_1 )
@@ -265,15 +265,14 @@ def make_control_region_comparison( control_region_1, control_region_2,
 
     handles, labels = axes.get_legend_handles_labels()
 
-    labels.insert( 0, name_region_1 + ' (1)' )
-    labels.insert( 1, name_region_2 + ' (2)' )
-
+    # labels.insert( 0, name_region_1 + ' (1)' )
+    # labels.insert( 1, name_region_2 + ' (2)' )
+    print histogram_properties.legend_location
     l1 = axes.legend( handles, labels, numpoints = 1,
                      frameon = histogram_properties.legend_color,
                 bbox_to_anchor = histogram_properties.legend_location,
                 bbox_transform=plt.gcf().transFigure,
-                prop = CMS.legend_properties,
-                ncol = histogram_properties.legend_columns )
+                prop = CMS.legend_properties )
     l1.set_zorder(102)
 
     x_limits = histogram_properties.x_limits
@@ -285,28 +284,46 @@ def make_control_region_comparison( control_region_1, control_region_2,
     else:
         y_max = get_best_max_y([control_region_1, control_region_2], x_limits=x_limits) * histogram_properties.y_max_scale
         axes.set_ylim( ymin = 0, ymax = y_max )
-    plt.setp( axes.get_xticklabels(), visible = False )
     
+    plt.setp( axes.get_xticklabels(), visible = False )
     ax1 = plt.subplot( gs[1] )
     ax1.minorticks_on()
     ax1.grid( True, 'major', linewidth = 1 )
-    # dynamic tick placement
-    adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
+    ax1.axhline(y=1, linewidth = 1)
     set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
-    plt.ylabel( '(1)/(2)', CMS.y_axis_title )
-    rplt.errorbar( ratio, xerr = True,
-                   emptybins = histogram_properties.emptybins,
-                   axes = ax1 )
-    if len( x_limits ) == 2:
-        ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
-    if len( histogram_properties.ratio_y_limits ) == 2:
-            ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
-                      ymax = histogram_properties.ratio_y_limits[1] )
-    else:
-        ax1.set_ylim( ymin = -0.5, ymax = 4 )
+    plt.ylabel( r'$\frac{\mathrm{data}}{\mathrm{pred.}}$', CMS.y_axis_title )
+    ax1.yaxis.set_label_coords(-0.115, 0.8)
+    rplt.errorbar( ratio, emptybins = histogram_properties.emptybins, axes = ax1,
+                   xerr = histogram_properties.xerr, )
+    if len( x_limits ) >= 2:
+        ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[-1] )
+    if len( histogram_properties.ratio_y_limits ) >= 2:
+        ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
+                  ymax = histogram_properties.ratio_y_limits[-1] )
+
     # dynamic tick placement
     adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
-    ax1.set_ylim( ymin = -0.5, ymax = 4 )
+
+    # ax1 = plt.subplot( gs[1] )
+    # ax1.minorticks_on()
+    # ax1.grid( True, 'major', linewidth = 1 )
+    # # dynamic tick placement
+    # adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
+    # set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
+    # plt.ylabel( '(1)/(2)', CMS.y_axis_title )
+    # rplt.errorbar( ratio, xerr = True,
+    #                emptybins = histogram_properties.emptybins,
+    #                axes = ax1 )
+    # if len( x_limits ) == 2:
+    #     ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
+    # if len( histogram_properties.ratio_y_limits ) == 2:
+    #         ax1.set_ylim( ymin = histogram_properties.ratio_y_limits[0],
+    #                   ymax = histogram_properties.ratio_y_limits[1] )
+    # else:
+    #     ax1.set_ylim( ymin = -0.5, ymax = 4 )
+    # # dynamic tick placement
+    # adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
+    # ax1.set_ylim( ymin = -0.5, ymax = 4 )
     
     if CMS.tight_layout:
         plt.tight_layout()

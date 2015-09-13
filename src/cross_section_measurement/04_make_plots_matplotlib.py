@@ -250,7 +250,7 @@ def make_template_plots( histograms, category, channel ):
             plt.text(0.95, 0.95, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
                      verticalalignment='top',horizontalalignment='right')
             # channel text
-            axes.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+            axes.text(0.95, 0.95, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
                       verticalalignment='top',horizontalalignment='right')
 
             plt.tight_layout()
@@ -406,20 +406,28 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     data_handle = handles[data_label_index]
     labels.remove( 'data' )
     handles.remove( data_handle )
-    labels.insert( 0, 'unfolded data' )
+    labels.insert( 0, 'data' )
     handles.insert( 0, data_handle )
     
     new_handles, new_labels = [], []
-    for handle, label in zip( handles, labels ):
-        if not label == 'do_not_show':
-            new_handles.append( handle )
-            new_labels.append( label )
+    zipped = dict( zip( labels, handles ) )
+    labelOrder = ['data', 'Powheg Pythia8', 'Powheg Herwig++', 'aMC@NLO', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', 'Top mass up', 'Top mass down']
+    for label in labelOrder:
+        if label in labels:
+            new_handles.append(zipped[label])
+            new_labels.append(label)
     
-    legend_location = (0.97, 0.88)
+    print (new_labels)
+    print (new_handles)
+    legend_location = (0.97, 0.82)
     if variable == 'MT':
-        legend_location = (0.05, 0.88)
+        legend_location = (0.05, 0.82)
     elif variable == 'ST':
-        legend_location = (0.90, 0.88)
+        legend_location = (0.97, 0.82)
+    elif variable == 'WPT':
+        legend_location = (1.0, 0.84)
+    elif variable == 'abs_lepton_eta':
+        legend_location = (1.0, 0.94)
     plt.legend( new_handles, new_labels, numpoints = 1, prop = CMS.legend_properties, frameon = False, bbox_to_anchor=legend_location,
                 bbox_transform=plt.gcf().transFigure )
     label, channel_label = get_cms_labels( channel )
@@ -429,6 +437,15 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     # note: fontweight/weight does not change anything as we use Latex text!!!
     logo_location = (0.05, 0.98)
     prelim_location = (0.05, 0.92)
+    channel_location = ( 0.05, 0.86)
+    if variable == 'WPT':
+        logo_location = (0.03, 0.98)
+        prelim_location = (0.03, 0.92)
+        channel_location = (0.03, 0.86)
+    elif variable == 'abs_lepton_eta':
+        logo_location = (0.03, 0.98)
+        prelim_location = (0.03, 0.92)
+        channel_location = (0.03, 0.86)
     plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='left')
     # preliminary
@@ -436,12 +453,17 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                  transform=axes.transAxes, fontsize=42,
                  verticalalignment='top',horizontalalignment='left')
     # channel text
-    axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
-        verticalalignment='top',horizontalalignment='right')
+    plt.text(channel_location[0], channel_location[1], r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+        verticalalignment='top',horizontalalignment='left')
     ylim = axes.get_ylim()
     if ylim[0] < 0:
         axes.set_ylim( ymin = 0.)
-    axes.set_ylim(ymax = ylim[1]*1.2)
+    if variable == 'WPT':
+        axes.set_ylim(ymax = ylim[1]*1.3)
+    elif variable == 'abs_lepton_eta':
+        axes.set_ylim(ymax = ylim[1]*1.3)
+    else :
+        axes.set_ylim(ymax = ylim[1]*1.2)
 
 
     if show_ratio:
@@ -493,39 +515,50 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
         if category == 'central':
             rplt.fill_between( syst_lower, syst_upper, ax1,
-                               color = 'yellow', alpha = 0.5 )
+                               color = 'yellow' )
 
         rplt.fill_between( stat_upper, stat_lower, ax1, color = '0.75',
-                           alpha = 0.5 )
+                            )
         # legend for ratio plot
-        p_stat = mpatches.Patch(facecolor='0.75', label='Stat.',alpha = 0.5, edgecolor='black' )
-        p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5, edgecolor='black' )
-        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
-                     frameon = False, prop = {'size':26})
+        p_stat = mpatches.Patch(facecolor='0.75', label='Stat.', edgecolor='black' )
+        p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
+        l1 = ax1.legend(handles = [p_stat, p_stat_and_syst], loc = 'upper left',
+                     frameon = False, prop = {'size':26}, ncol = 2)
         
-        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
-                     frameon = False, prop = {'size':30})
+        # ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
+        #              frameon = False, prop = {'size':30})
         ax1.add_artist(l1)
 
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.0, ymax = 2.5 )
+            ax1.set_ylim( ymin = 0.5, ymax = 2.4 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
 #             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
             ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
-        elif variable == 'HT' or variable == 'ST':
-            ax1.set_ylim( ymin = 0., ymax = 2 )
+        elif variable == 'HT':
+            ax1.set_ylim( ymin = 0.5, ymax = 1.8 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'ST':
+            ax1.set_ylim( ymin = 0.5, ymax = 1.8 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0., ymax = 2 )
+            ax1.set_ylim( ymin = 0.5, ymax = 1.85 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'NJets':
-            ax1.set_ylim( ymin = 0.0, ymax = 2.5 )
-
+            ax1.set_ylim( ymin = 0.5, ymax = 2.5 )
+        elif variable == 'abs_lepton_eta':
+            ax1.set_ylim( ymin = 0.5, ymax = 1.6 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'lepton_pt':
+            ax1.set_ylim( ymin = 0.5, ymax = 1.8 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -690,6 +723,7 @@ if __name__ == '__main__':
     # all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
     for channel in ['electron', 'muon', 'combined']:
+    # for channel in ['combined']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:
                 continue

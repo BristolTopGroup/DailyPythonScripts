@@ -22,7 +22,7 @@ y_axis_title = {
               }
 
 y_axis_title_small = {
-              'fontsize':40,
+              'fontsize':50,
               'position' : (0, 1.),
               'verticalalignment': 'bottom',
               'horizontalalignment': 'right'

@@ -142,7 +142,7 @@ def get_histograms_from_trees(
             currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
             if not is_valid_histogram( root_histogram, tree, input_file):
                 return
-
+            print sample,root_histogram.integral(overflow=True)
             # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
             if ignoreUnderflow:
                 root_histogram.SetBinContent(0, 0)
