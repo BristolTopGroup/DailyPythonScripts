@@ -65,7 +65,7 @@ def read_normalised_xsection_systematics( list_of_systematics, channel ):
         
     return systematics, systematics_unfolded
 
-def summarise_systematics( list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, mass_systematic = False, kValueSystematic = False ):
+def summarise_systematics( list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, mass_systematic = False, kValueSystematic = False, experimentalUncertainty = False, actualCentralMeasurements = [] ):
     global symmetrise_errors
     # number of bins
     number_of_bins = len( list_of_central_measurements )
@@ -103,10 +103,15 @@ def summarise_systematics( list_of_central_measurements, dictionary_of_systemati
         elif kValueSystematic:
             list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, True )
+        elif experimentalUncertainty:
+            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
+            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
+            actualCentralValue = actualCentralMeasurements[bin_i][0]
+            error_down = error_down / central_value * actualCentralValue
+            error_up = error_up / central_value * actualCentralValue
         else:
             list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
-
         down_errors[bin_i] = error_down
         up_errors[bin_i] = error_up
     
@@ -234,15 +239,17 @@ if __name__ == "__main__":
     rate_changing_systematics_list = [systematic for systematic in measurement_config.rate_changing_systematics_names]
 
     # all other uncertainties (including JES and JER)
-    other_uncertainties_list = deepcopy( measurement_config.categories_and_prefixes.keys() )
+    experimental_uncertainties_list = deepcopy( measurement_config.categories_and_prefixes.keys() )
+
     ### other_uncertainties_list.extend( vjets_generator_systematics_list )
-    other_uncertainties_list.append( 'QCD_shape' )
+    other_uncertainties_list = [ 'QCD_shape' ]
     other_uncertainties_list.extend( rate_changing_systematics_list )
 
     for channel in ['electron', 'muon', 'combined']:
 #         print("channel = ", channel)
         # read central measurement
         central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement( 'central', channel )
+        # central_TTJet_measurement, central_TTJet_measurement_unfolded = read_normalised_xsection_measurement( 'central_TTJet', channel )
         
         # read groups of systematics
         ttbar_generator_systematics, ttbar_generator_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_generator_systematics_list, channel = channel )
@@ -254,12 +261,14 @@ if __name__ == "__main__":
         # kValue_systematic, kValue_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = kValue_systematic_list, channel = channel )
         pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = pdf_uncertainties, channel = channel )
 #         met_systematics, met_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = met_uncertainties_list, channel = channel )
+        experimental_systematics, experimental_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = experimental_uncertainties_list, channel = channel )
         other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = other_uncertainties_list, channel = channel )
 
         ### # get the minimal and maximal deviation for each group of systematics
         ### # ttbar generator systematics (factorisation scale and matching threshold)
         ttbar_generator_min, ttbar_generator_max = summarise_systematics( central_measurement, ttbar_generator_systematics )
         ttbar_generator_min_unfolded, ttbar_generator_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_generator_systematics_unfolded )
+
         ### # ttbar theory systematics (pt reweighting and hadronisation)
         ### # ttbar_ptreweight_min, ttbar_ptreweight_max = summarise_systematics( central_measurement, ttbar_ptreweight_systematic )
         ### # ttbar_ptreweight_min_unfolded, ttbar_ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_ptreweight_systematic_unfolded )
@@ -281,6 +290,14 @@ if __name__ == "__main__":
         # MET
 #         met_min, met_max = summarise_systematics( central_measurement, met_systematics )
 #         met_min_unfolded, met_max_unfolded = summarise_systematics( central_measurement_unfolded, met_systematics_unfolded )
+
+        # experimental_min, experimental_max = summarise_systematics( central_TTJet_measurement, experimental_systematics, experimentalUncertainty = True, actualCentralMeasurements = central_measurement)
+        # experimental_min_unfolded, experimental_max_unfolded = summarise_systematics( central_TTJet_measurement_unfolded, experimental_systematics_unfolded, experimentalUncertainty = True, actualCentralMeasurements = central_measurement_unfolded)
+
+        experimental_min, experimental_max = summarise_systematics( central_measurement, experimental_systematics )
+        experimental_min_unfolded, experimental_max_unfolded = summarise_systematics( central_measurement_unfolded, experimental_systematics_unfolded )
+
+
         # other
         other_min, other_max = summarise_systematics( central_measurement, other_systematics )
         other_min_unfolded, other_max_unfolded = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
@@ -292,7 +309,8 @@ if __name__ == "__main__":
                                                                                                 ### ttbar_mass_min,
 #                                                                                               ###   kValue_min,
                                                                                                 pdf_min,
-                                                                                                ### met_min, 
+                                                                                                ### met_min,
+                                                                                                experimental_min,
                                                                                                 other_min],
                                                                                                 [
                                                                                                 ttbar_generator_max, #ttbar_ptreweight_max,
@@ -301,6 +319,7 @@ if __name__ == "__main__":
 #                                                                                               ###   kValue_max,
                                                                                                 pdf_max,
                                                                                                 ### met_max,
+                                                                                                experimental_max,
                                                                                                 other_max] )
 ###         central_measurement_with_systematics_but_without_ttbar_theory = get_measurement_with_lower_and_upper_errors( central_measurement,
 ###                                                                                                 [pdf_min, met_min, other_min,
@@ -319,6 +338,7 @@ if __name__ == "__main__":
 #                                                                                               ###  kValue_min,
                                                                                                 pdf_min,
                                                                                                 ### met_min,
+                                                                                                experimental_min,
                                                                                                 other_min],
                                                                                                 [
                                                                                                 # ttbar_hadronisation_max,
@@ -326,6 +346,7 @@ if __name__ == "__main__":
                                                                                                 ###ttbar_mass_max,
 #                                                                                               ###  kValue_max,
                                                                                                 pdf_max,
+                                                                                                experimental_max,
                                                                                                 ### met_max, 
                                                                                                  other_max] )
 
@@ -333,10 +354,12 @@ if __name__ == "__main__":
                                                                                                 [
                                                                                                 ttbar_generator_min,
                                                                                                 pdf_min,
-                                                                                                other_min],
+                                                                                                experimental_min,
+                                                                                                other_min,],
                                                                                                 [
                                                                                                 ttbar_generator_max,
                                                                                                 pdf_max,
+                                                                                                experimental_max,
                                                                                                 other_max],
                                                                                                 systematicErrorsOnly = True )
 
@@ -348,13 +371,15 @@ if __name__ == "__main__":
 #                                                                                               ###  kValue_min_unfolded,
                                                                                                 pdf_min_unfolded, 
                                                                                                 ### met_min_unfolded,
+                                                                                                experimental_min_unfolded,
                                                                                                 other_min_unfolded],
                                                                                                 [
                                                                                                 ttbar_generator_max_unfolded, #ttbar_ptreweight_max_unfolded,
                                                                                                 # ttbar_hadronisation_max_unfolded,
                                                                                                 ###ttbar_mass_max_unfolded,
 #                                                                                               ###  kValue_max_unfolded,
-                                                                                                pdf_max_unfolded, 
+                                                                                                pdf_max_unfolded,
+                                                                                                experimental_max_unfolded, 
                                                                                                 ### met_max_unfolded,
                                                                                                 other_max_unfolded] )
 ###        central_measurement_unfolded_with_systematics_but_without_ttbar_theory = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
@@ -375,7 +400,8 @@ if __name__ == "__main__":
                                                                                                 ###ttbar_mass_min_unfolded,
 #                                                                                               ###  kValue_min_unfolded,
                                                                                                 pdf_min_unfolded,
-                                                                                                ### met_min_unfolded, 
+                                                                                                ### met_min_unfolded,
+                                                                                                experimental_min_unfolded, 
                                                                                                  other_min_unfolded],
                                                                                                 [
                                                                                                 # ttbar_hadronisation_max_unfolded,
@@ -383,6 +409,7 @@ if __name__ == "__main__":
                                                                                                 ###ttbar_mass_max_unfolded,
 #                                                                                               ###  kValue_max_unfolded,
                                                                                                 pdf_max_unfolded,
+                                                                                                experimental_max_unfolded,
                                                                                                 ### met_max_unfolded, 
                                                                                                  other_max_unfolded] )
 
@@ -390,10 +417,12 @@ if __name__ == "__main__":
                                                                                                 [
                                                                                                 ttbar_generator_min_unfolded,
                                                                                                 pdf_min_unfolded,
+                                                                                                experimental_min_unfolded,
                                                                                                 other_min_unfolded],
                                                                                                 [
                                                                                                 ttbar_generator_max_unfolded,
                                                                                                 pdf_max_unfolded,
+                                                                                                experimental_max_unfolded,
                                                                                                 other_max_unfolded],
                                                                                                 systematicErrorsOnly = True )
 
@@ -422,6 +451,7 @@ if __name__ == "__main__":
         ###ttbar_mass_systematic = replace_measurement_with_deviation_from_central( central_measurement, ttbar_mass_systematic )
         ###kValue_systematic = replace_measurement_with_deviation_from_central( central_measurement, kValue_systematic )
         other_systematics = replace_measurement_with_deviation_from_central( central_measurement, other_systematics )
+        experimental_systematics = replace_measurement_with_deviation_from_central( central_measurement, experimental_systematics )
         
         ttbar_generator_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, ttbar_generator_systematics_unfolded )
         pdf_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, pdf_systematics_unfolded )
@@ -429,7 +459,8 @@ if __name__ == "__main__":
         ###ttbar_mass_systematic_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, ttbar_mass_systematic_unfolded )
         ###kValue_systematic_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, kValue_systematic_unfolded )
         other_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, other_systematics_unfolded )
-        
+        experimental_systematics_unfolded = replace_measurement_with_deviation_from_central( central_measurement_unfolded, experimental_systematics_unfolded )
+
         # Scale mass systematic
         ###ttbar_mass_systematic['TTJets_massdown'], ttbar_mass_systematic['TTJets_massup'] = scaleTopMassSystematicErrors( ttbar_mass_systematic['TTJets_massdown'], ttbar_mass_systematic['TTJets_massup'] )
         ###ttbar_mass_systematic_unfolded['TTJets_massdown'], ttbar_mass_systematic_unfolded['TTJets_massup'] = scaleTopMassSystematicErrors( ttbar_mass_systematic_unfolded['TTJets_massdown'], ttbar_mass_systematic_unfolded['TTJets_massup'] )
@@ -454,6 +485,9 @@ if __name__ == "__main__":
         other_systematics['total_lower'], other_systematics['total_upper'] = other_min, other_max
         other_systematics_unfolded['total_lower'], other_systematics_unfolded['total_upper'] = other_min_unfolded, other_max_unfolded
 
+        experimental_systematics['total_lower'], experimental_systematics['total_upper'] = experimental_min, experimental_max
+        experimental_systematics_unfolded['total_lower'], experimental_systematics_unfolded['total_upper'] = experimental_min_unfolded, experimental_max_unfolded
+
         #### print 'Generator',ttbar_generator_systematics_unfolded
         #### print 'k Value',kValue_systematic_unfolded
         ###new_systematics = {}
@@ -471,5 +505,6 @@ if __name__ == "__main__":
         ###write_normalised_xsection_measurement( ttbar_mass_systematic, ttbar_mass_systematic_unfolded, channel, summary = 'topMass' )
         ###write_normalised_xsection_measurement( kValue_systematic, kValue_systematic_unfolded, channel, summary = 'kValue' )
         write_normalised_xsection_measurement( other_systematics, other_systematics_unfolded, channel, summary = 'other' )
+        write_normalised_xsection_measurement( experimental_systematics, experimental_systematics_unfolded, channel, summary = 'experimental' )
         ###write_normalised_xsection_measurement( new_systematics, new_systematics_unfolded, channel, summary = 'new' )
         
