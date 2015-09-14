@@ -579,7 +579,9 @@ if __name__ == '__main__':
                       )
         write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
-        # write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
+        fit_results_combined = combine_complex_results( fit_results_electron, fit_results_muon )
+        initial_values_combined = combine_complex_results( initial_values_electron, initial_values_muon)
+        write_fit_results_and_initial_values( 'combined', category, fit_results_combined, initial_values_combined)
         last_systematic = category
  
         # TTJet_file.Close()

@@ -29,6 +29,7 @@ from tools.hist_utilities import clean_control_region, \
 import glob
 import tools.measurement
 from copy import deepcopy
+from tools.Calculation import combine_complex_results
 
 # define logger for this module
 mylog = log["01b_get_ttjet_normalisation"]
@@ -196,6 +197,21 @@ class TTJetNormalisation:
 
         return 'unknown_method'
 
+    @mylog.trace()
+    def combine(self, other):
+        if not self.have_normalisation or not other.have_normalisation:
+            mylog.warn(
+                'One of the TTJetNormalisations does not have a normalisation, aborting.')
+            return
+
+        self.normalisation = combine_complex_results(
+            self.normalisation, other.normalisation)
+        self.initial_normalisation = combine_complex_results(
+            self.initial_normalisation, other.initial_normalisation)
+        self.templates = combine_complex_results(
+            self.templates, other.templates)
+        self.channel = 'combined'
+
 
 def parse_options():
     parser = OptionParser(__doc__)
@@ -244,6 +260,7 @@ def main():
     phase_space = 'FullPS'
     if options.visiblePS:
         phase_space = 'VisiblePS'
+    results = {}
     for channel in ['electron', 'muon']:
         inputs = {
             'energy': options.CoM,
@@ -264,6 +281,16 @@ def main():
             )
             norm.calculate_normalisation()
             norm.save(output_path)
+            r_name = f.replace(channel, '')
+            if not results.has_key(r_name):
+                results[r_name] = [norm]
+            else:
+                results[r_name].append(norm)
+    for f, r_list in results.items():
+        assert(len(r_list) == 2)
+        n1, n2 = r_list
+        n1.combine(n2)
+        n1.save(output_path)
 
 
 def get_category_from_file(json_file):
