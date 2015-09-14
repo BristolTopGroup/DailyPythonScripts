@@ -5,7 +5,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
     known_centre_of_mass_energies = [7,8,13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584, 13:40.028}
+    luminosities = {7:5050, 8:19584, 13:41.62912}
     parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
                   'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -185,6 +185,8 @@ class XSectionConfig():
                  # 'LightJet_down':'_minusLightJet',
                  # 'LightJet_up':'_plusLightJet',
 
+                 'PileUpSystematic' : '',
+
 
                  # Other MET uncertainties not already included
                  'ElectronEnUp' : '',
@@ -292,6 +294,10 @@ class XSectionConfig():
         self.ttbar_scaledown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaledown_tree.root'
         self.ttbar_mtop1695_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1695_tree.root'
         self.ttbar_mtop1755_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1755_tree.root'
+        self.ttbar_jesup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_plusJES_tree.root'
+        self.ttbar_jesdown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_minusJES_tree.root'
+        self.ttbar_jerup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_plusJER_tree.root'
+        self.ttbar_jerdown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_minusJER_tree.root'
 
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,
@@ -347,6 +353,26 @@ class XSectionConfig():
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_Lepton_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptondown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_Lepton_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptonup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_jes_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jesdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_jes_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jesup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_jer_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jerdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_jer_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jerup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_bjet_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_bjetdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_bjet_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_bjetup_asymmetric.root' % self.centre_of_mass_energy
+
+        self.unfolding_ElectronEn_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ElectronEnDown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_ElectronEn_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ElectronEnUp_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_MuonEn_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_MuonEnDown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_MuonEn_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_MuonEnUp_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_TauEn_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_TauEnDown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_TauEn_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_TauEnUp_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_UnclusteredEn_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_UnclusteredEnDown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_UnclusteredEn_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_UnclusteredEnUp_asymmetric.root' % self.centre_of_mass_energy
+
+        self.unfolding_PUSystematic = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pileupSystematic_asymmetric.root' % self.centre_of_mass_energy
+
 
         self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_generatorWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 9, 109 )}
 
@@ -393,8 +419,8 @@ class XSectionConfig():
             'Lepton selection efficiency': [('Electron_down', 'Electron_up'), ('Muon_down', 'Muon_up')],
             'Jet energy \& resolution': [('JES_down', 'JES_up', 'JER_down', 'JER_up')],
             'B-tagging' : [('BJet_down', 'BJet_up')],
-            'MET' : [('ElectronEnDown', 'ElectronEnUp'), ('MuonEnDown','MuonEnUp'),('TauEnDown','TauEnUp'),('UnclusteredEnDown','UnclusteredEnUp')],
-            'Normalisation': [
+            '\met' : [('ElectronEnDown', 'ElectronEnUp'), ('MuonEnDown','MuonEnUp'),('TauEnDown','TauEnUp'),('UnclusteredEnDown','UnclusteredEnUp')],
+            'Background Normalisation': [
             # ('TTJet_cross_section-', 'TTJet_cross_section+'),
                               ('SingleTop_cross_section-', 'SingleTop_cross_section+'),
                               ('luminosity-', 'luminosity+'),
@@ -404,6 +430,7 @@ class XSectionConfig():
             'Hadronisation': [('TTJets_hadronisation', 'TTJets_hadronisation')],
             'NLO generator': [('TTJets_NLOgenerator', 'TTJets_NLOgenerator')],
             'PDF': [('PDF_total_lower', 'PDF_total_upper')],
+            'Pileup' : [('PileUpSystematic','PileUpSystematic')],
             'QCD shape': [('QCD_shape', 'QCD_shape')]
                                     }
         self.typical_systematics = []
@@ -524,7 +551,8 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 40.028  # pb^-1
+        # self.new_luminosity = 40.028  # pb^-1
+        self.new_luminosity = 41.62912  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
