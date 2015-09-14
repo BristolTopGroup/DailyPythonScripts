@@ -22,9 +22,9 @@ def create_new_trees(input_file, suffix = ''):
     cr1 = 'TTbar_plus_X_analysis/MuPlusJets/QCD 0.12 < iso <= 0.3'
     cr2 = 'TTbar_plus_X_analysis/MuPlusJets/QCD iso > 0.3'
     
-    with root_open(input_file) as f:
-        t1 = f.Get(tree1_name)
-        t2 = f.Get(tree2_name)
+    with root_open(input_file) as file:
+        t1 = file.Get(tree1_name)
+        t2 = file.Get(tree2_name)
         t1.AddFriend(t2)
     
     #     h1 = t1.Draw('MET', 'relIso_04_deltaBeta > 0.3')
@@ -60,10 +60,22 @@ def create_new_trees(input_file, suffix = ''):
         new_tree2 = f_in.Get(cr2 + '/FitVariables' + suffix).CloneTree()
         
 for f in input_files:
-    shutil.copy(input_folder + f, f)
     for suffix in ['', '_JERDown', '_JERUp', '_JESDown', '_JESUp']:
+        fileToUse = f
         if 'data' in f and not suffix == '':
             continue
-        create_new_trees(f, suffix=suffix)
-    subprocess.call(['hadoop', 'fs', '-rm', output_folder + f])
-    subprocess.call(['hadoop', 'fs', '-copyFromLocal', f, output_folder + f])
+
+        if suffix == '_JERDown':
+            fileToUse = f.replace('tree','minusJER_tree')
+        elif suffix == '_JERUp':
+            fileToUse = f.replace('tree','plusJER_tree')
+        elif suffix == '_JESDown':
+            fileToUse = f.replace('tree','minusJES_tree')
+        elif suffix == '_JESUp':
+            fileToUse = f.replace('tree','plusJES_tree')
+
+        shutil.copy(input_folder + fileToUse, fileToUse)
+
+        create_new_trees(fileToUse, suffix=suffix)
+    subprocess.call(['hadoop', 'fs', '-rm', output_folder + fileToUse])
+    subprocess.call(['hadoop', 'fs', '-copyFromLocal', fileToUse, output_folder + fileToUse])

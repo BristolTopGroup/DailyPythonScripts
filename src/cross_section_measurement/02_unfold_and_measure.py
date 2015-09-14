@@ -33,7 +33,6 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         unfoldCfg.Hreco = options.Hreco
 
     h_unfolded_data = unfolding.unfold( h_data )
-
     del unfolding
     return hist_to_value_error_tuplelist( h_unfolded_data )
 
@@ -63,13 +62,40 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                              ttbar_theory_systematic_prefix + 'scaleup'         :  file_for_scaleup,
                              ttbar_theory_systematic_prefix + 'massdown'        :  file_for_massdown,
                              ttbar_theory_systematic_prefix + 'massup'          :  file_for_massup,
+
+                             # 'JES_down'        :  file_for_jesdown,
+                             # 'JES_up'        :  file_for_jesup,
+
+                             # 'JER_down'        :  file_for_jerdown,
+                             # 'JER_up'        :  file_for_jerup,
+
+                             # 'BJet_up'        :  file_for_bjetdown,
+                             # 'BJet_down'        :  file_for_bjetup,
+
                              ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_powheg_herwig,
                              ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
+
+                             # 'ElectronEnUp' : file_for_ElectronEnUp,
+                             # 'ElectronEnDown' : file_for_ElectronEnDown,
+                             # 'MuonEnUp' : file_for_MuonEnUp,
+                             # 'MuonEnDown' : file_for_MuonEnDown,
+                             # 'TauEnUp' : file_for_TauEnUp,
+                             # 'TauEnDown' : file_for_TauEnDown,
+                             # 'UnclusteredEnUp' : file_for_UnclusteredEnUp,
+                             # 'UnclusteredEnDown' : file_for_UnclusteredEnDown,
+
+                             # 'Muon_up' : file_for_LeptonUp,
+                             # 'Muon_down' : file_for_LeptonDown,
+                             # 'Electron_up' : file_for_LeptonUp,
+                             # 'Electron_down' : file_for_LeptonDown,
+
+                             # 'PileUpSystematic' : file_for_PUSystematic,
                              }
 
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
     # Systematics where you change the response matrix
-    if category in ttbar_generator_systematics :
+    if category in ttbar_generator_systematics or category in files_for_systematics :
+        print 'Doing category',category,'by changing response matrix'
         h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_systematics[category],
                                                                               variable = variable,
                                                                               channel = channel,
@@ -104,7 +130,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               visiblePS = visiblePS,
                                                                               )
 
-    central_results = hist_to_value_error_tuplelist( h_truth )
+    # central_results = hist_to_value_error_tuplelist( h_truth )
     TTJet_fit_results_unfolded = unfold_results( TTJet_fit_results,
                                                 category,
                                                 channel,
@@ -403,7 +429,31 @@ if __name__ == '__main__':
     ###
     file_for_massdown = File( measurement_config.unfolding_mass_down, 'read' )
     file_for_massup = File( measurement_config.unfolding_mass_up, 'read' )
+    file_for_jesdown = File( measurement_config.unfolding_jes_down, 'read' )
+    file_for_jesup = File( measurement_config.unfolding_jes_up, 'read' )
     ###
+    file_for_jerdown = File( measurement_config.unfolding_jer_down, 'read' )
+    file_for_jerup = File( measurement_config.unfolding_jer_up, 'read' )
+    ###
+    file_for_bjetdown = File( measurement_config.unfolding_bjet_down, 'read' )
+    file_for_bjetup = File( measurement_config.unfolding_bjet_up, 'read' )
+    ###
+    file_for_LeptonDown = File( measurement_config.unfolding_Lepton_down, 'read' )
+    file_for_LeptonUp = File( measurement_config.unfolding_Lepton_up, 'read' )
+    ###
+    file_for_ElectronEnDown = File( measurement_config.unfolding_ElectronEn_down, 'read' )
+    file_for_ElectronEnUp = File( measurement_config.unfolding_ElectronEn_up, 'read' )
+    ###
+    file_for_MuonEnDown = File( measurement_config.unfolding_MuonEn_down, 'read' )
+    file_for_MuonEnUp = File( measurement_config.unfolding_MuonEn_up, 'read' )
+    ###
+    file_for_TauEnDown = File( measurement_config.unfolding_TauEn_down, 'read' )
+    file_for_TauEnUp = File( measurement_config.unfolding_TauEn_up, 'read' )
+    ###
+    file_for_UnclusteredEnDown = File( measurement_config.unfolding_UnclusteredEn_down, 'read' )
+    file_for_UnclusteredEnUp = File( measurement_config.unfolding_UnclusteredEn_up, 'read' )
+    ###
+    file_for_PUSystematic = File( measurement_config.unfolding_PUSystematic, 'read')
 
     file_for_powhegPythia8 = File( measurement_config.unfolding_powheg_pythia8, 'read')
     file_for_amcatnlo = File( measurement_config.unfolding_amcatnlo, 'read')
@@ -449,14 +499,14 @@ if __name__ == '__main__':
     #  all MET uncertainties except JES as this is already included
     met_uncertainties = [suffix for suffix in measurement_config.met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
     all_measurements = deepcopy( categories )
-    # all_measurements.extend( pdf_uncertainties )
+    all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
+    all_measurements.extend( ['central_TTJet'] )
 
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
-        print 'Doing category ',category
-
+        print 'Doing category ', category
         if run_just_central and not category == 'central':
             continue
         # Don't need to consider MET uncertainties for HT
@@ -483,20 +533,38 @@ if __name__ == '__main__':
     #     combined_file = path_to_JSON + '/fit_results/' + category + '/fit_results_combined_' + met_type + '.txt'
 
         # don't change fit input for ttbar generator/theory systematics and PDF weights
-        if category in ttbar_generator_systematics or category in ttbar_theory_systematics or category in pdf_uncertainties:
+        if category in ttbar_generator_systematics or category in pdf_uncertainties:
             # or category in ttbar_mass_systematics 
                 electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
                 muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'
-            # combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'
+            # combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'    
+        elif category in rate_changing_systematics or category == 'QCD_shape':
+                electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+                muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'            
+        elif category == 'central_TTJet':
+                electron_file = path_to_JSON + '/central/initial_normalisation_electron_' + met_type + '.txt'
+                muon_file = path_to_JSON + '/central/initial_normalisation_muon_' + met_type + '.txt'            
+        # elif category in met_uncertainties and not 'JES' in category and not 'JER' in category:
+        #         electron_file = path_to_JSON + '/'+category+'/initial_normalisation_electron_' + met_type + '.txt'
+        #         muon_file = path_to_JSON + '/'+category+'/initial_normalisation_muon_' + met_type + '.txt'
+        elif category != 'central':
+                # electron_file = path_to_JSON + '/'+category+'/initial_normalisation_electron_' + met_type + '.txt'
+                # muon_file = path_to_JSON + '/'+category+'/initial_normalisation_muon_' + met_type + '.txt'
+                # electron_file = path_to_JSON + '/central/normalisation_electron_' + translate_options[options.metType] + '.txt'
+                # muon_file = path_to_JSON + '/central/normalisation_muon_' + translate_options[options.metType] + '.txt'
+                electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
+                muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'    
 
         fit_results_electron = None
         fit_results_muon = None
         
         if category == 'Muon_up' or category == 'Muon_down':
+            # fit_results_electron = read_data_from_JSON( path_to_JSON + '/central/initial_normalisation_electron_' + met_type + '.txt' )
             fit_results_electron = read_data_from_JSON( path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt' )
             fit_results_muon = read_data_from_JSON( muon_file )
         elif category == 'Electron_up' or category == 'Electron_down':
             fit_results_electron = read_data_from_JSON( electron_file )
+            # fit_results_muon = read_data_from_JSON( path_to_JSON + '/central/initial_normalisation_muon_' + met_type + '.txt' )
             fit_results_muon = read_data_from_JSON( path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt' )
         else:
             fit_results_electron = read_data_from_JSON( electron_file )

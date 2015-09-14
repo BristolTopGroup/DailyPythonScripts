@@ -39,9 +39,9 @@ def getPUWeights(histograms_to_draw, histogram_lables) :
     mcValues = list(mcHist.y())
 
     weights = [ data / mc for data, mc in zip(dataValues, mcValues)]
-    print 'PU weights'
-    print 'Bin edges :',list(dataHist.xedges())
-    print 'Weights : ',weights
+#     print 'PU weights'
+#     print 'Bin edges :',list(dataHist.xedges())
+#     print 'Weights : ',weights
 
 def make_plot( channel, x_axis_title, y_axis_title,
               signal_region_tree,
@@ -125,8 +125,9 @@ def make_plot( channel, x_axis_title, y_axis_title,
     selection = '1'
     if branchName == 'abs(lepton_eta)' :
         selection = 'lepton_eta > -10'
+    else:
+        selection = '%s >= 0' % branchName
     histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
-
     histograms_QCDControlRegion = None
     if use_qcd_data_region:
         qcd_control_region = signal_region_tree.replace( 'Ref selection', qcd_data_region )
@@ -216,6 +217,14 @@ def make_plot( channel, x_axis_title, y_axis_title,
         histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
         histogram_colors = [colours['data'], colours['QCD'], colours['V+Jets'], colours['Single-Top'], colours['TTJet'] ]
 
+
+    print 'Normalisation after selection'
+    print 'Data :',signal_region_hists['data'].integral(overflow=True)
+    print 'TTJet :',signal_region_hists['TTJet'].integral(overflow=True)
+    print 'Single Top :',signal_region_hists['SingleTop'].integral(overflow=True)
+    print 'V+Jets :',signal_region_hists['V+Jets'].integral(overflow=True)
+    print 'QCD :',qcd_from_data.integral(overflow=True)
+    
     histogram_properties = Histogram_properties()
     histogram_properties.name = name_prefix + b_tag_bin
     if category != 'central':
@@ -344,34 +353,36 @@ if __name__ == '__main__':
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        'HT',
-                        'MET',
-                        'METNoHF',
-                        'ST',
-                        'WPT',
-                        'NVertex',
-                        'NVertexNoWeight',
-                        'LeptonPt',
-                        'AbsLeptonEta',
-                        # # 'Mjj',
-                        # # 'M3',
-                        # # 'angle_bl',
+                        # 'HT',
+                        # 'MET',
+                        # 'METNoHF',
+                        # 'ST',
+                        # 'WPT',
+                        # 'NVertex',
+                        # 'NVertexNoWeight',
+                        # 'LeptonPt',
+                        # 'AbsLeptonEta',
+                        # # # 'Mjj',
+                        # # # 'M3',
+                        # # # 'angle_bl',
                         'NJets',
-                        'NBJets',
-                        'NBJetsNoWeight'
+                        # 'NBJets',
+                        # 'NBJetsNoWeight',
                         # 'JetPt',
                         # 'AbsLeptonEta',
                         # 'RelIso',
+                        # 'sigmaietaieta'
                         ]
 
     additional_qcd_plots = [
                         # 'QCDHT',
-                        'QCDMET',
-                        'QCDST',
-                        'QCDWPT',
-                        'QCDAbsLeptonEta',
-                        'QCDLeptonPt',
-                        'QCDNJets',
+                        # 'QCDMET',
+                        # 'QCDST',
+                        # 'QCDWPT',
+                        # 'QCDAbsLeptonEta',
+                        # 'QCDLeptonPt',
+                        # 'QCDNJets',
+                        # 'QCDsigmaietaieta',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
                         ]
@@ -753,7 +764,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = False,
                       )
 
         ###################################################
@@ -774,7 +785,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.9, 0.88 ),
                       cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = True,
                       )
 
         ###################################################
@@ -801,13 +812,34 @@ if __name__ == '__main__':
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
                       )
+        ###################################################
+        # Sigma ieta ieta
+        ###################################################
+
+        norm_variable = 'sigmaietaieta'
+        if 'sigmaietaieta' in include_plots and channel == 'electron':
+            print '---> sigmaietaieta'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'sigmaIetaIeta',
+                      name_prefix = '%s_sigmaIetaIeta_' % label,
+                      x_limits = control_plots_bins['sigmaietaieta'],
+                      nBins = len(control_plots_bins['sigmaietaieta'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.83 ),
+                      cms_logo_location = 'left',
+                      use_qcd_data_region = useQCDControl,
+                      )
 
     ###################################################
     # QCD Control Region
     ###################################################
     for channel, label in {
-                            'electronQCDNonIso' : 'EPlusJets/QCD non iso e+jets',
-                            'electronQCDConversions' : 'EPlusJets/QCDConversions', 
+                            # 'electronQCDNonIso' : 'EPlusJets/QCD non iso e+jets',
+                            # 'electronQCDConversions' : 'EPlusJets/QCDConversions', 
                             'muonQCDNonIso' : 'MuPlusJets/QCD iso > 0.3',
                             'muonQCDNonIso2' : 'MuPlusJets/QCD 0.12 < iso <= 0.3',
                             }.iteritems() :
@@ -815,6 +847,7 @@ if __name__ == '__main__':
 
         # Set folder for this batch of plots
         output_folder = output_folder_base + "QCDControl/Variables/%s/" % channel
+        # output_folder = output_folder_base + "QCDControl/Variables/%s/TightElectron/" % channel
         make_folder_if_not_exists(output_folder)
 
         print 'Control region :',label
@@ -928,7 +961,8 @@ if __name__ == '__main__':
                       )
 
         # Set folder for this batch of plots
-        output_folder =  output_folder_base + "QCDControl/Control/%s" % channel
+        output_folder =  output_folder_base + "QCDControl/Control/%s/" % channel
+        # output_folder =  output_folder_base + "QCDControl/Control/%s/TightElectron/" % channel
         make_folder_if_not_exists(output_folder)
         ###################################################
         # Abs Lepton Eta
@@ -1019,4 +1053,26 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
+                      )
+
+        ###################################################
+        # Sigma ieta ieta
+        ###################################################
+
+        norm_variable = 'sigmaietaieta'
+        if 'QCDsigmaietaieta' in include_plots and not 'MuPlusJets' in treeName:
+            print '---> sigmaietaieta'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+                      branchName = 'sigmaIetaIeta',
+                      name_prefix = '%s_sigmaIetaIeta_' % channel,
+                      x_limits = control_plots_bins['sigmaietaieta'],
+                      y_max_scale = 1.5,
+                      nBins = len(control_plots_bins['sigmaietaieta'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.85 ),
+                      cms_logo_location = 'left',
                       )

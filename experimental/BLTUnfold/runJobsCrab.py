@@ -3,7 +3,7 @@ from optparse import OptionParser
 import os
 
 jobs = [
-        # 13 TeV
+        # # # 13 TeV
         '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
@@ -11,22 +11,51 @@ jobs = [
         '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s herwigpp',
 
-        # # # PS scale samples
-        # # '--centreOfMassEnergy 13 -s scaleup',
-        # # '--centreOfMassEnergy 13 -s scaledown',
-        # # ME scale weights
+        # # # # PS scale samples
+        # # # '--centreOfMassEnergy 13 -s scaleup',
+        # # # '--centreOfMassEnergy 13 -s scaledown',
+        # # # ME scale weights
         '--centreOfMassEnergy 13 --generatorWeight 4',
         '--centreOfMassEnergy 13 --generatorWeight 8',
 
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
 
+        # '--centreOfMassEnergy 13 -s jesup',
+        # '--centreOfMassEnergy 13 -s jesdown',
 
+        # '--centreOfMassEnergy 13 -s jerup',
+        # '--centreOfMassEnergy 13 -s jerdown',
+
+        # '--centreOfMassEnergy 13 -s leptonup',
+        # '--centreOfMassEnergy 13 -s leptondown',
+
+        # '--centreOfMassEnergy 13 -s bjetup',
+        # '--centreOfMassEnergy 13 -s bjetdown',
+
+        # '--centreOfMassEnergy 13 -s pileupSystematic',
+
+        # '--centreOfMassEnergy 13 -s ElectronEnUp',
+        # '--centreOfMassEnergy 13 -s ElectronEnDown' ,
+        # '--centreOfMassEnergy 13 -s MuonEnUp',
+        # '--centreOfMassEnergy 13 -s MuonEnDown',
+        # '--centreOfMassEnergy 13 -s TauEnUp',
+        # '--centreOfMassEnergy 13 -s TauEnDown',
+        # '--centreOfMassEnergy 13 -s UnclusteredEnUp',
+        # '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
 
 # # #  Add pdf variations to list of jobs
-for variation in range(9,109): # <- 9 to 108 makes 100 jobs
-    jobs.append('--centreOfMassEnergy 13 --generatorWeight %i' % variation)
+nPDFPerJob = 6
+minPDF = 9
+maxPDF = 109
+variation = 9
+while variation < maxPDF :
+    nForThisJob = nPDFPerJob
+    if variation + nPDFPerJob > maxPDF:
+        nForThisJob = maxPDF - variation
+    jobs.append('--centreOfMassEnergy 13 --generatorWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
+    variation += nPDFPerJob
     pass
 
 def parse_args(parameters = []):
