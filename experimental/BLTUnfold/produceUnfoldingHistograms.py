@@ -93,6 +93,24 @@ def getFileName( com, sample, measurementConfig ) :
                         'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
                         'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
                         'massup' : measurementConfig.ttbar_mtop1755_category_templates_trees,
+                        'jesdown' : measurementConfig.ttbar_jesdown_category_templates_trees,
+                        'jesup' : measurementConfig.ttbar_jesup_category_templates_trees,
+                        'jerdown' : measurementConfig.ttbar_jerdown_category_templates_trees,
+                        'jerup' : measurementConfig.ttbar_jerup_category_templates_trees,
+                        'bjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'bjetup' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'leptondown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'leptonup' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'pileupSystematic' : measurementConfig.ttbar_category_templates_trees['central'],
+
+                        'ElectronEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'ElectronEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'MuonEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'MuonEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'TauEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'TauEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'UnclusteredEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'UnclusteredEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
                     },
                  }
 
@@ -169,7 +187,17 @@ def main():
                 print 'Channel : ',channel.channelName
 
                 # Get the tree
-                tree = f.Get("TTbar_plus_X_analysis/Unfolding/Unfolding")
+                treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
+                if options.sample == "jesup":
+                    treeName += "_JESUp"
+                elif options.sample == "jesdown":
+                    treeName += "_JESDown"
+                elif options.sample == "jerup":
+                    treeName += "_JERUp"
+                elif options.sample == "jerdown":
+                    treeName += "_JERDown"
+
+                tree = f.Get(treeName)
                 nEntries = tree.GetEntries()
                 print "Number of entries in tree : ", nEntries
 
@@ -201,6 +229,10 @@ def main():
 
                 for variable in allVariablesBins:
                     if options.debug and variable != 'HT' : continue
+
+                    if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                        continue
+
                     
                     print '--->Doing variable :',variable
 
@@ -216,6 +248,18 @@ def main():
                     # Variable names
                     #
                     recoVariable = branchNames[variable]
+                    if variable in ['MET', 'ST', 'WPT']:
+                        if options.sample == "jesup":
+                            recoVariable += '_METUncertainties[2]'
+                        elif options.sample == "jesdown":
+                            recoVariable += '_METUncertainties[3]'
+                        elif options.sample == "jerup":
+                            recoVariable += '_METUncertainties[0]'
+                        elif options.sample == "jerdown":
+                            recoVariable += '_METUncertainties[1]'
+                        elif options.sample in measurement_config.met_systematics:
+                            recoVariable += '_METUncertainties[%i]' % measurement_config.met_systematics[options.sample]
+
                     genVariable_particle = genBranchNames_particle[variable]
                     genVariable_parton = None
                     if variable in genBranchNames_parton:
@@ -224,9 +268,12 @@ def main():
                     #
                     # Weights and selection
                     #
-                    
+
+                    pileupWeight = "PUWeight"
+                    if options.sample == "pileupSystematic":
+                        pileupWeight = "1"
                     # Generator level
-                    genWeight = '( EventWeight * %.4f)' % measurement_config.luminosity_scale
+                    genWeight = '( EventWeight * %.4f)' % ( measurement_config.luminosity_scale)
                     # genWeight = '( unfolding.puWeight )'
                     genSelection = ''
                     genSelectionVis = ''
@@ -239,9 +286,19 @@ def main():
 
                     # Offline level
                     # offlineWeight = '( unfolding.bTagWeight * unfolding.puWeight )'
-                    leptonWeight = '1'
+                    leptonWeight = 'LeptonEfficiencyCorrection'
+                    if options.sample == 'leptonup':
+                        leptonWeight = 'LeptonEfficiencyCorrectionUp'
+                    elif options.sample == 'leptondown':
+                        leptonWeight == 'LeptonEfficiencyCorrectionDown'
 
-                    offlineWeight = '( EventWeight * %s * %.4f)' % ( leptonWeight, measurement_config.luminosity_scale )
+                    bjetWeight = "BJetWeight"
+                    if options.sample == "bjetup":
+                        bjetWeight = "BJetUpWeight"
+                    elif options.sample == "bjetdown":
+                        bjetWeight = "BJetDownWeight"
+
+                    offlineWeight = '( EventWeight * %s * %s * %s * %.4f)' % ( pileupWeight, bjetWeight, leptonWeight, measurement_config.luminosity_scale )
                     offlineSelection = ''
                     if channel.channelName is 'muPlusJets' :
                         offlineSelection = '( passSelection == 1 )'
@@ -261,10 +318,8 @@ def main():
                     
                     # Apply generator weight
                     if meWeight >= 0:
-                        print meWeight
-                        generatorWeight = '( genWeight_%s )' % meWeight
-                        offlineWeight += ' * '+generatorWeight
-                        genWeight += ' * '+generatorWeight
+                        genWeight = '( EventWeight * %.4f * genWeight_%s )' %  (measurement_config.luminosity_scale, meWeight)
+                        offlineWeight = '( EventWeight * %s * %s * %s * %.4f * genWeight_%s )' % ( pileupWeight, bjetWeight, leptonWeight, measurement_config.luminosity_scale, meWeight )
                         nEntries = 1000000
                         print 'Changing nEntries to ',nEntries, "<---- DOES NOT SEEM TO DO ANYTHING"
                         pass
@@ -336,10 +391,12 @@ def main():
 
                     # Some interesting histograms
                     puOffline = Hist( 20, 0, 2, name='puWeights_offline')
-                    eventWeight = Hist( 100, -2, 2, name='EventWeight')
+                    eventWeightHist = Hist( 100, -2, 2, name='eventWeightHist')                    
+                    genWeightHist = Hist( 100, -2, 2, name='genWeightHist')
+                    offlineWeightHist = Hist( 100, -2, 2, name='offlineWeightHist')
 
                     phaseSpaceInfoHist = Hist( 10, 0, 1, name='phaseSpaceInfoHist')
-                    if options.sample == 'central' and meWeight == -1 :
+                    if not options.donothing:
                         nVis = ( tree.Draw( '1', genWeight+'*'+genSelectionVis ) ).Integral()
                         nVisNotOffline = ( tree.Draw( '1', genWeight+'* ( '+genSelectionVis+'&& !'+offlineSelection+')' ) ).Integral()
                         nOffline = ( tree.Draw( '1', offlineWeight+'*'+offlineSelection ) ).Integral()
@@ -348,17 +405,25 @@ def main():
                         phaseSpaceInfoHist.SetBinContent(1, nVisNotOffline / nVis)
                         phaseSpaceInfoHist.SetBinContent(2, nOfflineNotVis / nOffline)
                         phaseSpaceInfoHist.SetBinContent(3, nVis / nFull)
+                        
+                        nOfflineSL = ( tree.Draw( '1', offlineWeight+'* ( '+offlineSelection+'&& '+genSelection+')' ) ).Integral()
+                        nSL = ( tree.Draw( '1', offlineWeight+'* ( '+genSelection+')' ) ).Integral()
+                        # Selection efficiency for SL ttbar
+                        phaseSpaceInfoHist.SetBinContent(4, nOfflineSL / nSL)
+                        # Fraction of offline that are SL
+                        phaseSpaceInfoHist.SetBinContent(5, nOfflineSL / nOffline)
+
 
                     #
                     # Fill histograms
                     #
                     if not options.donothing:
-                        # tree.Draw('(EventWeight * %.4f)' % measurement_config.luminosity_scale,'1',hist=eventWeight)
                         # 1D
+
                         tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth, nentries=nEntries)
                         tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis, nentries=nEntries)
-                        if genVariable_parton != None:
-                            tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton, nentries=nEntries)
+                        # if genVariable_parton != None:
+                            # tree.Draw(genVariable_parton,genWeight+'*'+genSelection,hist=truth_parton, nentries=nEntries)
                         tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured, nentries=nEntries)
                         tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measuredVis, nentries=nEntries)
                         tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake, nentries=nEntries)
@@ -370,13 +435,15 @@ def main():
                         tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes, nentries=nEntries)
                         tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes, nentries=nEntries)
 
-                        if genVariable_parton != None:
-                            tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+offlineSelection,hist=response_parton)
-                            tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes_parton, nentries=nEntries)
-                            tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+fakeSelection,hist=response_only_fakes_parton, nentries=nEntries)
+                        # if genVariable_parton != None:
+                        #     tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+offlineSelection,hist=response_parton)
+                        #     tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes_parton, nentries=nEntries)
+                        #     tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+fakeSelection,hist=response_only_fakes_parton, nentries=nEntries)
 
                         if options.extraHists:
-                            tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
+                            tree.Draw('EventWeight',genSelection,hist=eventWeightHist)
+                            tree.Draw(genWeight,genSelection,hist=genWeightHist)
+                            tree.Draw( offlineWeight,offlineSelection,hist=offlineWeightHist)
                             pass
                     #
                     # Output histgorams to file
@@ -398,7 +465,9 @@ def main():
                     responseVis_only_fakes.Write()
 
                     phaseSpaceInfoHist.Write()
-                    eventWeight.Write()
+                    genWeightHist.Write()
+                    offlineWeightHist.Write()
+                    eventWeightHist.Write()
                     if options.extraHists:
                         puOffline.Write()
                     pass
