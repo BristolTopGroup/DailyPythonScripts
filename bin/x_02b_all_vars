@@ -1,4 +1,13 @@
 #!/bin/bash
+# Helper functions
+shallIwait() {
+	if (( $1 % $2 == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+}
+
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
 N_JOBS=4
@@ -9,11 +18,10 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Unfolding distribution: $var"
 	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/02_${var}_Full_unfold_13TeV.log &
 	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	shallIwait $i $N_JOBS
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 13 -p data/normalisation/background_subtraction/ --unfolding_method RooUnfoldBayes &> logs/02_${var}_Full_unfold_bayes_13TeV.log &
+	let i+=1
+	shallIwait $i $N_JOBS
 done
 
 echo "Visible phase space"
@@ -21,11 +29,10 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Unfolding distribution: $var"
 	nohup time python src/cross_section_measurement/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/02_${var}_Vis_unfold_13TeV.log &
 	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	shallIwait $i $N_JOBS
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ --unfolding_method RooUnfoldBayes &> logs/02_${var}_Vis_unfold_bayes_13TeV.log &
+	let i+=1
+	shallIwait $i $N_JOBS
 done
 
 wait;

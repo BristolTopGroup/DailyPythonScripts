@@ -1,4 +1,11 @@
 #!/bin/bash
+shallIwait() {
+	if (( $1 % $2 == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+}
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
 N_JOBS=4
@@ -8,11 +15,10 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Calculating diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/03_calculate_systematics.py -s -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/03_${var}_calculate_Full_13TeV.log &
 	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	shallIwait $i $N_JOBS
+	nohup time python src/cross_section_measurement/03_calculate_systematics.py -s -v $var -c 13 -p data/normalisation/background_subtraction/ -u RooUnfoldBayes &> logs/03_${var}_calculate_Full_bayes_13TeV.log &
+	let i+=1
+	shallIwait $i $N_JOBS
 done
 
 echo "Visible phase space"
@@ -20,11 +26,10 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Calculating diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/03_calculate_systematics.py --visiblePS  -s -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/03_${var}_calculate_Vis_13TeV.log &
 	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	shallIwait $i $N_JOBS
+	nohup time python src/cross_section_measurement/03_calculate_systematics.py --visiblePS  -s -v $var -c 13 -p data/normalisation/background_subtraction/ -u RooUnfoldBayes  &> logs/03_${var}_calculate_Vis_13TeV.log &
+	let i+=1
+	shallIwait $i $N_JOBS
 done
 
 wait;
