@@ -580,6 +580,7 @@ if __name__ == '__main__':
     #     if met_type == 'PFMET':
     #         met_type = 'patMETsPFlow'
 
+        file_template = '{path_to_JSON}/{category}/unfolded_normalisation_{channel}_{method}.txt'
         filename = ''
 
     #     # get unfolded normalisation
@@ -587,7 +588,13 @@ if __name__ == '__main__':
         unfolded_normalisation_muon = {}
 
         unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron, visiblePS = visiblePS )
-        filename = path_to_JSON + '/xsection_measurement_results/electron/%s/normalisation_%s.txt' % ( category, met_type )
+#         filename = path_to_JSON + '/xsection_measurement_results/electron/%s/normalisation_%s.txt' % ( category, met_type )
+        filename = file_template.format(
+                            path_to_JSON = path_to_JSON,
+                            category = category,
+                            channel = 'electron',
+                            method = method,
+                            )
         write_data_to_JSON( unfolded_normalisation_electron, filename )
         # measure xsection
         calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
@@ -595,7 +602,13 @@ if __name__ == '__main__':
         calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' , True )
 
         unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon, visiblePS = visiblePS )
-        filename = path_to_JSON + '/xsection_measurement_results/muon/%s/normalisation_%s.txt' % ( category, met_type )
+#         filename = path_to_JSON + '/xsection_measurement_results/muon/%s/normalisation_%s.txt' % ( category, met_type )
+        filename = file_template.format(
+                            path_to_JSON = path_to_JSON,
+                            category = category,
+                            channel = 'muon',
+                            method = method,
+                            )
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         # measure xsection
         calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
@@ -611,7 +624,13 @@ if __name__ == '__main__':
         else:
             unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
-        filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
+#         filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
+        filename = file_template.format(
+                            path_to_JSON = path_to_JSON,
+                            category = category,
+                            channel = 'combined',
+                            method = method,
+                            )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
         calculate_xsections( unfolded_normalisation_combined, category, 'combined' )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined' )
