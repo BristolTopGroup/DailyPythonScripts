@@ -48,7 +48,7 @@ def get_k_from_d_i( h_truth, h_measured, h_response, h_fakes = None, h_data = No
                            h_fakes,
                            method = method,
                            k_value = k_start,
-                           Hreco = 0,
+                           error_treatment = 0,
                            verbose = 1 )
     unfolding.unfold( h_data )
     hist_d_i = None

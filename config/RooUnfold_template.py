@@ -15,7 +15,11 @@ availablemethods = [
 SVD_k_value = 5
 SVD_tau_value = -1
 SVD_n_toy = 1000
-Hreco = 2
+# 0 = no error treatment: returns sqrt(N)
+# 1 = bin-by-bin errors (diagonal covariance matrix)
+# 2 = covariance matrix from unfolding
+# 3 = covariance matrix from toy MC
+Hreco = 3
 Bayes_n_repeat = 4
 
 unfolded_markerStyle = 20

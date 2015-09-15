@@ -17,7 +17,7 @@ from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
 
 from tools.file_utilities import make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist, get_fit_results_histogram
+from tools.hist_utilities import get_fit_results_histogram
 from tools.plotting import make_plot, Histogram_properties
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from config.variable_binning import bin_edges
@@ -37,7 +37,7 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
                            h_fakes,
                            method = method,
                            k_value = k_max,
-                           Hreco = 2,
+                           error_treatment = 4,
                            verbose = 1 )
     
     RMSerror, MeanResiduals, RMSresiduals, Chi2 = unfolding.test_regularisation ( h_data, k_max )

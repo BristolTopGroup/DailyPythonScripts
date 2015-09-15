@@ -28,9 +28,9 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
 
     # turning off the unfolding errors for systematic samples
     if not category == 'central':
-        unfoldCfg.Hreco = 0
+        unfoldCfg.error_treatment = 0
     else:
-        unfoldCfg.Hreco = options.Hreco
+        unfoldCfg.error_treatment = options.error_treatment
 
     h_unfolded_data = unfolding.unfold( h_data )
     del unfolding
@@ -379,9 +379,9 @@ if __name__ == '__main__':
                       help = "Load fakes histogram and perform manual fake subtraction in TSVDUnfold" )
     parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
-    parser.add_option( "-H", "--hreco", type = 'int',
-                      dest = "Hreco", default = 2,
-                      help = "Hreco parameter for error treatment in RooUnfold" )
+    parser.add_option( "-e", "--error_treatment", type = 'int',
+                      dest = "error_treatment", default = unfoldCfg.error_treatment,
+                      help = "parameter for error treatment in RooUnfold" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13,
                       help = "set the centre of mass energy for analysis. Default = 13 [TeV]", type = int )
     parser.add_option( "-C", "--combine-before-unfolding", dest = "combine_before_unfolding", action = "store_true",
@@ -471,7 +471,7 @@ if __name__ == '__main__':
         phase_space = "VisiblePS"
 
     load_fakes = options.load_fakes
-    unfoldCfg.Hreco = options.Hreco
+    unfoldCfg.error_treatment = options.error_treatment
     method = options.unfolding_method
     combine_before_unfolding = options.combine_before_unfolding
     met_type = translate_options[options.metType]
