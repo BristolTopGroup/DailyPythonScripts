@@ -584,7 +584,12 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if CMS.tight_layout:
         plt.tight_layout()
 
-    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/' + phase_space
+    path = '{output_folder}/{centre_of_mass_energy}TeV/{category}/'
+    path = path.format(
+            output_folder = output_folder,
+            centre_of_mass_energy = measurement_config.centre_of_mass_energy,
+            category = category,
+            )
     make_folder_if_not_exists( path )
     for output_format in output_formats:
         filename = path + '/' + histname + '.' + output_format
