@@ -50,6 +50,7 @@ class Histogram_properties:
     emptybins = False
     formats = ['png', 'pdf']
     path = ''
+    fix_to_zero = False
 
     
     def __init__( self, dictionary = {}, **kwargs ):
@@ -77,13 +78,23 @@ class Plot(object):
         A class to define a plot
     '''
     delegate_attr = attribute_names=['name', 'title', 'formats']
-    def __init__(self, histograms, properties):
+    def __init__(self, histograms, properties, **kwargs):
         self.__draw_method = 'errorbar'
         self.__properties = properties
         self._path = properties.path
         self.__histograms = histograms
         if self._path != '' and not self._path.endswith('/'):
             self._path += '/'
+        self.__errorbands = []
+        if kwargs.has_key('errorbands'):
+            self.__errorbands = kwargs.pop('errorbands')
+
+    def add_error_band(self, errorband):
+        self.__errorbands.append(errorband)
+
+    @property
+    def errorbands(self):
+        return self.__errorbands
 
     @property
     def properties(self):
@@ -132,10 +143,37 @@ class Plot(object):
     def show_ratios(self):
         return self.__properties.has_ratio and len(self.__histograms) > 1
 
+    @property
+    def fix_to_zero(self):
+        return self.__properties.fix_to_zero
+
 #     def __getattr__(self, name):
 #         print name
 #         if name in Plot.delegate_attr:
 #             return getattr(self.__properties, name)
+
+class ErrorBand(object):
+
+    def __init__(self, name, lower, upper):
+        self.__name = name
+        self.__lower = lower
+        self.__upper = upper
+        self.__zorder = 999
+
+    @property
+    def name(self):
+        return self.__name
+
+    def draw(self, axes,
+             facecolor = '0.75', # grey
+             alpha = 0.5,
+             hatch = '/',
+             zorder = 999,):
+        rplt.fill_between( self.__upper,
+                           self.__lower, axes, facecolor = facecolor,
+                           alpha = alpha, hatch = hatch,
+                           zorder = zorder )
+
 
 def make_data_mc_comparison_plot( histograms = [],
                                  histogram_lables = [],
@@ -752,7 +790,6 @@ def compare_histograms(plot):
     if plot.show_ratios:
         gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
         axes = plt.subplot( gs[0] )
-    adjust_axis_limits( axes, properties, histograms.values() )
     plot_function = rplt.__dict__[plot.draw_method]
     for label, histogram in histograms.items():
         histogram.markersize = 2
@@ -764,12 +801,29 @@ def compare_histograms(plot):
                        xerr = properties.xerr, elinewidth = 2 )
 
     set_labels( plt, properties, show_x_label = not plot.show_ratios, axes = axes )
-    l1 = axes.legend(numpoints = 1,
-                     frameon = properties.legend_color,
-                bbox_to_anchor = properties.legend_location,
-                bbox_transform=plt.gcf().transFigure,
-                prop = CMS.legend_properties,
-                ncol = properties.legend_columns)
+    errorbands = plot.errorbands
+    handles, labels = axes.get_legend_handles_labels()
+    for band in errorbands:
+        band.draw(axes)
+        p1 = Rectangle( ( 0, 0 ), 1, 1, fc = "0.75", alpha = 0.5, hatch = '/' ,
+                        label = band.name)
+        handles.append( p1 )
+        labels.append( band.name )
+    adjust_axis_limits( axes, properties, histograms.values() )
+
+    # or sort legend by labels
+    import operator
+    hl = sorted(zip(handles, labels),
+            key=operator.itemgetter(1))
+    handles2, labels2 = zip(*hl)
+    l1 = axes.legend(
+        handles2, labels2, numpoints = 1,
+        frameon = properties.legend_color,
+        bbox_to_anchor = properties.legend_location,
+        bbox_transform=plt.gcf().transFigure,
+        prop = CMS.legend_properties,
+        ncol = properties.legend_columns,
+        )
     l1.set_zorder(102)
 
     ratios = {}
