@@ -466,6 +466,15 @@ def make_line_hist(bin_edges, y_value):
         l.SetBinContent(i, y_value)
     return l
 
+def absolute(hist):
+    h = deepcopy(hist)
+    for bin_i in range(1, h.nbins() + 1):
+        value = h.GetBinContent(bin_i)
+        error = h.GetBinError(bin_i)
+        h.SetBinContent(bin_i, abs(value))
+        h.SetBinError(bin_i, abs(error))
+    return h
+
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
                              ( 0.012830288388947605, 0.0010071677178938234 ),
