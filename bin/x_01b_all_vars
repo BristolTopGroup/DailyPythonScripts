@@ -1,0 +1,29 @@
+#!/bin/bash
+echo "This will take a while ... grab a coffee/tea/water/cocktail"
+mkdir -p logs
+N_JOBS=5
+
+
+i=0
+for var in MET HT ST WPT MT; do
+	echo "Fitting distribution: $var"
+	nohup time python src/cross_section_measurement/01_get_ttjet_normalisation.py -v $var -c 7 -i config/measurements/background_subtraction &> logs/01b_${var}_bgs_7TeV.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+
+
+	nohup time python src/cross_section_measurement/01_get_ttjet_normalisation.py -v $var -c 8 -i config/measurements/background_subtraction &> logs/01b_${var}_bgs_8TeV.log &
+	let i+=1
+	if (( $i % N_JOBS == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+done
+
+wait;
+echo "All done! Time to run x_02b_all_vars."
