@@ -24,7 +24,7 @@ from config import XSectionConfig
 from src.cross_section_measurement.lib import closure_tests
 from tools.file_utilities import write_data_to_JSON
 from tools.hist_utilities import clean_control_region, rebin_asymmetric, \
-    hist_to_value_error_tuplelist
+    hist_to_value_error_tuplelist, fix_overflow
 from config.variable_binning import bin_edges as variable_bin_edges
 
 import glob
@@ -105,7 +105,7 @@ class TTJetNormalisation:
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
             self.initial_normalisation[
-                sample] = hist_to_value_error_tuplelist(hist)
+                sample] = hist_to_value_error_tuplelist(fix_overflow(hist))
             if self.method == self.BACKGROUND_SUBTRACTION and sample != 'TTJet':
                 self.normalisation[sample] = self.initial_normalisation[sample]
 
@@ -209,7 +209,7 @@ def main():
         # categories_and_prefixes, see get_met_type
         categories.remove(met_unc)
 
-    for channel in ['electron']:
+    for channel in ['electron', 'muon']:
         inputs = {
             'energy': options.CoM,
             'channel': channel,
