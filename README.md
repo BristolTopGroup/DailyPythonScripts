@@ -66,11 +66,11 @@ Instructions for ttbar differential cross-section analysis
 ==================
 
 ### Merge CRAB output unfolding files
-- Run ```experimental/BLTUnfold/mergeUnfoldingBLT/merge_unfolding_BLT_files_on_DICE.py -c 7``` or ```8 --listJobs``` to list how many merging jobs are required to run (run locally on soolin).
-- Edit the following lines in ```/experimental/BLTUnfold/mergeUnfoldingBLT/submitMergeUnfoldingJobs.description```:
-```arguments = $(process) $(cluster) com username```
-```queue n```.
-with ```com``` as the centre of mass energy, ```username``` as your grid username and ```n``` as the number of jobs output from the previous step above.
+- Run ```python experimental/BLTUnfold/mergeUnfoldingBLT/merge_unfolding_BLT_files_on_DICE.py -c 7``` or ```8 --listJobs``` to list how many merging jobs are required to run (run locally on soolin).
+- Edit the following lines in ```experimental/BLTUnfold/mergeUnfoldingBLT/submitMergeUnfoldingJobs.description```:
+```arguments = $(process) $(cluster) com username``` and 
+```queue n```
+with ```com``` as the centre of mass energy, ```username``` as your grid username and ```n``` as the number of jobs output from the previous step.
 - ```cd``` up to the folder containing DailyPythonScripts and ```tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts``` (tar file should be approximately 100MB in size).
 - Merge the BLT unfolding files (each sample needs to be merged into one file, cannot be split over several files) using ```condor_submit DailyPythonScripts/experimental/BLTUnfold/mergeUnfoldingBLT/submitMergeUnfoldingJobs.description```.
 - Move merged files to e.g.: ```/hdfs/TopQuarkGroup/mc/7TeV``` or ```8TeV/v11/NoSkimUnfolding/BLT/```.
