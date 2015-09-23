@@ -39,20 +39,20 @@ sample_to_BLT_filepath_dictionary_7TeV = {"central":"TTJets_MSDecays_central_Tun
                                 "matchingdown": "TTJets_MSDecays_matchingdown_7TeV-madgraph-tauola/crab_TTJets_matchingdown_7TeV_madgraph_BLTUnfold_NoSkim",
                                 "mass_173_5":"TTJets_MSDecays_mass173_5_7TeV-madgraph-tauola/crab_TTJets_mass_173_5_7TeV_madgraph_BLTUnfold_NoSkim",
                                 "mass_169_5": "TTJets_MSDecays_mass169_5_7TeV-madgraph-tauola/crab_TTJets_mass_169_5_7TeV_madgraph_BLTUnfold_NoSkim",
-                                 "powhegpythia": "TT_weights_CT10_TuneZ2_7TeV-powheg-pythia-tauola/crab_TT_CT10_TuneZ2_7TeV_powheg_pythia_tauola_BLTUnfold_NoSkim_2",
+                                 "powhegpythia": "TT_weights_CT10_TuneZ2_7TeV-powheg-pythia-tauola/crab_TT_CT10_TuneZ2_7TeV_powheg_pythia_tauola_BLTUnfold_NoSkim",
                                  "powhegherwig": "TT_weights_CT10_AUET2_7TeV-powheg-herwig/crab_TT_CT10_AUET2_7TeV_powheg_herwig_BLTUnfold_NoSkim_2"
                                 }
 
-sample_to_BLT_filepath_dictionary_8TeV = {"central":"TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/crab_TTJets_central_7TeV_madgraph_BLTUnfold_NoSkim",
-                                "scaleup": "TTJets_MSDecays_scaleup_TuneZ2star_7TeV-madgraph-tauola/crab_TTJets_scaleup_7TeV_madgraph_BLTUnfold_NoSkim",
-                                "scaledown": "TTJets_MSDecays_scaledown_TuneZ2star_7TeV-madgraph-tauola/crab_TTJets_scaledown_7TeV_madgraph_BLTUnfold_NoSkim",
-                                "matchingup": "TTJets_MSDecays_matchingup_7TeV-madgraph-tauola/crab_TTJets_matchingup_7TeV_madgraph_BLTUnfold_NoSkim",
-                                "matchingdown": "TTJets_MSDecays_matchingdown_7TeV-madgraph-tauola/crab_TTJets_matchingdown_7TeV_madgraph_BLTUnfold_NoSkim",
-                                "mass_173_5":"TTJets_MSDecays_mass173_5_7TeV-madgraph-tauola/crab_TTJets_mass_173_5_7TeV_madgraph_BLTUnfold_NoSkim",
-                                "mass_169_5": "TTJets_MSDecays_mass169_5_7TeV-madgraph-tauola/crab_TTJets_mass_169_5_7TeV_madgraph_BLTUnfold_NoSkim",
-                                 "powhegpythia": "TT_weights_CT10_TuneZ2_7TeV-powheg-pythia-tauola/crab_TT_CT10_TuneZ2_7TeV_powheg_pythia_tauola_BLTUnfold_NoSkim_2",
-                                "powhegherwig": "TT_weights_CT10_AUET2_7TeV-powheg-herwig/crab_TT_CT10_AUET2_7TeV_powheg_herwig_BLTUnfold_NoSkim_2",
-                                "mcatnlo": "TT_weights_CT10_AUET2_7TeV-powheg-herwig/crab_TT_CT10_AUET2_7TeV_powheg_herwig_BLTUnfold_NoSkim_2"
+sample_to_BLT_filepath_dictionary_8TeV = {"central":"TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_central_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "scaleup": "TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_scaleup_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "scaledown": "TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_scaledown_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "matchingup": "TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_matchingup_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "matchingdown": "TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_matchingdown_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "mass_173_5":"TTJets_MSDecays_mass173_5_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_mass_173_5_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "mass_169_5": "TTJets_MSDecays_mass169_5_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_mass_169_5_8TeV_madgraph_BLTUnfold_NoSkim",
+                                "powhegpythia": "TT_CT10_TuneZ2star_8TeV-powheg-tauola/crab_TT_CT10_8TeV_powheg_tauola_BLTUnfold_NoSkim",
+                                "powhegherwig": "TT_CT10_AUET2_8TeV-powheg-herwig/crab_TT_CT10_AUET2_8TeV_powheg_herwig_BLTUnfold_NoSkim",
+                                "mcatnlo": "TT_8TeV-mcatnlo/crab_TT_8TeV_mcatnlo_BLTUnfold_NoSkim"
                                 }
 
 if options.com == 7:
@@ -72,7 +72,7 @@ for sample_name in sample_names:
     allJobs.append( [output_filename, [input_filepath]] )
 
 if options.listJobs:
-    print "Output file: Input files : \n", allJobs
+    print "[Output file: [Input files] ] : \n", allJobs
     print "Total number of jobs for centre of mass : ", len(allJobs)
     sys.exit()
 
