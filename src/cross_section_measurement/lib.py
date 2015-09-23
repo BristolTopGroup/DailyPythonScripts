@@ -15,19 +15,35 @@ closure_tests = {
                  'qcd_only' : {'V+Jets': 0, 'SingleTop': 0, 'TTJet': 0, 'QCD': 1},
                  }
 
-def read_fit_results(path_to_JSON = 'data', 
+def read_normalisation(path_to_JSON = 'data', 
                      variable = 'MET', 
                      category = 'central',
                      channel = 'combined', 
                      met_type = 'patType1CorrectedPFMet'):
-    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'fit_results')
+    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'normalisation')
 
-def read_fit_input(path_to_JSON = 'data', 
+def read_initial_normalisation(path_to_JSON = 'data', 
                      variable = 'MET', 
                      category = 'central',
                      channel = 'combined', 
                      met_type = 'patType1CorrectedPFMet'):
-    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'initial_values')
+    return read_from_fit_results_folder(path_to_JSON, variable, category, channel, met_type, 'initial_normalisation')
+
+def read_unfolded_normalisation(
+        path_to_JSON='data',
+        variable='MET',
+        category='central',
+        channel='combined',
+        met_type='patType1CorrectedPFMet'):
+        new_path = '{path}/xsection_measurement_results/{channel}/{category}/{file}'
+        result_file = 'normalisation_{0}.txt'.format(met_type)
+        new_path = new_path.format(
+        path=path_to_JSON,
+        channel=channel,
+        category=category,
+        file=result_file,
+        )
+        return read_data_from_JSON(new_path)
 
 def read_fit_templates(path_to_JSON = 'data', 
                      variable = 'MET', 
@@ -42,7 +58,8 @@ def read_from_fit_results_folder(path_to_JSON = 'data',
                      channel = 'combined', 
                      met_type = 'patType1CorrectedPFMet',
                      data_type = 'fit_results'):
-    filename = path_to_JSON + '/' + variable + '/fit_results/' + category + '/'
+#     filename = path_to_JSON + '/' + variable + '/fit_results/' + category + '/'
+    filename = path_to_JSON + '/' + variable + '/' + category + '/'
     filename += data_type + '_' + channel + '_' + met_type + '.txt'
     results = read_data_from_JSON( filename )
     

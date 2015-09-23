@@ -219,6 +219,8 @@ if __name__ == "__main__":
 
     # all MET uncertainties except JES and JER as this is already included
     met_uncertainties_list = [met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    met_uncertainties_list = [suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+
 
     # rate changing systematics (luminosity, ttbar/single top cross section uncertainties)
     rate_changing_systematics_list = [systematic + '+' for systematic in measurement_config.rate_changing_systematics.keys()]

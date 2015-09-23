@@ -116,7 +116,7 @@ def read_xsection_measurement_results( category, channel ):
 def read_fit_templates_and_results_as_histograms( category, channel ):
     global path_to_JSON, variable, met_type
     templates = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt' )
-    data_values = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt' )['data']
+    data_values = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/initial_normalisation_' + channel + '_' + met_type + '.txt' )['data']
     fit_results = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
     fit_variables = templates.keys()
     template_histograms = {fit_variable: {} for fit_variable in fit_variables}

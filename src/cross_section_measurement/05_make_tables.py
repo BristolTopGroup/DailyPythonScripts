@@ -6,7 +6,7 @@ from config.variable_binning import variable_bins_latex, variable_bins_ROOT
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from lib import read_fit_results, read_fit_input
+from lib import read_normalisation, read_initial_normalisation
 import math
 import os.path
 from numpy import median
@@ -349,7 +349,11 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
             central_value = central_values['unfolded'][bin_i][0]
 
         for source in all_measurements:
-            abs_error = errors[source][bin_i]
+            if met_type in source:
+                source_tmp = source.replace(met_type, '')
+                abs_error = errors[source_tmp][bin_i]
+            else:
+                abs_error = errors[source][bin_i]
             relative_error = getRelativeError(central_value, abs_error)
             text = '%.2f' % (relative_error*100)
             if rows.has_key(source):
@@ -423,7 +427,11 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
         for systematic_group in typical_systematics.keys():
             for source in all_measurements:
                 if source in typical_systematics[systematic_group]:
-                    abs_error = errors[source][bin_i]
+                    if met_type in source:
+                        source_tmp = source.replace(met_type, '')
+                        abs_error = errors[source_tmp][bin_i]
+                    else:
+                        abs_error = errors[source][bin_i] 
                     relative_error = getRelativeError(central_value, abs_error)
                     value = relative_error
                     if values_for_typical_systematics_table.has_key(source):
@@ -628,8 +636,8 @@ if __name__ == '__main__':
 #             print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
 
         if not channel == 'combined':
-            fit_input = read_fit_input(path_to_JSON, variable, 'central', channel, met_type)
-            fit_results = read_fit_results(path_to_JSON, variable, 'central', channel, met_type)
+            fit_input = read_initial_normalisation(path_to_JSON, variable, 'central', channel, met_type)
+            fit_results = read_normalisation(path_to_JSON, variable, 'central', channel, met_type)
             print_fit_results_table(fit_input, fit_results, channel, toFile = True)
 
     

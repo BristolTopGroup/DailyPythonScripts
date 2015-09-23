@@ -12,7 +12,7 @@ from uncertainties import ufloat
 
 def get_fit_results(variable, channel):
     global path_to_JSON, category, met_type
-    fit_results = read_data_from_JSON(path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt')
+    fit_results = read_data_from_JSON(path_to_JSON + variable + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt')
     return fit_results
 
 def get_fit_inputs(template, variable, channel):
