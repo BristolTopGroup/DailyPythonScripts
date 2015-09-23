@@ -212,8 +212,8 @@ class XSectionConfig():
 
         self.data_muon_category_templates = {
                                     'central': self.data_file_muon,
-                                    'JES_up': path_to_files + 'JES_up/SingleMu' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/SingleMu' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    'JES_up': self.data_file_muon,
+                                    'JES_down': self.data_file_muon
                                     }
 
         self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -292,6 +292,10 @@ class XSectionConfig():
                                                                    "TTJet_cross_section-",
                                                                    "SingleTop_cross_section+",
                                                                    "SingleTop_cross_section-",
+                                                                   "V+Jets_cross_section-",
+                                                                   "V+Jets_cross_section+",
+                                                                   "QCD_cross_section-",
+                                                                   "QCD_cross_section",
                                                                    "luminosity+",
                                                                    "luminosity-"],
                         "typical_systematics_theoretical": ["TTJets_matchingup",
@@ -360,8 +364,8 @@ class XSectionConfig():
         self.special_muon_histogram = 'etaAbs_ge2j_data'
 
         self.data_electron_category_templates = {'central': self.data_file_electron,
-                                    'JES_up': path_to_files + 'JES_up/ElectronHad' + middle + self.categories_and_prefixes['JES_up'] + '.root',
-                                    'JES_down': path_to_files + 'JES_down/ElectronHad' + middle + self.categories_and_prefixes['JES_down'] + '.root'
+                                    'JES_up': self.data_file_electron,
+                                    'JES_down': self.data_file_electron
                                     }
 
     def __fill_defaults_8TeV__( self ):
