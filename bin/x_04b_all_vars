@@ -1,4 +1,11 @@
 #!/bin/bash
+shallIwait() {
+	if (( $1 % $2 == 0 ))
+	then
+		echo "Waiting on the above to finish."
+    	wait;
+	fi
+}
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
 mkdir -p plots
@@ -10,11 +17,10 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Plotting diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04_${var}_plot_Vis_13TeV.log & # -a  <--add this option for additional plots
 	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	shallIwait $i $N_JOBS
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction --unfolding_method RooUnfoldBayes &> logs/04_${var}_plot_Vis_13TeV_Bayes.log &
+	let i+=1
+	shallIwait $i $N_JOBS
 done
 
 echo "Full phase space"
@@ -22,11 +28,10 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Plotting diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04_${var}_plot_Full_13TeV.log & # -a  <--add this option for additional plots
 	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	shallIwait $i $N_JOBS
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction --unfolding_method RooUnfoldBayes &> logs/04_${var}_plot_Full_13TeV_Bayes.log &
+	let i+=1
+	shallIwait $i $N_JOBS
 done
 
 

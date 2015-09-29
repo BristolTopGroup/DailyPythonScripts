@@ -17,7 +17,7 @@ from matplotlib.patches import Rectangle
 from copy import deepcopy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FixedLocator
-from itertools import cycle
+from itertools import cycle, combinations
 from tools.latex import setup_matplotlib
 
 setup_matplotlib()
@@ -48,6 +48,9 @@ class Histogram_properties:
     #If True (the default) then plot bins with zero content otherwise only
     #    show bins with nonzero content.
     emptybins = False
+    formats = ['png', 'pdf']
+    path = ''
+    fix_to_zero = False
 
     
     def __init__( self, dictionary = {}, **kwargs ):
@@ -60,7 +63,7 @@ class Histogram_properties:
 class PlotConfig:
     '''
         Class to read a JSON file and extract information from it.
-        It creates HistSets and plot_options, essentiall replacing the main
+        It creates HistSets and plot_options, essential replacing the main
         functionality of the bin/plot script.
     '''
     general_options = ['files', 'histograms', 'labels', 'plot_type', 'output_folder',
@@ -69,6 +72,108 @@ class PlotConfig:
     
     def __init__( self, config_file, **kwargs ):
         self.config_file = config_file
+
+class Plot(object):
+    '''
+        A class to define a plot
+    '''
+    delegate_attr = attribute_names=['name', 'title', 'formats']
+    def __init__(self, histograms, properties, **kwargs):
+        self.__draw_method = 'errorbar'
+        self.__properties = properties
+        self._path = properties.path
+        self.__histograms = histograms
+        if self._path != '' and not self._path.endswith('/'):
+            self._path += '/'
+        self.__errorbands = []
+        if kwargs.has_key('errorbands'):
+            self.__errorbands = kwargs.pop('errorbands')
+
+    def add_error_band(self, errorband):
+        self.__errorbands.append(errorband)
+
+    @property
+    def errorbands(self):
+        return self.__errorbands
+
+    @property
+    def properties(self):
+        return self.__properties
+
+    def save(self):
+        make_folder_if_not_exists(self._path)
+        for f in self.__properties.formats:
+            file_name = '{path}{name}.{format}'
+            file_name = file_name.format(
+                            path = self._path,
+                            name = self.__properties.name,
+                            format = f,
+                            )
+            plt.savefig(file_name)
+
+    def cleanup(self):
+        # clear current figure and axes
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+    def __enter__(self):
+        self.cleanup()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.cleanup()
+
+    @property
+    def draw_method(self):
+        return self.__draw_method
+
+    @draw_method.setter
+    def draw_method(self, method):
+        if method in rplt.__dict__.keys():
+            self.__draw_method = method
+        else:
+            raise ValueError('Invalid draw method')
+
+    @property
+    def histograms(self):
+        return self.__histograms
+
+    @property
+    def show_ratios(self):
+        return self.__properties.has_ratio and len(self.__histograms) > 1
+
+    @property
+    def fix_to_zero(self):
+        return self.__properties.fix_to_zero
+
+#     def __getattr__(self, name):
+#         print name
+#         if name in Plot.delegate_attr:
+#             return getattr(self.__properties, name)
+
+class ErrorBand(object):
+
+    def __init__(self, name, lower, upper):
+        self.__name = name
+        self.__lower = lower
+        self.__upper = upper
+        self.__zorder = 999
+
+    @property
+    def name(self):
+        return self.__name
+
+    def draw(self, axes,
+             facecolor = '0.75', # grey
+             alpha = 0.5,
+             hatch = '/',
+             zorder = 999,):
+        rplt.fill_between( self.__upper,
+                           self.__lower, axes, facecolor = facecolor,
+                           alpha = alpha, hatch = hatch,
+                           zorder = zorder )
+
 
 def make_data_mc_comparison_plot( histograms = [],
                                  histogram_lables = [],
@@ -607,17 +712,18 @@ def set_labels( plt, histogram_properties, show_x_label = True,
               transform=axes.transAxes, fontsize=40, verticalalignment='top',
               horizontalalignment=loc)
 
-def adjust_axis_limits( axes, histogram_properties, histograms = [] ):
+def adjust_axis_limits( axes, histogram_properties, histograms = [], adjust_y = True ):
     x_limits = histogram_properties.x_limits
     if len( x_limits ) == 2:
         axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
         
     y_limits = histogram_properties.y_limits
-    if len( y_limits ) == 2:
-        axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
-    else:
-        y_max = get_best_max_y(histograms, x_limits=x_limits) * histogram_properties.y_max_scale
-        axes.set_ylim( ymin = 0, ymax = y_max )
+    if adjust_y:
+        if len( y_limits ) == 2:
+            axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
+        else:
+            y_max = get_best_max_y(histograms, x_limits=x_limits) * histogram_properties.y_max_scale
+            axes.set_ylim( ymin = 0, ymax = y_max )
         
 def get_best_max_y(histograms, include_error = True, x_limits = None):
     max_y =  max([__max__(histogram, include_error) for histogram in histograms])
@@ -626,7 +732,7 @@ def get_best_max_y(histograms, include_error = True, x_limits = None):
         all_y = []
         add_y = all_y.extend
         for histogram in histograms:
-            ys = [y for x,y in zip(histogram.x(), histogram.y()) if x > x_min and x < x_max]
+            ys = [y+yerr for x,y,yerr in zip(histogram.x(), histogram.y(), histogram.yerrh()) if x > x_min and x < x_max]
             add_y(ys)
         max_y = max(all_y)
     return max_y
@@ -669,3 +775,81 @@ def adjust_ratio_ticks( axis, n_ticks = 3 ):
     else:
         axis.set_major_locator( MultipleLocator( tick_distance ) )
         axis.set_minor_locator( MultipleLocator( tick_distance / 2 ) )
+
+def compare_histograms(plot):
+    histograms = plot.histograms
+    properties = plot.properties
+    # the cycling needs to be better
+    colors = ['green', 'red', 'blue', 'magenta']
+    colorcycler = cycle( colors )
+    markers = [20, 23, 22, 33, 21, 29]
+    markercycler = cycle( markers )
+
+    plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    axes = plt.axes()
+    if plot.show_ratios:
+        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
+        axes = plt.subplot( gs[0] )
+    plot_function = rplt.__dict__[plot.draw_method]
+    for label, histogram in histograms.items():
+        histogram.markersize = 2
+        histogram.markerstyle = next( markercycler )
+        histogram.color = next( colorcycler )
+        plot_function( histogram, axes = axes, label = label,
+                       emptybins = properties.emptybins,
+                       yerr = True,
+                       xerr = properties.xerr, elinewidth = 2 )
+
+    set_labels( plt, properties, show_x_label = not plot.show_ratios, axes = axes )
+    errorbands = plot.errorbands
+    handles, labels = axes.get_legend_handles_labels()
+    for band in errorbands:
+        band.draw(axes)
+        p1 = Rectangle( ( 0, 0 ), 1, 1, fc = "0.75", alpha = 0.5, hatch = '/' ,
+                        label = band.name)
+        handles.append( p1 )
+        labels.append( band.name )
+    adjust_axis_limits( axes, properties, histograms.values() )
+
+    # or sort legend by labels
+    import operator
+    hl = sorted(zip(handles, labels),
+            key=operator.itemgetter(1))
+    handles2, labels2 = zip(*hl)
+    l1 = axes.legend(
+        handles2, labels2, numpoints = 1,
+        frameon = properties.legend_color,
+        bbox_to_anchor = properties.legend_location,
+        bbox_transform=plt.gcf().transFigure,
+        prop = CMS.legend_properties,
+        ncol = properties.legend_columns,
+        )
+    l1.set_zorder(102)
+
+    ratios = {}
+    if plot.show_ratios:
+        for (l1, l2) in combinations(histograms.keys(), 2):
+            label = '{0}/{1}'.format(l1, l2)
+            h = histograms[l1].clone()
+            h.Divide(histograms[l2])
+            h.SetName(label)
+            ratios[label] = h
+        plt.setp( axes.get_xticklabels(), visible = False )
+        axes_ratio = plt.subplot( gs[1] )
+        axes_ratio.minorticks_on()
+        axes_ratio.grid( True, 'major', linewidth = 1)
+        axes_ratio.axhline(y=1, linewidth = 1, linestyle = 'dashed', color = 'black')
+        set_labels( plt, properties, show_x_label = True, show_title = False )
+        plt.ylabel('ratio')
+        axes_ratio.yaxis.set_label_coords(-0.115, 0.8)
+        for label, ratio in ratios.items():
+            plot_function( ratio, xerr = properties.xerr,
+                   emptybins = properties.emptybins,
+                   axes = axes_ratio, elinewidth = 2 )
+        adjust_ratio_ticks(axes_ratio.yaxis, n_ticks = 3)
+        adjust_axis_limits( axes_ratio, properties, ratios.values(), adjust_y = False )
+
+    if CMS.tight_layout:
+        plt.tight_layout()
+
+    plot.save()

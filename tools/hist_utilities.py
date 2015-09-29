@@ -10,7 +10,6 @@ from ROOT import TGraphAsymmErrors
 from array import array
 from itertools import izip
 from rootpy.plotting.hist import Hist2D
-from config.variable_binning import variable_bins_ROOT
 import random
 import string
 from copy import deepcopy
@@ -346,6 +345,8 @@ def get_fitted_normalisation( variable, channel, path_to_JSON, category, met_typ
     This function now gets the error on the fit correctly,
     so that it can be applied if the --normalise_to_fit option is used
     '''
+    import config.variable_binning
+    variable_bins_ROOT = config.variable_binning.variable_bins_ROOT 
     fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
 
     N_fit_ttjet = [0, 0]
@@ -464,6 +465,15 @@ def make_line_hist(bin_edges, y_value):
     for i in range(1, len(bin_edges)):
         l.SetBinContent(i, y_value)
     return l
+
+def absolute(hist):
+    h = deepcopy(hist)
+    for bin_i in range(1, h.nbins() + 1):
+        value = h.GetBinContent(bin_i)
+        error = h.GetBinError(bin_i)
+        h.SetBinContent(bin_i, abs(value))
+        h.SetBinError(bin_i, abs(error))
+    return h
 
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),

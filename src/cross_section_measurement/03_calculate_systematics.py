@@ -24,16 +24,21 @@ from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
 calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 
 def read_normalised_xsection_measurement( category, channel ):
-    global path_to_JSON, met_type, met_uncertainties_list
-    filename = '{path}/{channel}/{category}/normalised_xsection_{met_type}.txt'
+    global path_to_JSON, met_type, met_uncertainties_list, method
+    filename = '{path}/{category}/normalised_xsection_{channel}_{method}.txt'
     if category in met_systematics_suffixes and ( variable in measurement_config.variables_no_met ) and not ('JES' in category or 'JER' in category):
-        filename = filename.format(path = path_to_JSON, channel = channel,
-                                   category = 'central',
-                                   met_type = met_type)
+        filename = filename.format(
+                    path = path_to_JSON,
+                    channel = channel,
+                    category = 'central',
+                    method = method,
+                    )
     else:
-        filename = filename.format(path = path_to_JSON, channel = channel,
-                                       category = category,
-                                       met_type = met_type)
+        filename = filename.format(
+                    path = path_to_JSON,
+                    channel = channel,
+                    category = category,
+                    method = method)
 
     normalised_xsection = read_data_from_JSON( filename )
     
@@ -43,8 +48,13 @@ def read_normalised_xsection_measurement( category, channel ):
     return measurement, measurement_unfolded
 
 def write_normalised_xsection_measurement( measurement, measurement_unfolded, channel, summary = '' ):
-    global path_to_JSON, met_type
-    output_file = path_to_JSON + '/' + channel + '/central/normalised_xsection_' + met_type + '_with_errors.txt'
+    global path_to_JSON, method
+    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_with_errors.txt'
+    output_file = output_file.format(
+                    path_to_JSON = path_to_JSON,
+                    channel = channel,
+                    method = method,
+                    )
     
     if not summary == '':
         output_file = output_file.replace( 'with_errors', summary + '_errors' )
@@ -189,6 +199,8 @@ if __name__ == "__main__":
                       help = "Makes the errors symmetric" )
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     ( options, args ) = parser.parse_args()
     measurement_config = XSectionConfig( options.CoM )
@@ -198,6 +210,7 @@ if __name__ == "__main__":
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     met_systematics_suffixes = measurement_config.met_systematics_suffixes
     met_systematics = measurement_config.met_systematics
+    method = options.unfolding_method
 
     variable = options.variable
 
@@ -210,7 +223,7 @@ if __name__ == "__main__":
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'
-    path_to_JSON += 'xsection_measurement_results/'
+#     path_to_JSON += 'xsection_measurement_results/'
     path_to_JSON = path_to_JSON.format(path = options.path, com = options.CoM,
                                        variable = variable,
                                        phase_space = phase_space,
@@ -388,7 +401,7 @@ if __name__ == "__main__":
 ###                                                                                                ttbar_mass_min_unfolded,
 ####                                                                                                 kValue_min_unfolded,
 ###                                                                                                 ttbar_generator_min_unfolded],
-                                                                                               ###[pdf_max_unfolded, 
+#                                                                                                [pdf_max_unfolded, 
 ### met_max_unfolded, other_max_unfolded,
 ###                                                                                                ttbar_mass_max_unfolded,
 ####                                                                                                 kValue_max_unfolded,

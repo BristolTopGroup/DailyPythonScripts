@@ -31,9 +31,17 @@ setup_matplotlib()
 import matplotlib.patches as mpatches
 
 def read_xsection_measurement_results( category, channel ):
-    global path_to_JSON, variable, met_type, phase_space
+    global path_to_JSON, variable, met_type, phase_space, method
     
-    filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt'
+    file_template = '{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
+    filename = file_template.format(
+                path = path_to_JSON,
+                category = category,
+                name = 'normalised_xsection',
+                channel = channel,
+                method = method,
+                suffix = '',
+                )
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
     edges = bin_edges[variable]
@@ -85,11 +93,26 @@ def read_xsection_measurement_results( category, channel ):
                                                                   'massup': h_normalised_xsection_massup
                                                                   })
         
-        file_template = path_to_JSON + '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type
+        filename = file_template.format(
+                path = path_to_JSON,
+                category = category,
+                name = 'normalised_xsection',
+                channel = channel,
+                method = method,
+                suffix = '_with_errors',
+                )
 
-        normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_template + '_with_errors.txt' )
+        normalised_xsection_unfolded_with_errors = read_data_from_JSON( filename )
+        filename = file_template.format(
+                path = path_to_JSON,
+                category = category,
+                name = 'normalised_xsection',
+                channel = channel,
+                method = method,
+                suffix = '_with_systematics_but_without_generator_errors',
+                )
         ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
-        normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( file_template + '_with_systematics_but_without_generator_errors.txt' )
+        normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( filename )
 
         # a rootpy.Graph with asymmetric errors!
         ### h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
@@ -417,8 +440,6 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             new_handles.append(zipped[label])
             new_labels.append(label)
     
-    print (new_labels)
-    print (new_handles)
     legend_location = (0.97, 0.82)
     if variable == 'MT':
         legend_location = (0.05, 0.82)
@@ -563,7 +584,12 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if CMS.tight_layout:
         plt.tight_layout()
 
-    path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/' + phase_space
+    path = '{output_folder}/{centre_of_mass_energy}TeV/{category}/'
+    path = path.format(
+            output_folder = output_folder,
+            centre_of_mass_energy = measurement_config.centre_of_mass_energy,
+            category = category,
+            )
     make_folder_if_not_exists( path )
     for output_format in output_formats:
         filename = path + '/' + histname + '.' + output_format
@@ -671,6 +697,8 @@ if __name__ == '__main__':
                       help = "creates a set of plots for each systematic (in addition to central result)." )
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()
@@ -681,6 +709,7 @@ if __name__ == '__main__':
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     met_systematics = measurement_config.met_systematics
+    method = options.unfolding_method
     
     variable = options.variable
 
@@ -754,6 +783,8 @@ if __name__ == '__main__':
             histname = '{variable}_normalised_xsection_{channel}_{phase_space}'
             histname = histname.format(variable = variable, channel = channel,
                             phase_space = phase_space)
+            if method != 'RooUnfoldSvd':
+                histname += '_' + method
             make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators' )
             make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, histname + '_systematics_shifts' )
 
