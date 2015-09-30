@@ -19,7 +19,7 @@ SVD_n_toy = 1000
 # 1 = bin-by-bin errors (diagonal covariance matrix)
 # 2 = covariance matrix from unfolding
 # 3 = covariance matrix from toy MC
-Hreco = 3
+error_treatment = 3
 Bayes_n_repeat = 4
 
 unfolded_markerStyle = 20
