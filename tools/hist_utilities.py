@@ -14,6 +14,8 @@ import random
 import string
 from copy import deepcopy
 from tools.file_utilities import read_data_from_JSON
+from tools.logger import log
+hu_log = log["tools/hist_utilities"]
 
 def hist_to_value_error_tuplelist( hist ):
     values = list( hist.y() )
@@ -52,6 +54,7 @@ def graph_to_value_errors_tuplelist( graph ):
     value_error_tuplelist = zip( values, errors_low, errors_high )
     return value_error_tuplelist
 
+@hu_log.trace()
 def value_error_tuplelist_to_hist( value_error_tuplelist, bin_edges ):
     assert( len( bin_edges ) == len( value_error_tuplelist ) + 1 )
     rootpy_hist = Hist( bin_edges, type = 'D' )
@@ -134,6 +137,7 @@ def rebin_asymmetric( histogram, bins ):
     new_histogram = histogram.Rebin( nbins, histogram.GetName() + 'new', bin_array )
     return asrootpy( new_histogram )
 
+@hu_log.trace()
 def spread_x( histograms, bin_edges ):
     """
         Usually when plotting multiple histograms with same x-values and
