@@ -3,14 +3,15 @@ To come
 '''
 from __future__ import division
 from tools.plotting import Histogram_properties, compare_histograms, Plot, \
-    ErrorBand
+    ErrorBand, compare_measurements
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist,\
-    clean_control_region, absolute, value_tuplelist_to_hist
+    clean_control_region, absolute, value_tuplelist_to_hist, spread_x
 from config.variable_binning import bin_edges_vis
 from config.latex_labels import variables_latex
 from tools.ROOT_utils import get_histogram_from_tree
 from config.cross_section_config import XSectionConfig
+from collections import namedtuple
 
 
 def compare_unfolding_methods(measurement='normalised_xsection',
@@ -21,7 +22,6 @@ def compare_unfolding_methods(measurement='normalised_xsection',
 
     variables = ['MET', 'HT', 'ST', 'NJets',
                  'lepton_pt', 'abs_lepton_eta', 'WPT']
-    variables = ['NJets']
     for variable in variables:
         svd = file_template.format(
             variable=variable,
@@ -242,14 +242,97 @@ def compare_unfolding_uncertainties():
         plot.draw_method = 'errorbar'
         compare_histograms(plot)
 
+
+def debug_last_bin():
+    '''
+        For debugging why the last bin in the problematic variables deviates a
+        lot in _one_ of the channels only.
+    '''
+    file_template = 'data/normalisation/background_subtraction/13TeV/'
+    file_template += '{variable}/VisiblePS/central/'
+    file_template += 'normalised_xsection_{channel}_RooUnfoldSvd.txt'
+    problematic_variables = ['HT', 'MET', 'NJets']
+
+    for variable in problematic_variables:
+        results = {}
+        Result = namedtuple(
+            'Result', ['before_unfolding', 'after_unfolding', 'model'])
+        for channel in ['electron', 'muon', 'combined']:
+            input_file = file_template.format(
+                variable=variable,
+                channel=channel,
+            )
+            data = read_data_from_JSON(input_file)
+            before_unfolding = data['TTJet_measured']
+            after_unfolding = data['TTJet_unfolded']
+            model = data['POWHEG_HERWIG']
+
+            # only use the last bin
+            h_before_unfolding = value_error_tuplelist_to_hist(
+                [before_unfolding[-1]], bin_edges_vis[variable][-2:])
+            h_after_unfolding = value_error_tuplelist_to_hist(
+                [after_unfolding[-1]], bin_edges_vis[variable][-2:])
+            h_model = value_error_tuplelist_to_hist(
+                [model[-1]], bin_edges_vis[variable][-2:])
+
+            r = Result(before_unfolding, after_unfolding, model)
+            h = Result(h_before_unfolding, h_after_unfolding, h_model)
+            results[channel] = (r, h)
+
+        models = {'POWHEG+PYTHIA': results['combined'][1].model}
+        h_unfolded = [results[channel][1].after_unfolding for channel in [
+            'electron', 'muon', 'combined']]
+        tmp_hists = spread_x(h_unfolded, bin_edges_vis[variable][-2:])
+        measurements = {}
+        for channel, hist in zip(['electron', 'muon', 'combined'], tmp_hists):
+            value = results[channel][0].after_unfolding[-1][0]
+            error = results[channel][0].after_unfolding[-1][1]
+            label = '{c_label} ({value:1.2g} $\pm$ {error:1.2g})'.format(
+                    c_label=channel,
+                    value=value,
+                    error=error,
+            )
+            measurements[label] = hist
+
+        properties = Histogram_properties()
+        properties.name = 'normalised_xsection_compare_channels_{0}_{1}_last_bin'.format(
+            variable, channel)
+        properties.title = 'Comparison of channels'
+        properties.path = 'plots'
+        properties.has_ratio = True
+        properties.xerr = False
+        properties.x_limits = (
+            bin_edges_vis[variable][-2], bin_edges_vis[variable][-1])
+        properties.x_axis_title = variables_latex[variable]
+        properties.y_axis_title = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + \
+            variables_latex[variable] + '}$'
+        properties.legend_location = (0.95, 0.40)
+        if variable == 'NJets':
+            properties.legend_location = (0.97, 0.80)
+        properties.formats = ['png']
+
+        compare_measurements(models=models, measurements=measurements, show_measurement_errors=True,
+                             histogram_properties=properties, save_folder='plots/', save_as=properties.formats)
+
+
 if __name__ == '__main__':
+    import sys
+    if '-d' in sys.argv:
+        from tools.logger import log
+        log.setLevel(log.DEBUG)
     compare_unfolding_methods('normalised_xsection')
     compare_unfolding_methods('normalised_xsection', add_before_unfolding=True)
-    compare_unfolding_methods('normalised_xsection', add_before_unfolding=True, channel='electron')
-    compare_unfolding_methods('normalised_xsection', add_before_unfolding=True, channel='muon')
+    compare_unfolding_methods(
+        'normalised_xsection', add_before_unfolding=True, channel='electron')
+    compare_unfolding_methods(
+        'normalised_xsection', add_before_unfolding=True, channel='muon')
     compare_unfolding_methods('unfolded_normalisation')
-    compare_unfolding_methods('unfolded_normalisation', add_before_unfolding=True)
-    compare_unfolding_methods('unfolded_normalisation', add_before_unfolding=True, channel='electron')
-    compare_unfolding_methods('unfolded_normalisation', add_before_unfolding=True, channel='muon')
+    compare_unfolding_methods(
+        'unfolded_normalisation', add_before_unfolding=True)
+    compare_unfolding_methods(
+        'unfolded_normalisation', add_before_unfolding=True, channel='electron')
+    compare_unfolding_methods(
+        'unfolded_normalisation', add_before_unfolding=True, channel='muon')
     compare_QCD_control_regions_to_MC()
     compare_unfolding_uncertainties()
+    debug_last_bin()
