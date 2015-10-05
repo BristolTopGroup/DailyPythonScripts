@@ -84,7 +84,9 @@ class TTJetNormalisation:
 
         for sample, hist in self.measurement.histograms.items():
             h = deepcopy(hist)
-            h.Scale(1 / h.integral())
+            h_norm = h.integral()
+            if h_norm > 0:
+                h.Scale(1 / h.integral())
             self.templates[sample] = hist_to_value_error_tuplelist(h)
         self.auxiliary_info = {}
         self.auxiliary_info['norms'] = measurement.aux_info_norms
@@ -289,7 +291,10 @@ def main():
             else:
                 results[r_name].append(norm)
     for f, r_list in results.items():
-        assert(len(r_list) == 2)
+        if not len(r_list) == 2:
+            msg = 'Only found results ({0}) for one channel, not combining.'
+            mylog.warn(msg.format(f))
+            continue
         n1, n2 = r_list
         n1.combine(n2)
         n1.save(output_path)
