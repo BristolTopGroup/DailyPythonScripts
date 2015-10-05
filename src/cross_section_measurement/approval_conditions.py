@@ -14,19 +14,24 @@ from config.cross_section_config import XSectionConfig
 
 
 def compare_unfolding_methods(measurement='normalised_xsection',
-                              add_before_unfolding=False):
+                              add_before_unfolding=False, channel='combined'):
     file_template = 'data/normalisation/background_subtraction/13TeV/'
     file_template += '{variable}/VisiblePS/central/'
-    file_template += '{measurement}_combined_RooUnfold{method}.txt'
+    file_template += '{measurement}_{channel}_RooUnfold{method}.txt'
 
     variables = ['MET', 'HT', 'ST', 'NJets',
                  'lepton_pt', 'abs_lepton_eta', 'WPT']
-#     variables = ['ST']
+    variables = ['NJets']
     for variable in variables:
         svd = file_template.format(
-            variable=variable, method='Svd', measurement=measurement)
+            variable=variable,
+            method='Svd',
+            channel=channel,
+            measurement=measurement)
         bayes = file_template.format(
-            variable=variable, method='Bayes', measurement=measurement)
+            variable=variable,
+            method='Bayes', channel=channel,
+            measurement=measurement)
         data = read_data_from_JSON(svd)
         before_unfolding = data['TTJet_measured']
         svd_data = data['TTJet_unfolded']
@@ -39,8 +44,8 @@ def compare_unfolding_methods(measurement='normalised_xsection',
             before_unfolding, bin_edges_vis[variable])
 
         properties = Histogram_properties()
-        properties.name = '{0}_compare_unfolding_methods_{1}'.format(
-            measurement, variable)
+        properties.name = '{0}_compare_unfolding_methods_{1}_{2}'.format(
+            measurement, variable, channel)
         properties.title = 'Comparison of unfolding methods'
         properties.path = 'plots'
         properties.has_ratio = True
@@ -240,6 +245,11 @@ def compare_unfolding_uncertainties():
 if __name__ == '__main__':
     compare_unfolding_methods('normalised_xsection')
     compare_unfolding_methods('normalised_xsection', add_before_unfolding=True)
+    compare_unfolding_methods('normalised_xsection', add_before_unfolding=True, channel='electron')
+    compare_unfolding_methods('normalised_xsection', add_before_unfolding=True, channel='muon')
     compare_unfolding_methods('unfolded_normalisation')
+    compare_unfolding_methods('unfolded_normalisation', add_before_unfolding=True)
+    compare_unfolding_methods('unfolded_normalisation', add_before_unfolding=True, channel='electron')
+    compare_unfolding_methods('unfolded_normalisation', add_before_unfolding=True, channel='muon')
     compare_QCD_control_regions_to_MC()
     compare_unfolding_uncertainties()
