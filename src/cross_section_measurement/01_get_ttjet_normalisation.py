@@ -284,12 +284,15 @@ def main():
                 phase_space=phase_space,
             )
             norm.calculate_normalisation()
+            mylog.info('Saving results to {0}'.format(output_path))
             norm.save(output_path)
+            # store results for later combination
             r_name = f.replace(channel, '')
             if not results.has_key(r_name):
                 results[r_name] = [norm]
             else:
                 results[r_name].append(norm)
+
     for f, r_list in results.items():
         if not len(r_list) == 2:
             msg = 'Only found results ({0}) for one channel, not combining.'
