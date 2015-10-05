@@ -1,17 +1,17 @@
 '''
-    Takes AnalysisSoftware (https://github.com/BristolTopGroup/AnalysisSoftware) 
+    Takes AnalysisSoftware (https://github.com/BristolTopGroup/AnalysisSoftware)
     output files and extracts the TTJet normalisation for each measured variable
     by subtracting backgrounds from data.
-    
+
     Usage:
         python src/cross_section_measurement/01_get_ttjet_normalisation.py \
         -c <centre of mass energy> -v <variable> -i <path to input folder> \
         -p <output path>
-    
+
     Example:
         python src/cross_section_measurement/01_get_ttjet_normalisation.py \
         -c 8 -v MET -i config/measurements/background_subtraction/
-        
+
     TODO: In the end this and 01_get_fit_results.py should be merged.
     All should come down to the function to extract the # events from TTJet
 '''
@@ -39,13 +39,13 @@ class TTJetNormalisation:
 
     '''
         Determines the normalisation for top quark pair production based on
-        different methods. Unless stated otherwise all templates and 
-        (initial) normalisations are taken from simulation, except for QCD 
+        different methods. Unless stated otherwise all templates and
+        (initial) normalisations are taken from simulation, except for QCD
         where the template is extracted from data.
 
         Supported methods:
-        BACKGROUND_SUBTRACTION: 
-            Subtracts the known backgrounds from data to obtain TTJet template 
+        BACKGROUND_SUBTRACTION:
+            Subtracts the known backgrounds from data to obtain TTJet template
             and normalisation
         SIMULTANEOUS_FIT:
             Uses Minuit and several fit variables (quotation needed) to perform
@@ -105,8 +105,8 @@ class TTJetNormalisation:
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
-            hist = fix_overflow(hist)
-            histograms[sample] = hist
+            # hist = fix_overflow(hist)
+            # histograms[sample] = hist
             self.initial_normalisation[
                 sample] = hist_to_value_error_tuplelist(hist)
             if self.method == self.BACKGROUND_SUBTRACTION and sample != 'TTJet':
