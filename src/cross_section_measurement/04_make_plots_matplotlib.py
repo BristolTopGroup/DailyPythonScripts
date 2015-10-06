@@ -1,5 +1,5 @@
 # the result of the division will be always a float
-from __future__ import division, print_function  
+from __future__ import division, print_function
 from optparse import OptionParser
 import os, gc
 from copy import deepcopy
@@ -30,9 +30,13 @@ setup_matplotlib()
 
 import matplotlib.patches as mpatches
 
+from tools.logger import log
+xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
+
+@xsec_04_log.trace()
 def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, met_type, phase_space, method
-    
+
     file_template = '{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
     filename = file_template.format(
                 path = path_to_JSON,
@@ -43,20 +47,21 @@ def read_xsection_measurement_results( category, channel ):
                 suffix = '',
                 )
 
+    xsec_04_log.debug('Reading file {0}'.format(filename))
     normalised_xsection_unfolded = read_data_from_JSON( filename )
     edges = bin_edges[variable]
     if phase_space == 'VisiblePS':
         edges = bin_edges_vis[variable]
     h_normalised_xsection = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], edges )
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], edges )
-    
-    
+
+
     histograms_normalised_xsection_different_generators = {'measured':h_normalised_xsection,
                                                            'unfolded':h_normalised_xsection_unfolded}
-    
+
     histograms_normalised_xsection_systematics_shifts = {'measured':h_normalised_xsection,
                                                          'unfolded':h_normalised_xsection_unfolded}
-    
+
     if category == 'central':
         # true distributions
         h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
@@ -82,7 +87,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                 })
         ### if measurement_config.centre_of_mass_energy == 8:
         ###     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
-        
+
         histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
                                                                   # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
                                                                   # 'matchingdown': h_normalised_xsection_mathchingdown,
@@ -92,7 +97,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                   'massdown': h_normalised_xsection_massdown,
                                                                   'massup': h_normalised_xsection_massup
                                                                   })
-        
+
         filename = file_template.format(
                 path = path_to_JSON,
                 category = category,
@@ -103,43 +108,45 @@ def read_xsection_measurement_results( category, channel ):
                 )
 
         normalised_xsection_unfolded_with_errors = read_data_from_JSON( filename )
-        filename = file_template.format(
-                path = path_to_JSON,
-                category = category,
-                name = 'normalised_xsection',
-                channel = channel,
-                method = method,
-                suffix = '_with_systematics_but_without_generator_errors',
-                )
+        xsec_04_log.debug('Reading file {0}'.format(filename))
+#         filename = file_template.format(
+#                 path = path_to_JSON,
+#                 category = category,
+#                 name = 'normalised_xsection',
+#                 channel = channel,
+#                 method = method,
+#                 suffix = '_with_systematics_but_without_generator_errors',
+#                 )
         ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
-        normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = read_data_from_JSON( filename )
+#         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = normalised_xsection_unfolded_with_errors
 
         # a rootpy.Graph with asymmetric errors!
-        ### h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph( 
+        ### h_normalised_xsection_with_systematics_but_without_ttbar_theory = value_errors_tuplelist_to_graph(
         ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_measured'],
         ###                                                         edges )
-        ### h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded = value_errors_tuplelist_to_graph( 
+        ### h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded = value_errors_tuplelist_to_graph(
         ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'],
         ###                                                         edges )
-        
-        h_normalised_xsection_with_systematics_but_without_generator = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_measured'],
+
+        h_normalised_xsection_unfolded_with_errors = value_errors_tuplelist_to_graph(
+                                                                normalised_xsection_unfolded_with_errors['TTJet_measured'],
                                                                 edges )
-        h_normalised_xsection_with_systematics_but_without_generator_unfolded = value_errors_tuplelist_to_graph( 
-                                                                normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_unfolded'],
+        h_normalised_xsection_unfolded_with_errors_unfolded = value_errors_tuplelist_to_graph(
+                                                                normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
                                                                 edges )
-        
-        
+
+
         # histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
         # histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
-        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
-        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
+        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_unfolded_with_errors
+        histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
 
-        histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
-        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
-    
+        histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_unfolded_with_errors
+        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
+
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
+@xsec_04_log.trace()
 def read_fit_templates_and_results_as_histograms( category, channel ):
     global path_to_JSON, variable, met_type, phase_space
     templates = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt' )
@@ -174,31 +181,32 @@ def read_fit_templates_and_results_as_histograms( category, channel ):
             h_singletop = h_template_singletop.Clone()
             h_VJets = h_template_VJets.Clone()
             h_QCD = h_template_QCD.Clone()
-            
+
             data_normalisation = data_values[bin_i][0]
             n_ttjet = fit_results['TTJet'][bin_i][0]
             n_singletop = fit_results['SingleTop'][bin_i][0]
             VJets_normalisation = fit_results['V+Jets'][bin_i][0]
             QCD_normalisation = fit_results['QCD'][bin_i][0]
-            
+
             h_data.Scale( data_normalisation )
             h_ttjet.Scale( n_ttjet )
             h_singletop.Scale( n_singletop )
             h_VJets.Scale( VJets_normalisation )
             h_QCD.Scale( QCD_normalisation )
             h_background = h_VJets + h_QCD + h_singletop
-            
+
             for bin_i_data in range( len( h_data ) ):
                 h_data.SetBinError( bin_i_data + 1, sqrt( h_data.GetBinContent( bin_i_data + 1 ) ) )
-            
+
             fit_results_histograms[fit_variable][variable_bin] = {
                                                     'data' : h_data,
                                                     'signal' : h_ttjet,
                                                     'background' : h_background
                                                     }
-        
+
     return template_histograms, fit_results_histograms
 
+@xsec_04_log.trace()
 def make_template_plots( histograms, category, channel ):
     global variable, output_folder, phase_space
     fit_variables = histograms.keys()
@@ -213,19 +221,19 @@ def make_template_plots( histograms, category, channel ):
         path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_templates/'
         make_folder_if_not_exists( path )
         for fit_variable in fit_variables:
-            plotname = path + channel + '_' + fit_variable + '_template_bin_' + variable_bin 
-        
+            plotname = path + channel + '_' + fit_variable + '_template_bin_' + variable_bin
+
             # check if template plots exist already
             for output_format in output_formats:
                 if os.path.isfile( plotname + '.' + output_format ):
                     continue
-            
+
             # plot with matplotlib
             h_ttjet = histograms[fit_variable][variable_bin]['TTJet']
             h_single_top = histograms[fit_variable][variable_bin]['SingleTop']
             h_VJets = histograms[fit_variable][variable_bin]['V+Jets']
             h_QCD = histograms[fit_variable][variable_bin]['QCD']
-            
+
             h_ttjet.linecolor = 'red'
             h_single_top.linecolor = 'magenta'
             h_VJets.linecolor = 'green'
@@ -233,26 +241,26 @@ def make_template_plots( histograms, category, channel ):
             h_VJets.linestyle = 'dashed'
             h_QCD.linestyle = 'dotted'  # currently not working
             # bug report: http://trac.sagemath.org/sage_trac/ticket/13834
-            
+
             h_ttjet.linewidth = 5
             h_single_top.linewidth = 5
             h_VJets.linewidth = 5
             h_QCD.linewidth = 5
-        
+
             plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
             axes = plt.axes()
             if not variable in ['NJets']:
                 axes.minorticks_on()
-            
+
             plt.xlabel( fit_variables_latex[fit_variable], CMS.x_axis_title )
             plt.ylabel( 'normalised to unit area/(%s)' % get_unit_string(fit_variable), CMS.y_axis_title )
             plt.tick_params( **CMS.axis_label_major )
             if not variable in ['NJets']:
                 plt.tick_params( **CMS.axis_label_minor )
-    
+
             rplt.hist( h_ttjet, axes = axes, label = 'signal' )
             rplt.hist( h_single_top, axes = axes, label = 'Single Top' )
-            
+
             if ( h_VJets.Integral() != 0 ):
                 rplt.hist( h_VJets, axes = axes, label = 'V+Jets' )
             else:
@@ -264,7 +272,7 @@ def make_template_plots( histograms, category, channel ):
             y_max = get_best_max_y([h_ttjet, h_single_top, h_VJets, h_QCD])
             axes.set_ylim( [0, y_max * 1.1] )
             axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
-            
+
             plt.legend( numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
             label, channel_label = get_cms_labels( channel )
             plt.title( label, CMS.title )
@@ -277,14 +285,14 @@ def make_template_plots( histograms, category, channel ):
                       verticalalignment='top',horizontalalignment='right')
 
             plt.tight_layout()
-        
+
             for output_format in output_formats:
                 plt.savefig( plotname + '.' + output_format )
-            
+
             plt.close()
             gc.collect()
 
-
+@xsec_04_log.trace()
 def plot_fit_results( histograms, category, channel ):
     global variable, b_tag_bin, output_folder, phase_space
     from tools.plotting import Histogram_properties, make_data_mc_comparison_plot
@@ -295,7 +303,7 @@ def plot_fit_results( histograms, category, channel ):
         variableBins = variable_bins_visiblePS_ROOT
     elif phase_space == 'FullPS':
         variableBins = variable_bins_ROOT
-        
+
     for variable_bin in variableBins[variable]:
         path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_results/'
         make_folder_if_not_exists( path )
@@ -305,12 +313,12 @@ def plot_fit_results( histograms, category, channel ):
             for output_format in output_formats:
                 if os.path.isfile( plotname + '.' + output_format ):
                     continue
-                
+
             # plot with matplotlib
             h_data = histograms[fit_variable][variable_bin]['data']
             h_signal = histograms[fit_variable][variable_bin]['signal']
             h_background = histograms[fit_variable][variable_bin]['background']
-            
+
             histogram_properties = Histogram_properties()
             histogram_properties.name = plotname
             histogram_properties.x_axis_title = fit_variables_latex[fit_variable]
@@ -318,12 +326,13 @@ def plot_fit_results( histograms, category, channel ):
             label, _ = get_cms_labels( channel )
             histogram_properties.title = label
             histogram_properties.x_limits = measurement_config.fit_boundaries[fit_variable]
-            
+
             make_data_mc_comparison_plot( [h_data, h_background, h_signal],
                                          ['data', 'background', 'signal'],
                                          ['black', 'green', 'red'], histogram_properties,
-                                         save_folder = path, save_as = output_formats )    
+                                         save_folder = path, save_as = output_formats )
 
+@xsec_04_log.trace()
 def get_cms_labels( channel ):
     global b_tag_bin
     lepton = 'e'
@@ -338,11 +347,11 @@ def get_cms_labels( channel ):
     template = '%.0f pb$^{-1}$ (%d TeV)'
     label = template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy)
     return label, channel_label
-    
-    
+
+@xsec_04_log.trace()
 def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
     global variable, phase_space
-    
+
     channel = 'electron'
     if 'electron' in histname:
         channel = 'electron'
@@ -350,27 +359,27 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         channel = 'muon'
     else:
         channel = 'combined'
-        
+
     # plot with matplotlib
     hist_data = histograms['unfolded']
     if category == 'central':
         hist_data_with_systematics = histograms['unfolded_with_systematics']
     hist_measured = histograms['measured']
-    
+
     hist_data.markersize = 2
     hist_data.marker = 'o'
 
     if category == 'central':
         hist_data_with_systematics.markersize = 2
         hist_data_with_systematics.marker = 'o'
-    
+
     hist_measured.markersize = 2
     hist_measured.marker = 'o'
     hist_measured.color = 'red'
 
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     if show_ratio:
-        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] ) 
+        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
         axes = plt.subplot( gs[0] )
     else:
         axes = plt.axes()
@@ -397,7 +406,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
-    
+
     for key, hist in sorted( histograms.items() ):
         zorder = sorted( histograms, reverse = True ).index( key )
         if not 'unfolded' in key and not 'measured' in key:
@@ -422,7 +431,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 hist.linestyle = 'dotted'
                 hist.SetLineColor( kMagenta + 3 )
             rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
-            
+
     handles, labels = axes.get_legend_handles_labels()
     # making data first in the list
     data_label_index = labels.index( 'data' )
@@ -431,7 +440,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     handles.remove( data_handle )
     labels.insert( 0, 'data' )
     handles.insert( 0, data_handle )
-    
+
     new_handles, new_labels = [], []
     zipped = dict( zip( labels, handles ) )
     labelOrder = ['data', 'Powheg Pythia8', 'Powheg Herwig++', 'aMC@NLO', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', 'Top mass up', 'Top mass down']
@@ -439,7 +448,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         if label in labels:
             new_handles.append(zipped[label])
             new_labels.append(label)
-    
+
     legend_location = (0.97, 0.82)
     if variable == 'MT':
         legend_location = (0.05, 0.82)
@@ -525,15 +534,20 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         syst_upper = hist_data.Clone()
 
         # plot error bands on data in the ratio plot
+        stat_errors = graph_to_value_errors_tuplelist(hist_data)
+        if category == 'central':
+            syst_errors = graph_to_value_errors_tuplelist(hist_data_with_systematics)
         for bin_i in range( 1, hist_data.GetNbinsX() + 1 ):
-            stat_errors = graph_to_value_errors_tuplelist(hist_data)
-            stat_lower.SetBinContent( bin_i, 1 - stat_errors[bin_i-1][1]/stat_errors[bin_i-1][0] )
-            stat_upper.SetBinContent( bin_i, 1 + stat_errors[bin_i-1][2]/stat_errors[bin_i-1][0] )
+            stat_value, stat_error, _ = stat_errors[bin_i-1]
+            stat_rel_error = stat_error/stat_value
+            stat_lower.SetBinContent( bin_i, 1 - stat_rel_error )
+            stat_upper.SetBinContent( bin_i, 1 + stat_rel_error )
             if category == 'central':
-                syst_errors = graph_to_value_errors_tuplelist(hist_data_with_systematics)
-                syst_lower.SetBinContent( bin_i, 1 - syst_errors[bin_i-1][1]/syst_errors[bin_i-1][0] )
-                syst_upper.SetBinContent( bin_i, 1 + syst_errors[bin_i-1][2]/syst_errors[bin_i-1][0] )
-
+                syst_value, syst_error_down, syst_error_up  = syst_errors[bin_i-1]
+                syst_rel_error_down = syst_error_down/syst_value
+                syst_rel_error_up = syst_error_up/syst_value
+                syst_lower.SetBinContent( bin_i, 1 - syst_rel_error_down )
+                syst_upper.SetBinContent( bin_i, 1 + syst_rel_error_up )
         if category == 'central':
             rplt.fill_between( syst_lower, syst_upper, ax1,
                                color = 'yellow' )
@@ -545,7 +559,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
         l1 = ax1.legend(handles = [p_stat, p_stat_and_syst], loc = 'upper left',
                      frameon = False, prop = {'size':26}, ncol = 2)
-        
+
         # ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
         #              frameon = False, prop = {'size':30})
         ax1.add_artist(l1)
@@ -599,6 +613,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     plt.close()
     gc.collect()
 
+@xsec_04_log.trace()
 def plot_central_and_systematics( channel, systematics, exclude = [], suffix = 'altogether' ):
     global variable, b_tag_bin, met_type
 
@@ -606,7 +621,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     axes = plt.axes()
     if not variable in ['NJets']:
         axes.minorticks_on()
-    
+
     hist_data_central = read_xsection_measurement_results( 'central', channel )[0]['unfolded_with_systematics']
     hist_data_central.markersize = 2  # points. Imagine, tangible units!
     hist_data_central.marker = 'o'
@@ -640,7 +655,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
             rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic.replace( met_type, '' )], xerr = None )
         else:
             rplt.errorbar( hist_data_systematic, axes = axes, label = measurements_latex[systematic], xerr = None )
-            
+
     plt.legend( numpoints = 1, loc = 'center right', prop = {'size':25}, ncol = 2 )
     label, channel_label = get_cms_labels( channel )
     plt.title( label, CMS.title )
@@ -653,17 +668,18 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
         verticalalignment='top',horizontalalignment='right')
     plt.tight_layout()
 
-    
+
     path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable
     make_folder_if_not_exists( path )
     for output_format in output_formats:
         filename = path + '/normalised_xsection_' + channel + '_' + suffix + '.' + output_format
 
-        plt.savefig( filename ) 
+        plt.savefig( filename )
 
     plt.close()
     gc.collect()
 
+@xsec_04_log.trace()
 def get_unit_string(fit_variable):
     unit = measurement_config.fit_variable_unit[fit_variable]
     fit_variable_bin_width = measurement_config.fit_variable_bin_width[fit_variable]
@@ -672,7 +688,7 @@ def get_unit_string(fit_variable):
         unit_string = fit_variable_bin_width
     else:
         unit_string = '%f %s' % (fit_variable_bin_width, unit)
-        
+
     return unit_string
 
 if __name__ == '__main__':
@@ -691,8 +707,10 @@ if __name__ == '__main__':
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
                       help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
     parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
-                      help = """Draws additional plots like the comparison of different 
+                      help = """Draws additional plots like the comparison of different
                       systematics to the central result.""" )
+    parser.add_option( "-d", "--debug", action = "store_true", dest = "debug",
+                      help = """Enables debugging output""" )
     parser.add_option("--draw-systematics", action = "store_true", dest = "draw_systematics",
                       help = "creates a set of plots for each systematic (in addition to central result)." )
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
@@ -702,7 +720,9 @@ if __name__ == '__main__':
 
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()
-    
+    if options.debug:
+        log.setLevel(log.DEBUG)
+
     measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
@@ -710,7 +730,7 @@ if __name__ == '__main__':
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     met_systematics = measurement_config.met_systematics
     method = options.unfolding_method
-    
+
     variable = options.variable
 
     visiblePS = options.visiblePS
@@ -729,13 +749,13 @@ if __name__ == '__main__':
                                        phase_space = phase_space,
                                        )
 #     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
-    
+
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     categories.extend( ttbar_generator_systematics )
     # categories.extend( vjets_generator_systematics )
-    
+
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
     # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
     # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
@@ -764,7 +784,7 @@ if __name__ == '__main__':
                 met_type += 'JetEnUp'
             elif category == 'JES_down':
                 met_type += 'JetEnDown'
-            
+
             # if not channel == 'combined':
             #     #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
             #     #in the unfolding process with BLT unfolding files.
@@ -778,7 +798,7 @@ if __name__ == '__main__':
             met_type = translate_options[options.metType]
             if met_type == 'PFMET':
                 met_type = 'patMETsPFlow'
-            
+
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
             histname = '{variable}_normalised_xsection_{channel}_{phase_space}'
             histname = histname.format(variable = variable, channel = channel,
@@ -794,7 +814,7 @@ if __name__ == '__main__':
             plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
 
             plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
-              
+
 #             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
 #             plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
 #
