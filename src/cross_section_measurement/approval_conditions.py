@@ -1,12 +1,13 @@
 '''
-To come
+Approval conditions for TOP-15-013
 '''
 from __future__ import division
 from tools.plotting import Histogram_properties, compare_histograms, Plot, \
     ErrorBand, compare_measurements
 from tools.file_utilities import read_data_from_JSON
 from tools.hist_utilities import value_error_tuplelist_to_hist,\
-    clean_control_region, absolute, value_tuplelist_to_hist, spread_x
+    clean_control_region, absolute, value_tuplelist_to_hist, spread_x,\
+    value_errors_tuplelist_to_graph
 from config.variable_binning import bin_edges_vis
 from config.latex_labels import variables_latex
 from tools.ROOT_utils import get_histogram_from_tree
@@ -250,27 +251,35 @@ def debug_last_bin():
     '''
     file_template = 'data/normalisation/background_subtraction/13TeV/'
     file_template += '{variable}/VisiblePS/central/'
-    file_template += 'normalised_xsection_{channel}_RooUnfoldSvd.txt'
-    problematic_variables = ['HT', 'MET', 'NJets']
+    file_template += 'normalised_xsection_{channel}_RooUnfoldSvd{suffix}.txt'
+    problematic_variables = ['HT', 'MET', 'NJets', 'lepton_pt']
 
     for variable in problematic_variables:
         results = {}
         Result = namedtuple(
             'Result', ['before_unfolding', 'after_unfolding', 'model'])
         for channel in ['electron', 'muon', 'combined']:
-            input_file = file_template.format(
+            input_file_data = file_template.format(
                 variable=variable,
                 channel=channel,
+                suffix='_with_errors',
             )
-            data = read_data_from_JSON(input_file)
+            input_file_model = file_template.format(
+                variable=variable,
+                channel=channel,
+                suffix='',
+            )
+            data = read_data_from_JSON(input_file_data)
+            data_model = read_data_from_JSON(input_file_model)
             before_unfolding = data['TTJet_measured']
             after_unfolding = data['TTJet_unfolded']
-            model = data['POWHEG_HERWIG']
+
+            model = data_model['powhegPythia8']
 
             # only use the last bin
-            h_before_unfolding = value_error_tuplelist_to_hist(
+            h_before_unfolding = value_errors_tuplelist_to_graph(
                 [before_unfolding[-1]], bin_edges_vis[variable][-2:])
-            h_after_unfolding = value_error_tuplelist_to_hist(
+            h_after_unfolding = value_errors_tuplelist_to_graph(
                 [after_unfolding[-1]], bin_edges_vis[variable][-2:])
             h_model = value_error_tuplelist_to_hist(
                 [model[-1]], bin_edges_vis[variable][-2:])
