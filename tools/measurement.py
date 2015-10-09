@@ -8,6 +8,7 @@ import tools.file_utilities as fu
 import tools.hist_utilities as hu
 import tools.input as ti
 import copy
+from rootpy.io.file import Directory
 # define logger for this module
 meas_log = log["tools.measurement"]
 
@@ -39,7 +40,7 @@ class Measurement():
         self.met_type = ''
 
         self.type = 0
-        
+
         self.aux_info_norms = {}
 
     @meas_log.trace()
@@ -126,6 +127,19 @@ class Measurement():
             m.addNormForSample(
                 norm, Measurement.fromDict(obj), read=True)
         return m
+
+    @meas_log.trace()
+    def toROOT(self):
+        '''
+            Converts measurement into something that can be stored in a ROOT
+            file
+        '''
+        return
+        d = Directory(name=self.name)
+        # create shape and norm folders if there is anything to be saved
+        # what needs to be saved
+        # MET type
+        return d
 
     @meas_log.trace()
     def setVariable(self, variable):
@@ -256,7 +270,8 @@ class Measurement():
             self.histograms[sample].Scale(ratio)
             self.aux_info_norms[sample]['norm_factor'] = round(ratio, 2)
             self.aux_info_norms[sample]['n_mc_control'] = n_mc_control
-            self.aux_info_norms[sample]['n_mc_signal_region'] = n_mc_signal_region
+            self.aux_info_norms[sample][
+                'n_mc_signal_region'] = n_mc_signal_region
             self.aux_info_norms[sample]['n_data_control'] = n_data_control
         else:
             meas_log.warning(

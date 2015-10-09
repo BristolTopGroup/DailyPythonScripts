@@ -1,17 +1,17 @@
 '''
-    Takes AnalysisSoftware (https://github.com/BristolTopGroup/AnalysisSoftware) 
+    Takes AnalysisSoftware (https://github.com/BristolTopGroup/AnalysisSoftware)
     output files and extracts the TTJet normalisation for each measured variable
     by subtracting backgrounds from data.
-    
+
     Usage:
         python src/cross_section_measurement/01_get_ttjet_normalisation.py \
         -c <centre of mass energy> -v <variable> -i <path to input folder> \
         -p <output path>
-    
+
     Example:
         python src/cross_section_measurement/01_get_ttjet_normalisation.py \
         -c 8 -v MET -i config/measurements/background_subtraction/
-        
+
     TODO: In the end this and 01_get_fit_results.py should be merged.
     All should come down to the function to extract the # events from TTJet
 '''
@@ -39,13 +39,13 @@ class TTJetNormalisation:
 
     '''
         Determines the normalisation for top quark pair production based on
-        different methods. Unless stated otherwise all templates and 
-        (initial) normalisations are taken from simulation, except for QCD 
+        different methods. Unless stated otherwise all templates and
+        (initial) normalisations are taken from simulation, except for QCD
         where the template is extracted from data.
 
         Supported methods:
-        BACKGROUND_SUBTRACTION: 
-            Subtracts the known backgrounds from data to obtain TTJet template 
+        BACKGROUND_SUBTRACTION:
+            Subtracts the known backgrounds from data to obtain TTJet template
             and normalisation
         SIMULTANEOUS_FIT:
             Uses Minuit and several fit variables (quotation needed) to perform
@@ -84,7 +84,9 @@ class TTJetNormalisation:
 
         for sample, hist in self.measurement.histograms.items():
             h = deepcopy(hist)
-            h.Scale(1 / h.integral())
+            h_norm = h.integral()
+            if h_norm > 0:
+                h.Scale(1 / h.integral())
             self.templates[sample] = hist_to_value_error_tuplelist(h)
         self.auxiliary_info = {}
         self.auxiliary_info['norms'] = measurement.aux_info_norms
@@ -103,8 +105,8 @@ class TTJetNormalisation:
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
-            hist = fix_overflow(hist)
-            histograms[sample] = hist
+            # hist = fix_overflow(hist)
+            # histograms[sample] = hist
             self.initial_normalisation[
                 sample] = hist_to_value_error_tuplelist(hist)
             if self.method == self.BACKGROUND_SUBTRACTION and sample != 'TTJet':
@@ -282,14 +284,20 @@ def main():
                 phase_space=phase_space,
             )
             norm.calculate_normalisation()
+            mylog.info('Saving results to {0}'.format(output_path))
             norm.save(output_path)
+            # store results for later combination
             r_name = f.replace(channel, '')
             if not results.has_key(r_name):
                 results[r_name] = [norm]
             else:
                 results[r_name].append(norm)
+
     for f, r_list in results.items():
-        assert(len(r_list) == 2)
+        if not len(r_list) == 2:
+            msg = 'Only found results ({0}) for one channel, not combining.'
+            mylog.warn(msg.format(f))
+            continue
         n1, n2 = r_list
         n1.combine(n2)
         n1.save(output_path)

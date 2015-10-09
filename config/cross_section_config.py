@@ -150,11 +150,11 @@ class XSectionConfig():
         self.middle = '_' + str( self.luminosity ) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
         middle = self.middle
 
-        self.data_file_muon = path_to_files + 'data_muon_tree.root'
-        self.data_file_electron = path_to_files + 'data_electron_tree.root'
+        self.data_file_muon = path_to_files + 'full_50ns_data_muon_tree.root'
+        self.data_file_electron = path_to_files + 'full_50ns_data_electron_tree.root'
 
-        self.data_file_muon_trees = path_to_files + 'data_muon_tree.root'
-        self.data_file_electron_trees = path_to_files + 'data_electron_tree.root'
+        self.data_file_muon_trees = path_to_files + 'full_50ns_data_muon_tree.root'
+        self.data_file_electron_trees = path_to_files + 'full_50ns_data_electron_tree.root'
 
         self.muon_QCD_file = path_to_files + 'QCD_data_mu.root'
         self.SingleTop_file = path_to_files + 'SingleTop.root'
@@ -552,7 +552,7 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         # self.new_luminosity = 40.028  # pb^-1
-        self.new_luminosity = 41.62912  # pb^-1
+        self.new_luminosity = 71.515  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used

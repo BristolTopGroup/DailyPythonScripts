@@ -415,13 +415,13 @@ def create_input(config, sample, variable, category, channel, template,
 
             if not sample == 'data':
                 if 'JES_down' in category:
-                    input_file = input_file.replace('tree','minusJES_tree')
+                    input_file = input_file.replace('tree', 'minusJES_tree')
                 elif 'JES_up' in category:
-                    input_file = input_file.replace('tree','plusJES_tree')
+                    input_file = input_file.replace('tree', 'plusJES_tree')
                 elif 'JER_up' in category:
-                    input_file = input_file.replace('tree','plusJER_tree')
+                    input_file = input_file.replace('tree', 'plusJER_tree')
                 elif 'JER_down' in category:
-                    input_file = input_file.replace('tree','minusJER_tree')
+                    input_file = input_file.replace('tree', 'minusJER_tree')
 
         selection = '{0} >= 0'.format(branch)
         if variable == 'abs_lepton_eta':
@@ -429,13 +429,13 @@ def create_input(config, sample, variable, category, channel, template,
     else:
         hist = template
 
-    lumi_scale = 1.
+    lumi_scale = config.luminosity_scale
     scale = 1.
 
     m = kwargs['measurement']
     if m.type == tools.measurement.Systematic.RATE:
         if 'luminosity' in m.name:
-            lumi_scale = m.scale
+            lumi_scale = lumi_scale * m.scale
         else:
             if sample in m.affected_samples:
                 scale = m.scale
