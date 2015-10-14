@@ -420,18 +420,18 @@ class XSectionConfig():
             'Jet energy \& resolution': [('JES_down', 'JES_up', 'JER_down', 'JER_up')],
             'B-tagging' : [('BJet_down', 'BJet_up')],
             '\met' : [('ElectronEnDown', 'ElectronEnUp'), ('MuonEnDown','MuonEnUp'),('TauEnDown','TauEnUp'),('UnclusteredEnDown','UnclusteredEnUp')],
-            'Background Normalisation': [
+            'Background Normalisation (non-QCD)': [
             # ('TTJet_cross_section-', 'TTJet_cross_section+'),
                               ('SingleTop_cross_section-', 'SingleTop_cross_section+'),
-                              ('luminosity-', 'luminosity+'),
-                              ('QCD_cross_section-', 'QCD_cross_section+'),],
+                              ('luminosity-', 'luminosity+'),],
+            'QCD Normalisation': [('QCD_cross_section-', 'QCD_cross_section+'),],
+            'QCD shape': [('QCD_shape', 'QCD_shape')],
             'Theory': [('TTJets_scaledown', 'TTJets_scaleup'),
                        ('TTJets_massdown', 'TTJets_massup')],
             'Hadronisation': [('TTJets_hadronisation', 'TTJets_hadronisation')],
             'NLO generator': [('TTJets_NLOgenerator', 'TTJets_NLOgenerator')],
             'PDF': [('PDF_total_lower', 'PDF_total_upper')],
             'Pileup' : [('PileUpSystematic','PileUpSystematic')],
-            'QCD shape': [('QCD_shape', 'QCD_shape')]
                                     }
         self.typical_systematics = []
         for _, values in self.typical_systematics_summary.items():
