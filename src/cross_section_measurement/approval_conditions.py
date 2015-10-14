@@ -17,7 +17,8 @@ from collections import namedtuple
 
 def compare_unfolding_methods(measurement='normalised_xsection',
                               add_before_unfolding=False, channel='combined'):
-    file_template = 'data/normalisation/background_subtraction/13TeV/'
+    file_template = '/hdfs/TopQuarkGroup/run2/dpsData/'
+    file_template += 'data/normalisation/background_subtraction/13TeV/'
     file_template += '{variable}/VisiblePS/central/'
     file_template += '{measurement}_{channel}_RooUnfold{method}.txt'
 
@@ -34,7 +35,7 @@ def compare_unfolding_methods(measurement='normalised_xsection',
             method='Bayes', channel=channel,
             measurement=measurement)
         data = read_data_from_JSON(svd)
-        before_unfolding = data['TTJet_measured']
+        before_unfolding = data['TTJet_measured_withoutFakes']
         svd_data = data['TTJet_unfolded']
         bayes_data = read_data_from_JSON(bayes)['TTJet_unfolded']
         h_svd = value_error_tuplelist_to_hist(
@@ -196,7 +197,8 @@ def compare_QCD_control_regions_to_MC():
 
 
 def compare_unfolding_uncertainties():
-    file_template = 'data/normalisation/background_subtraction/13TeV/'
+    file_template = '/hdfs/TopQuarkGroup/run2/dpsData/'
+    file_template += 'data/normalisation/background_subtraction/13TeV/'
     file_template += '{variable}/VisiblePS/central/'
     file_template += 'unfolded_normalisation_combined_RooUnfold{method}.txt'
 
@@ -209,7 +211,7 @@ def compare_unfolding_uncertainties():
         bayes = file_template.format(
             variable=variable, method='Bayes')
         data = read_data_from_JSON(svd)
-        before_unfolding = data['TTJet_measured']
+        before_unfolding = data['TTJet_measured_withoutFakes']
         svd_data = data['TTJet_unfolded']
         bayes_data = read_data_from_JSON(bayes)['TTJet_unfolded']
 
@@ -249,7 +251,8 @@ def debug_last_bin():
         For debugging why the last bin in the problematic variables deviates a
         lot in _one_ of the channels only.
     '''
-    file_template = 'data/normalisation/background_subtraction/13TeV/'
+    file_template = '/hdfs/TopQuarkGroup/run2/dpsData/'
+    file_template += 'data/normalisation/background_subtraction/13TeV/'
     file_template += '{variable}/VisiblePS/central/'
     file_template += 'normalised_xsection_{channel}_RooUnfoldSvd{suffix}.txt'
     problematic_variables = ['HT', 'MET', 'NJets', 'lepton_pt']
@@ -271,7 +274,7 @@ def debug_last_bin():
             )
             data = read_data_from_JSON(input_file_data)
             data_model = read_data_from_JSON(input_file_model)
-            before_unfolding = data['TTJet_measured']
+            before_unfolding = data['TTJet_measured_withoutFakes']
             after_unfolding = data['TTJet_unfolded']
 
             model = data_model['powhegPythia8']
