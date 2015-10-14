@@ -18,12 +18,24 @@ from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
 
+def removeFakes( h_measured, h_data, h_response ):
+  fakes = h_measured - h_response.ProjectionX()
+  nonFakeRatio = 1 - fakes / h_measured
+  h_measured *= nonFakeRatio
+  h_data *= nonFakeRatio
+
+  return h_measured, h_data
+
 def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method, visiblePS ):
     global variable, path_to_JSON, options
     edges = bin_edges[variable]
     if visiblePS:
         edges = bin_edges_vis[variable]
     h_data = value_error_tuplelist_to_hist( results, edges )
+
+    # Remove fakes before unfolding
+    h_measured, h_data = removeFakes( h_measured, h_data, h_response )
+
     unfolding = Unfolding( h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
 
     # turning off the unfolding errors for systematic samples
@@ -34,7 +46,7 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
 
     h_unfolded_data = unfolding.unfold( h_data )
     del unfolding
-    return hist_to_value_error_tuplelist( h_unfolded_data )
+    return hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data )
 
 def data_covariance_matrix( data ):
     values = list( data )
@@ -131,7 +143,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               )
 
 #     central_results = hist_to_value_error_tuplelist( h_truth )
-    TTJet_fit_results_unfolded = unfold_results( TTJet_fit_results,
+    TTJet_fit_results_unfolded, TTJet_fit_results_withoutFakes = unfold_results( TTJet_fit_results,
                                                 category,
                                                 channel,
                                                 tau_value,
@@ -144,6 +156,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 )
     normalisation_unfolded = {
                       'TTJet_measured' : TTJet_fit_results,
+                      'TTJet_measured_withoutFakes' : TTJet_fit_results_withoutFakes,
                       'TTJet_unfolded' : TTJet_fit_results_unfolded
                       }
 
@@ -290,9 +303,11 @@ def calculate_xsections( normalisation, category, channel ):
     if channel == 'combined':
         branching_ratio = branching_ratio * 2
     TTJet_xsection = calculate_xsection( normalisation['TTJet_measured'], luminosity, branching_ratio )  # L in pb1
+    TTJet_withoutFakes_xsection = calculate_xsection( normalisation['TTJet_measured_withoutFakes'], luminosity, branching_ratio )  # L in pb1
     TTJet_xsection_unfolded = calculate_xsection( normalisation['TTJet_unfolded'], luminosity, branching_ratio )  # L in pb1
 
     xsection_unfolded = {'TTJet_measured' : TTJet_xsection,
+                         'TTJet_measured_withoutFakes' : TTJet_withoutFakes_xsection,
                          'TTJet_unfolded' : TTJet_xsection_unfolded,
                          }
 
@@ -335,9 +350,11 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
         binWidths = bin_widths
 
     TTJet_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured'], binWidths[variable], normalise_to_one )
+    TTJet_withoutFakes_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured_withoutFakes'], binWidths[variable], normalise_to_one )
     TTJet_normalised_xsection_unfolded = calculate_normalised_xsection( normalisation['TTJet_unfolded'], binWidths[variable], normalise_to_one )
 
     normalised_xsection = {'TTJet_measured' : TTJet_normalised_xsection,
+                           'TTJet_measured_withoutFakes' : TTJet_withoutFakes_normalised_xsection,
                            'TTJet_unfolded' : TTJet_normalised_xsection_unfolded
                            }
 
@@ -518,12 +535,12 @@ if __name__ == '__main__':
 
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
-        print 'Doing category ', category
         if run_just_central and not category == 'central':
             continue
         # Don't need to consider MET uncertainties for HT
         if ( variable in measurement_config.variables_no_met ) and (category in measurement_config.met_systematics_suffixes and not category in ['JES_up', 'JES_down', 'JER_up', 'JER_down']):
             continue
+        print 'Doing category ', category
         print 'Unfolding category "%s"' % category
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]

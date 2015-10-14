@@ -554,10 +554,14 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
         rplt.fill_between( stat_upper, stat_lower, ax1, color = '0.75',
                             )
+
+        loc = 'upper left'
+        # if variable in ['ST']:
+        #     loc = 'upper right'
         # legend for ratio plot
         p_stat = mpatches.Patch(facecolor='0.75', label='Stat.', edgecolor='black' )
         p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
-        l1 = ax1.legend(handles = [p_stat, p_stat_and_syst], loc = 'upper left',
+        l1 = ax1.legend(handles = [p_stat, p_stat_and_syst], loc = loc,
                      frameon = False, prop = {'size':26}, ncol = 2)
 
         # ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
@@ -565,7 +569,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         ax1.add_artist(l1)
 
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.5, ymax = 2.4 )
+            ax1.set_ylim( ymin = 0.5, ymax = 1.6 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
 #             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
@@ -573,26 +577,26 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'HT':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.8 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.set_ylim( ymin = 0.8, ymax = 1.37 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'ST':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.8 )
+            ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.85 )
+            ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'NJets':
-            ax1.set_ylim( ymin = 0.5, ymax = 2.5 )
+            ax1.set_ylim( ymin = 0.5, ymax = 2.0 )
         elif variable == 'abs_lepton_eta':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.6 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'lepton_pt':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.8 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
     if CMS.tight_layout:

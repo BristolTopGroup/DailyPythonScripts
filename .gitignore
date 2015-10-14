@@ -8,6 +8,7 @@
 *.out
 *.o
 *.tar*
+01b.*
 bltUnfold.job*
 *~
 .DS_Store

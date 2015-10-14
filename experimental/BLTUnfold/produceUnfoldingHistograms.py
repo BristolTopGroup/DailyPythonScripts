@@ -339,7 +339,7 @@ def main():
                     measured = Hist( allVariablesBins[variable], name='measured')
                     measuredVis = Hist( bin_edges_vis[variable], name='measuredVis')
                     fake = Hist( allVariablesBins[variable], name='fake')
-                    
+                    fakeVis = Hist( allVariablesBins[variable], name='fakeVis')
                     # 2D histograms
                     response = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response')
                     response_without_fakes = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes')
@@ -379,6 +379,7 @@ def main():
                         measured = Hist( nBins, minVar, maxVar, name='measured')
                         measuredVis = Hist( nBins, minVar, maxVar, name='measuredVis')
                         fake = Hist( nBins, minVar, maxVar, name='fake')
+                        fakeVis = Hist( nBins, minVar, maxVar, name='fakeVis')
                         response = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
                         response_without_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
                         response_only_fakes = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes')
@@ -427,13 +428,14 @@ def main():
                         tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured, nentries=nEntries)
                         tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measuredVis, nentries=nEntries)
                         tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake, nentries=nEntries)
+                        tree.Draw(recoVariable,offlineWeight+'*'+fakeSelectionVis,hist=fakeVis, nentries=nEntries)
                         # 2D
                         tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+offlineSelection,hist=response, nentries=nEntries)
                         tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes, nentries=nEntries)
                         tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=response_only_fakes, nentries=nEntries)
 
                         tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'* ('+offlineSelection+'&&'+genSelectionVis +')',hist=responseVis_without_fakes, nentries=nEntries)
-                        tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelection,hist=responseVis_only_fakes, nentries=nEntries)
+                        tree.Draw(recoVariable+':'+genVariable_particle,offlineWeight+'*'+fakeSelectionVis,hist=responseVis_only_fakes, nentries=nEntries)
 
                         # if genVariable_parton != None:
                         #     tree.Draw(recoVariable+':'+genVariable_parton,offlineWeight+'*'+offlineSelection,hist=response_parton)
@@ -455,6 +457,7 @@ def main():
                     measured.Write()
                     measuredVis.Write()
                     fake.Write()
+                    fakeVis.Write()
                     response.Write()
                     response_without_fakes.Write()
                     response_only_fakes.Write()

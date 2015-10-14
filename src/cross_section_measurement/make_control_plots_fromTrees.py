@@ -586,6 +586,7 @@ if __name__ == '__main__':
                       branchName = 'NJets',
                       name_prefix = '%s_NJets_' % label,
                       x_limits = control_plots_bins['NJets'],
+                      y_max_scale = 1.4,
                       nBins = len(control_plots_bins['NJets'])-1,
                       rebin = 1,
                       legend_location = ( 0.9, 0.83 ),
