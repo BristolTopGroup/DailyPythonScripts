@@ -5,7 +5,7 @@ from config.latex_labels import variables_latex, variables_NonLatex, measurement
 from config.variable_binning import variable_bins_latex, variable_bins_ROOT, variable_bins_visiblePS_ROOT, variable_bins_visiblePS_latex, bin_edges_vis, bin_edges
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
-from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists, read_xsection_measurement_results_with_errors
 from tools.hist_utilities import values_and_errors_to_hist
 from lib import read_normalisation, read_initial_normalisation
 import math
@@ -23,71 +23,6 @@ my_cmap.set_under( 'w' )
 from matplotlib import rc
 rc( 'font', **CMS.font )
 rc( 'text', usetex = False )
-
-def read_xsection_measurement_results_with_errors(channel):
-    global path_to_JSON, variable, met_type, phase_space
-    category = 'central'
-
-    file_template = path_to_JSON +  '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
-
-    file_name = file_template
-    normalised_xsection_unfolded = read_data_from_JSON( file_name )
-    
-    normalised_xsection_measured_unfolded = {'measured':normalised_xsection_unfolded['TTJet_measured'],
-                                            'unfolded':normalised_xsection_unfolded['TTJet_unfolded']}
-
-    file_name = file_template.replace('.txt', '_with_errors.txt')
-    normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
-    file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
-    normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
-
-#     file_name = file_template.replace('.txt', '_MET_errors.txt')
-#     normalised_xsection_MET_errors = read_data_from_JSON( file_name )
-
-#     file_name = file_template.replace('.txt', '_topMass_errors.txt')
-#     normalised_xsection_topMass_errors = read_data_from_JSON( file_name )
-
-#     file_name = file_template.replace('.txt', '_kValue_errors.txt')
-#     normalised_xsection_kValue_errors = read_data_from_JSON( file_name )
-
-    file_name = file_template.replace('.txt', '_PDF_errors.txt')
-    normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
-
-    file_name = file_template.replace('.txt', '_experimental_errors.txt')
-    normalised_xsection_experimental_errors = read_data_from_JSON( file_name )
-
-    file_name = file_template.replace('.txt', '_other_errors.txt')
-    normalised_xsection_other_errors = read_data_from_JSON( file_name )
-
-    file_name = file_template.replace('.txt', '_with_systematics_only_errors.txt')
-    normalised_xsection_systematics_only = read_data_from_JSON( file_name )
-#     file_name = file_template.replace('.txt', '_new_errors.txt')
-#     normalised_xsection_new_errors = read_data_from_JSON( file_name )
-    normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
-                                                'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
-                                                'measured_with_systematics_only':normalised_xsection_systematics_only['TTJet_measured'],
-                                                'unfolded_with_systematics_only':normalised_xsection_systematics_only['TTJet_unfolded'],
-                                                })
-    normalised_xsection_measured_errors = normalised_xsection_other_errors['TTJet_measured']
-
-    normalised_xsection_measured_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
-#     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
-#     normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
-    ### normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
-    normalised_xsection_measured_errors.update(normalised_xsection_experimental_errors['TTJet_measured'])
-#     normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
-
-    normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
-    normalised_xsection_unfolded_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
-#     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
-#     normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
-    ### normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
-    normalised_xsection_unfolded_errors.update(normalised_xsection_experimental_errors['TTJet_unfolded'])
-#     normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
-
-    return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
 
 def print_fit_results_table(initial_values, fit_results, channel, toFile = True):
     global output_folder, variable, met_type, phase_space
@@ -611,76 +546,79 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
             group_errors[group].append(math.sqrt(group_error_squared))
 
     summarised_typical_systematics = {}
+    summarised_max_systematics = {}
     # calculate the median
     # x 100 to be in %
     for group, u_list in group_errors.items():
         summarised_typical_systematics[group] = median(u_list)*100
-        
-    printout = '%% ' + '=' * 60
-    printout += '\n'
-    printout += '%% Typical systematics table for {0} channel, met type {1}, {2} b-tag region\n'.format(channel, met_type, b_tag_bin)
-    if print_before_unfolding:
-        printout += '%% BEFORE UNFOLDING\n'
-    printout += '%% ' + '=' * 60
-    printout += '\n'
-    printout += '\\begin{table}[htbp]\n'
-    printout += '\\centering\n'
-    printout += '\\caption{Typical systematic uncertainties (median values) for the normalised \\ttbar cross section measurement \n'
-    printout += 'at a centre-of-mass energy of {0} TeV '.format(measurement_config.centre_of_mass_energy)
-    if channel == 'combined':
-        printout += '(combination of electron and muon channels).}\n'
-    else:
-        printout += '({0} channel).}\n'.format(channel)
-    printout += '\\label{{tab:typical_systematics_{0}TeV_{1}}}\n'.format(measurement_config.centre_of_mass_energy, channel)
-    printout += '\\resizebox{\\columnwidth}{!} {\n'
-    printout += '\\begin{tabular}{l' + 'r'*len(bins) + '}\n'
-    printout += '\\hline\n'
+        summarised_max_systematics[group] = max(u_list) * 100
 
-    header = 'Uncertainty source '
-    header += '& {0}'.format(variables_latex[variable])
-
-    header += ' '
-    printout += header
-    printout += '\n\\hline\n'
-    for group, ts in summarised_typical_systematics.items():
-        printout += group + ' (\\%) & {:.2f} \\\\ \n'.format(ts)
-    printout += '\\hline \n'
-    printout += '\\hline \n'
-    printout += '\\end{tabular}\n'
-    printout += '}\n'
-    printout += '\\end{table}\n'
-
-    if toFile:
-        path = output_folder + '/'
-        make_folder_if_not_exists(path)
-        file_template = path + '/typical_systematics_{0}TeV_{1}.tex'.format(measurement_config.centre_of_mass_energy, channel)
-
+    for summary, errors in {'median':summarised_typical_systematics,'max':summarised_max_systematics}.iteritems():
+        printout = '%% ' + '=' * 60
+        printout += '\n'
+        printout += '%% Typical systematics table for {0} channel, met type {1}, {2} b-tag region\n'.format(channel, met_type, b_tag_bin)
         if print_before_unfolding:
-            make_folder_if_not_exists(path + '/before_unfolding/')
-            file_template = file_template.replace(path, path + '/before_unfolding/')
-        if os.path.isfile(file_template): 
-            with open(file_template, 'r+') as output_file:
-                lines = output_file.readlines()
-                for line_number, line in enumerate (lines):
-                    if line.startswith("Uncertainty source"):
-                        lines[line_number] = lines[line_number].strip() + "& " + variables_latex[variable] + "\n"
-                    elif variable == "HT" and line.startswith("$E_{T}^{miss}$ uncertainties"):
-                        lines[line_number] = lines[line_number].strip() + "& - \n"
-                    else:
-                        for group, ts in summarised_typical_systematics.items():
-                            if line.startswith(group):
-                                new_line = line.replace('\\\\', '')
-                                new_line = new_line.strip()
-                                lines[line_number] = new_line + '& {:.2f} \\\\ \n'.format(ts)
-                output_file.seek(0)
-                for line in lines:
-                    output_file.write(line)            
+            printout += '%% BEFORE UNFOLDING\n'
+        printout += '%% ' + '=' * 60
+        printout += '\n'
+        printout += '\\begin{table}[htbp]\n'
+        printout += '\\centering\n'
+        printout += '\\caption{Typical systematic uncertainties (median values) for the normalised \\ttbar cross section measurement \n'
+        printout += 'at a centre-of-mass energy of {0} TeV '.format(measurement_config.centre_of_mass_energy)
+        if channel == 'combined':
+            printout += '(combination of electron and muon channels).}\n'
         else:
-            output_file = open(file_template, 'w')
-            output_file.write(printout)
-        output_file.close()
-    else:
-        print printout
+            printout += '({0} channel).}\n'.format(channel)
+        printout += '\\label{{tab:typical_systematics_{0}TeV_{1}}}\n'.format(measurement_config.centre_of_mass_energy, channel)
+        printout += '\\resizebox{\\columnwidth}{!} {\n'
+        printout += '\\begin{tabular}{l' + 'r'*len(bins) + '}\n'
+        printout += '\\hline\n'
+
+        header = 'Uncertainty source '
+        header += '& {0}'.format(variables_latex[variable])
+
+        header += ' '
+        printout += header
+        printout += '\n\\hline\n'
+        for group, ts in errors.items():
+            printout += group + ' (\\%) & {:.2f} \\\\ \n'.format(ts)
+        printout += '\\hline \n'
+        printout += '\\hline \n'
+        printout += '\\end{tabular}\n'
+        printout += '}\n'
+        printout += '\\end{table}\n'
+
+        if toFile:
+            path = output_folder + '/'
+            make_folder_if_not_exists(path)
+            file_template = path + '/{0}_systematics_{1}TeV_{2}.tex'.format(summary,measurement_config.centre_of_mass_energy, channel)
+
+            if print_before_unfolding:
+                make_folder_if_not_exists(path + '/before_unfolding/')
+                file_template = file_template.replace(path, path + '/before_unfolding/')
+            if os.path.isfile(file_template): 
+                with open(file_template, 'r+') as output_file:
+                    lines = output_file.readlines()
+                    for line_number, line in enumerate (lines):
+                        if line.startswith("Uncertainty source"):
+                            lines[line_number] = lines[line_number].strip() + "& " + variables_latex[variable] + "\n"
+                        elif variable == "HT" and line.startswith("$E_{T}^{miss}$ uncertainties"):
+                            lines[line_number] = lines[line_number].strip() + "& - \n"
+                        else:
+                            for group, ts in errors.items():
+                                if line.startswith(group):
+                                    new_line = line.replace('\\\\', '')
+                                    new_line = new_line.strip()
+                                    lines[line_number] = new_line + '& {:.2f} \\\\ \n'.format(ts)
+                    output_file.seek(0)
+                    for line in lines:
+                        output_file.write(line)            
+            else:
+                output_file = open(file_template, 'w')
+                output_file.write(printout)
+            output_file.close()
+        else:
+            print printout
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -700,6 +638,8 @@ if __name__ == '__main__':
                       help="creates a set of tables for each systematic (in addition to central result).")
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     (options, args) = parser.parse_args()
     measurement_config = XSectionConfig(options.CoM)
@@ -709,6 +649,7 @@ if __name__ == '__main__':
     vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     met_systematics = measurement_config.met_systematics
     typical_systematics = measurement_config.typical_systematics
+    method = options.unfolding_method
 
     variable = options.variable
     output_folder = options.output_folder
@@ -753,7 +694,7 @@ if __name__ == '__main__':
 
     for channel in ['electron', 'muon', 'combined']:                        
     # for channel in ['combined']:                        
-        normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors = read_xsection_measurement_results_with_errors(channel)
+        normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors = read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_type, phase_space, method, channel)
 
         print_xsections(normalised_xsection_measured_unfolded, channel, toFile = True, print_before_unfolding = False)
         print_xsections(normalised_xsection_measured_unfolded, channel, toFile = True, print_before_unfolding = True)

@@ -120,3 +120,77 @@ def saveHistogramsToROOTFile( data, mcStack, fileName ):
         data.Write('Data')
         mcStack.Write('MC')
 
+
+def read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_type, phase_space, method, channel):
+    category = 'central'
+
+    file_template = '{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
+    file_template = file_template.format(
+                path = path_to_JSON,
+                category = category,
+                name = 'normalised_xsection',
+                channel = channel,
+                method = method,
+                suffix = '',
+                )
+    # file_template = path_to_JSON +  '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+
+    file_name = file_template
+
+    normalised_xsection_unfolded = read_data_from_JSON( file_name )
+    
+    normalised_xsection_measured_unfolded = {'measured':normalised_xsection_unfolded['TTJet_measured'],
+                                            'unfolded':normalised_xsection_unfolded['TTJet_unfolded']}
+
+    file_name = file_template.replace('.txt', '_with_errors.txt')
+    normalised_xsection_unfolded_with_errors = read_data_from_JSON( file_name )
+    file_name = file_template.replace('.txt', '_ttbar_generator_errors.txt')
+    normalised_xsection_ttbar_generator_errors = read_data_from_JSON( file_name )
+
+#     file_name = file_template.replace('.txt', '_MET_errors.txt')
+#     normalised_xsection_MET_errors = read_data_from_JSON( file_name )
+
+#     file_name = file_template.replace('.txt', '_topMass_errors.txt')
+#     normalised_xsection_topMass_errors = read_data_from_JSON( file_name )
+
+#     file_name = file_template.replace('.txt', '_kValue_errors.txt')
+#     normalised_xsection_kValue_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_PDF_errors.txt')
+    normalised_xsection_PDF_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_experimental_errors.txt')
+    normalised_xsection_experimental_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_other_errors.txt')
+    normalised_xsection_other_errors = read_data_from_JSON( file_name )
+
+    file_name = file_template.replace('.txt', '_with_systematics_only_errors.txt')
+    normalised_xsection_systematics_only = read_data_from_JSON( file_name )
+#     file_name = file_template.replace('.txt', '_new_errors.txt')
+#     normalised_xsection_new_errors = read_data_from_JSON( file_name )
+    normalised_xsection_measured_unfolded.update({'measured_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_measured'],
+                                                'unfolded_with_systematics':normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
+                                                'measured_with_systematics_only':normalised_xsection_systematics_only['TTJet_measured'],
+                                                'unfolded_with_systematics_only':normalised_xsection_systematics_only['TTJet_unfolded'],
+                                                })
+    normalised_xsection_measured_errors = normalised_xsection_other_errors['TTJet_measured']
+
+    normalised_xsection_measured_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
+#     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
+#     normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
+    ### normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_experimental_errors['TTJet_measured'])
+#     normalised_xsection_measured_errors.update(normalised_xsection_new_errors['TTJet_measured'])
+
+    normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
+    normalised_xsection_unfolded_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
+#     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
+#     normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
+    ### normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_experimental_errors['TTJet_unfolded'])
+#     normalised_xsection_unfolded_errors.update(normalised_xsection_new_errors['TTJet_unfolded'])
+
+    return normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors
