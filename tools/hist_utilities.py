@@ -27,7 +27,7 @@ def hist_to_value_error_tuplelist( hist ):
     return zip( values, errors )
 
 def values_and_errors_to_hist( values, errors, bins ):
-    assert( len( values ) == len( bins ) )
+    assert( len( bins ) == len( values ) + 1 )
     if len( errors ) == 0:
         errors = [0.] * len( values )
     value_error_tuplelist = zip( values, errors )
