@@ -116,7 +116,6 @@ class RegularisationSettings():
     
 def main():
     options, input_values_sets, json_input_files = parse_options()
-    print 'options = ', options
     use_current_k_values = options.compare
     results = {}
     for input_values, json_file in zip( input_values_sets, json_input_files ):
@@ -131,12 +130,9 @@ def main():
 
         k_results = get_best_k_from_global_correlation( regularisation_settings )
         tau_results = get_best_tau_from_global_correlation( regularisation_settings )
-        
         results[com][variable][channel] = (k_results, tau_results)
-        
         plot(regularisation_settings, (k_results, tau_results), 
                  use_current_k_values)
-        
     table(results, use_current_k_values, options.style)
 
 def parse_options():
@@ -235,6 +231,7 @@ def get_best_tau_from_global_correlation( regularisation_settings ):
     minimal_rho = 9999
     tau_values = []
     rho_values = []
+
     # first calculate one set to get the matrices
     # tau = 0 is equal to k = nbins
     unfolding = Unfolding( h_truth,
@@ -268,7 +265,8 @@ def get_best_tau_from_global_correlation( regularisation_settings ):
         if current_rho < minimal_rho:
             minimal_rho = current_rho
             optimal_tau = current_tau
-            
+    
+    print 'Best tau for',regularisation_settings.channel,':',optimal_tau       
     return optimal_tau, minimal_rho, tau_values, rho_values
 
 def get_tau_range( tau_min, tau_max, number_of_points ):
@@ -323,7 +321,6 @@ def plot(regularisation_settings, results, use_current_k_values = False):
     # first best k
     tau_index = k_values.index(optimal_k)
     closest_tau_best_k = k_tau_values[tau_index]
-    print closest_tau_best_k
     ax.annotate( r"$\tau = %.2g$" % optimal_tau,
             xy = ( optimal_tau, minimal_rho ), xycoords = 'data',
             xytext = ( optimal_tau*0.9, minimal_rho*1.15 ), textcoords = 'data',
@@ -383,37 +380,40 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
             headers = ['Variable', 'best k', 'rho (best k)', 'best tau', 'rho (best tau)']
         data = []
         configOutputElectron = {}
-        configOutputMuon = {}        
+        configOutputMuon = {}
+        configOutputCombined = {}
         measurement_config = XSectionConfig(com)
         for variable in result_dict[com].keys():
-            has_both_channels = len(result_dict[com][variable]) == 2
+            has_both_channels = len(result_dict[com][variable]) == 3
             # step 2: if have electron and muon channel, group them: electron (muon)
             if has_both_channels:
                 electron_results = result_dict[com][variable]['electron']
                 muon_results = result_dict[com][variable]['muon']
+                combined_results = result_dict[com][variable]['combined']
                 
                 configOutputElectron[variable] = electron_results[1][0]
                 configOutputMuon[variable] = muon_results[1][0]
-
+                configOutputCombined[variable] = combined_results[1][0]
                 entry = []
                 if use_current_k_values:
                     electron_set = get_k_tau_set(measurement_config, 'electron',
                                                 variable, electron_results)
                     muon_set = get_k_tau_set(measurement_config, 'muon',
                                                 variable, muon_results)
-                    
+                    combined_set = get_k_tau_set(measurement_config, 'combined',
+                                                variable, combined_results)
                     entry = [variable, 
-                             '%d (%d)' % (electron_set[0], muon_set[0]),
-                             '%.1f (%.1f)' % (electron_set[1], muon_set[1]),
-                             '%.1f (%.1f)' % (electron_set[2], muon_set[2]),
-                             '%d (%d)' % (electron_set[3], muon_set[3]), 
+                             '%d (%d)' % (electron_set[0], muon_set[0], combined_set[0]),
+                             '%.1f (%.1f)' % (electron_set[1], muon_set[1], combined_set[1]),
+                             '%.1f (%.1f)' % (electron_set[2], muon_set[2], combined_set[2]),
+                             '%d (%d)' % (electron_set[3], muon_set[3], combined_set[3]), 
                              ]
                 else:
                     entry = [variable, 
-                             '%d (%d)' % (electron_results[0][0], muon_results[0][0]),
-                             '%.1f (%.1f)' % (electron_results[0][1], muon_results[0][1]),
-                             '%.1f (%.1f)' % (electron_results[1][0], muon_results[1][0]),
-                             '%.1f (%.1f)' % (electron_results[1][1], muon_results[1][1]),    
+                             '%d %d %d' % (electron_results[0][0], muon_results[0][0], combined_results[0][0]),
+                             '%.1f %.1f %.1f' % (electron_results[0][1], muon_results[0][1], combined_results[0][1]),
+                             '%.1f %.1f %.1f' % (electron_results[1][0], muon_results[1][0], combined_results[1][0]),
+                             '%.1f %.1f %.1f' % (electron_results[1][1], muon_results[1][1], combined_results[1][1]),    
                              ]
                     
                 data.append(entry)
@@ -423,8 +423,10 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
                 print channel
                 if channel == 'electron':
                     configOutputElectron[variable] = results[1][0]
-                else :
+                elif channel == 'muon':
                     configOutputMuon[variable] = results[1][0]
+                else :
+                    configOutputCombined[variable] = results[1][0]
 
                 if use_current_k_values:
                     result_set = get_k_tau_set(measurement_config, channel,
@@ -448,6 +450,7 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
         print '\nOutput for __init__\n'
         print configOutputElectron
         print configOutputMuon
+        print configOutputCombined
         print 'Electron'
         for var in configOutputElectron:
             print '"%s" : %s,' % (var, configOutputElectron[var])
@@ -455,6 +458,10 @@ def table(result_dict, use_current_k_values = False, style = 'simple'):
         print 'Muon'
         for var in configOutputMuon:
             print '"%s" : %s,' % (var, configOutputMuon[var])
+        print '\n'
+        print 'Combined'
+        for var in configOutputCombined:
+            print '"%s" : %s,' % (var, configOutputCombined[var])
         print '\n'
         table = PrintTable(data, headers)
         
