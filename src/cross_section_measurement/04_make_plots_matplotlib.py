@@ -775,7 +775,7 @@ if __name__ == '__main__':
     # all_measurements.extend( met_uncertainties )
     # all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
-    for channel in ['electron', 'muon', 'combined']:
+    for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
     # for channel in ['combined']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:

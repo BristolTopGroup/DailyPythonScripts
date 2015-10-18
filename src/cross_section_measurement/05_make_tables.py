@@ -381,7 +381,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     printout += '\\centering\n'
     printout += '\\caption{Systematic uncertainties for the normalised \\ttbar cross section measurement with respect to %s variable\n' % variable_latex
     printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
-    if channel == 'combined':
+    if channel == 'combined' or channel == "combinedBeforeUnfolding":
         printout += '(combination of electron and muon channels).}\n'
     else:
         printout += '(%s channel).}\n' % channel
@@ -565,7 +565,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
         printout += '\\centering\n'
         printout += '\\caption{Typical systematic uncertainties (median values) for the normalised \\ttbar cross section measurement \n'
         printout += 'at a centre-of-mass energy of {0} TeV '.format(measurement_config.centre_of_mass_energy)
-        if channel == 'combined':
+        if channel == 'combined' or channel == 'combinedBeforeUnfolding':
             printout += '(combination of electron and muon channels).}\n'
         else:
             printout += '({0} channel).}\n'.format(channel)
@@ -692,7 +692,7 @@ if __name__ == '__main__':
 
     all_measurements.extend(rate_changing_systematics)
 
-    for channel in ['electron', 'muon', 'combined']:                        
+    for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:                        
     # for channel in ['combined']:                        
         normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, normalised_xsection_unfolded_errors = read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_type, phase_space, method, channel)
 
@@ -706,7 +706,7 @@ if __name__ == '__main__':
             print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_unfolded_errors, channel, toFile = True, print_before_unfolding = False)
             print_typical_systematics_table(normalised_xsection_measured_unfolded, normalised_xsection_measured_errors, channel, toFile = True, print_before_unfolding = True)
 
-        if not channel == 'combined':
+        if not channel == 'combined' and not channel == 'combinedBeforeUnfolding':
             fit_input = read_initial_normalisation(path_to_JSON, variable, 'central', channel, met_type)
             fit_results = read_normalisation(path_to_JSON, variable, 'central', channel, met_type)
             print_fit_results_table(fit_input, fit_results, channel, toFile = True)
