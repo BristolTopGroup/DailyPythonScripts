@@ -319,7 +319,7 @@ def make_data_mc_comparison_plot( histograms = [],
                       ymax = histogram_properties.ratio_y_limits[-1] )
 
         # dynamic tick placement
-        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
+        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3, y_limits = histogram_properties.ratio_y_limits)
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -763,15 +763,22 @@ def check_save_folder(save_folder):
     
     return save_folder
 
-def adjust_ratio_ticks( axis, n_ticks = 3 ):
+def adjust_ratio_ticks( axis, n_ticks = 3, y_limits = None ):
     # dynamic tick placement
     ticks = axis.get_ticklocs()
     tick_min, tick_max = ticks[0], ticks[-1]
+
+    # Check if these are outside of the y_limits.  Use those instead if so.
+    if y_limits != None:
+        if tick_min < y_limits[0] and tick_max > y_limits[-1]:
+            tick_min = y_limits[0]
+            tick_max = y_limits[-1]
+
     # limit to 3 ticks
     tick_distance = abs( tick_max - tick_min ) / ( n_ticks + 1 )
     includes_one = tick_max > 1 and tick_min < 1
     if includes_one:
-        axis.set_major_locator( FixedLocator( [tick_min + tick_distance/2, 1, tick_max - tick_distance/2] ) )
+        axis.set_major_locator( FixedLocator( [round(tick_min + tick_distance/2,1), 1, round(tick_max - tick_distance/2,1)] ) )
     else:
         axis.set_major_locator( MultipleLocator( tick_distance ) )
         axis.set_minor_locator( MultipleLocator( tick_distance / 2 ) )
