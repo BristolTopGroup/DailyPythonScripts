@@ -97,7 +97,8 @@ class XSectionConfig():
 
         self.analysis_types = {
                 'electron':'EPlusJets',
-                'muon':'MuPlusJets'
+                'muon':'MuPlusJets',
+                'combined':'Combined'
                 }
 
         # measurement script options
@@ -627,13 +628,13 @@ class XSectionConfig():
                    }
 
         self.tau_values_electron = {
-"MET" : 0.705480231072,
-"WPT" : 0.932603346883,
-"NJets" : 0.849753435909,
+"MET" : 0.533669923121,
+"WPT" : 0.705480231072,
+"NJets" : 0.585702081806,
 "abs_lepton_eta" : 0.1,
-"ST" : 0.774263682681,
-"lepton_pt" : 0.533669923121,
-"HT" : 0.932603346883,
+"ST" : 0.585702081806,
+"lepton_pt" : 0.443062145758,
+"HT" : 0.705480231072,
 
             'bjets_pt': 0.,
             'bjets_eta': 0.,
@@ -650,13 +651,13 @@ class XSectionConfig():
 
         self.tau_values_muon = {
 
-"MET" : 0.849753435909,
-"WPT" : 1.0235310219,
-"NJets" : 0.932603346883,
+"MET" : 0.642807311728,
+"WPT" : 0.774263682681,
+"NJets" : 0.705480231072,
 "abs_lepton_eta" : 0.1,
-"ST" : 0.849753435909,
-"lepton_pt" : 0.585702081806,
-"HT" : 1.12332403298,
+"ST" : 0.705480231072,
+"lepton_pt" : 0.443062145758,
+"HT" : 0.849753435909,
 
 
             'bjets_pt': 0.,
@@ -672,13 +673,14 @@ class XSectionConfig():
             "ttbarRap" : 236.448941265,
         }
         self.tau_values_combined = {
-            "NJets" : 0.849753435909,
-            "WPT" : 0.849753435909,
-            "MET" : 1.78864952906,
-            "HT" : 0.443062145758,
-            "ST" : 0.533669923121,
-            "lepton_pt" : 0.1,
-            "abs_lepton_eta" : 0.001,
+"MET" : 0.849753435909,
+"WPT" : 1.0235310219,
+"NJets" : 0.932603346883,
+"abs_lepton_eta" : 0.1,
+"ST" : 0.932603346883,
+"lepton_pt" : 0.585702081806,
+"HT" : 1.12332403298,
+
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
