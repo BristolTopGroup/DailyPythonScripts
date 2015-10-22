@@ -853,3 +853,4 @@ def compare_histograms(plot):
         plt.tight_layout()
 
     plot.save()
+    plt.close()

@@ -1,5 +1,6 @@
 # DailyPythonScripts
 [![build status](https://travis-ci.org/BristolTopGroup/DailyPythonScripts.png)](https://travis-ci.org/BristolTopGroup/DailyPythonScripts)
+[![Code Issues](https://www.quantifiedcode.com/api/v1/project/40f826c689e6445c9a2a416c25817b66/badge.svg)](https://www.quantifiedcode.com/app/project/40f826c689e6445c9a2a416c25817b66)
 
 Python scripts for the daily tasks in particle physics (*Run 2*) - Daily Python Scripts (aka DPS)
 
