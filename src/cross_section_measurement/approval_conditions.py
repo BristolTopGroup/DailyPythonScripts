@@ -70,6 +70,60 @@ def compare_unfolding_methods(measurement='normalised_xsection',
         plot.draw_method = 'errorbar'
         compare_histograms(plot)
 
+def compare_combine_before_after_unfolding(measurement='normalised_xsection',
+                              add_before_unfolding=False):
+    file_template = 'data/normalisation/background_subtraction/13TeV/'
+    file_template += '{variable}/VisiblePS/central/'
+    file_template += '{measurement}_{channel}_RooUnfold{method}.txt'
+
+    variables = ['MET', 'HT', 'ST', 'NJets',
+                 'lepton_pt', 'abs_lepton_eta', 'WPT']
+    for variable in variables:
+        combineBefore = file_template.format(
+            variable=variable,
+            method='Svd',
+            channel='combinedBeforeUnfolding',
+            measurement=measurement)
+        combineAfter = file_template.format(
+            variable=variable,
+            method='Svd',
+            channel='combined',
+            measurement=measurement)
+        data = read_data_from_JSON(combineBefore)
+        before_unfolding = data['TTJet_measured']
+        combineBefore_data = data['TTJet_unfolded']
+        combineAfter_data = read_data_from_JSON(combineAfter)['TTJet_unfolded']
+        h_combineBefore = value_error_tuplelist_to_hist(
+            combineBefore_data, bin_edges_vis[variable])
+        h_combineAfter = value_error_tuplelist_to_hist(
+            combineAfter_data, bin_edges_vis[variable])
+        h_before_unfolding = value_error_tuplelist_to_hist(
+            before_unfolding, bin_edges_vis[variable])
+
+        properties = Histogram_properties()
+        properties.name = '{0}_compare_combine_before_after_unfolding_{1}'.format(
+            measurement, variable)
+        properties.title = 'Comparison of combining before/after unfolding'
+        properties.path = 'plots'
+        properties.has_ratio = True
+        properties.xerr = True
+        properties.x_limits = (
+            bin_edges_vis[variable][0], bin_edges_vis[variable][-1])
+        properties.x_axis_title = variables_latex[variable]
+        if 'xsection' in measurement:
+            properties.y_axis_title = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + \
+                variables_latex[variable] + '}$'
+        else:
+            properties.y_axis_title = r'$t\bar{t}$ normalisation'
+
+        histograms = {'Combine before unfolding': h_combineBefore, 'Combine after unfolding': h_combineAfter}
+        if add_before_unfolding:
+            histograms['before unfolding'] = h_before_unfolding
+            properties.name += '_ext'
+            properties.has_ratio = False
+        plot = Plot(histograms, properties)
+        plot.draw_method = 'errorbar'
+        compare_histograms(plot)
 
 def compare_QCD_control_regions_to_MC():
     config = XSectionConfig(13)
@@ -245,6 +299,54 @@ def compare_unfolding_uncertainties():
         plot.draw_method = 'errorbar'
         compare_histograms(plot)
 
+def compare_combine_before_after_unfolding_uncertainties():
+    file_template = 'data/normalisation/background_subtraction/13TeV/'
+    file_template += '{variable}/VisiblePS/central/'
+    file_template += 'unfolded_normalisation_{channel}_RooUnfoldSvd.txt'
+
+    variables = ['MET', 'HT', 'ST', 'NJets',
+                 'lepton_pt', 'abs_lepton_eta', 'WPT']
+#     variables = ['ST']
+    for variable in variables:
+        beforeUnfolding = file_template.format(
+            variable=variable, channel='combinedBeforeUnfolding')
+        afterUnfolding = file_template.format(
+            variable=variable, channel='combined')
+        data = read_data_from_JSON(beforeUnfolding)
+        before_unfolding = data['TTJet_measured']
+        beforeUnfolding_data = data['TTJet_unfolded']
+        afterUnfolding_data = read_data_from_JSON(afterUnfolding)['TTJet_unfolded']
+
+        before_unfolding = [e / v * 100 for v, e in before_unfolding]
+        beforeUnfolding_data = [e / v * 100 for v, e in beforeUnfolding_data]
+        afterUnfolding_data = [e / v * 100 for v, e in afterUnfolding_data]
+
+        h_beforeUnfolding = value_tuplelist_to_hist(
+            beforeUnfolding_data, bin_edges_vis[variable])
+        h_afterUnfolding = value_tuplelist_to_hist(
+            afterUnfolding_data, bin_edges_vis[variable])
+        h_before_unfolding = value_tuplelist_to_hist(
+            before_unfolding, bin_edges_vis[variable])
+
+        properties = Histogram_properties()
+        properties.name = 'compare_combine_before_after_unfolding_uncertainties_{0}'.format(
+            variable)
+        properties.title = 'Comparison of unfolding uncertainties'
+        properties.path = 'plots'
+        properties.has_ratio = False
+        properties.xerr = True
+        properties.x_limits = (
+            bin_edges_vis[variable][0], bin_edges_vis[variable][-1])
+        properties.x_axis_title = variables_latex[variable]
+        properties.y_axis_title = 'relative uncertainty (\\%)'
+        properties.legend_location = (0.98, 0.95)
+
+        histograms = {'Combine before unfolding': h_beforeUnfolding, 'Combine after unfolding': h_afterUnfolding,
+                      # 'before unfolding': h_before_unfolding
+                      }
+        plot = Plot(histograms, properties)
+        plot.draw_method = 'errorbar'
+        compare_histograms(plot)
 
 def debug_last_bin():
     '''
@@ -332,6 +434,10 @@ if __name__ == '__main__':
     if '-d' in sys.argv:
         from tools.logger import log
         log.setLevel(log.DEBUG)
+
+    compare_combine_before_after_unfolding(measurement='unfolded_normalisation')
+    compare_combine_before_after_unfolding(measurement='normalised_xsection')
+    compare_combine_before_after_unfolding_uncertainties()
     compare_unfolding_methods('normalised_xsection')
     compare_unfolding_methods('normalised_xsection', add_before_unfolding=True)
     compare_unfolding_methods(

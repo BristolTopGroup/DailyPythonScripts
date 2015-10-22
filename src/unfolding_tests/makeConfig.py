@@ -24,15 +24,15 @@ for channel in config.analysis_types.keys():
 		    "phaseSpace" : "FullPS",
 			"truth" : { 
 				"file" : "%s" % config.unfolding_central,
-				"histogram": "%s/truth" % ( histogramTemplate ),
+				# "histogram": "%s/truth" % ( histogramTemplate ),
 				},
 			"gen_vs_reco" : { 
 				"file" : "%s" % config.unfolding_central,
-				"histogram": "%s/response_without_fakes" % ( histogramTemplate ),
+				# "histogram": "%s/response_without_fakes" % ( histogramTemplate ),
 			},
 			"measured" : {
 				"file" : "%s" % config.unfolding_central,
-				"histogram": "%s/measured" % ( histogramTemplate ),
+				# "histogram": "%s/measured" % ( histogramTemplate ),
 				},
 			"data" : { 
 				"file": "data/normalisation/background_subtraction/%sTeV/%s/FullPS/central/normalisation_%s_patType1CorrectedPFMet.txt" % ( com, variable, channel),
@@ -56,15 +56,15 @@ for channel in config.analysis_types.keys():
 		    "phaseSpace" : "VisiblePS",
 			"truth" : { 
 				"file" : "%s" % config.unfolding_central,
-				"histogram": "%s/truthVis" % ( histogramTemplate ),
+				# "histogram": "%s/truthVis" % ( histogramTemplate ),
 				},
 			"gen_vs_reco" : { 
 				"file" : "%s" % config.unfolding_central,
-				"histogram": "%s/responseVis_without_fakes" % ( histogramTemplate ),
+				# "histogram": "%s/responseVis_without_fakes" % ( histogramTemplate ),
 			},
 			"measured" : {
 				"file" : "%s" % config.unfolding_central,
-				"histogram": "%s/measuredVis" % ( histogramTemplate ),
+				# "histogram": "%s/measuredVis" % ( histogramTemplate ),
 				},
 			"data" : { 
 				"file": "data/normalisation/background_subtraction/%sTeV/%s/VisiblePS/central/normalisation_%s_patType1CorrectedPFMet.txt" % ( com, variable, channel),
