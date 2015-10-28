@@ -186,6 +186,7 @@ def make_data_mc_comparison_plot( histograms = [],
                                  show_ratio = False,
                                  show_stat_errors_on_mc = False,
                                  draw_vertical_line = 0,
+                                 systematics_for_ratio = None
                                  ):
     save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
@@ -311,7 +312,8 @@ def make_data_mc_comparison_plot( histograms = [],
         plt.ylabel( r'$\frac{\mathrm{data}}{\mathrm{pred.}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
         rplt.errorbar( ratio, emptybins = histogram_properties.emptybins, axes = ax1,
-                       xerr = histogram_properties.xerr, )
+                       xerr = histogram_properties.xerr,
+                       elinewidth = 1.5, capsize = 5, capthick = 1.5 )
         if len( x_limits ) >= 2:
             ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[-1] )
         if len( histogram_properties.ratio_y_limits ) >= 2:
@@ -320,6 +322,22 @@ def make_data_mc_comparison_plot( histograms = [],
 
         # dynamic tick placement
         adjust_ratio_ticks(ax1.yaxis, n_ticks = 3, y_limits = histogram_properties.ratio_y_limits)
+
+        if systematics_for_ratio != None:
+            plusErrors = [x+1 for x in systematics_for_ratio]
+            minusErrors = [1-x for x in systematics_for_ratio]
+            print plusErrors
+            print minusErrors
+
+            ratioPlusError = ratio.Clone( 'plus' )
+            ratioMinusError = ratio.Clone( 'minus' )
+            for bin_i in range( 1, ratioPlusError.GetNbinsX()+1 ):
+                ratioPlusError.SetBinContent( bin_i, plusErrors[bin_i-1] )
+                ratioMinusError.SetBinContent( bin_i, minusErrors[bin_i-1] )
+            rplt.fill_between( ratioPlusError, ratioMinusError, axes,
+                               alpha = 0.3, hatch = '//',
+                               facecolor = 'Black',
+                               zorder = len(histograms_) + 1 )
 
     if CMS.tight_layout:
         plt.tight_layout()
