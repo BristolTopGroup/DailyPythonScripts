@@ -15,10 +15,10 @@ import linecache
 from config.variable_binning import variable_bins_ROOT
 from config.latex_labels import samples_latex
 
-def get_fit_results( variable, channel ):
-    global path_to_JSON, category, met_type
-    fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
-    return fit_results
+# def get_fit_results( variable, channel ):
+#     global path_to_JSON, category, met_type
+#     fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
+#     return fit_results
 
 def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, title, x_title, y_title, x_limits, y_limits, rebin = 1, save_folder = 'plots/fitchecks/', save_as = ['pdf', 'png'] ):
 # global b_tag_bin
@@ -163,8 +163,6 @@ def make_correlation_plot_from_file( channel, variable, fit_variables, CoM, titl
 
 if __name__ == '__main__':
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/',
-                  help = "set path to JSON files" )
     parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
                   help = "set the variable to analyse (MET, HT, ST, MT)" )
     parser.add_option( "-f", "--fit-variables", dest = "fit_variables", default = 'absolute_eta',
@@ -193,7 +191,6 @@ if __name__ == '__main__':
     electron_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n e+jets, $\geq$4 jets' % ( lumi/1000.0, CoM )
     muon_histogram_title = 'CMS Preliminary, $\mathcal{L}$ = %.1f fb$^{-1}$ at $\sqrt{s}$ = %d TeV \n $\mu$+jets, $\geq$4 jets' % ( lumi/1000.0, CoM )
 
-    path_to_JSON = options.path + '/' + str( CoM ) + 'TeV/'
     output_folder = options.output_folder + '/%dTeV/' % CoM
     make_folder_if_not_exists(output_folder)
     normalise_to_fit = options.normalise_to_fit

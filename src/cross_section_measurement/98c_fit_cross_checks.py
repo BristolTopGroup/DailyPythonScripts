@@ -8,7 +8,7 @@ from optparse import OptionParser
 
 from config import XSectionConfig, fit_var_inputs, latex_labels
 from src.cross_section_measurement.lib import closure_tests, read_fit_templates, \
-    read_fit_input
+    read_initial_normalisation
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from config.variable_binning import variable_bins_ROOT, fit_variable_bin_edges, bin_edges
 from tools.Fitting import FitData, FitDataCollection, Minuit
@@ -75,7 +75,7 @@ def create_fit_data( path, variables, fit_variables, mc_samples, COMEnergies, ch
                     variable_bin : { 
                         fit_variable : {
                             templates : { sample : []},
-                            initial_values : { sample : []}
+                            initial_normalisation : { sample : []}
                                 }
                             }
                         }
@@ -98,11 +98,11 @@ def create_fit_data( path, variables, fit_variables, mc_samples, COMEnergies, ch
                     data_path = path + '/' + fit_variable + '/' + str( COMEnergy ) + 'TeV'
                     templates = read_fit_templates( data_path, variable,
                                                    channel = channel )
-                    initial_values = read_fit_input( data_path,
+                    initial_values = read_initial_normalisation( data_path,
                                                     variable,
                                                     channel = channel )
                     raw_data[fit_variable][COMEnergy][variable][channel]['templates'] = templates
-                    raw_data[fit_variable][COMEnergy][variable][channel]['initial_values'] = initial_values
+                    raw_data[fit_variable][COMEnergy][variable][channel]['initial_normalisation'] = initial_values
     # put it into the new structure
     fit_data = {}
     for COMEnergy in COMEnergies:

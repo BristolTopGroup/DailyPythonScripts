@@ -33,7 +33,7 @@ def main():
         # categories_and_prefixes, see get_met_type
         categories.remove(met_unc)
 
-    for variable in ['MET', 'HT', 'ST', 'WPT']:
+    for variable in ['MET', 'HT', 'ST', 'WPT', 'MT']:
         for category in categories:
             for channel in ['electron', 'muon']:
                 create_measurement(

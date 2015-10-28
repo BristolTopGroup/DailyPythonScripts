@@ -141,16 +141,20 @@ def get_qcd_histograms( input_files, variable, variable_bin, channel,
         control_region_hist_name = hist_name.replace( 'Ref selection',
                                                             control_region )
         for sample in samples:
+            hist_name_tmp = control_region_hist_name
+            if 'JetRes' in met_type and sample == 'data':
+                hist_name_tmp = hist_name_tmp.replace( 'JetResDown', '' )
+                hist_name_tmp = hist_name_tmp.replace( 'JetResUp', '' )
             if not inclusive_control_region_hists.has_key( sample ):
                 inclusive_control_region_hists[sample] = get_histogram( 
                                                         input_files[sample],
-                                                        control_region_hist_name,
+                                                        hist_name_tmp,
                                                         control_region_btag,
                                                                    )
             else:
                 inclusive_control_region_hists[sample] += get_histogram( 
                                                         input_files[sample],
-                                                        control_region_hist_name,
+                                                        hist_name_tmp,
                                                         control_region_btag,
                                                                    )
     for sample in samples:
@@ -341,13 +345,13 @@ def write_fit_results_and_initial_values( channel, category, fit_results, initia
               }
     output_folder = folder_template % inputs
 
-    write_data_to_JSON( fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt' )
-    write_data_to_JSON( initial_values, output_folder + 'initial_values_' + channel + '_' + met_type + '.txt' )
+    write_data_to_JSON( fit_results, output_folder + 'normalisation_' + channel + '_' + met_type + '.txt' )
+    write_data_to_JSON( initial_values, output_folder + 'initial_normalisation_' + channel + '_' + met_type + '.txt' )
     write_data_to_JSON( templates, output_folder + 'templates_' + channel + '_' + met_type + '.txt' )
 
 def write_fit_results( channel, category, fit_results ):
     global variable, met_type, output_path
-    folder_template = '%(path)s/%(fit_vars)s/%(CoM)dTeV/%(variable)s/fit_results/%(category)s/'
+    folder_template = '%(path)s/%(fit_vars)s/%(CoM)dTeV/%(variable)s/%(category)s/'
     inputs = {
               'path':output_path,
               'CoM': measurement_config.centre_of_mass_energy,
@@ -357,7 +361,7 @@ def write_fit_results( channel, category, fit_results ):
               }
     output_folder = folder_template % inputs
 
-    write_data_to_JSON( fit_results, output_folder + 'fit_results_' + channel + '_' + met_type + '.txt' )
+    write_data_to_JSON( fit_results, output_folder + 'normalisation_' + channel + '_' + met_type + '.txt' )
 
 
 if __name__ == '__main__':
@@ -484,7 +488,7 @@ if __name__ == '__main__':
                       b_tag_bin = b_tag_bin,
                       scale_factors = scale_factors,
                       )
-
+ 
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -498,16 +502,16 @@ if __name__ == '__main__':
                       b_tag_bin = b_tag_bin,
                       scale_factors = scale_factors,
                       )
-
+ 
         write_fit_results_and_initial_values( 'electron', vjets_theory_systematic_prefix + systematic, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', vjets_theory_systematic_prefix + systematic, fit_results_muon, initial_values_muon, templates_muon )
         write_fit_results( 'combined', vjets_theory_systematic_prefix + systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
         VJets_file.Close()
-
+ 
     # reset template back to central
     VJets_file = File( measurement_config.VJets_category_templates['central'] )
     del scale_factors
-
+ 
     # central measurement and the rest of the systematics
     last_systematic = ''
     for category, prefix in categories_and_prefixes.iteritems():
@@ -520,10 +524,10 @@ if __name__ == '__main__':
         data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
         if measurement_config.include_higgs:
             Higgs_file = File( measurement_config.higgs_category_templates[category] )
- 
+  
         # Setting up systematic MET for JES up/down samples
         met_type = translate_options[options.metType]
- 
+  
         if category == 'JES_up':
             met_type += 'JetEnUp'
             if met_type == 'PFMETJetEnUp':
@@ -532,10 +536,16 @@ if __name__ == '__main__':
             met_type += 'JetEnDown'
             if met_type == 'PFMETJetEnDown':
                 met_type = 'patPFMetJetEnDown'
- 
+        elif category == 'JER_up':
+            met_type += 'JetResUp'
+        elif category == 'JER_down':
+            met_type += 'JetResDown'
+#         if category in met_uncertainties:
+#             met_type += category
+  
         if verbose:
             print "\n" + category + "\n"
- 
+  
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -548,7 +558,7 @@ if __name__ == '__main__':
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
                       )
- 
+  
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
                                    'TTJet': TTJet_file,
@@ -565,7 +575,7 @@ if __name__ == '__main__':
         write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
         write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
         last_systematic = category
- 
+  
         TTJet_file.Close()
         SingleTop_file.Close()
         VJets_file.Close()
@@ -573,7 +583,7 @@ if __name__ == '__main__':
         data_file_muon.Close()
         if Higgs_file:
             Higgs_file.Close()
- 
+  
     data_file_electron = File( measurement_config.data_electron_category_templates['central'] )
     data_file_muon = File( measurement_config.data_muon_category_templates['central'] )
     TTJet_file = File( measurement_config.ttbar_category_templates['central'] )
@@ -581,7 +591,10 @@ if __name__ == '__main__':
     VJets_file = File( measurement_config.VJets_category_templates['central'] )
     if measurement_config.include_higgs:
         Higgs_file = File( measurement_config.higgs_category_templates['central'] )
- 
+
+    # Resetting to central MET
+    met_type = translate_options[options.metType]
+    
     for met_systematic in met_systematics_suffixes:
         if run_just_central: 
             continue
@@ -621,17 +634,24 @@ if __name__ == '__main__':
                       met_type = category,
                       b_tag_bin = b_tag_bin,
                       )
-        write_fit_results_and_initial_values( 'electron', category, fit_results_electron, initial_values_electron, templates_electron )
-        write_fit_results_and_initial_values( 'muon', category, fit_results_muon, initial_values_muon, templates_muon )
-        write_fit_results( 'combined', category, combine_complex_results( fit_results_electron, fit_results_muon ) )
+        #folder to write to, and the output file names have to be changed to accommodate changes to 02 script here: https://goo.gl/KOrcBK
+        category_folder = met_systematic
+        met_type = met_type + met_systematic
+        
+        write_fit_results_and_initial_values( 'electron', category_folder, fit_results_electron, initial_values_electron, templates_electron )
+        write_fit_results_and_initial_values( 'muon', category_folder, fit_results_muon, initial_values_muon, templates_muon )
+        write_fit_results( 'combined', category_folder, combine_complex_results( fit_results_electron, fit_results_muon ) )
  
+        # Resetting to central MET
+        met_type = translate_options[options.metType] 
+
     # QCD systematic
     if not run_just_central:
         electron_control_region = measurement_config.electron_control_region_systematic
-     
+      
         if verbose:
             print "\nQCD shape systematic\n"
-     
+      
         fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
                           input_files = {
                                        'TTJet': TTJet_file,
@@ -644,7 +664,7 @@ if __name__ == '__main__':
                           met_type = met_type,
                           b_tag_bin = b_tag_bin,
                           )
-     
+      
         muon_control_region = measurement_config.muon_control_region_systematic
         fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                       input_files = {
@@ -658,15 +678,15 @@ if __name__ == '__main__':
                       met_type = met_type,
                       b_tag_bin = b_tag_bin,
                       )
-     
+      
         systematic = 'QCD_shape'
         write_fit_results_and_initial_values( 'electron', systematic, fit_results_electron, initial_values_electron, templates_electron )
         write_fit_results_and_initial_values( 'muon', systematic, fit_results_muon, initial_values_muon, templates_muon )
         write_fit_results( 'combined', systematic, combine_complex_results( fit_results_electron, fit_results_muon ) )
- 
+  
     electron_control_region = measurement_config.electron_control_region
     muon_control_region = measurement_config.muon_control_region
- 
+  
     # rate-changing systematics
     for systematic, shift in measurement_config.rate_changing_systematics.iteritems():
         if run_just_central:  # no systematics for closure test
@@ -677,10 +697,10 @@ if __name__ == '__main__':
                 factor = 1.0 + shift
             else:
                 factor = 1.0 - shift
- 
+  
             if verbose:
                 print "\n" + systematic + variation, factor, "\n"
- 
+  
             scale_factors = {}
             scale_factors[systematic + variation] = factor
             fit_results_electron, initial_values_electron, templates_electron = get_fitted_normalisation_from_ROOT( 'electron',
@@ -696,7 +716,7 @@ if __name__ == '__main__':
                               b_tag_bin = b_tag_bin,
                               scale_factors = scale_factors
                               )
- 
+  
             fit_results_muon, initial_values_muon, templates_muon = get_fitted_normalisation_from_ROOT( 'muon',
                           input_files = {
                                        'TTJet': TTJet_file,
@@ -710,7 +730,7 @@ if __name__ == '__main__':
                           b_tag_bin = b_tag_bin,
                           scale_factors = scale_factors
                           )
- 
+
             write_fit_results_and_initial_values( 'electron', systematic + variation, fit_results_electron, initial_values_electron, templates_electron )
             write_fit_results_and_initial_values( 'muon', systematic + variation, fit_results_muon, initial_values_muon, templates_muon )
             write_fit_results( 'combined', systematic + variation, combine_complex_results( fit_results_electron, fit_results_muon ) )

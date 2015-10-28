@@ -17,7 +17,7 @@ def get_fitted_normalisation( variable, channel ):
     This function now gets the error on the fit correctly, so that it can be applied if the --normalise_to_fit option is used 
     '''
     global path_to_JSON, category, met_type
-    fit_results = read_data_from_JSON( path_to_JSON + variable + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
+    fit_results = read_data_from_JSON( path_to_JSON + variable + '/' + category + '/normalisation_' + channel + '_' + met_type + '.txt' )
     
     fitted_normalisation = {}
     
@@ -693,6 +693,7 @@ if __name__ == '__main__':
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
+                  log_y = False,
                   )
         make_plot( 'muon',
                   x_axis_title = 'B-tag multiplicity',
@@ -705,6 +706,7 @@ if __name__ == '__main__':
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
+                  log_y = False,
                   )
     if 'b-tag multiplicity reweighted' in include_plots:
         b_tag_bin = ''
@@ -719,6 +721,7 @@ if __name__ == '__main__':
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
+                  log_y = False,
                   )
         make_plot( 'muon',
                   x_axis_title = 'B-tag multiplicity',
@@ -726,12 +729,69 @@ if __name__ == '__main__':
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
                   qcd_data_region_btag = '',
                   use_qcd_data_region = False,
-                  name_prefix = 'MuPlusJets_N_BJets',
+                  name_prefix = 'MuPlusJets_N_BJets_reweighted',
                   x_limits = [1.5, 7.5],
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
+                  log_y = False,
                   )
+    if 'b-tag multiplicity' in include_plots:
+        b_tag_bin = ''
+        make_plot( 'electron',
+                  x_axis_title = 'B-tag multiplicity',
+                  y_axis_title = 'Events',
+                  signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets',
+                  qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
+                  name_prefix = 'EPlusJets_N_BJets_logy',
+                  x_limits = [1.5, 7.5],
+                  rebin = 1,
+                  legend_location = ( 0.95, 0.78 ),
+                  cms_logo_location = 'right',
+                  log_y = True,
+                  )
+        make_plot( 'muon',
+                  x_axis_title = 'B-tag multiplicity',
+                  y_axis_title = 'Events',
+                  signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
+                  qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
+                  name_prefix = 'MuPlusJets_N_BJets_logy',
+                  x_limits = [1.5, 7.5],
+                  rebin = 1,
+                  legend_location = ( 0.95, 0.78 ),
+                  cms_logo_location = 'right',
+                  log_y = True,
+                  )
+    if 'b-tag multiplicity reweighted' in include_plots:
+        b_tag_bin = ''
+        make_plot( 'electron',
+                  x_axis_title = 'B-tag multiplicity',
+                  y_axis_title = 'Events',
+                  signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets_reweighted',
+                  qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
+                  name_prefix = 'EPlusJets_N_BJets_logy_reweighted',
+                  x_limits = [1.5, 7.5],
+                  rebin = 1,
+                  legend_location = ( 0.95, 0.78 ),
+                  cms_logo_location = 'right',
+                  log_y = True,
+                  )
+        make_plot( 'muon',
+                  x_axis_title = 'B-tag multiplicity',
+                  y_axis_title = 'Events',
+                  signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
+                  qcd_data_region_btag = '',
+                  use_qcd_data_region = False,
+                  name_prefix = 'MuPlusJets_N_BJets_logy_reweighted',
+                  x_limits = [1.5, 7.5],
+                  rebin = 1,
+                  legend_location = ( 0.95, 0.78 ),
+                  cms_logo_location = 'right',
+                  log_y = True,
+                  )        
     ###################################################
     # jet multiplicity
     ###################################################
