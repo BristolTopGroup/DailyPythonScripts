@@ -410,26 +410,27 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     for key, hist in sorted( histograms.items() ):
         zorder = sorted( histograms, reverse = True ).index( key )
         if not 'unfolded' in key and not 'measured' in key:
-            hist.linewidth = 4
+            hist.linewidth = 5
             # setting colours
             if 'amcatnlo' in key or 'massdown' in key:
-                hist.linestyle = 'longdashdot'
+                hist.linestyle = 'dashdot'
                 hist.SetLineColor( kBlue )
             elif 'madgraphMLM' in key or 'scaledown' in key:
                 hist.linestyle = 'dashed'
-                hist.SetLineColor( kGreen )
+                hist.SetLineColor( 417 )
             elif 'MADGRAPH_ptreweight' in key:
                 hist.linestyle = 'dashed'
                 hist.SetLineColor( kBlack )
             elif 'powhegPythia8' in key:
                 hist.linestyle = 'solid'
-                hist.SetLineColor( kRed + 1 )
+                hist.SetLineColor( 633 )
             elif 'massup' in key or 'POWHEG_HERWIG' in key:
-                hist.linestyle = 'verylongdashdot'
-                hist.linecolor = 'orange'
-            elif 'MCATNLO'  in key or 'madgraphMLM' in key or 'scaleup' in key:
-                hist.linestyle = 'dotted'
-                hist.SetLineColor( kMagenta + 3 )
+                hist.linestyle = 'dashdot'
+                # hist.linecolor = 'orange'
+                hist.SetLineColor( 809 )
+            elif 'MCATNLO' in key or 'scaleup' in key:
+                hist.linestyle = 'dashed'
+                hist.SetLineColor( 619 )
             rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
 
     handles, labels = axes.get_legend_handles_labels()
@@ -776,7 +777,6 @@ if __name__ == '__main__':
     # all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
     for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
-    # for channel in ['combined']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:
                 continue
