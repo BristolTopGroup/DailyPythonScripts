@@ -9,8 +9,9 @@ Quick installation recipe:
 # get the code from the repository
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 cd DailyPythonScripts
-# checkout the last working version
-git checkout AN-14-071_2nd_draft
+
+# for Run 1 code, please checkout the run1 branch
+ git checkout run1
 
 # get submodules:
 git submodule init && git submodule update
@@ -29,9 +30,10 @@ If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not
 
 ```
 # install CMSSW and setup environment:
-scram p -n CMSSW_6_2_12_DailyPythonScripts CMSSW_6_2_12
-cd CMSSW_6_2_12_DailyPythonScripts/src/
+scram p -n CMSSW_7_4_7_DPS CMSSW_7_4_7
+cd CMSSW_7_4_7_DPS/src/
 cmsenv
+# This version comes with ROOT 6.02/05
 
 # then install DailyPythonScripts according to the recipe above
 
