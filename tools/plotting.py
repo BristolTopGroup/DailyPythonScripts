@@ -38,7 +38,7 @@ class Histogram_properties:
     ratio_y_limits = [0.7, 1.3] #[min, max]
     rebin = 1
     additional_text = ''
-    preliminary = True
+    preliminary = False
     cms_logo_location = 'left' # left|right
     ratio_y_title = 'I am the ratio'
     legend_color = False
@@ -328,17 +328,20 @@ def make_shape_comparison_plot( shapes = [],
                                    alpha = 0.5,
                                    save_folder = 'plots/',
                                    save_as = ['pdf', 'png'],
-                                   normalise_ratio_to_errors = False ):
+                                   normalise_ratio_to_errors = False,
+                                   normalise = True ):
     save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
     shapes_ = deepcopy(shapes)
-    # normalise as we are comparing shapes
+    histogram_properties.cms_logo_location = 'right'
     for shape, colour, label in zip(shapes_, colours, names):
         shape.SetTitle(label)
-        integral = shape.Integral()
-        if integral > 0:
-            shape.Sumw2()
-            shape.Scale( 1 / integral )
+        if normalise:
+            # normalise as we are comparing shapes
+            integral = shape.Integral()
+            if integral > 0:
+                shape.Sumw2()
+                shape.Scale( 1 / integral )
         shape.fillcolor = colour
         shape.linecolor = colour
         shape.markercolor = colour

@@ -8,7 +8,7 @@ met_systematics_latex, fit_variables_latex
 from config.variable_binning import bin_edges, variable_bins_ROOT, fit_variable_bin_edges
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import value_error_tuplelist_to_hist, \
+from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x,\
 value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
 from math import sqrt
 # rootpy & matplotlib
@@ -33,7 +33,7 @@ def read_xsection_measurement_results( category, channel ):
     
     filename = ''
     if category in met_uncertainties and variable == 'HT':
-        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt'
     else:
         filename = path_to_JSON + '/xsection_measurement_results/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt'
 
@@ -41,16 +41,24 @@ def read_xsection_measurement_results( category, channel ):
         filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
 
     normalised_xsection_unfolded = read_data_from_JSON( filename )
-        
+
     h_normalised_xsection = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], bin_edges[variable] )
-    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable] )
-    
+    h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], bin_edges[variable] )    
     
     histograms_normalised_xsection_different_generators = {'measured':h_normalised_xsection,
                                                            'unfolded':h_normalised_xsection_unfolded}
-    
     histograms_normalised_xsection_systematics_shifts = {'measured':h_normalised_xsection,
                                                          'unfolded':h_normalised_xsection_unfolded}
+    if draw_background_subtraction:
+        # filename for background subtraction data
+        filename_background_subtraction = filename.replace(path_to_JSON, path_to_JSON_background_subtraction)
+        # get normalised differential cross section values from data (JSON) file
+        normalised_xsection_unfolded_background_subtraction = read_data_from_JSON( filename_background_subtraction )
+        # convert numerical values to histogram
+        h_normalised_xsection_background_subtraction_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded_background_subtraction['TTJet_unfolded'], bin_edges[variable] )
+        # add background subtraction data histogram to dictionaries to be drawn later
+        histograms_normalised_xsection_different_generators.update({'unfolded_background_subtraction':h_normalised_xsection_background_subtraction_unfolded})
+        histograms_normalised_xsection_systematics_shifts.update({'unfolded_background_subtraction':h_normalised_xsection_background_subtraction_unfolded})
     
     if category == 'central':
         # true distributions
@@ -104,12 +112,24 @@ def read_xsection_measurement_results( category, channel ):
                                                                 normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator['TTJet_unfolded'],
                                                                 bin_edges[variable] )
         
-        
         histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
         histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
         
         histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator
         histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded
+    
+        if draw_background_subtraction:
+            file_template_background_subtraction = file_template.replace(path_to_JSON, path_to_JSON_background_subtraction)
+            normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory_background_subtraction = read_data_from_JSON( file_template_background_subtraction + '_with_errors.txt' )
+            normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator_background_subtraction = read_data_from_JSON( file_template_background_subtraction + '_with_errors.txt' )
+            h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded_background_subtraction = value_errors_tuplelist_to_graph( 
+                                                                    normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory_background_subtraction['TTJet_unfolded'],
+                                                                    bin_edges[variable] )
+            h_normalised_xsection_with_systematics_but_without_generator_unfolded_background_subtraction = value_errors_tuplelist_to_graph( 
+                                                                    normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator_background_subtraction['TTJet_unfolded'],
+                                                                    bin_edges[variable] )
+            histograms_normalised_xsection_different_generators['unfolded_with_systematics_background_subtraction'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded_background_subtraction
+            histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics_background_subtraction'] = h_normalised_xsection_with_systematics_but_without_generator_unfolded_background_subtraction
     
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
@@ -229,7 +249,7 @@ def make_template_plots( histograms, category, channel ):
             plt.text(0.95, 0.95, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
                      verticalalignment='top',horizontalalignment='right')
             # channel text
-            axes.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+            plt.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=42,
                       verticalalignment='top',horizontalalignment='right')
             plt.tight_layout()
         
@@ -301,19 +321,38 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         
     # plot with matplotlib
     hist_data = histograms['unfolded']
+    
+    if draw_background_subtraction:
+        hist_data_background_subtraction = histograms['unfolded_background_subtraction']
+
     if category == 'central':
         hist_data_with_systematics = histograms['unfolded_with_systematics']
+        if draw_background_subtraction:
+            hist_data_with_systematics_background_subtraction = histograms['unfolded_with_systematics_background_subtraction']
+
     hist_measured = histograms['measured']
     
     hist_data.markersize = 2
     hist_data.marker = 'o'
+    
+    if draw_background_subtraction:
+        # background subtraction data point style 
+        hist_data_background_subtraction.markersize = 2
+        hist_data_background_subtraction.markerstyle = '^'
+        hist_data_background_subtraction.color = 'darkturquoise'
 
     if category == 'central':
         hist_data_with_systematics.markersize = 2
         hist_data_with_systematics.marker = 'o'
+        
+        if draw_background_subtraction:
+            # background subtraction data point style 
+            hist_data_with_systematics_background_subtraction.markersize = 2
+            hist_data_with_systematics_background_subtraction.markerstyle = '^'
+            hist_data_with_systematics_background_subtraction.color = 'darkturquoise'
     
     hist_measured.markersize = 2
-    hist_measured.marker = 'o'
+    hist_measured.markerstyle = 'o'
     hist_measured.color = 'red'
 
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
@@ -331,11 +370,43 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     plt.tick_params( **CMS.axis_label_minor )
 
     hist_data.visible = True
+    if draw_background_subtraction:
+        hist_data_background_subtraction.visible = True
+        
     if category == 'central':
         hist_data_with_systematics.visible = True
-        rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
-    rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )
-    rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+        # first draw data points with full vertical error bars
+        if not draw_background_subtraction:
+            rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
+        elif draw_background_subtraction:
+            hist_data_with_systematics_background_subtraction.visible = True
+            # first draw data points with full vertical error bars 
+            data_histograms_to_plot = [hist_data_with_systematics, hist_data_with_systematics_background_subtraction]
+            graphs = spread_x(data_histograms_to_plot, bin_edges[variable])
+            for data_histogram_to_plot in graphs:
+                rplt.errorbar( data_histogram_to_plot, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len(histograms) + 1)
+
+    # now draw data points with only statistical error bars with caps
+    if not draw_background_subtraction:
+        rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )    
+    elif draw_background_subtraction:
+        data_histograms_only_stat_error_to_plot = [hist_data, hist_data_background_subtraction]
+        graphs = spread_x(data_histograms_only_stat_error_to_plot, bin_edges[variable])
+        for data_histogram_only_stat_error_to_plot in graphs:
+            rplt.errorbar( data_histogram_only_stat_error_to_plot, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len(histograms) + 2)
+        
+    # now make the legend entry
+    if not draw_background_subtraction:
+        rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+    elif draw_background_subtraction:
+        legend_entries = [hist_data, hist_data_background_subtraction]
+        graphs = spread_x(legend_entries, bin_edges[variable])
+        rplt.errorbar( graphs[0], axes = axes, label = 'data', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+        rplt.errorbar( graphs[1], axes = axes, label = 'unfolded data (bkgd subtr.)', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+        
+#     rplt.errorbar( hist_data, axes = axes, label = 'data', xerr = None, yerr = False, zorder = len( histograms ) + 3 )  # this makes a nicer legend entry
+#     if draw_background_subtraction:
+#         rplt.errorbar( hist_data_background_subtraction, axes = axes, label = 'data (bkgd subtraction)', xerr = None, yerr = False, zorder = len( histograms ) + 3 )
 
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
@@ -381,9 +452,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     
     legend_location = (0.98, 0.88)
     if variable == 'MT':
-        legend_location = (0.05, 0.88)
-    elif variable == 'ST':
-        legend_location = (0.95, 0.88)
+        legend_location = (0.9, 0.6) # 0.98, 0.88
+        CMS.legend_properties['size'] = 27
+#     elif variable == 'ST':
+#         legend_location = (0.95, 0.88)
     plt.legend( new_handles, new_labels, numpoints = 1, prop = CMS.legend_properties, frameon = False, bbox_to_anchor=legend_location,
                 bbox_transform=plt.gcf().transFigure )
     label, channel_label = get_cms_labels( channel )
@@ -393,10 +465,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     # note: fontweight/weight does not change anything as we use Latex text!!!
     plt.text(0.05, 0.98, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='left')
-    # channel text
-    axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+    # channel text     plt.text(0.95, 0.98
+    axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='right')
-
 
     if show_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
@@ -470,11 +541,12 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
 
-
     if CMS.tight_layout:
         plt.tight_layout()
 
     path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category
+    if draw_background_subtraction:
+        histname = histname + '_with_bkgd_subtraction_results'
     make_folder_if_not_exists( path )
     for output_format in output_formats:
         filename = path + '/' + histname + '_kv' + str( k_values[channel] ) + '.' + output_format
@@ -531,7 +603,7 @@ def plot_central_and_systematics( channel, systematics, exclude = [], suffix = '
     plt.text(0.95, 0.95, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='right')
     # channel text
-    axes.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
+    plt.text(0.95, 0.90, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='right')
     plt.tight_layout()
 
@@ -578,6 +650,8 @@ if __name__ == '__main__':
                       systematics to the central result.""" )
     parser.add_option("--draw-systematics", action = "store_true", dest = "draw_systematics",
                       help = "creates a set of plots for each systematic (in addition to central result)." )
+    parser.add_option("-s", "--draw-background-subtraction", action = "store_true", dest = "draw_background_subtraction", 
+                      default = False, help = "draw the central data points from background subtraction method on results plots.")
     
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()
@@ -600,6 +674,10 @@ if __name__ == '__main__':
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
+
+    draw_background_subtraction = options.draw_background_subtraction
+    if draw_background_subtraction:
+        path_to_JSON_background_subtraction = path_to_JSON.replace("absolute_eta_M3_angle_bl", "normalisation/background_subtraction")
     
     categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]

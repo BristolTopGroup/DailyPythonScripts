@@ -142,7 +142,10 @@ def create_measurement(com, category, variable, channel):
         'V+Jets', config.VJets_category_templates[template_category], qcd_template, False)
     m_qcd.addSample('SingleTop', config.SingleTop_category_templates[
                     template_category], qcd_template, False)
-    m_qcd.addSample('QCD', config.data_file_electron, qcd_template, False)
+    if channel == 'electron':
+        m_qcd.addSample('QCD', config.data_file_electron, qcd_template, False)
+    elif channel == 'muon':
+        m_qcd.addSample('QCD', config.data_file_muon, qcd_template, False)
 
     m.addShapeForSample('QCD', m_qcd, False)
 

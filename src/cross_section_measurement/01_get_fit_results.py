@@ -697,7 +697,9 @@ if __name__ == '__main__':
                 factor = 1.0 + shift
             else:
                 factor = 1.0 - shift
-  
+            if factor <= 0:
+                factor = 10e-5
+                
             if verbose:
                 print "\n" + systematic + variation, factor, "\n"
   

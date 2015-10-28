@@ -1,6 +1,7 @@
 from math import sqrt
 from tools.ROOT_utils import get_histograms_from_files
 from config import XSectionConfig
+from optparse import OptionParser
 
 cuts = None
 cuts_electrons = [
@@ -72,20 +73,32 @@ def getEventNumbers(hists, selection):
     return eventNumbers, errorValues
 
 if __name__ == '__main__':
-    measurement_config = XSectionConfig(8)
+    parser = OptionParser()
+    parser.add_option( "-c", "--centre-of-mass-energy", dest = "centre_of_mass_energy", default = 8, type = int, 
+                       help = "centre of mass energy; default = 8 TeV." )
+    ( options, args ) = parser.parse_args()
+
+    measurement_config = XSectionConfig(options.centre_of_mass_energy)
     path_to_files = measurement_config.path_to_files + '/central/'
     suffix = ''
     lumi = measurement_config.luminosity
     luminosity_scale = measurement_config.luminosity_scale
+    print "measurement_config.centre_of_mass_energy = ", measurement_config.centre_of_mass_energy
     
-    data = 'SingleElectron'
+    if measurement_config.centre_of_mass_energy == 8:
+        data = 'SingleElectron'
+        ZJets_file_start = 'DYJets'
+    if measurement_config.centre_of_mass_energy == 7:
+        data = 'ElectronHad'
+        ZJets_file_start = 'DYJetsToLL'
+    
     pfmuon = 'PFMuon_'
     histogram_files = {
             'data' : path_to_files + '%s_%spb_PFElectron_%sPF2PATJets_PFMET.root' % (data, str(lumi), pfmuon),
             'TTJet': path_to_files + 'TTJet_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
             'WJets': path_to_files + 'WJets_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
-            'ZJets': path_to_files + 'DYJetsToLL_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
-            'QCD': path_to_files + 'QCD_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
+            'ZJets': path_to_files + ZJets_file_start + '_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
+            'QCD': path_to_files + 'QCD_Electron_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix),
             'SingleTop': path_to_files + 'SingleTop_%spb_PFElectron_%sPF2PATJets_PFMET%s.root' % (str(lumi), pfmuon, suffix)
     }
 
