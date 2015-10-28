@@ -490,12 +490,14 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
 
     printout += '\\begin{table}[htbp]\n'
     printout += '\\centering\n'
-    printout += '\\caption{Typical systematic uncertainties (median values) for the normalised \\ttbar cross section measurement \n'
-    printout += 'at a centre-of-mass energy of %d TeV ' % measurement_config.centre_of_mass_energy
+    printout += '\\caption{Typical systematic uncertainties in percent (median values) for the normalised \\ttbar\n'
+    printout += '\\differential cross section measurement at \ensuremath{\roots=%d\TeV} '
     if channel == 'combined':
-        printout += '(combination of electron and muon channels).}\n'
+        printout += '(combination of electron and muon channels). '
     else:
-        printout += '(%s channel).}\n' % channel
+        printout += '(%s channel).' % channel
+    printout += 'Typical values of the total systematic uncertainty are also shown.}\n'
+    
     printout += '\\label{tab:typical_systematics_%dTeV_%s}\n' % (measurement_config.centre_of_mass_energy, channel)
     printout += '\\resizebox{\\columnwidth}{!} {\n'
     printout += '\\begin{tabular}{l' + 'r'*len(variable_bins_ROOT) + '}\n'
@@ -535,13 +537,13 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
                 lines = output_file.readlines()
                 for line_number, line in enumerate (lines):
                     if line.startswith("Uncertainty source"):
-                        lines[line_number] = lines[line_number].strip() + "& " + variables_latex[variable] + "\n"
+                        lines[line_number] = lines[line_number].strip() + " & " + variables_latex[variable] + "\n"
                     elif variable == "HT" and line.startswith("$E_{T}^{miss}$ uncertainties"):
-                        lines[line_number] = lines[line_number].strip() + "& - \n"
+                        lines[line_number] = lines[line_number].strip() + " & - \n"
                     else:
                         for table_entry in enumerate(typical_systematics_latex):
                             if line.startswith(typical_systematics_latex[table_entry[1]]):
-                                lines[line_number] = lines[line_number].strip() + "& "  + rows_for_typical_systematics_table[table_entry[1]][1] + " \n"
+                                lines[line_number] = lines[line_number].strip() + " & "  + rows_for_typical_systematics_table[table_entry[1]][1] + " \n"
                 output_file.seek(0)
                 for line in lines:
                     output_file.write(line)            
