@@ -553,11 +553,11 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         # self.new_luminosity = 40.028  # pb^-1
-        self.new_luminosity = 71.515  # pb^-1
+        self.new_luminosity = 70.790  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
-                        'luminosity': 0.1,  # Best guess for 13 TeV
+                        'luminosity': 0.048,  # Best guess for 13 TeV
                         'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
                         # 'TTJet_cross_section': 0.043, # Currently same as 8 TeV
                         'V+Jets_cross_section': 0.5,
