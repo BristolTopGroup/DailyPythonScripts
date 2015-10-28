@@ -81,5 +81,5 @@ for f in input_files:
         shutil.copy(input_folder + fileToUse, fileToUse)
 
         create_new_trees(fileToUse, suffix=suffix)
-        subprocess.call(['rm', '/hdfs/'+output_folder + fileToUse])
+        subprocess.call(['hadoop', 'fs','-rm','-skipTrash', output_folder + fileToUse])
         subprocess.call(['hadoop', 'fs', '-copyFromLocal', fileToUse, output_folder + fileToUse])
