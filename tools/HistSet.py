@@ -55,8 +55,12 @@ class HistSet():
                     hist.rebin(rebin)
         
         colours = ['green', 'yellow', 'magenta', 'red', 'black']
+
         if plot_options.has_key('colours'):
             colours = plot_options['colours']
+
+        if plot_options.has_key( 'normalise' ):
+            normalise = plot_options['normalise']
         
         if plot_type == 'shape_comparison':
             make_shape_comparison_plot( shapes = self.histograms,
@@ -67,7 +71,8 @@ class HistSet():
                                        make_ratio = True,
                                        alpha = alpha,
                                        save_folder = output_folder,
-                                       save_as = output_format )
+                                       save_as = output_format,
+                                       normalise = normalise )
         elif plot_type == 'data_mc_comparison':
             make_data_mc_comparison_plot( histograms = self.histograms,
                                          histogram_lables = self.labels,
