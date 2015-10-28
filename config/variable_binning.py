@@ -74,7 +74,7 @@ bin_edges_vis = {
 }
 
 control_plots_bins = {
-  'NJets' : [i + 0.5 for i in range ( 3, 13 + 1 )],
+  'NJets' : [i + 0.5 for i in range ( 3, 10 + 1 )],
   'JetPt' : [i * 5  for i in range ( 5, 40 )],  
   'MuonPt' : [i * 11.5 for i in range ( 2, 20 )],
   'ElectronPt' : [i * 10 for i in range ( 3, 20 )],

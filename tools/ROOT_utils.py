@@ -137,7 +137,11 @@ def get_histograms_from_trees(
 
         for tree in trees:
 
-            currentTree = get_tree( tree )
+            tempTree = tree
+            if 'data' in sample and ( 'Up' in tempTree or 'Down' in tempTree ) :
+                tempTree = tempTree.replace('_'+tempTree.split('_')[-1],'')
+
+            currentTree = get_tree( tempTree )
             root_histogram = Hist( nBins, xMin, xMax)
             currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
             if not is_valid_histogram( root_histogram, tree, input_file):

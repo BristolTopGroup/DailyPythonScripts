@@ -12,6 +12,8 @@ from tools.hist_utilities import prepare_histograms, clean_control_region, get_n
 from tools.ROOT_utils import get_histograms_from_trees, set_root_defaults
 from tools.latex import setup_matplotlib
 from uncertainties import ufloat
+from math import sqrt
+from copy import deepcopy
 
 # latex, font, etc
 setup_matplotlib()
@@ -22,45 +24,18 @@ def binWidth(binning):
     return  ( binning[-1] - binning[0] ) / ( len(binning)-1 )
 
 
-def getPUWeights(histograms_to_draw, histogram_lables) :
-    # hists = dict(zip(histogram_lables, histograms_to_draw))
-    hists = {}
-    dataHist = None
-    mcHist = None
-    for label, histogram in zip(histogram_lables, histograms_to_draw):
-        if label == 'data':
-            dataHist = histogram.Clone()
-        else :
-            if mcHist == None:
-                mcHist = histogram.Clone()
-            else:
-                mcHist += histogram
-    dataValues = list(dataHist.y())
-    mcValues = list(mcHist.y())
-
-    weights = [ data / mc for data, mc in zip(dataValues, mcValues)]
-#     print 'PU weights'
-#     print 'Bin edges :',list(dataHist.xedges())
-#     print 'Weights : ',weights
-
-def make_plot( channel, x_axis_title, y_axis_title,
-              signal_region_tree,
-              control_region_tree,
-              branchName,
-              name_prefix, x_limits, nBins,
-              use_qcd_data_region = False,
-              compare_qcd_signal_with_data_control = False,
-              y_limits = [],
-              y_max_scale = 1.3,
-              rebin = 1,
-              legend_location = ( 0.98, 0.78 ), cms_logo_location = 'right',
-              log_y = False,
-              legend_color = False,
-              ratio_y_limits = [0.5, 1.5],
-              normalise = False,
-              ):
-    global output_folder, measurement_config, category, normalise_to_fit
-    global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
+def getHistograms( histogram_files,
+                   signal_region_tree,
+                   control_region_tree,
+                   use_qcd_data_region,
+                   channel,
+                   branchName,
+                   weightBranchSignalRegion,
+                   nBins,
+                   rebin,
+                   x_limits,
+                   isSystematic = False ):
+    global measurement_config
 
     # Input files, normalisations, tree/region names
     qcd_data_region = ''
@@ -68,9 +43,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
     qcd_data_region_electron = 'QCDConversions'
     qcd_data_region_muon = 'QCD iso > 0.3'
     
-    title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
-    normalisation = None
-    weightBranchSignalRegion = 'EventWeight'
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron_trees
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
@@ -91,13 +63,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
         if not 'QCD' in channel and not 'NPU' in branchName:
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
 
-    if not "_NPUNoWeight" in name_prefix:
-        weightBranchSignalRegion += ' * PUWeight'
-
-    if not "_NBJetsNoWeight" in name_prefix:
-        weightBranchSignalRegion += ' * BJetDownWeight'
-
-    selection = '1'
     if branchName == 'abs(lepton_eta)' :
         selection = 'lepton_eta > -10'
     else:
@@ -105,43 +70,28 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
     histograms = {}
     histograms_QCDControlRegion = {}
-    print weightBranchSignalRegion
     if channel == 'combined':
         histogram_files_electron = dict(histogram_files)
         histogram_files_electron['data'] = measurement_config.data_file_electron_trees
         histogram_files_electron['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
 
-        # # # Debug
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = 'PUWeight', weightBranch = weightBranchSignalRegion + '* ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','EPlusJets')]
-        print 'Electron PU weight mean :',h.GetMean()
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = 'ElectronEfficiencyCorrection', weightBranch = '1', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','EPlusJets')]
-        print 'Electron efficiency mean :',h.GetMean()
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = 'BJetWeight', weightBranch = '1', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','EPlusJets')]
-        print 'Electron b jet mean :',h.GetMean()
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = 'BJetUpWeight', weightBranch = '1', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','EPlusJets')]
-        print 'Electron b jet up mean :',h.GetMean()
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = 'BJetDownWeight', weightBranch = '1', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','EPlusJets')]
-        print 'Electron b jet down mean :',h.GetMean()
-
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = 'PUWeight', weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','MuPlusJets')]
-        print 'Muon PU weight mean :',h.GetMean()
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = 'MuonEfficiencyCorrection', weightBranch = '1', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','MuPlusJets')]
-        print 'Muon efficiency mean :',h.GetMean()
-        h_debug = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = 'BJetWeight', weightBranch = '1', files = histogram_files_electron, nBins = 100, xMin = 0.5, xMax = 1.5, selection = selection )
-        h = h_debug['TTJet'][signal_region_tree.replace('COMBINED','MuPlusJets')]
-        print 'Muon b jet mean :',h.GetMean()
-        # raw_input('Wait')
-
         histogram_files_muon = dict(histogram_files)
         histogram_files_muon['data'] = measurement_config.data_file_muon_trees
         histogram_files_muon['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
+
+        if isSystematic:
+            if 'JESUp' in signal_region_tree:
+                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','plusJES_tree.root')
+                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','plusJES_tree.root')
+            elif 'JESDown' in signal_region_tree:
+                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','minusJES_tree.root')
+                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','minusJES_tree.root')
+            elif 'JERUp' in signal_region_tree:
+                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','plusJER_tree.root')
+                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','plusJER_tree.root')
+            elif 'JERDown' in signal_region_tree:
+                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','minusJER_tree.root')
+                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','minusJER_tree.root')
 
         histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
@@ -165,7 +115,17 @@ def make_plot( channel, x_axis_title, y_axis_title,
                 histograms_QCDControlRegion[sample] = { qcd_control_region : h_qcd_combined }
 
     else :
-        histograms = get_histograms_from_trees( trees = [signal_region_tree, control_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        if isSystematic:
+            if 'JESUp' in signal_region_tree:
+                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','plusJES_tree.root')
+            elif 'JESDown' in signal_region_tree:
+                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','minusJES_tree.root')
+            elif 'JERUp' in signal_region_tree:
+                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','plusJER_tree.root')
+            elif 'JERDown' in signal_region_tree:
+                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','minusJER_tree.root')
+
+        histograms = get_histograms_from_trees( trees = [signal_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         if use_qcd_data_region:
             qcd_control_region = signal_region_tree.replace( 'Ref selection', qcd_data_region )
             histograms_QCDControlRegion = get_histograms_from_trees( trees = [qcd_control_region], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
@@ -175,14 +135,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
     control_region_hists = {}
     for sample in histograms.keys():
         signal_region_hists[sample] = histograms[sample][signal_region_tree]
-
-        if compare_qcd_signal_with_data_control:
-            if sample is 'data':
-                signal_region_hists[sample] = histograms[sample][control_region_tree]
-            elif sample is 'QCD' :
-                signal_region_hists[sample] = histograms[sample][signal_region_tree]
-            else:
-                del signal_region_hists[sample]
 
         if use_qcd_data_region:
             control_region_hists[sample] = histograms_QCDControlRegion[sample][qcd_control_region]
@@ -228,31 +180,162 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
         if not n_qcd_control_region == 0:
             dataDrivenQCDScale = n_qcd_predicted_mc_signal / n_qcd_predicted_mc_control
-            print 'Overall scale : ',dataDrivenQCDScale
+            print 'QCD scale : ',dataDrivenQCDScale
             qcd_from_data.Scale( dataDrivenQCDScale.nominal_value )
             signalToControlScale = n_qcd_predicted_mc_signal / n_qcd_control_region
             dataToMCscale = n_qcd_control_region / n_qcd_predicted_mc_control
-            print "Signal to control :",signalToControlScale
-            print "QCD scale : ",dataToMCscale
+            # print "Signal to control :",signalToControlScale
+            # print "QCD scale : ",dataToMCscale
     else:
         qcd_from_data = signal_region_hists['QCD']
+
+    return signal_region_hists, control_region_hists, qcd_from_data
+
+
+def getSystematicError( histogram_files,
+                        signal_region_tree,
+                        control_region_tree,
+                        signal_region_hists,
+                        control_region_hists,
+                        qcd_from_data,
+                        use_qcd_data_region,
+                        channel,
+                        branchName,
+                        weightBranchSignalRegion,
+                        nBins,
+                        rebin,
+                        x_limits ) :
+
+    signalUp = {}
+    signalDown = {}
+    controlUp = {}
+    controlDown = {}
+
+    signalUp['BJet'], controlUp['BJet'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion.replace('BJetWeight','BJetUpWeight'), nBins, rebin, x_limits )
+    signalDown['BJet'], controlDown['BJet'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion.replace('BJetWeight','BJetDownWeight'), nBins, rebin, x_limits )
+
+    signalUp['lumi'], controlUp['lumi'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion + '* 1.048', nBins, rebin, x_limits )
+    signalDown['lumi'], controlDown['lumi'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion + '* 0.952', nBins, rebin, x_limits )
+
+    signalUp['JES'], controlUp['JES'], a = getHistograms( { x : histogram_files[x].replace('tree.root','plusJES_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JESUp', control_region_tree + '_JESUp', use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits, isSystematic = True )
+    signalDown['JES'], controlDown['JES'], a = getHistograms( { x : histogram_files[x].replace('tree.root','minusJES_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JESDown', control_region_tree + '_JESDown', use_qcd_data_region, channel, branchName, weightBranchSignalRegion , nBins, rebin, x_limits, isSystematic = True )
+
+    signalUp['JER'], controlUp['JER'], a = getHistograms( { x : histogram_files[x].replace('tree.root','plusJER_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JERUp', control_region_tree + '_JERUp', use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits, isSystematic = True )
+    signalDown['JER'], controlDown['JER'], a = getHistograms( { x : histogram_files[x].replace('tree.root','minusJER_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JERDown', control_region_tree + '_JERDown', use_qcd_data_region, channel, branchName, weightBranchSignalRegion , nBins, rebin, x_limits, isSystematic = True )
+
+
+    signalUp['QCD'] = deepcopy( signal_region_hists )
+    signalDown['QCD'] = deepcopy( signal_region_hists )
+    controlUp['QCD'] = deepcopy( control_region_hists )
+    controlDown['QCD'] = deepcopy( control_region_hists )
+
+    signalUp['TTJet'] = deepcopy( signal_region_hists )
+    signalDown['TTJet'] = deepcopy( signal_region_hists )
+    controlUp['TTJet'] = deepcopy( control_region_hists )
+    controlDown['TTJet'] = deepcopy( control_region_hists )
+
+    # For all systematic variations
+    # Take largest variation in each bin, symmetrise
+    # Convert to relative change wrt central
+    error2HistsSignal = []
+    error2HistsControl = []
+    for central, up, down, error2Hists in zip([signal_region_hists, control_region_hists],[signalUp, controlUp],[signalDown, controlDown], [error2HistsSignal, error2HistsControl]):
+        firstVariation = True
+        hist_central = deepcopy(central['TTJet'])
+        for bkg in ['SingleTop', 'V+Jets']:
+            hist_central += central[bkg]
+        hist_central += qcd_from_data
+
+        for variation in ['BJet', 'lumi', 'JES', 'JER', 'QCD', 'TTJet']:
+        # for variation in ['BJet']:
+
+            hist_up = up[variation]['TTJet']
+            hist_down = down[variation]['TTJet']
+
+            if variation == 'TTJet':
+                hist_up *= 1.05
+                hist_down *= 0.95
+
+            if variation == 'QCD':
+                hist_up += qcd_from_data * 1.6
+                hist_down += qcd_from_data * 0.6
+            else :
+                hist_up += qcd_from_data
+                hist_down += qcd_from_data   
+
+            for bkg in ['SingleTop', 'V+Jets' ]:
+                hist_up += up[variation][bkg]
+                hist_down += down[variation][bkg]
+
+            for bin in range(1,nBins+1):
+                upVar = hist_up.GetBinContent(bin)
+                downVar = hist_down.GetBinContent(bin)
+                binContent = hist_central.GetBinContent(bin)
+                relError = 0
+                if binContent != 0:
+                    upVarRel = abs( 1 - upVar / binContent )
+                    downVarRel = abs( 1 - downVar / binContent )
+                    relError = max( upVarRel, downVarRel )
+
+                if firstVariation:
+                    error2Hists.append(relError*relError)
+                else :
+                    error2Hists[bin-1] += relError*relError
+
+            firstVariation = False
+
+    errorHistsSignal = []
+    for errors2 in error2HistsSignal :
+        errorHistsSignal.append( sqrt(errors2) )
+    return errorHistsSignal
+
+def make_plot( channel, x_axis_title, y_axis_title,
+              signal_region_tree,
+              control_region_tree,
+              branchName,
+              name_prefix, x_limits, nBins,
+              use_qcd_data_region = False,
+              compare_qcd_signal_with_data_control = False,
+              y_limits = [],
+              y_max_scale = 1.3,
+              rebin = 1,
+              legend_location = ( 0.98, 0.78 ), cms_logo_location = 'right',
+              log_y = False,
+              legend_color = False,
+              ratio_y_limits = [0.5, 1.5],
+              normalise = False,
+              ):
+    global output_folder, measurement_config, category, normalise_to_fit, showErrorBandOnRatio
+    global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
+
+    title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
+    normalisation = None
+
+    weightBranchSignalRegion = 'EventWeight'
+    if not "_NPUNoWeight" in name_prefix:
+        weightBranchSignalRegion += ' * PUWeight'
+
+    if not "_NBJetsNoWeight" in name_prefix:
+        weightBranchSignalRegion += ' * BJetWeight'
+
+    signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
+
+
+    errorHistsSignal = None
+    if showErrorBandOnRatio:
+        errorHistsSignal = getSystematicError( histogram_files, signal_region_tree, control_region_tree, signal_region_hists, control_region_hists, qcd_from_data, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
     # Which histograms to draw, and properties
     histograms_to_draw = []
     histogram_lables = []
     histogram_colors = []
 
-    if compare_qcd_signal_with_data_control :
-        histograms_to_draw = [signal_region_hists['data'], qcd_from_data ]
-        histogram_lables = ['data', 'QCD']
-        histogram_colors = ['black', 'yellow']
-    else :
-        histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
-                              signal_region_hists['V+Jets'],
-                              signal_region_hists['SingleTop'],
-                              signal_region_hists['TTJet']]
-        histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
-        histogram_colors = [colours['data'], colours['QCD'], colours['V+Jets'], colours['Single-Top'], colours['TTJet'] ]
+    histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
+                          signal_region_hists['V+Jets'],
+                          signal_region_hists['SingleTop'],
+                          signal_region_hists['TTJet']]
+    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
+    histogram_colors = [colours['data'], colours['QCD'], colours['V+Jets'], colours['Single-Top'], colours['TTJet'] ]
 
 
     print 'Normalisation after selection'
@@ -319,6 +402,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder_to_use,
                                  show_ratio = True, normalise = normalise,
+                                 systematics_for_ratio = errorHistsSignal
                                  )
 
 
@@ -389,25 +473,25 @@ if __name__ == '__main__':
             }
     preliminary = True
     useQCDControl = True
+    showErrorBandOnRatio = True
     b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        # 'HT',
-                        # # # 'MET',
-                        # 'METNoHF',
-                        # 'ST',
-                        # 'WPT',
+                        'HT',
+                        'METNoHF',
+                        'ST',
+                        'WPT',
                         'NVertex',
                         'NVertexNoWeight',
-                        # 'LeptonPt',
-                        # 'AbsLeptonEta',
-                        # # # # # 'Mjj',
-                        # # # # # 'M3',
-                        # # # # # 'angle_bl',
-                        # 'NJets',
-                        # 'NBJets',
-                        # 'NBJetsNoWeight',
+                        'LeptonPt',
+                        'AbsLeptonEta',
+                        'NJets',
+                        'NBJets',
+                        'NBJetsNoWeight',
+                        # # # # # # # # 'Mjj',
+                        # # # # # # # # 'M3',
+                        # # # # # # # # 'angle_bl',
                         # 'JetPt',
                         # 'AbsLeptonEta',
                         # 'RelIso',

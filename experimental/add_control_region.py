@@ -10,8 +10,12 @@ import subprocess
 
 input_folder = '/hdfs/TopQuarkGroup/run2/atOutput/13TeV/50ns/'
 output_folder = input_folder.replace('/hdfs', '')
-input_files = ['data_electron_tree.root', 'data_muon_tree.root', 
-               'SingleTop_tree.root', 'TTJets_PowhegPythia8_tree.root', 'VJets_tree.root', 'QCD_Muon_tree.root']
+input_files = [
+'data_electron_tree.root', 'data_muon_tree.root', 
+               'SingleTop_tree.root', 
+               'TTJets_PowhegPythia8_tree.root', 
+               'VJets_tree.root', 'QCD_Muon_tree.root'
+               ]
 
 
 def create_new_trees(input_file, suffix = ''):
@@ -77,5 +81,5 @@ for f in input_files:
         shutil.copy(input_folder + fileToUse, fileToUse)
 
         create_new_trees(fileToUse, suffix=suffix)
-    subprocess.call(['hadoop', 'fs', '-rm', output_folder + fileToUse])
-    subprocess.call(['hadoop', 'fs', '-copyFromLocal', fileToUse, output_folder + fileToUse])
+        subprocess.call(['hadoop', 'fs','-rm','-skipTrash', output_folder + fileToUse])
+        subprocess.call(['hadoop', 'fs', '-copyFromLocal', fileToUse, output_folder + fileToUse])
