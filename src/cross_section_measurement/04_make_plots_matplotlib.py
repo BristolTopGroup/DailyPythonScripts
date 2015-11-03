@@ -407,31 +407,45 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
 
+    dashes = {}
     for key, hist in sorted( histograms.items() ):
-        zorder = sorted( histograms, reverse = True ).index( key )
+        zorder = sorted( histograms, reverse = False ).index( key )
+        if key == 'powhegPythia8' and zorder != len(histograms) - 3:
+            zorder = len(histograms) - 3
+        elif key != 'powhegPythia8' and not 'unfolded' in key:
+            while zorder >= len(histograms) - 3:
+                zorder = zorder - 1 
+
         if not 'unfolded' in key and not 'measured' in key:
-            hist.linewidth = 5
+            hist.linewidth = 4
             # setting colours
+            linestyle = None
             if 'amcatnlo' in key or 'massdown' in key:
-                hist.linestyle = 'dashdot'
                 hist.SetLineColor( kBlue )
+                dashes[key] = [25,5,5,5,5,5,5,5]
             elif 'madgraphMLM' in key or 'scaledown' in key:
-                hist.linestyle = 'dashed'
                 hist.SetLineColor( 417 )
+                dashes[key] = [5,5]
             elif 'MADGRAPH_ptreweight' in key:
-                hist.linestyle = 'dashed'
                 hist.SetLineColor( kBlack )
             elif 'powhegPythia8' in key:
-                hist.linestyle = 'solid'
+                linestyle = 'solid'
+                dashes[key] = None
                 hist.SetLineColor( 633 )
             elif 'massup' in key or 'POWHEG_HERWIG' in key:
-                hist.linestyle = 'dashdot'
-                # hist.linecolor = 'orange'
-                hist.SetLineColor( 809 )
+                hist.SetLineColor( 807 )
+                dashes[key] = [20,5]
             elif 'MCATNLO' in key or 'scaleup' in key:
-                hist.linestyle = 'dashed'
                 hist.SetLineColor( 619 )
-            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
+                dashes[key] = [5,5,10,5]
+
+            if linestyle != None:
+                hist.linestyle = linestyle
+            line, h = rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
+
+            if dashes[key] != None:
+                line.set_dashes(dashes[key])
+                h.set_dashes(dashes[key])
 
     handles, labels = axes.get_legend_handles_labels()
     # making data first in the list
@@ -444,7 +458,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
     new_handles, new_labels = [], []
     zipped = dict( zip( labels, handles ) )
-    labelOrder = ['data', 'Powheg Pythia8', 'Powheg Herwig++', 'aMC@NLO', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', 'Top mass up', 'Top mass down']
+    labelOrder = ['data', 'Powheg Pythia8', 'Powheg Herwig++', 'aMC@NLO', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', measurements_latex['massup'], measurements_latex['massdown'] ]
     for label in labelOrder:
         if label in labels:
             new_handles.append(zipped[label])
@@ -527,7 +541,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             if not 'unfolded' in key and not 'measured' in key:
                 ratio = hist.Clone()
                 ratio.Divide( hist_data ) #divide by data
-                rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
+                line, h = rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
+                if dashes[key] != None:
+                    h.set_dashes(dashes[key])
 
         stat_lower = hist_data.Clone()
         stat_upper = hist_data.Clone()
