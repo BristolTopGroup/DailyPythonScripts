@@ -373,6 +373,10 @@ def make_plot( channel, x_axis_title, y_axis_title,
     if ratio_y_limits:
         histogram_properties.ratio_y_limits = ratio_y_limits
 
+
+    if branchName in ['NJets', 'NBJets', 'NBJetsNoWeight']:
+        histogram_properties.integerXVariable = True
+
     # if normalise_to_fit:
     #     histogram_properties.mc_error = get_normalisation_error( normalisation )
     #     histogram_properties.mc_errors_label = 'fit uncertainty'
@@ -473,7 +477,7 @@ if __name__ == '__main__':
             }
     preliminary = True
     useQCDControl = True
-    showErrorBandOnRatio = True
+    showErrorBandOnRatio = False
     b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
     # comment out plots you don't want

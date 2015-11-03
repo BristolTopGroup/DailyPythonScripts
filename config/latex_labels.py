@@ -128,10 +128,9 @@ measurements_latex = {
     'SingleTop_cross_section+': 'Single top cross section \ensuremath{+1\sigma}',
     'luminosity-': 'Luminosity \ensuremath{-1\sigma}',
     'luminosity+': 'Luminosity \ensuremath{+1\sigma}',
-    # 'massdown': '\ensuremath{t\\bar{t}} (top mass down)',
-    # 'massup': '\ensuremath{t\\bar{t}} (top mass up)',
-    'massdown': 'Top mass down',
-    'massup': 'Top mass up',
+    'massdown': '$\mathrm{m}_{\mathrm{t}}$=169.5 GeV',
+    'massup': '$\mathrm{m}_{\mathrm{t}}$=175.5 GeV',
+
 }
 
 met_systematics_latex = {

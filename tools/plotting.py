@@ -45,6 +45,7 @@ class Histogram_properties:
     legend_color = False
     y_max_scale = 1.2
     xerr = False
+    integerXVariable = False
     #If True (the default) then plot bins with zero content otherwise only
     #    show bins with nonzero content.
     emptybins = False
@@ -322,6 +323,9 @@ def make_data_mc_comparison_plot( histograms = [],
 
         # dynamic tick placement
         adjust_ratio_ticks(ax1.yaxis, n_ticks = 3, y_limits = histogram_properties.ratio_y_limits)
+
+        if histogram_properties.integerXVariable :
+            ax1.tick_params(axis='x',which='minor',bottom='off',top='off')
 
         if systematics_for_ratio != None:
             plusErrors = [x+1 for x in systematics_for_ratio]
