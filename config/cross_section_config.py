@@ -5,7 +5,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
     known_centre_of_mass_energies = [7,8,13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584, 13:41.62912}
+    luminosities = {7:5050, 8:19584, 13:2136.36}
     parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
                   'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -71,8 +71,8 @@ class XSectionConfig():
             self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
             self.path_to_unfolding_histograms = self.path_to_files + 'unfolding/'
         else:
-            self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/50ns/'
-            self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/50ns/'
+            self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/25ns/'
+            self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/25ns/'
 
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
@@ -151,11 +151,11 @@ class XSectionConfig():
         self.middle = '_' + str( self.luminosity ) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
         middle = self.middle
 
-        self.data_file_muon = path_to_files + 'full_50ns_data_muon_tree.root'
-        self.data_file_electron = path_to_files + 'full_50ns_data_electron_tree.root'
+        self.data_file_muon = path_to_files + 'data_muon_tree.root'
+        self.data_file_electron = path_to_files + 'data_electron_tree.root'
 
-        self.data_file_muon_trees = path_to_files + 'full_50ns_data_muon_tree.root'
-        self.data_file_electron_trees = path_to_files + 'full_50ns_data_electron_tree.root'
+        self.data_file_muon_trees = path_to_files + 'data_muon_tree.root'
+        self.data_file_electron_trees = path_to_files + 'data_electron_tree.root'
 
         self.muon_QCD_file = path_to_files + 'QCD_data_mu.root'
         self.SingleTop_file = path_to_files + 'SingleTop.root'
@@ -384,7 +384,7 @@ class XSectionConfig():
 
         self.tree_path_control_templates = {
                                     'electron' : 'TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/FitVariables',
-                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD iso > 0.3/FitVariables'
+                                    'muon' : 'TTbar_plus_X_analysis/MuPlusJets/QCD non iso mu+jets 3toInf/FitVariables'
                                     }
         self.variable_path_templates = {
                             'MET' : 'TTbar_plus_X_analysis/{channel}/{selection}/FitVariables/MET',
@@ -407,8 +407,8 @@ class XSectionConfig():
         self.muon_control_region = 'QCD non iso mu+jets ge3j'
         self.muon_control_region_systematic = 'QCD non iso mu+jets ge3j'  # no systematic yet
         if self.centre_of_mass_energy == 13:
-            self.muon_control_region = 'QCD iso > 0.3'
-            self.muon_control_region_systematic = 'QCD 0.12 < iso <= 0.3'
+            self.muon_control_region = 'QCD non iso mu+jets 3toInf'
+            self.muon_control_region_systematic = 'QCD non iso mu+jets 1p5to3'
 
         self.include_higgs = False
 
@@ -552,8 +552,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        # self.new_luminosity = 40.028  # pb^-1
-        self.new_luminosity = 70.790  # pb^-1
+        self.new_luminosity = 2136.361  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
