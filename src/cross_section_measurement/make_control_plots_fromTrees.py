@@ -18,7 +18,7 @@ from copy import deepcopy
 # latex, font, etc
 setup_matplotlib()
 
-title_template = '$%.0f$ pb$^{-1}$ (%d TeV)'
+title_template = '$%.1f$ fb$^{-1}$ (%d TeV)'
 
 def binWidth(binning):
     return  ( binning[-1] - binning[0] ) / ( len(binning)-1 )
@@ -41,7 +41,7 @@ def getHistograms( histogram_files,
     qcd_data_region = ''
 
     qcd_data_region_electron = 'QCDConversions'
-    qcd_data_region_muon = 'QCD iso > 0.3'
+    qcd_data_region_muon = 'QCD non iso mu+jets 3toInf'
     
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron_trees
@@ -51,8 +51,8 @@ def getHistograms( histogram_files,
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_electron
             # qcd_data_region = 'QCD non iso e+jets'
-        if not 'QCD' in channel and not 'NPU' in branchName:
-            weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
+        # if not 'QCD' in channel and not 'NPU' in branchName:
+        #     weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
@@ -93,8 +93,11 @@ def getHistograms( histogram_files,
                 histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','minusJER_tree.root')
                 histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','minusJER_tree.root')
 
-        histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        # histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+
         if use_qcd_data_region:
             qcd_control_region = signal_region_tree.replace('Ref selection','QCD_Control')
             qcd_control_region_electron = signal_region_tree.replace( 'Ref selection', qcd_data_region_electron ).replace('COMBINED','EPlusJets')
@@ -125,6 +128,10 @@ def getHistograms( histogram_files,
             elif 'JERDown' in signal_region_tree:
                 histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','minusJER_tree.root')
 
+        print 'Getting histogram'
+        # weightBranchSignalRegion = 'EventWeight'
+        print branchName
+        print weightBranchSignalRegion
         histograms = get_histograms_from_trees( trees = [signal_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         if use_qcd_data_region:
             qcd_control_region = signal_region_tree.replace( 'Ref selection', qcd_data_region )
@@ -308,12 +315,13 @@ def make_plot( channel, x_axis_title, y_axis_title,
     global output_folder, measurement_config, category, normalise_to_fit, showErrorBandOnRatio
     global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
 
-    title = title_template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy )
+    title = title_template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy )
     normalisation = None
 
     weightBranchSignalRegion = 'EventWeight'
     if not "_NPUNoWeight" in name_prefix:
         weightBranchSignalRegion += ' * PUWeight'
+        # weightBranchSignalRegion += ' * 1'
 
     if not "_NBJetsNoWeight" in name_prefix:
         weightBranchSignalRegion += ' * BJetWeight'
@@ -334,16 +342,24 @@ def make_plot( channel, x_axis_title, y_axis_title,
                           signal_region_hists['V+Jets'],
                           signal_region_hists['SingleTop'],
                           signal_region_hists['TTJet']]
-    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
-    histogram_colors = [colours['data'], colours['QCD'], colours['V+Jets'], colours['Single-Top'], colours['TTJet'] ]
+    histogram_lables = ['data',
+                        'QCD', 
+                        'V+Jets', 
+                        'Single-Top', 
+                        samples_latex['TTJet']]
+    histogram_colors = [colours['data'], 
+                        colours['QCD'], 
+                        colours['V+Jets'], 
+                        colours['Single-Top'], 
+                        colours['TTJet'] ]
 
 
     print 'Normalisation after selection'
     print 'Data :',signal_region_hists['data'].integral(overflow=True)
-    # print 'TTJet :',signal_region_hists['TTJet'].integral(overflow=True)
-    # print 'Single Top :',signal_region_hists['SingleTop'].integral(overflow=True)
-    # print 'V+Jets :',signal_region_hists['V+Jets'].integral(overflow=True)
-    # print 'QCD :',qcd_from_data.integral(overflow=True)
+    print 'TTJet :',signal_region_hists['TTJet'].integral(overflow=True)
+    print 'Single Top :',signal_region_hists['SingleTop'].integral(overflow=True)
+    print 'V+Jets :',signal_region_hists['V+Jets'].integral(overflow=True)
+    print 'QCD :',qcd_from_data.integral(overflow=True)
 
     mcSum = signal_region_hists['TTJet'].integral(overflow=True) + signal_region_hists['SingleTop'].integral(overflow=True) + signal_region_hists['V+Jets'].integral(overflow=True) + qcd_from_data.integral(overflow=True)
     print 'Total MC :',mcSum
@@ -403,6 +419,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     loc = histogram_properties.legend_location
     # adjust legend location as it is relative to canvas!
     histogram_properties.legend_location = ( loc[0], loc[1] + 0.05 )
+    print output_folder_to_use
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder_to_use,
                                  show_ratio = True, normalise = normalise,
@@ -460,6 +477,7 @@ if __name__ == '__main__':
             'SingleTop': measurement_config.SingleTop_category_templates_trees[category],
     }
 
+    print histogram_files
     # getting normalisations
     normalisations_electron = {
             # 'MET':get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, met_type ),
@@ -483,7 +501,7 @@ if __name__ == '__main__':
     # comment out plots you don't want
     include_plots = [
                         'HT',
-                        'METNoHF',
+                        'MET',
                         'ST',
                         'WPT',
                         'NVertex',
@@ -520,8 +538,8 @@ if __name__ == '__main__':
 
 
     for channel, label in {
-                            # 'electron' : 'EPlusJets', 
-                            # 'muon' : 'MuPlusJets',
+                            'electron' : 'EPlusJets', 
+                            'muon' : 'MuPlusJets',
                             'combined' : 'COMBINED'
                             }.iteritems() :
         b_tag_bin = '2orMoreBtags'
@@ -604,8 +622,8 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['ST']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'STNoHF',
-                      name_prefix = '%s_STNoHF_' % label,
+                      branchName = 'ST',
+                      name_prefix = '%s_ST_' % label,
                       x_limits = control_plots_bins['ST'],
                       nBins = 20,
                       rebin = 1,
@@ -625,8 +643,8 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['WPT']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'WPTNoHF',
-                      name_prefix = '%s_WPTNoHF_' % label,
+                      branchName = 'WPT',
+                      name_prefix = '%s_WPT_' % label,
                       x_limits = control_plots_bins['WPT'],
                       y_max_scale = 1.4,
                       nBins = 16,
@@ -634,6 +652,111 @@ if __name__ == '__main__':
                       legend_location = ( 0.9, 0.73 ),
                       cms_logo_location = 'left',
                       use_qcd_data_region = useQCDControl,
+                      )
+
+        ###################################################
+        # Lepton Pt
+        ###################################################
+        if 'LeptonPt' in include_plots:
+            print '---> Lepton Pt'
+            binsLabel = 'ElectronPt'
+            if channel == 'muon':
+                binsLabel = 'MuonPt'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['pt'],
+                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins[binsLabel]),
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
+                      branchName = 'lepton_pt',
+                      name_prefix = '%s_LeptonPt_' % label,
+                      x_limits = control_plots_bins[binsLabel],
+                      nBins = len(control_plots_bins[binsLabel])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'left',
+                      use_qcd_data_region = useQCDControl,
+                      )
+        ###################################################
+        # Lepton Eta
+        ###################################################
+        if 'LeptonEta' in include_plots:
+            print '---> Lepton Eta'
+            treeName = 'Electron/Electrons'
+            if channel == 'muon':
+                treeName = 'Muon/Muons'
+
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['eta'],
+                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['LeptonEta']),
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % ( label, treeName),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % (label, treeName),
+                      branchName = 'lepton_eta',
+                      name_prefix = '%s_LeptonEta_' % label,
+                      x_limits = control_plots_bins['LeptonEta'],
+                      nBins = len(control_plots_bins['LeptonEta'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
+
+        ###################################################
+        # AbsLepton Eta
+        ###################################################
+        if 'AbsLeptonEta' in include_plots:
+            print '---> Abs Lepton Eta'
+            print output_folder
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['eta'],
+                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['AbsLeptonEta']),
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
+                      branchName = 'abs(lepton_eta)',
+                      name_prefix = '%s_AbsLeptonEta_' % label,
+                      x_limits = control_plots_bins['AbsLeptonEta'],
+                      y_max_scale = 1.4,
+                      nBins = len(control_plots_bins['AbsLeptonEta'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.99, 0.79 ),
+                      cms_logo_location = 'left',
+                      use_qcd_data_region = useQCDControl,
+                      )
+
+        ###################################################
+        # NJets
+        ###################################################
+        if 'NJets' in include_plots:
+            print '---> NJets'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                      y_axis_title = 'Events / 1',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'NJets',
+                      name_prefix = '%s_NJets_' % label,
+                      x_limits = control_plots_bins['NJets'],
+                      y_max_scale = 1.4,
+                      nBins = len(control_plots_bins['NJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'left',
+                      use_qcd_data_region = useQCDControl,
+                      )
+
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                      y_axis_title = 'Events / 1',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'NJets',
+                      name_prefix = '%s_NJets_logY_' % label,
+                      x_limits = control_plots_bins['NJets'],
+                      nBins = len(control_plots_bins['NJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.83 ),
+                      cms_logo_location = 'left',
+                      use_qcd_data_region = useQCDControl,
+                      log_y = True,
                       )
 
         # Set folder for this batch of plots
@@ -703,42 +826,7 @@ if __name__ == '__main__':
         output_folder =  output_folder_base + "/Control/"
         make_folder_if_not_exists(output_folder)
 
-        ###################################################
-        # NJets
-        ###################################################
-        if 'NJets' in include_plots:
-            print '---> NJets'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
-                      y_axis_title = 'Events / 1',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'NJets',
-                      name_prefix = '%s_NJets_' % label,
-                      x_limits = control_plots_bins['NJets'],
-                      y_max_scale = 1.4,
-                      nBins = len(control_plots_bins['NJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
 
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
-                      y_axis_title = 'Events / 1',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'NJets',
-                      name_prefix = '%s_NJets_logY_' % label,
-                      x_limits = control_plots_bins['NJets'],
-                      nBins = len(control_plots_bins['NJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.83 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      log_y = True,
-                      )
         ###################################################
         # NBJets
         ###################################################
@@ -852,73 +940,7 @@ if __name__ == '__main__':
                       cms_logo_location = 'right',
                       use_qcd_data_region = useQCDControl,
                       )
-        ###################################################
-        # Lepton Pt
-        ###################################################
-        if 'LeptonPt' in include_plots:
-            print '---> Lepton Pt'
-            binsLabel = 'ElectronPt'
-            if channel == 'muon':
-                binsLabel = 'MuonPt'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins[binsLabel]),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
-                      branchName = 'lepton_pt',
-                      name_prefix = '%s_LeptonPt_' % label,
-                      x_limits = control_plots_bins[binsLabel],
-                      nBins = len(control_plots_bins[binsLabel])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
-        ###################################################
-        # Lepton Eta
-        ###################################################
-        if 'LeptonEta' in include_plots:
-            print '---> Lepton Eta'
-            treeName = 'Electron/Electrons'
-            if channel == 'muon':
-                treeName = 'Muon/Muons'
-
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['eta'],
-                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['LeptonEta']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % ( label, treeName),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % (label, treeName),
-                      branchName = 'lepton_eta',
-                      name_prefix = '%s_LeptonEta_' % label,
-                      x_limits = control_plots_bins['LeptonEta'],
-                      nBins = len(control_plots_bins['LeptonEta'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-
-        ###################################################
-        # AbsLepton Eta
-        ###################################################
-        if 'AbsLeptonEta' in include_plots:
-            print '---> Abs Lepton Eta'
-
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['eta'],
-                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['AbsLeptonEta']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
-                      branchName = 'abs(lepton_eta)',
-                      name_prefix = '%s_AbsLeptonEta_' % label,
-                      x_limits = control_plots_bins['AbsLeptonEta'],
-                      y_max_scale = 1.4,
-                      nBins = len(control_plots_bins['AbsLeptonEta'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.99, 0.79 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = True,
-                      )
+        
 
         ###################################################
         # Rel iso
@@ -972,8 +994,8 @@ if __name__ == '__main__':
     for channel, label in {
                             'electronQCDNonIso' : 'EPlusJets/QCD non iso e+jets',
                             'electronQCDConversions' : 'EPlusJets/QCDConversions', 
-                            'muonQCDNonIso' : 'MuPlusJets/QCD iso > 0.3',
-                            'muonQCDNonIso2' : 'MuPlusJets/QCD 0.12 < iso <= 0.3',
+                            'muonQCDNonIso' : 'MuPlusJets/QCD non iso mu+jets 3toInf',
+                            'muonQCDNonIso2' : 'MuPlusJets/QCD non iso mu+jets 1p5to3',
                             }.iteritems() :
         b_tag_bin = '0btag'
 
@@ -1043,8 +1065,8 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'METNoHF',
-                      name_prefix = '%s_METNoHF_' % channel,
+                      branchName = 'MET',
+                      name_prefix = '%s_MET_' % channel,
                       x_limits = control_plots_bins['MET'],
                       nBins = 20,
                       rebin = 1,
@@ -1063,8 +1085,8 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['ST']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'STNoHF',
-                      name_prefix = '%s_STNoHF_' % channel,
+                      branchName = 'ST',
+                      name_prefix = '%s_ST_' % channel,
                       x_limits = control_plots_bins['ST'],
                       nBins = 20,
                       rebin = 1,
@@ -1083,8 +1105,8 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['WPT']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'WPTNoHF',
-                      name_prefix = '%s_WPTNoHF_' % channel,
+                      branchName = 'WPT',
+                      name_prefix = '%s_WPT_' % channel,
                       x_limits = control_plots_bins['WPT'],
                       nBins = 20,
                       rebin = 1,
