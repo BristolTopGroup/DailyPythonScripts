@@ -74,13 +74,13 @@ bin_edges_vis = {
 }
 
 control_plots_bins = {
-  'NJets' : [i + 0.5 for i in range ( 3, 10 + 1 )],
+  'NJets' : [i + 0.5 for i in range ( 3, 12 + 1 )],
   'JetPt' : [i * 5  for i in range ( 5, 40 )],  
   'MuonPt' : [i * 11.5 for i in range ( 2, 20 )],
   'ElectronPt' : [i * 10 for i in range ( 3, 20 )],
   'LeptonEta' : [-2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5],  
   'AbsLeptonEta' : [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.1],  
-  'NBJets' : [i + 0.5 for i in range ( 1, 6 + 1 )],
+  'NBJets' : [i - 0.5 for i in range ( 0, 6 + 1 )],
   'NVertex' : [i*2 for i in range ( 0,20 + 1 )],
   'relIso' : [i*0.01 for i in range(0,15)],
   'relIsoQCD' : [i*0.2 for i in range(0,15)],
