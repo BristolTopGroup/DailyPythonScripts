@@ -33,16 +33,15 @@ def getHistograms( histogram_files,
                    weightBranchSignalRegion,
                    nBins,
                    rebin,
-                   x_limits,
-                   isSystematic = False ):
+                   x_limits ):
     global measurement_config
 
-    # Input files, normalisations, tree/region names
+    # Names of QCD regions to use
     qcd_data_region = ''
-
     qcd_data_region_electron = 'QCDConversions'
     qcd_data_region_muon = 'QCD non iso mu+jets 3toInf'
     
+    # Channel specific files and weights
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron_trees
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
@@ -50,7 +49,6 @@ def getHistograms( histogram_files,
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_electron
-            # qcd_data_region = 'QCD non iso e+jets'
         # if not 'QCD' in channel and not 'NPU' in branchName:
         #     weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
@@ -63,6 +61,7 @@ def getHistograms( histogram_files,
         if not 'QCD' in channel and not 'NPU' in branchName:
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
 
+    # Apply selection to avoid non-physical values
     if branchName == 'abs(lepton_eta)' :
         selection = 'lepton_eta > -10'
     else:
@@ -70,6 +69,7 @@ def getHistograms( histogram_files,
 
     histograms = {}
     histograms_QCDControlRegion = {}
+    # Get histograms for combined channel
     if channel == 'combined':
         histogram_files_electron = dict(histogram_files)
         histogram_files_electron['data'] = measurement_config.data_file_electron_trees
@@ -78,20 +78,6 @@ def getHistograms( histogram_files,
         histogram_files_muon = dict(histogram_files)
         histogram_files_muon['data'] = measurement_config.data_file_muon_trees
         histogram_files_muon['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
-
-        if isSystematic:
-            if 'JESUp' in signal_region_tree:
-                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','plusJES_tree.root')
-                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','plusJES_tree.root')
-            elif 'JESDown' in signal_region_tree:
-                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','minusJES_tree.root')
-                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','minusJES_tree.root')
-            elif 'JERUp' in signal_region_tree:
-                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','plusJER_tree.root')
-                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','plusJER_tree.root')
-            elif 'JERDown' in signal_region_tree:
-                histogram_files_muon['QCD'] = histogram_files_muon['QCD'].replace('tree.root','minusJER_tree.root')
-                histogram_files_electron['QCD'] = histogram_files_electron['QCD'].replace('tree.root','minusJER_tree.root')
 
         # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
@@ -116,28 +102,14 @@ def getHistograms( histogram_files,
                 h_qcd_muon = histograms_muon_QCDControlRegion[sample][qcd_control_region_muon]
                 h_qcd_combined = h_qcd_electron + h_qcd_muon
                 histograms_QCDControlRegion[sample] = { qcd_control_region : h_qcd_combined }
-
+    # Get hsitgorams for specific channel
     else :
-        if isSystematic:
-            if 'JESUp' in signal_region_tree:
-                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','plusJES_tree.root')
-            elif 'JESDown' in signal_region_tree:
-                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','minusJES_tree.root')
-            elif 'JERUp' in signal_region_tree:
-                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','plusJER_tree.root')
-            elif 'JERDown' in signal_region_tree:
-                histogram_files['QCD'] = histogram_files['QCD'].replace('tree.root','minusJER_tree.root')
-
-        print 'Getting histogram'
-        # weightBranchSignalRegion = 'EventWeight'
-        print branchName
-        print weightBranchSignalRegion
         histograms = get_histograms_from_trees( trees = [signal_region_tree], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         if use_qcd_data_region:
             qcd_control_region = signal_region_tree.replace( 'Ref selection', qcd_data_region )
             histograms_QCDControlRegion = get_histograms_from_trees( trees = [qcd_control_region], branch = branchName, weightBranch = 'EventWeight', files = histogram_files, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
 
-    # Split histograms up into signal/control (?)
+    # Technical step, don't need key for tree
     signal_region_hists = {}
     control_region_hists = {}
     for sample in histograms.keys():
@@ -187,12 +159,9 @@ def getHistograms( histogram_files,
 
         if not n_qcd_control_region == 0:
             dataDrivenQCDScale = n_qcd_predicted_mc_signal / n_qcd_predicted_mc_control
-            print 'QCD scale : ',dataDrivenQCDScale
             qcd_from_data.Scale( dataDrivenQCDScale.nominal_value )
             signalToControlScale = n_qcd_predicted_mc_signal / n_qcd_control_region
             dataToMCscale = n_qcd_control_region / n_qcd_predicted_mc_control
-            # print "Signal to control :",signalToControlScale
-            # print "QCD scale : ",dataToMCscale
     else:
         qcd_from_data = signal_region_hists['QCD']
 
@@ -217,23 +186,20 @@ def make_plot( channel, x_axis_title, y_axis_title,
     global output_folder, measurement_config, category, normalise_to_fit, showErrorBandOnRatio
     global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
 
+    # Lumi title of plots
     title = title_template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy )
     normalisation = None
 
+    # Define weights
     weightBranchSignalRegion = 'EventWeight'
     if not "_NPUNoWeight" in name_prefix:
         weightBranchSignalRegion += ' * PUWeight'
-        # weightBranchSignalRegion += ' * 1'
-
     if not "_NBJetsNoWeight" in name_prefix:
         weightBranchSignalRegion += ' * BJetWeight'
 
+    # Get all histograms
     signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
-
-    errorHistsSignal = None
-    if showErrorBandOnRatio:
-        errorHistsSignal = getSystematicError( histogram_files, signal_region_tree, control_region_tree, signal_region_hists, control_region_hists, qcd_from_data, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
     # Which histograms to draw, and properties
     histograms_to_draw = []
@@ -256,6 +222,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
                         colours['TTJet'] ]
 
 
+    # Printout on normalisation of different samples
     print 'Normalisation after selection'
     print 'Data :',signal_region_hists['data'].integral(overflow=True)
     print 'TTJet :',signal_region_hists['TTJet'].integral(overflow=True)
@@ -266,6 +233,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     mcSum = signal_region_hists['TTJet'].integral(overflow=True) + signal_region_hists['SingleTop'].integral(overflow=True) + signal_region_hists['V+Jets'].integral(overflow=True) + qcd_from_data.integral(overflow=True)
     print 'Total MC :',mcSum
 
+    # More histogram settings
     histogram_properties = Histogram_properties()
     histogram_properties.name = name_prefix + b_tag_bin
     if category != 'central':
@@ -314,6 +282,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     #                              histogram_properties, save_folder = output_folder_to_use,
     #                              show_ratio = False, normalise = normalise,
     #                              )
+    # Draw same histogram, but with ratio plot
     histogram_properties.name += '_with_ratio'
     loc = histogram_properties.legend_location
     # adjust legend location as it is relative to canvas!
@@ -321,9 +290,8 @@ def make_plot( channel, x_axis_title, y_axis_title,
     print output_folder_to_use
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder_to_use,
-                                 show_ratio = True, normalise = normalise,
-                                 systematics_for_ratio = errorHistsSignal
-                                 )
+                                 show_ratio = True, normalise = normalise
+                                  )
 
 
 if __name__ == '__main__':
@@ -406,13 +374,13 @@ if __name__ == '__main__':
                         ]
 
     additional_qcd_plots = [
-                        # 'QCDHT',
-                        # 'QCDMET',
-                        # 'QCDST',
-                        # 'QCDWPT',
-                        # 'QCDAbsLeptonEta',
-                        # 'QCDLeptonPt',
-                        # 'QCDNJets',
+                        'QCDHT',
+                        'QCDMET',
+                        'QCDST',
+                        'QCDWPT',
+                        'QCDAbsLeptonEta',
+                        'QCDLeptonPt',
+                        'QCDNJets',
                         # 'QCDsigmaietaieta',
                         # 'QCDRelIso',
                         # 'QCDHT_dataControl_mcSignal',
@@ -425,7 +393,7 @@ if __name__ == '__main__':
     for channel, label in {
                             'electron' : 'EPlusJets', 
                             'muon' : 'MuPlusJets',
-                            'combined' : 'COMBINED'
+                            # 'combined' : 'COMBINED'
                             }.iteritems() :
         b_tag_bin = '2orMoreBtags'
 
@@ -806,7 +774,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = False,
                       )
 
         if 'NVertexNoWeight' in include_plots:
@@ -823,7 +791,7 @@ if __name__ == '__main__':
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
+                      use_qcd_data_region = False,
                       )
         
 
