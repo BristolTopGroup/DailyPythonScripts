@@ -198,104 +198,6 @@ def getHistograms( histogram_files,
 
     return signal_region_hists, control_region_hists, qcd_from_data
 
-
-def getSystematicError( histogram_files,
-                        signal_region_tree,
-                        control_region_tree,
-                        signal_region_hists,
-                        control_region_hists,
-                        qcd_from_data,
-                        use_qcd_data_region,
-                        channel,
-                        branchName,
-                        weightBranchSignalRegion,
-                        nBins,
-                        rebin,
-                        x_limits ) :
-
-    signalUp = {}
-    signalDown = {}
-    controlUp = {}
-    controlDown = {}
-
-    signalUp['BJet'], controlUp['BJet'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion.replace('BJetWeight','BJetUpWeight'), nBins, rebin, x_limits )
-    signalDown['BJet'], controlDown['BJet'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion.replace('BJetWeight','BJetDownWeight'), nBins, rebin, x_limits )
-
-    signalUp['lumi'], controlUp['lumi'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion + '* 1.048', nBins, rebin, x_limits )
-    signalDown['lumi'], controlDown['lumi'], a = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion + '* 0.952', nBins, rebin, x_limits )
-
-    signalUp['JES'], controlUp['JES'], a = getHistograms( { x : histogram_files[x].replace('tree.root','plusJES_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JESUp', control_region_tree + '_JESUp', use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits, isSystematic = True )
-    signalDown['JES'], controlDown['JES'], a = getHistograms( { x : histogram_files[x].replace('tree.root','minusJES_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JESDown', control_region_tree + '_JESDown', use_qcd_data_region, channel, branchName, weightBranchSignalRegion , nBins, rebin, x_limits, isSystematic = True )
-
-    signalUp['JER'], controlUp['JER'], a = getHistograms( { x : histogram_files[x].replace('tree.root','plusJER_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JERUp', control_region_tree + '_JERUp', use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits, isSystematic = True )
-    signalDown['JER'], controlDown['JER'], a = getHistograms( { x : histogram_files[x].replace('tree.root','minusJER_tree.root') for x in histogram_files.keys() }, signal_region_tree + '_JERDown', control_region_tree + '_JERDown', use_qcd_data_region, channel, branchName, weightBranchSignalRegion , nBins, rebin, x_limits, isSystematic = True )
-
-
-    signalUp['QCD'] = deepcopy( signal_region_hists )
-    signalDown['QCD'] = deepcopy( signal_region_hists )
-    controlUp['QCD'] = deepcopy( control_region_hists )
-    controlDown['QCD'] = deepcopy( control_region_hists )
-
-    signalUp['TTJet'] = deepcopy( signal_region_hists )
-    signalDown['TTJet'] = deepcopy( signal_region_hists )
-    controlUp['TTJet'] = deepcopy( control_region_hists )
-    controlDown['TTJet'] = deepcopy( control_region_hists )
-
-    # For all systematic variations
-    # Take largest variation in each bin, symmetrise
-    # Convert to relative change wrt central
-    error2HistsSignal = []
-    error2HistsControl = []
-    for central, up, down, error2Hists in zip([signal_region_hists, control_region_hists],[signalUp, controlUp],[signalDown, controlDown], [error2HistsSignal, error2HistsControl]):
-        firstVariation = True
-        hist_central = deepcopy(central['TTJet'])
-        for bkg in ['SingleTop', 'V+Jets']:
-            hist_central += central[bkg]
-        hist_central += qcd_from_data
-
-        for variation in ['BJet', 'lumi', 'JES', 'JER', 'QCD', 'TTJet']:
-        # for variation in ['BJet']:
-
-            hist_up = up[variation]['TTJet']
-            hist_down = down[variation]['TTJet']
-
-            if variation == 'TTJet':
-                hist_up *= 1.05
-                hist_down *= 0.95
-
-            if variation == 'QCD':
-                hist_up += qcd_from_data * 1.6
-                hist_down += qcd_from_data * 0.6
-            else :
-                hist_up += qcd_from_data
-                hist_down += qcd_from_data   
-
-            for bkg in ['SingleTop', 'V+Jets' ]:
-                hist_up += up[variation][bkg]
-                hist_down += down[variation][bkg]
-
-            for bin in range(1,nBins+1):
-                upVar = hist_up.GetBinContent(bin)
-                downVar = hist_down.GetBinContent(bin)
-                binContent = hist_central.GetBinContent(bin)
-                relError = 0
-                if binContent != 0:
-                    upVarRel = abs( 1 - upVar / binContent )
-                    downVarRel = abs( 1 - downVar / binContent )
-                    relError = max( upVarRel, downVarRel )
-
-                if firstVariation:
-                    error2Hists.append(relError*relError)
-                else :
-                    error2Hists[bin-1] += relError*relError
-
-            firstVariation = False
-
-    errorHistsSignal = []
-    for errors2 in error2HistsSignal :
-        errorHistsSignal.append( sqrt(errors2) )
-    return errorHistsSignal
-
 def make_plot( channel, x_axis_title, y_axis_title,
               signal_region_tree,
               control_region_tree,
@@ -396,9 +298,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # if normalise_to_fit:
     #     histogram_properties.mc_error = get_normalisation_error( normalisation )
     #     histogram_properties.mc_errors_label = 'fit uncertainty'
-    # else:
-    #     histogram_properties.mc_error = mc_uncertainty
-    #     histogram_properties.mc_errors_label = 'MC unc.'
 
     if normalise_to_data:
             histogram_properties.name += '_normToData'
@@ -464,11 +363,6 @@ if __name__ == '__main__':
     category = options.category
     met_type = translate_options[options.metType]
     make_additional_QCD_plots = options.additional_QCD_plots
-
-    # this is shown as \ttbar (or MC) uncertainty on the plots
-    # in fact, it takes the uncertainty on the whole MC stack
-    # although unimportant, this needs revision
-    mc_uncertainty = 0.10
     
     histogram_files = {
             'TTJet': measurement_config.ttbar_category_templates_trees[category],
@@ -477,22 +371,13 @@ if __name__ == '__main__':
             'SingleTop': measurement_config.SingleTop_category_templates_trees[category],
     }
 
-    print histogram_files
-    # getting normalisations
+    # Leftover from run1, when fit method was used
+    # Leave implementation for now
     normalisations_electron = {
-            # 'MET':get_fitted_normalisation( 'MET', 'electron', path_to_JSON, category, met_type ),
-            # 'HT':get_fitted_normalisation( 'HT', 'electron', path_to_JSON, category, met_type ),
-            # 'ST':get_fitted_normalisation( 'ST', 'electron', path_to_JSON, category, met_type ),
-            # 'MT':get_fitted_normalisation( 'MT', 'electron', path_to_JSON, category, met_type ),
-            # 'WPT':get_fitted_normalisation( 'WPT', 'electron', path_to_JSON, category, met_type )
             }
     normalisations_muon = {
-            # 'MET':get_fitted_normalisation( 'MET', 'muon', path_to_JSON, category, met_type ),
-            # 'HT':get_fitted_normalisation( 'HT', 'muon', path_to_JSON, category, met_type ),
-            # 'ST':get_fitted_normalisation( 'ST', 'muon', path_to_JSON, category, met_type ),
-            # 'MT':get_fitted_normalisation( 'MT', 'muon', path_to_JSON, category, met_type ),
-            # 'WPT':get_fitted_normalisation( 'WPT', 'muon', path_to_JSON, category, met_type )
             }
+
     preliminary = True
     useQCDControl = True
     showErrorBandOnRatio = False
