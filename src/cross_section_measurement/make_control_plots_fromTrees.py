@@ -26,7 +26,6 @@ def binWidth(binning):
 
 def getHistograms( histogram_files,
                    signal_region_tree,
-                   control_region_tree,
                    use_qcd_data_region,
                    channel,
                    branchName,
@@ -173,7 +172,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
               branchName,
               name_prefix, x_limits, nBins,
               use_qcd_data_region = False,
-              compare_qcd_signal_with_data_control = False,
               y_limits = [],
               y_max_scale = 1.3,
               rebin = 1,
@@ -195,10 +193,14 @@ def make_plot( channel, x_axis_title, y_axis_title,
     if not "_NPUNoWeight" in name_prefix:
         weightBranchSignalRegion += ' * PUWeight'
     if not "_NBJetsNoWeight" in name_prefix:
-        weightBranchSignalRegion += ' * BJetWeight'
-
+        if 'NBJetsUp' in name_prefix:
+            weightBranchSignalRegion += ' * BJetUpWeight'
+        elif 'NBJetsDown' in name_prefix:
+            weightBranchSignalRegion += ' * BJetDownWeight'
+        else:
+            weightBranchSignalRegion += ' * BJetWeight'
     # Get all histograms
-    signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, control_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
+    signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
 
     # Which histograms to draw, and properties
@@ -364,6 +366,8 @@ if __name__ == '__main__':
                         'NJets',
                         'NBJets',
                         'NBJetsNoWeight',
+                        'NBJetsUp',
+                        'NBJetsDown',
                         # # # # # # # # 'Mjj',
                         # # # # # # # # 'M3',
                         # # # # # # # # 'angle_bl',
@@ -735,6 +739,44 @@ if __name__ == '__main__':
                       use_qcd_data_region = False,
                       )
         ###################################################
+        # NBJetsUp
+        ###################################################
+        if 'NBJetsUp' in include_plots:
+            print '---> NBJetsUp'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      branchName = 'NBJets',
+                      name_prefix = '%s_NBJetsUp_' % label,
+                      x_limits = control_plots_bins['NBJets'],
+                      nBins = len(control_plots_bins['NBJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
+        ###################################################
+        # NBJetsDown
+        ###################################################
+        if 'NBJetsDown' in include_plots:
+            print '---> NBJetsDown'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      branchName = 'NBJets',
+                      name_prefix = '%s_NBJetsDown_' % label,
+                      x_limits = control_plots_bins['NBJets'],
+                      nBins = len(control_plots_bins['NBJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
+        ###################################################
         # Jet Pt
         ###################################################
         if 'JetPt' in include_plots:
@@ -864,10 +906,10 @@ if __name__ == '__main__':
         if channel == 'electronQCDConversions':
             treeName = 'EPlusJets/QCDConversions'
         elif channel == 'muonQCDNonIso':
-            treeName = 'MuPlusJets/QCD iso > 0.3'
+            treeName = 'MuPlusJets/QCD non iso mu+jets 3toInf'
             signalTreeName = 'MuPlusJets/Ref selection'
         elif channel == 'muonQCDNonIso2':
-            treeName = 'MuPlusJets/QCD 0.12 < iso <= 0.3'
+            treeName = 'MuPlusJets/QCD non iso mu+jets 1p5to3'
             signalTreeName = 'MuPlusJets/Ref selection'
 
         ###################################################
@@ -897,7 +939,6 @@ if __name__ == '__main__':
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['HT']),
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % signalTreeName,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      compare_qcd_signal_with_data_control = True,
                       branchName = 'HT',
                       name_prefix = '%s_HT_' % channel,
                       x_limits = control_plots_bins['HT'],
@@ -967,10 +1008,6 @@ if __name__ == '__main__':
                       cms_logo_location = 'right',
                       )
 
-        # Set folder for this batch of plots
-        output_folder =  output_folder_base + "QCDControl/Control/%s/" % channel
-        # output_folder =  output_folder_base + "QCDControl/Control/%s/TightElectron/" % channel
-        make_folder_if_not_exists(output_folder)
         ###################################################
         # Abs Lepton Eta
         ###################################################
@@ -1018,32 +1055,6 @@ if __name__ == '__main__':
                       )
 
         ###################################################
-        # Rel iso
-        ###################################################
-        if 'QCDRelIso' in include_plots:
-            print '---> QCD Rel iso'
-            channelTreeName = 'Electron/Electrons'
-            if channel == 'muonQCDNonIso':
-                channelTreeName = 'Muon/Muons'
-            branchName = 'relIso_03_deltaBeta'
-            if channel == 'muonQCDNonIso':
-                branchName = 'relIso_04_deltaBeta'
-
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['relIso'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
-                      branchName = '%s' % branchName,
-                      name_prefix = '%s_relIso_' % channel,
-                      x_limits = control_plots_bins['relIsoQCD'],
-                      nBins = len(control_plots_bins['relIsoQCD'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      )
-
-        ###################################################
         # NJets
         ###################################################
         if 'QCDNJets' in include_plots:
@@ -1062,24 +1073,54 @@ if __name__ == '__main__':
                       cms_logo_location = 'right',
                       )
 
-        ###################################################
-        # Sigma ieta ieta
-        ###################################################
+        # # Set folder for this batch of plots
+        # output_folder =  output_folder_base + "QCDControl/Control/%s/" % channel
+        # # output_folder =  output_folder_base + "QCDControl/Control/%s/TightElectron/" % channel
+        # make_folder_if_not_exists(output_folder)
+        # ###################################################
+        # # Rel iso
+        # ###################################################
+        # if 'QCDRelIso' in include_plots:
+        #     print '---> QCD Rel iso'
+        #     channelTreeName = 'Electron/Electrons'
+        #     if channel == 'muonQCDNonIso':
+        #         channelTreeName = 'Muon/Muons'
+        #     branchName = 'relIso_03_deltaBeta'
+        #     if channel == 'muonQCDNonIso':
+        #         branchName = 'relIso_04_deltaBeta'
 
-        norm_variable = 'sigmaietaieta'
-        if 'QCDsigmaietaieta' in include_plots and not 'MuPlusJets' in treeName:
-            print '---> sigmaietaieta'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      branchName = 'sigmaIetaIeta',
-                      name_prefix = '%s_sigmaIetaIeta_' % channel,
-                      x_limits = control_plots_bins['sigmaietaieta'],
-                      y_max_scale = 1.5,
-                      nBins = len(control_plots_bins['sigmaietaieta'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.85 ),
-                      cms_logo_location = 'left',
-                      )
+        #     make_plot( channel,
+        #               x_axis_title = '$%s$' % control_plots_latex['relIso'],
+        #               y_axis_title = 'Events',
+        #               signal_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
+        #               control_region_tree = 'TTbar_plus_X_analysis/%s/%s' % ( treeName, channelTreeName),
+        #               branchName = '%s' % branchName,
+        #               name_prefix = '%s_relIso_' % channel,
+        #               x_limits = control_plots_bins['relIsoQCD'],
+        #               nBins = len(control_plots_bins['relIsoQCD'])-1,
+        #               rebin = 1,
+        #               legend_location = ( 0.95, 0.78 ),
+        #               cms_logo_location = 'right',
+        #               )
+
+        # ###################################################
+        # # Sigma ieta ieta
+        # ###################################################
+
+        # norm_variable = 'sigmaietaieta'
+        # if 'QCDsigmaietaieta' in include_plots and not 'MuPlusJets' in treeName:
+        #     print '---> sigmaietaieta'
+        #     make_plot( channel,
+        #               x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
+        #               y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
+        #               signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+        #               control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
+        #               branchName = 'sigmaIetaIeta',
+        #               name_prefix = '%s_sigmaIetaIeta_' % channel,
+        #               x_limits = control_plots_bins['sigmaietaieta'],
+        #               y_max_scale = 1.5,
+        #               nBins = len(control_plots_bins['sigmaietaieta'])-1,
+        #               rebin = 1,
+        #               legend_location = ( 0.95, 0.85 ),
+        #               cms_logo_location = 'left',
+        #               )
