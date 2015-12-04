@@ -67,10 +67,8 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
         h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
         h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
-        h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], edges )
+        h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo_HERWIG'], edges )
 
-        ### h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], edges )
-        ### h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], edges )
         h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
         h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
         h_normalised_xsection_massup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
@@ -80,18 +78,10 @@ def read_xsection_measurement_results( category, channel ):
                                                                      'powhegPythia8':h_normalised_xsection_powhegPythia8,
                                                                      'amcatnlo':h_normalised_xsection_amcatnlo,
                                                                      'madgraphMLM':h_normalised_xsection_madgraphMLM,
-                                                                     'POWHEG_HERWIG':h_normalised_xsection_powhegHerwigpp,
-        ###                                                         # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
-        ###                                                         # 'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
-        ###                                                         # 'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG}
+                                                                     'amcatnlo_HERWIG':h_normalised_xsection_amcatnloHerwigpp,
                                                                 })
-        ### if measurement_config.centre_of_mass_energy == 8:
-        ###     histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
 
         histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
-                                                                  # 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
-                                                                  # 'matchingdown': h_normalised_xsection_mathchingdown,
-                                                                  # 'matchingup': h_normalised_xsection_mathchingup,
                                                                   'scaledown': h_normalised_xsection_scaledown,
                                                                   'scaleup': h_normalised_xsection_scaleup,
                                                                   'massdown': h_normalised_xsection_massdown,
@@ -344,8 +334,8 @@ def get_cms_labels( channel ):
         lepton = 'e, $\mu$ + jets combined'
 #     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
     channel_label = lepton
-    template = '%.0f pb$^{-1}$ (%d TeV)'
-    label = template % ( measurement_config.new_luminosity, measurement_config.centre_of_mass_energy)
+    template = '%.1f fb$^{-1}$ (%d TeV)'
+    label = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
     return label, channel_label
 
 @xsec_04_log.trace()
@@ -420,7 +410,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             hist.linewidth = 4
             # setting colours
             linestyle = None
-            if 'amcatnlo' in key or 'massdown' in key:
+            if 'amcatnlo_HERWIG' in key or 'massdown' in key:
                 hist.SetLineColor( kBlue )
                 dashes[key] = [25,5,5,5,5,5,5,5]
             elif 'madgraphMLM' in key or 'scaledown' in key:
@@ -432,7 +422,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 linestyle = 'solid'
                 dashes[key] = None
                 hist.SetLineColor( 633 )
-            elif 'massup' in key or 'POWHEG_HERWIG' in key:
+            elif 'massup' in key or 'amcatnlo' in key:
                 hist.SetLineColor( 807 )
                 dashes[key] = [20,5]
             elif 'MCATNLO' in key or 'scaleup' in key:
@@ -442,6 +432,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             if linestyle != None:
                 hist.linestyle = linestyle
             line, h = rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
+            h = h[0]
 
             if dashes[key] != None:
                 line.set_dashes(dashes[key])
@@ -458,7 +449,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
     new_handles, new_labels = [], []
     zipped = dict( zip( labels, handles ) )
-    labelOrder = ['data', 'Powheg Pythia8', 'Powheg Herwig++', 'aMC@NLO', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', measurements_latex['massup'], measurements_latex['massdown'] ]
+    labelOrder = ['data', 'Powheg Pythia8', 'aMC@NLO Pythia8', 'aMC@NLO Herwig++', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', measurements_latex['massup'], measurements_latex['massdown'] ]
     for label in labelOrder:
         if label in labels:
             new_handles.append(zipped[label])
@@ -542,6 +533,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 ratio = hist.Clone()
                 ratio.Divide( hist_data ) #divide by data
                 line, h = rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
+                h = h[0]
                 if dashes[key] != None:
                     h.set_dashes(dashes[key])
 
@@ -606,24 +598,25 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'NJets':
-            ax1.set_ylim( ymin = 0.5, ymax = 2.0 )
+            ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
         elif variable == 'abs_lepton_eta':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+            ax1.set_ylim( ymin = 0.9, ymax = 1.1 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'lepton_pt':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+            ax1.set_ylim( ymin = 0.8, ymax = 1.3 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
     if CMS.tight_layout:
         plt.tight_layout()
 
-    path = '{output_folder}/{centre_of_mass_energy}TeV/{category}/'
+    path = '{output_folder}/{centre_of_mass_energy}TeV/{phaseSpace}/{variable}/'
     path = path.format(
             output_folder = output_folder,
             centre_of_mass_energy = measurement_config.centre_of_mass_energy,
-            category = category,
+            phaseSpace = phase_space,
+            variable = variable
             )
     make_folder_if_not_exists( path )
     for output_format in output_formats:
@@ -792,7 +785,8 @@ if __name__ == '__main__':
     # all_measurements.extend( met_uncertainties )
     # all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
-    for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+    # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+    for channel in ['combinedBeforeUnfolding']:
         for category in all_measurements:
             if not category == 'central' and not options.additional_plots:
                 continue
