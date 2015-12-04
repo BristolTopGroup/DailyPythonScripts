@@ -114,8 +114,6 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     }
     variable_template = config.variable_path_templates[
         variable].format(**inputs)
-    if variable in ['MET', 'WPT', 'ST'] and category not in config.met_systematics:
-        variable_template += 'NoHF'
 
     template_category = category
     if category == 'QCD_shape' or category in config.rate_changing_systematics_names:
@@ -158,8 +156,6 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     variable_template_data = variable_template.replace(
         met_type, config.translate_options['type1'])
 
-    if variable in ['MET', 'WPT', 'ST'] and category in config.met_systematics:
-        variable_template_data += 'NoHF'
     m.addSample(
         'data',
         False,
