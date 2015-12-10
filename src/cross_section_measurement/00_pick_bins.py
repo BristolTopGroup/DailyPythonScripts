@@ -60,13 +60,15 @@ def main():
     parser = OptionParser()
     parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
                       help = "Consider visible phase space or not" )
+    parser.add_option( '-c', dest = "combined", action = "store_true",
+                      help = "Combine channels" )
     ( options, _ ) = parser.parse_args()
 
-    p_min = 0.5
-    s_min = 0.5
+    p_min = 0.6
+    s_min = 0.6
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 50
+    n_min = 100
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
@@ -103,18 +105,15 @@ def main():
             lastBinWidth = best_binning[-1] - best_binning[-2]
             penultimateBinWidth = best_binning[-2] - best_binning[-3]
             if lastBinWidth / penultimateBinWidth > 4:
-                print ('Changing bins from ',best_binning)
                 newLastBinWidth = penultimateBinWidth * 4
                 best_binning[-1] = best_binning[-2] + newLastBinWidth
-                print ('To',best_binning)
 
         print('The best binning for', variable, 'is:')
         print('bin edges =', best_binning)
         print('N_bins    =', len( best_binning ) - 1)
-        print('-' * 120)
         print('The corresponding purities and stabilities are:')
         for info in histogram_information:
-            print_latex_table(info, variable, best_binning)
+            # print_latex_table(info, variable, best_binning)
             outputInfo = {}
             outputInfo['p_i'] = info['p_i']
             outputInfo['s_i'] = info['s_i']
@@ -123,10 +122,9 @@ def main():
             if options.visiblePhaseSpace:
                 outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
             write_data_to_JSON( outputInfo, outputJsonFile )
-        print('=' * 120)
-
-
-        print(outputInfo)
+        for key in outputInfo:
+            print (key,outputInfo[key])
+        print('-' * 120)
 
     print('=' * 120)
     print('For config/variable_binning.py')
@@ -179,6 +177,18 @@ def get_histograms( variable, options ):
         # change scope from file to memory
         histogram['hist'].SetDirectory( 0 )
         f.close()
+
+    if options.combined:
+        combined_histogram_info =  {'file': 'dummy',
+                                     'CoM': 13,
+                                     'path':'dummy',
+                                     'channel':'combined'}
+        for histogram in histogram_information:
+            if not 'hist' in combined_histogram_info.keys():
+                combined_histogram_info['hist'] = histogram['hist'].Clone()
+            else:
+                combined_histogram_info['hist'] += histogram['hist'].Clone()
+        histogram_information = [combined_histogram_info]
     return histogram_information
     
 
@@ -219,10 +229,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
         n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
         # Now check if the last bin also fulfils the requirements
         if ( purities[-1] < p_min or stabilities[-1] < s_min or n_events[-1] < n_min ) and len(purities) > 3:
-            print ('MERGING LAST BIN')
-            print (n_events[-1],n_events[-2])
-            print (purities[-1],purities[-2])
-            print (stabilities[-1],stabilities[-2])
             # if not, merge last two bins 
             bin_edges[-2] = bin_edges[-1]
             bin_edges = bin_edges[:-1]
