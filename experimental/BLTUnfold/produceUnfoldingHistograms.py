@@ -476,6 +476,20 @@ def main():
                     pass
                 pass
             pass
+
+            # Done all channels, now combine the two channels, and output to the same file
+            for path, dirs, objects in out.walk():
+                if 'electron' in path:
+                    outputDir = out.mkdir(path.replace('electron','COMBINED'))
+                    outputDir.cd()
+                    for h in objects:
+                        h_e = out.Get(path+'/'+h)
+                        h_mu = out.Get(path.replace('electron','muon')+'/'+h)
+                        h_comb = (h_e + h_mu).Clone(h)
+                        h_comb.Write()
+                    pass
+                pass
+            pass
         pass
 
 if __name__ == '__main__':
