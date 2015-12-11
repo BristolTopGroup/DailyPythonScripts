@@ -162,8 +162,8 @@ if __name__ == '__main__':
         histogram_name = 'response_without_fakes'
         bin_edges_to_use = bin_edges
 
-    channels = ['electron', 'muon']
-    channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets' }
+    channels = ['electron', 'muon', 'COMBINED']
+    channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets', 'COMBINED':'e+$\mu$+jets combined' }
 
     b_tag_bin = '2orMoreBtags'
     title_template = 'CMS Simulation, $\sqrt{s}$ = %d TeV, %s, %s, %s'
