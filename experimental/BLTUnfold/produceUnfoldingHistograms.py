@@ -476,7 +476,9 @@ def main():
                     pass
                 pass
             pass
+        pass
 
+        with root_open( outputFileName, 'update') as out:
             # Done all channels, now combine the two channels, and output to the same file
             for path, dirs, objects in out.walk():
                 if 'electron' in path:
@@ -490,7 +492,6 @@ def main():
                     pass
                 pass
             pass
-        pass
 
 if __name__ == '__main__':
     main()
