@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "Recreating Config Files (Just in case you forgot...)"
+python src/cross_section_measurement/create_measurement.py
 echo "Tarring DailyPythonScripts..."
 tar -cf dps.tar ../DailyPythonScripts/ --exclude ../DailyPythonScripts/data --exclude ../DailyPythonScripts/plots --exclude ../DailyPythonScripts/tables  --exclude ../DailyPythonScripts/jobs --exclude ../DailyPythonScripts/dps.tar
 echo "Submitting jobs to DICE..."
