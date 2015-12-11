@@ -68,7 +68,7 @@ def main():
     s_min = 0.6
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 200
+    n_min = 500
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
@@ -137,19 +137,22 @@ def get_histograms( variable, options ):
 
     path_electron = ''
     path_muon = ''
+    path_combined = ''    
     histogram_name = ''
     if options.visiblePhaseSpace:
         histogram_name = 'responseVis_without_fakes'
     else :
         histogram_name = 'response_without_fakes'
 
-
     if variable == 'HT':
         path_electron = 'unfolding_HT_analyser_electron_channel/%s' % histogram_name
         path_muon = 'unfolding_HT_analyser_muon_channel/%s' % histogram_name
+        path_combined = 'unfolding_HT_analyser_COMBINED_channel/%s' % histogram_name
+
     else :
         path_electron = 'unfolding_%s_analyser_electron_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
         path_muon = 'unfolding_%s_analyser_muon_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
+        path_combined = 'unfolding_%s_analyser_COMBINED_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
 
     histogram_information = [
                 {'file': config.unfolding_central_raw,
@@ -160,8 +163,15 @@ def get_histograms( variable, options ):
                  'CoM': 13,
                  'path':path_muon,
                  'channel':'muon'},
-                 ]
+                ]
     
+    if options.combined:
+        histogram_information = [
+                    {'file': config.unfolding_central_raw,
+                     'CoM': 13,
+                     'path': path_combined,
+                     'channel':'combined'},
+                    ]
 
     for histogram in histogram_information:
         f = File( histogram['file'] )
@@ -178,17 +188,6 @@ def get_histograms( variable, options ):
         histogram['hist'].SetDirectory( 0 )
         f.close()
 
-    if options.combined:
-        combined_histogram_info =  {'file': 'dummy',
-                                     'CoM': 13,
-                                     'path':'dummy',
-                                     'channel':'combined'}
-        for histogram in histogram_information:
-            if not 'hist' in combined_histogram_info.keys():
-                combined_histogram_info['hist'] = histogram['hist'].Clone()
-            else:
-                combined_histogram_info['hist'] += histogram['hist'].Clone()
-        histogram_information = [combined_histogram_info]
     return histogram_information
     
 
