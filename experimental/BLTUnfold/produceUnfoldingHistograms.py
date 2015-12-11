@@ -99,6 +99,8 @@ def getFileName( com, sample, measurementConfig ) :
                         'jerup' : measurementConfig.ttbar_jerup_category_templates_trees,
                         'bjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'bjetup' : measurementConfig.ttbar_category_templates_trees['central'],
+                        # 'lightjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        # 'lightjetup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'leptondown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'leptonup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'pileupSystematic' : measurementConfig.ttbar_category_templates_trees['central'],
@@ -298,6 +300,13 @@ def main():
                     elif options.sample == "bjetdown":
                         bjetWeight = "BJetDownWeight"
 
+                    # lightjetWeight = "LightJetWeight"
+                    # if options.sample == "lightjetup":
+                    #     lightjetWeight = "LightJetUpWeight"
+                    # elif options.sample == "lightjetdown":
+                    #     lightjetWeight = "LightJetDownWeight"
+
+                    # offlineWeight = '( EventWeight * %s * %s * %s * %s * %.4f)' % ( pileupWeight, bjetWeight, lightjetWeight, leptonWeight, measurement_config.luminosity_scale )
                     offlineWeight = '( EventWeight * %s * %s * %s * %.4f)' % ( pileupWeight, bjetWeight, leptonWeight, measurement_config.luminosity_scale )
                     offlineSelection = ''
                     if channel.channelName is 'muPlusJets' :
