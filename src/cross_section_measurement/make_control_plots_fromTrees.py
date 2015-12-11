@@ -191,14 +191,16 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # Define weights
     weightBranchSignalRegion = 'EventWeight'
     if not "_NPUNoWeight" in name_prefix:
-        weightBranchSignalRegion += ' * PUWeight'
+        if '_NPUUp' in name_prefix: weightBranchSignalRegion += ' * PUWeight_up'
+        elif '_NPUDown' in name_prefix: weightBranchSignalRegion += ' * PUWeight_down'
+        else: weightBranchSignalRegion += ' * PUWeight'
+
     if not "_NBJetsNoWeight" in name_prefix:
-        if 'NBJetsUp' in name_prefix:
-            weightBranchSignalRegion += ' * BJetUpWeight'
-        elif 'NBJetsDown' in name_prefix:
-            weightBranchSignalRegion += ' * BJetDownWeight'
-        else:
-            weightBranchSignalRegion += ' * BJetWeight'
+        if '_NBJetsUp' in name_prefix: weightBranchSignalRegion += ' * BJetUpWeight'
+        elif '_NBJetsDown' in name_prefix: weightBranchSignalRegion += ' * BJetDownWeight'
+        elif '_NLightJetsUp' in name_prefix: weightBranchSignalRegion += ' * LightJetUpWeight'
+        elif '_NLightJetsDown' in name_prefix: weightBranchSignalRegion += ' * LightJetDownWeight'
+        else: weightBranchSignalRegion += ' * BJetWeight'
     # Get all histograms
     signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
@@ -361,6 +363,8 @@ if __name__ == '__main__':
                         'WPT',
                         'NVertex',
                         'NVertexNoWeight',
+                        'NVertexUp',
+                        'NVertexDown',
                         'LeptonPt',
                         'AbsLeptonEta',
                         'NJets',
@@ -368,10 +372,13 @@ if __name__ == '__main__':
                         'NBJetsNoWeight',
                         'NBJetsUp',
                         'NBJetsDown',
+                        'NLightJetsUp',
+                        'NLightJetsDown',
+
                         # # # # # # # # 'Mjj',
                         # # # # # # # # 'M3',
                         # # # # # # # # 'angle_bl',
-                        # 'JetPt',
+                        'JetPt',
                         # 'AbsLeptonEta',
                         # 'RelIso',
                         # 'sigmaietaieta'
@@ -776,6 +783,46 @@ if __name__ == '__main__':
                       cms_logo_location = 'right',
                       use_qcd_data_region = False,
                       )
+
+        ###################################################
+        # NLightJetsUp
+        ###################################################
+        if 'NLightJetsUp' in include_plots:
+            print '---> LightJetsUp'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      branchName = 'NBJets',
+                      name_prefix = '%s_LightJetsUp_' % label,
+                      x_limits = control_plots_bins['NBJets'],
+                      nBins = len(control_plots_bins['NBJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
+        ###################################################
+        # NLightJetsDown
+        ###################################################
+        if 'NLightJetsDown' in include_plots:
+            print '---> LightJetsDown'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
+                      branchName = 'NBJets',
+                      name_prefix = '%s_LightJetsDown_' % label,
+                      x_limits = control_plots_bins['NBJets'],
+                      nBins = len(control_plots_bins['NBJets'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.9, 0.73 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
+
         ###################################################
         # Jet Pt
         ###################################################
@@ -788,9 +835,9 @@ if __name__ == '__main__':
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['pt'],
                       y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % ( label ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/Jets/Jets' % (label ),
-                      branchName = 'pt',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % ( label ),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % (label ),
+                      branchName = 'jet_pt',
                       name_prefix = '%s_JetPt_' % label,
                       x_limits = control_plots_bins['JetPt'],
                       nBins = len(control_plots_bins['JetPt'])-1,
@@ -836,7 +883,39 @@ if __name__ == '__main__':
                       use_qcd_data_region = False,
                       )
         
+        if 'NVertexUp' in include_plots:
+            print '---> NVertexUp'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'NVertices',
+                      name_prefix = '%s_NPUUp_' % label,
+                      x_limits = control_plots_bins['NVertex'],
+                      nBins = len(control_plots_bins['NVertex'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
 
+        if 'NVertexDown' in include_plots:
+            print '---> NVertexDown'
+            make_plot( channel,
+                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
+                      branchName = 'NVertices',
+                      name_prefix = '%s_NPUDown_' % label,
+                      x_limits = control_plots_bins['NVertex'],
+                      nBins = len(control_plots_bins['NVertex'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = False,
+                      )
         ###################################################
         # Rel iso
         ###################################################

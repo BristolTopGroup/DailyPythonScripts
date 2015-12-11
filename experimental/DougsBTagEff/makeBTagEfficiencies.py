@@ -3,6 +3,7 @@ import ROOT
 from ROOT import gROOT, gPad, gStyle, TChain, TFile, TTree, TMath, TH1, TH1F, TH2F, TCanvas, TPad, TAxis, TLegend, TLatex, kRed, kBlue, kGreen, kMagenta
 from array import array
 import math
+import os
 ROOT.gROOT.SetBatch(True)
 if __name__ == '__main__':
 
@@ -12,8 +13,11 @@ if __name__ == '__main__':
 	input_file = "/hdfs/TopQuarkGroup/run2/atOutput/13TeV/25ns/TTJets_PowhegPythia8_tree.root"
 	file = TFile("BTagEfficiency.root", "RECREATE")
 
+	if not os.path.exists('plots'):
+		os.makedirs('plots')
+
 	pt_binning = array ( 'f' , [30, 50, 70, 100, 140, 200, 300, 670] )
-	eta_binning = array ( 'f', [-2.4, 2.4] )
+	eta_binning = array ( 'f', [-2.4, -2.1, -1.5, 0, 1.5, 2.1, 2.4] )
 
 
 	nPtBins = len( pt_binning )	- 1
@@ -161,19 +165,19 @@ if __name__ == '__main__':
 	# Easy access to .pngs 
 	bQuarkJetCanvas = TCanvas("bQuarkJet","bQuarkJet", 0, 0, 800, 600)
 	bQuarkJets_BTags_Hist.SetTitle("bQuarkJet BTag Efficiencies; pt; eta")
-	bQuarkJets_BTags_Hist.Draw("col text e")
+	bQuarkJets_BTags_Hist.Draw("colz text e")
 	bQuarkJetCanvas.Update()
 	bQuarkJetCanvas.SaveAs("plots/bQuarkJet_BTagEfficiency.png")
 
 	cQuarkJetCanvas = TCanvas("cQuarkJet","cQuarkJet", 0, 0, 800, 600)
 	cQuarkJets_BTags_Hist.SetTitle("cQuarkJet BTag Efficiencies; pt; eta")
-	cQuarkJets_BTags_Hist.Draw("col text e")
+	cQuarkJets_BTags_Hist.Draw("colz text e")
 	cQuarkJetCanvas.Update()
 	cQuarkJetCanvas.SaveAs("plots/cQuarkJet_BTagEfficiency.png")
 	
 	udsgQuarkJetCanvas = TCanvas("udsgQuarkJet","udsgQuarkJet", 0, 0, 800, 600)
 	udsgQuarkJets_BTags_Hist.SetTitle("udsgQuarkJet BTag Efficiencies; pt; eta")
-	udsgQuarkJets_BTags_Hist.Draw("col text e")
+	udsgQuarkJets_BTags_Hist.Draw("colz text e")
 	udsgQuarkJetCanvas.Update()
 	udsgQuarkJetCanvas.SaveAs("plots/udsgQuarkJet_BTagEfficiency.png")
 
