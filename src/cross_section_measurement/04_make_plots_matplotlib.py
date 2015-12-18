@@ -449,7 +449,16 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
     new_handles, new_labels = [], []
     zipped = dict( zip( labels, handles ) )
-    labelOrder = ['data', 'Powheg Pythia8', 'aMC@NLO Pythia8', 'aMC@NLO Herwig++', 'Madgraph', '$Q^{2}$ up', '$Q^{2}$ down', measurements_latex['massup'], measurements_latex['massdown'] ]
+    labelOrder = ['data', 
+        measurements_latex['powhegPythia8'],
+        measurements_latex['amcatnlo'],
+        measurements_latex['amcatnlo_HERWIG'],
+        measurements_latex['madgraphMLM'],
+        measurements_latex['scaleup'], 
+        measurements_latex['scaledown'],
+        measurements_latex['massup'],
+        measurements_latex['massdown']
+    ]
     for label in labelOrder:
         if label in labels:
             new_handles.append(zipped[label])
@@ -578,7 +587,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         ax1.add_artist(l1)
 
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.6 )
+            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
 #             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
@@ -594,13 +603,13 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
+            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'NJets':
             ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
         elif variable == 'abs_lepton_eta':
-            ax1.set_ylim( ymin = 0.9, ymax = 1.1 )
+            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'lepton_pt':

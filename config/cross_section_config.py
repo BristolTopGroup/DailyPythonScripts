@@ -5,7 +5,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
     known_centre_of_mass_energies = [7,8,13]
     # has to be separate as many variables depend on it
-    luminosities = {7:5050, 8:19584, 13:2136.36}
+    luminosities = {7:5050, 8:19584, 13:2215.18}
     parameters = ['SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
                   'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
                   'categories_and_prefixes', 'central_general_template',
@@ -552,7 +552,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 2136.361  # pb^-1
+        self.new_luminosity = 2215.18  # pb^-1
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
@@ -672,13 +672,13 @@ class XSectionConfig():
             "ttbarRap" : 236.448941265,
         }
         self.tau_values_combined = {
-"MET" : 0.849753435909,
-"WPT" : 1.0235310219,
-"NJets" : 0.932603346883,
-"abs_lepton_eta" : 0.1,
-"ST" : 0.932603346883,
-"lepton_pt" : 0.585702081806,
-"HT" : 1.12332403298,
+"MET" : 6.57933224658,
+"WPT" : 3.12571584969,
+"NJets" : 3.43046928631,
+"abs_lepton_eta" : 0.705480231072,
+"ST" : 1.48496826225,
+"lepton_pt" : 2.15443469003,
+"HT" : 2.15443469003,
 
             'bjets_pt': 0.,
             'bjets_eta': 0.,
