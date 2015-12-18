@@ -198,9 +198,10 @@ def make_plot( channel, x_axis_title, y_axis_title,
     if not "_NBJetsNoWeight" in name_prefix:
         if '_NBJetsUp' in name_prefix: weightBranchSignalRegion += ' * BJetUpWeight'
         elif '_NBJetsDown' in name_prefix: weightBranchSignalRegion += ' * BJetDownWeight'
-        elif '_NLightJetsUp' in name_prefix: weightBranchSignalRegion += ' * LightJetUpWeight'
-        elif '_NLightJetsDown' in name_prefix: weightBranchSignalRegion += ' * LightJetDownWeight'
+        elif '_NBJets_LightUp' in name_prefix: weightBranchSignalRegion += ' * LightJetUpWeight'
+        elif '_NBJets_LightDown' in name_prefix: weightBranchSignalRegion += ' * LightJetDownWeight'
         else: weightBranchSignalRegion += ' * BJetWeight'
+    print weightBranchSignalRegion
     # Get all histograms
     signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
@@ -372,8 +373,8 @@ if __name__ == '__main__':
                         'NBJetsNoWeight',
                         'NBJetsUp',
                         'NBJetsDown',
-                        'NLightJetsUp',
-                        'NLightJetsDown',
+                        'NBJets_LightUp',
+                        'NBJets_LightDown',
 
                         # # # # # # # # 'Mjj',
                         # # # # # # # # 'M3',
@@ -402,7 +403,7 @@ if __name__ == '__main__':
 
 
     for channel, label in {
-                            'electron' : 'EPlusJets', 
+                            # 'electron' : 'EPlusJets', 
                             'muon' : 'MuPlusJets',
                             # 'combined' : 'COMBINED'
                             }.iteritems() :
@@ -787,15 +788,15 @@ if __name__ == '__main__':
         ###################################################
         # NLightJetsUp
         ###################################################
-        if 'NLightJetsUp' in include_plots:
-            print '---> LightJetsUp'
+        if 'NBJets_LightUp' in include_plots:
+            print '---> NBJets_LightUp'
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['NBJets'],
                       y_axis_title = 'Events',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
                       branchName = 'NBJets',
-                      name_prefix = '%s_LightJetsUp_' % label,
+                      name_prefix = '%s_NBJets_LightUp_' % label,
                       x_limits = control_plots_bins['NBJets'],
                       nBins = len(control_plots_bins['NBJets'])-1,
                       rebin = 1,
@@ -806,15 +807,15 @@ if __name__ == '__main__':
         ###################################################
         # NLightJetsDown
         ###################################################
-        if 'NLightJetsDown' in include_plots:
-            print '---> LightJetsDown'
+        if 'NBJets_LightDown' in include_plots:
+            print '---> NBJets_LightDown'
             make_plot( channel,
                       x_axis_title = '$%s$' % control_plots_latex['NBJets'],
                       y_axis_title = 'Events',
                       signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % label,
                       branchName = 'NBJets',
-                      name_prefix = '%s_LightJetsDown_' % label,
+                      name_prefix = '%s_NBJets_LightDown_' % label,
                       x_limits = control_plots_bins['NBJets'],
                       nBins = len(control_plots_bins['NBJets'])-1,
                       rebin = 1,
