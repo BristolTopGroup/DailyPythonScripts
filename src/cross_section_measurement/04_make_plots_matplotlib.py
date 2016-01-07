@@ -432,7 +432,6 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             if linestyle != None:
                 hist.linestyle = linestyle
             line, h = rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
-            h = h[0]
 
             if dashes[key] != None:
                 line.set_dashes(dashes[key])
@@ -542,7 +541,6 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 ratio = hist.Clone()
                 ratio.Divide( hist_data ) #divide by data
                 line, h = rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
-                h = h[0]
                 if dashes[key] != None:
                     h.set_dashes(dashes[key])
 
