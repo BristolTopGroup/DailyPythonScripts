@@ -46,7 +46,7 @@ from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config import XSectionConfig
 from optparse import OptionParser
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges, minimum_bin_width
 from tools.file_utilities import write_data_to_JSON
 
 def main():
@@ -69,6 +69,7 @@ def main():
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
     n_min = 200
+    n_min_lepton = 500
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
@@ -81,15 +82,17 @@ def main():
         histogram_information = get_histograms( variableToUse, options )
 
         if variable == 'HT':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=100. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=100. )
         elif variable == 'ST':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=123. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=123. )
         elif variable == 'NJets':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=3.5 )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=3.5 )
         elif variable == 'lepton_pt':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=23. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], x_min=23. )
+        elif variable == 'abs_lepton_eta':
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
         else:
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], )
 
         if 'Rap' in variable:
             for b in list(best_binning):
@@ -97,16 +100,21 @@ def main():
                     best_binning.append(-1.0*b)
             best_binning.sort()
 
-        bin_choices[variable] = best_binning
-
         # Make last bin smaller if huge
         # Won't change final results
         if len(best_binning) >= 4:
             lastBinWidth = best_binning[-1] - best_binning[-2]
             penultimateBinWidth = best_binning[-2] - best_binning[-3]
-            if lastBinWidth / penultimateBinWidth > 4:
-                newLastBinWidth = penultimateBinWidth * 4
+            if lastBinWidth / penultimateBinWidth > 5:
+                newLastBinWidth = penultimateBinWidth * 5
                 best_binning[-1] = best_binning[-2] + newLastBinWidth
+
+        if variable == 'abs_lepton_eta':
+            best_binning = [ round(i,2) for i in best_binning ]
+        elif variable != 'NJets' :
+            best_binning = [ round(i) for i in best_binning ]
+
+        bin_choices[variable] = best_binning
 
         print('The best binning for', variable, 'is:')
         print('bin edges =', best_binning)
@@ -125,7 +133,6 @@ def main():
         for key in outputInfo:
             print (key,outputInfo[key])
         print('-' * 120)
-
     print('=' * 120)
     print('For config/variable_binning.py')
     print('=' * 120)
@@ -191,7 +198,7 @@ def get_histograms( variable, options ):
     return histogram_information
     
 
-def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None ):
+def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
     Step 3: Check if it is true for all other histograms. If not back to step 2
@@ -213,7 +220,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
         current_bin_end = current_bin_start
     
     while current_bin_end < n_bins:
-        current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min )
+        current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
         if not bin_edges:
             # if empty
             bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
@@ -243,7 +250,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, x_min = None )
     return bin_edges, histogram_information
 
  
-def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ): 
+def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width ): 
     current_bin_start = bin_start
     current_bin_end = bin_end
     for gen_vs_reco_histogram in histograms:
@@ -256,6 +263,12 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min ):
             n_reco = sum( reco_i[current_bin_start:bin_i] )
             n_gen = sum( gen_i[current_bin_start:bin_i] )
             n_gen_and_reco = 0
+
+            binWidth = reco.GetXaxis().GetBinLowEdge(bin_i) - reco.GetXaxis().GetBinUpEdge(current_bin_start)
+            if binWidth < min_width:
+                current_bin_end = bin_i
+                continue
+
             if bin_i < current_bin_start + 1:
                 n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start + 1, bin_i + 1, current_bin_start + 1, bin_i + 1 )
             else:
