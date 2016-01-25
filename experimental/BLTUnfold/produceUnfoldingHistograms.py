@@ -22,65 +22,6 @@ class channel:
         pass
     pass
 
-# For debug
-def setup_canvas():
-    canvas = Canvas(width=700, height=500)
-    canvas.SetLeftMargin(0.15)
-    canvas.SetBottomMargin(0.15)
-    canvas.SetTopMargin(0.10)
-    canvas.SetRightMargin(0.05)
-    return canvas
-
-# Top pt weight
-# https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
-def topPtWeight( centreOfMassEnergy ):
-    
-    if centreOfMassEnergy == 7:
-        return 'sqrt( exp(0.174-0.00137*unfolding.hadronicTopPt) * exp(0.174-0.00137*unfolding.leptonicTopPt) )'
-    elif centreOfMassEnergy == 8:
-        return 'sqrt( exp(0.159-0.00141*unfolding.hadronicTopPt) * exp(0.159-0.00141*unfolding.leptonicTopPt) )'
-    else:
-        print "Error: unrecognised centre of mass energy."
-
-# Get the lepton scale factors
-def getScaleFactor( centreOfMassEnergy, channelName ):
-    if centreOfMassEnergy == 7:
-        if channelName is 'ePlusJets':
-            return '(1)'
-        else:
-            return convertScaleFactorsToString(muon7TeVScaleFactors)
-    elif centreOfMassEnergy == 8:
-        if channelName is 'ePlusJets':
-            return convertScaleFactorsToString(electron8TeVScaleFactors)
-        else:
-            return convertScaleFactorsToString(muon8TeVScaleFactors)
-    pass
-
-# Convert the scale factors into a string for Tree::Draw
-def convertScaleFactorsToString( scaleFactors ):
-    firstScaleFactor = True
-    sfString = '( '
-    for scaleFactor in scaleFactors:
-        if ( firstScaleFactor ):
-            sfString += '( ( ( abs( unfolding.leptonEta ) > '+scaleFactor.etaLowEdge+') && ( abs( unfolding.leptonEta ) < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
-            firstScaleFactor = False
-        else :
-            sfString += '+ ( ( ( abs( unfolding.leptonEta ) > '+scaleFactor.etaLowEdge+') && ( abs( unfolding.leptonEta ) < '+scaleFactor.etaHighEdge+') && ( unfolding.leptonPt > '+scaleFactor.ptLowEdge+') && ( unfolding.leptonPt < '+scaleFactor.ptHighEdge+') ) * '+scaleFactor.factor+') '
-
-    sfString += ')'
-    return sfString
-
-def getgenVariable_particle( recoVariable ):
-    if recoVariable is 'leptonEta':
-        return 'pseudoLepton_eta'
-    elif recoVariable is ('leptonPt'):
-        return 'pseudoLepton_pT'
-    elif recoVariable is 'bEta':
-        return 'pseudoB_eta'
-    elif recoVariable is 'bPt':
-        return 'pseudoB_pT'
-    else : return 'pseudo'+recoVariable
-
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
@@ -120,7 +61,7 @@ def getFileName( com, sample, measurementConfig ) :
 
 channels = [
         channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
-        channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
+        # channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
         ]
 
 def main():
@@ -428,7 +369,7 @@ def main():
                     # Fill histograms
                     #
                     if not options.donothing:
-                        # 1D
+                    #     # 1D
 
                         tree.Draw(genVariable_particle,genWeight+'*'+genSelection,hist=truth, nentries=nEntries)
                         tree.Draw(genVariable_particle,genWeight+'*'+genSelectionVis,hist=truthVis, nentries=nEntries)
