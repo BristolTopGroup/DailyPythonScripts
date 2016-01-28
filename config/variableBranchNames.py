@@ -30,7 +30,7 @@ branchNames = {
 
     'lepton_pt': 'leptonPt',
     'lepton_eta': 'leptonEta',
-    'abs_lepton_eta': 'abs(leptonEta)',
+    'abs_lepton_eta': 'leptonEta',
 }
 
 genBranchNames_particle = {
@@ -60,7 +60,7 @@ genBranchNames_particle = {
 
     'lepton_pt': 'pseudoLepton_pT',
     'lepton_eta': 'pseudoLepton_eta',
-    'abs_lepton_eta': 'abs(pseudoLepton_eta)',
+    'abs_lepton_eta': 'pseudoLepton_eta',
 }
 
 genBranchNames_parton = {
