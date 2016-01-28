@@ -3,7 +3,7 @@ from __future__ import division
 from optparse import OptionParser
 # from array import array
 # rootpy
-from rootpy.io import File
+from rootpy.io import File, root_open
 from rootpy.plotting import Hist2D
 # DailyPythonScripts
 import config.RooUnfold as unfoldCfg
@@ -17,6 +17,7 @@ from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
+# from ROOT import TGraph, TSpline3, TUnfoldDensity
 
 def removeFakes( h_measured, h_data, h_response ):
   fakes = h_measured - h_response.ProjectionX()
@@ -36,7 +37,7 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     # Remove fakes before unfolding
     h_measured, h_data = removeFakes( h_measured, h_data, h_response )
 
-    unfolding = Unfolding( h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
+    unfolding = Unfolding( h_data, h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
 
     # turning off the unfolding errors for systematic samples
     if not category == 'central':
@@ -44,7 +45,8 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     else:
         unfoldCfg.error_treatment = options.error_treatment
 
-    h_unfolded_data = unfolding.unfold( h_data )
+    h_unfolded_data = unfolding.unfold()
+
     del unfolding
     return hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data )
 
@@ -385,7 +387,7 @@ if __name__ == '__main__':
                       help = "set MET type for analysis of MET, ST or MT" )
     parser.add_option( "-f", "--load_fakes", dest = "load_fakes", action = "store_true",
                       help = "Load fakes histogram and perform manual fake subtraction in TSVDUnfold" )
-    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
     parser.add_option( "-e", "--error_treatment", type = 'int',
                       dest = "error_treatment", default = unfoldCfg.error_treatment,
@@ -594,47 +596,47 @@ if __name__ == '__main__':
         unfolded_normalisation_electron = {}
         unfolded_normalisation_muon = {}
 
-        # Electron channel
-        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron, visiblePS = visiblePS )
-        filename = file_template.format(
-                            path_to_JSON = path_to_JSON,
-                            category = category,
-                            channel = 'electron',
-                            method = method,
-                            )
-        write_data_to_JSON( unfolded_normalisation_electron, filename )
-        # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' , True )
+        # # Electron channel
+        # unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron, visiblePS = visiblePS )
+        # filename = file_template.format(
+        #                     path_to_JSON = path_to_JSON,
+        #                     category = category,
+        #                     channel = 'electron',
+        #                     method = method,
+        #                     )
+        # write_data_to_JSON( unfolded_normalisation_electron, filename )
+        # # measure xsection
+        # calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
+        # calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' )
+        # calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' , True )
 
-        # Muon channel
-        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon, visiblePS = visiblePS )
-        filename = file_template.format(
-                            path_to_JSON = path_to_JSON,
-                            category = category,
-                            channel = 'muon',
-                            method = method,
-                            )
-        write_data_to_JSON( unfolded_normalisation_muon, filename )
-        # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' , True )
+        # # Muon channel
+        # unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon, visiblePS = visiblePS )
+        # filename = file_template.format(
+        #                     path_to_JSON = path_to_JSON,
+        #                     category = category,
+        #                     channel = 'muon',
+        #                     method = method,
+        #                     )
+        # write_data_to_JSON( unfolded_normalisation_muon, filename )
+        # # measure xsection
+        # calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
+        # calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
+        # calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' , True )
 
-        # Results where the channels are combined after unfolding
-        unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
-        channel = 'combined'
-        filename = file_template.format(
-                            path_to_JSON = path_to_JSON,
-                            category = category,
-                            channel = channel,
-                            method = method,
-                            )
-        write_data_to_JSON( unfolded_normalisation_combined, filename )
-        calculate_xsections( unfolded_normalisation_combined, category, channel )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, channel )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, channel , True )
+        # # Results where the channels are combined after unfolding
+        # unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
+        # channel = 'combined'
+        # filename = file_template.format(
+        #                     path_to_JSON = path_to_JSON,
+        #                     category = category,
+        #                     channel = channel,
+        #                     method = method,
+        #                     )
+        # write_data_to_JSON( unfolded_normalisation_combined, filename )
+        # calculate_xsections( unfolded_normalisation_combined, category, channel )
+        # calculate_normalised_xsections( unfolded_normalisation_combined, category, channel )
+        # calculate_normalised_xsections( unfolded_normalisation_combined, category, channel , True )
 
         # Results where the channels are combined before unfolding
         unfolded_normalisation_combinedBeforeUnfolding = get_unfolded_normalisation(

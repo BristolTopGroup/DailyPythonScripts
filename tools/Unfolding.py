@@ -8,9 +8,8 @@ import config.RooUnfold as unfoldCfg
 from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
 gSystem.Load( unfoldCfg.library )
 from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
-from ROOT import RooUnfoldBinByBin, RooUnfoldInvert, RooUnfoldTUnfold
-from ROOT import TSVDUnfold
-from ROOT import TH2D, TH1D
+from ROOT import TUnfoldDensity, TUnfold
+from ROOT import TH2D, TH1D, TGraph
 from rootpy import asrootpy
 from rootpy.plotting import Hist, Hist2D
 from math import sqrt
@@ -18,6 +17,7 @@ from math import sqrt
 class Unfolding:
 
     def __init__( self,
+                 data,
                  truth,
                  measured,
                  response,
@@ -37,7 +37,7 @@ class Unfolding:
         self.measured = measured
         self.fakes = fakes
         self.response = response
-        self.data = None
+        self.data = data
         self.unfolded_data = None
         self.unfoldObject = None
         self.unfoldResponse = None
@@ -49,86 +49,43 @@ class Unfolding:
         self.error_treatment = error_treatment
         self.measured_truth_without_fakes = measured_truth_without_fakes
 
-    def setup_unfolding ( self, data ):
-        self.data = data
+        self.setup_unfolding( )
+
+    def setup_unfolding ( self ):
         if not self.unfoldObject:
+            
             if not self.unfoldResponse:
                 self.unfoldResponse = self._makeUnfoldResponse()
+            
             if self.method == 'RooUnfoldBayes':
                 self.unfoldObject = RooUnfoldBayes     ( self.unfoldResponse, self.data, self.Bayes_n_repeat )
-            elif self.method == 'RooUnfoldBinByBin':
-                self.unfoldObject = RooUnfoldBinByBin     ( self.unfoldResponse, self.data )
-            elif self.method == 'RooUnfoldInvert':
-                self.unfoldObject = RooUnfoldInvert     ( self.unfoldResponse, self.data )
             elif self.method == 'RooUnfoldSvd':
                 if self.k_value > 0:
                     self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
                 else:
                     if self.tau >= 0:
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
-            elif self.method == 'RooUnfoldTUnfold':
-                self.unfoldObject = RooUnfoldTUnfold ( self.unfoldResponse, data )
-                if self.tau >= 0:
-                    self.unfoldObject.FixTau( self.tau )
-            elif self.method == 'TSVDUnfold':
-                new_data = Hist( list( self.data.xedges() ), type = 'D' )
-                new_data.Add( self.data )
+            elif self.method == 'TUnfold':
+                self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeDerivative)
+                self.unfoldObject.SetInput( self.data )
+                # self.unfoldObject.ScanLcurve( 30, 0, 0 )
 
-                new_measured = Hist( list( self.measured.xedges() ), type = 'D' )
-                new_measured.Add( self.measured )
+    def unfold( self ):
+        # if data is None:
+        #     raise ValueError('Data histogram is None')
+        # have_zeros = [value == 0 for value,_ in hist_to_value_error_tuplelist( data )]
+        # if not False in have_zeros:
+        #     raise ValueError('Data histograms contains only zeros')
+        # self.setup_unfolding( data )
 
-                new_truth = Hist( list( self.truth.xedges() ), type = 'D' )
-                new_truth.Add( self.truth )
-
-
-                if self.fakes:
-                    new_fakes = Hist( list ( self.fakes.xedges() ), type = 'D' )
-                    new_fakes.Add ( self.fakes )
-                    new_measured = new_measured - new_fakes
-
-                new_response = Hist2D( list( self.response.xedges() ), list( self.response.yedges() ), type = 'D' )
-                new_response.Add( self.response )
-
-                # replace global objects with new ones
-                self.data = new_data
-                self.measured = new_measured
-                self.truth = new_truth
-                self.response = new_response
-
-                self.unfoldObject = TSVDUnfold( self.data, self.measured, self.truth, self.response )
-
-    def test_regularisation ( self, data, k_max ):
-        self.setup_unfolding( data )
-        if self.method == 'RooUnfoldSvd':
-            findingK = RooUnfoldParms( self.unfoldObject, self.error_treatment, self.truth )
-            findingK.SetMinParm( 1 )
-            findingK.SetMaxParm( k_max )
-            findingK.SetStepSizeParm( 1 )
-            RMSerror = asrootpy( findingK.GetRMSError().Clone() )
-            MeanResiduals = asrootpy( findingK.GetMeanResiduals().Clone() )
-            RMSresiduals = asrootpy( findingK.GetRMSResiduals().Clone() )
-            Chi2 = asrootpy( findingK.GetChi2().Clone() )
-            return RMSerror, MeanResiduals, RMSresiduals, Chi2
+        # remove unfold reports (faster)
+        if self.method == 'TUnfold':
+            self.unfoldObject.DoUnfold(self.tau)
+            self.unfolded_data = asrootpy( self.unfoldObject.GetOutput('Unfolded') )
         else:
-            raise ValueError( 'Unfolding method "%s" is not supported for regularisation parameter tests. Please use RooUnfoldSvd.' % ( self.method ) )
-
-    def unfold( self, data ):
-        if data is None:
-            raise ValueError('Data histogram is None')
-        have_zeros = [value == 0 for value,_ in hist_to_value_error_tuplelist( data )]
-        if not False in have_zeros:
-            raise ValueError('Data histograms contains only zeros')
-        self.setup_unfolding( data )
-        if self.method == 'TSVDUnfold':
-            self.unfolded_data = asrootpy( self.unfoldObject.Unfold( self.k_value ) )
-        else:
-            # remove unfold reports (faster)
             self.unfoldObject.SetVerbose( self.verbose )
             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
         return self.unfolded_data
-
-    def closureTest( self ):
-        return self.unfold(self.measured)
 
     def _makeUnfoldResponse( self ):
         if self.fakes:
@@ -136,8 +93,14 @@ class Unfolding:
         else:
             return RooUnfoldResponse ( self.measured, self.truth, self.response )
 
-    def printTable( self ):
-        self.unfoldObject.PrintTable( cout, self.truth )
+    def getBestTau( self ):
+        if self.method != 'TUnfold':
+            raise ValueError( 'Can only choose best tau here for TUnfold' )
+        g = TGraph()
+        # Scan L curve
+        # Sets tau value internally, but also need to store what it is
+        self.unfoldObject.ScanLcurve(100,0.001,0.05, g);
+        self.tau = self.unfoldObject.GetTau()
 
     def Reset( self ):
         if self.unfoldObject:
@@ -157,52 +120,6 @@ class Unfolding:
             error = sqrt( sum( errorsSquared ) )
             chi2 = value, error
         return chi2
-
-    def pull( self ):
-        result = [9999999]
-
-        if self.unfolded_data and self.truth:
-            diff = self.unfolded_data - self.truth
-            value_error_tuplelist = hist_to_value_error_tuplelist( diff )
-
-            result = [value / error for value, error in value_error_tuplelist]
-
-        return result
-
-    def pull_inputErrorOnly( self ):
-        result = [9999999]
-        if self.unfolded_data and self.truth:
-            # set unfolded_data errors to stat errors from data
-            temp = self.unfolded_data.Clone()
-            temp_list = list( temp.y() )
-#            data_list = list(self.data)
-            unfolded_errors = self.get_unfolded_data_errors()
-            for bin_i in range( len( temp_list ) ):
-                temp.SetBinError( bin_i + 1, unfolded_errors[bin_i] )
-            # set truth errors to 0
-            temp_truth = self.truth.Clone()
-            for bin_i in range( len( temp_truth ) ):
-                temp_truth.SetBinError( bin_i + 1, 0 )
-
-            diff = temp - temp_truth
-            errors = []
-            values = list( diff.y() )
-            for bin_i in range( len( values ) ):
-                errors.append( diff.GetBinError( bin_i + 1 ) )
-            result = [value / error for value, error in zip( values, errors )]
-        return result
-
-    def get_unfolded_data_errors( self ):
-        # get the data errors
-        input_errors = self.unfoldObject.Emeasured()
-#        input_errors.Print()
-        unfolded_errors = input_errors.Clone()
-        # get the response matrix
-        decomposition = TDecompSVD( self.unfoldResponse.Mresponse() );
-        # apply R-1 to data errors
-        decomposition.Solve( unfolded_errors );
-
-        return unfolded_errors
 
     def Impl(self):
         return self.unfoldObject.Impl()
@@ -234,18 +151,10 @@ def get_unfold_histogram_tuple(
         if visiblePS:
             h_truth = asrootpy( folder.truthVis.Clone() )
             h_measured = asrootpy( folder.measuredVis.Clone() )
-            # response matrix is always without fakes
-            # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
-            # or manually for TSVDUnfold
-            # fix for a bug/typo in NTupleTools
             h_response = asrootpy( folder.responseVis_without_fakes.Clone() )
         else :
             h_truth = asrootpy( folder.truth.Clone() )
             h_measured = asrootpy( folder.measured.Clone() )
-            # response matrix is always without fakes
-            # fake subtraction from measured is performed automatically in RooUnfoldSvd (h_measured - h_response->ProjectionX())
-            # or manually for TSVDUnfold
-            # fix for a bug/typo in NTupleTools
             h_response = asrootpy( folder.response_without_fakes.Clone() )
 
         if load_fakes:
