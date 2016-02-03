@@ -133,6 +133,7 @@ def read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_ty
                 method = method,
                 suffix = '',
                 )
+
     # file_template = path_to_JSON +  '/xsection_measurement_results/' + channel + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
 
     file_name = file_template
@@ -165,6 +166,9 @@ def read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_ty
     file_name = file_template.replace('.txt', '_other_errors.txt')
     normalised_xsection_other_errors = read_data_from_JSON( file_name )
 
+    file_name = file_template.replace('.txt', '_hadronisation_errors.txt')
+    normalised_xsection_hadronisation_errors = read_data_from_JSON( file_name )
+
     file_name = file_template.replace('.txt', '_with_systematics_only_errors.txt')
     normalised_xsection_systematics_only = read_data_from_JSON( file_name )
 #     file_name = file_template.replace('.txt', '_new_errors.txt')
@@ -178,6 +182,7 @@ def read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_ty
 
     normalised_xsection_measured_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_measured'])
     normalised_xsection_measured_errors.update(normalised_xsection_PDF_errors['TTJet_measured'])
+    normalised_xsection_measured_errors.update(normalised_xsection_hadronisation_errors['TTJet_measured'])
 #     normalised_xsection_measured_errors.update(normalised_xsection_MET_errors['TTJet_measured'])
 #     normalised_xsection_measured_errors.update(normalised_xsection_topMass_errors['TTJet_measured'])
     ### normalised_xsection_measured_errors.update(normalised_xsection_kValue_errors['TTJet_measured'])
@@ -187,6 +192,7 @@ def read_xsection_measurement_results_with_errors(path_to_JSON, variable, met_ty
     normalised_xsection_unfolded_errors = normalised_xsection_other_errors['TTJet_unfolded']
     normalised_xsection_unfolded_errors.update(normalised_xsection_ttbar_generator_errors['TTJet_unfolded'])
     normalised_xsection_unfolded_errors.update(normalised_xsection_PDF_errors['TTJet_unfolded'])
+    normalised_xsection_unfolded_errors.update(normalised_xsection_hadronisation_errors['TTJet_unfolded'])
 #     normalised_xsection_unfolded_errors.update(normalised_xsection_MET_errors['TTJet_unfolded'])
 #     normalised_xsection_unfolded_errors.update(normalised_xsection_topMass_errors['TTJet_unfolded'])
     ### normalised_xsection_unfolded_errors.update(normalised_xsection_kValue_errors['TTJet_unfolded'])
