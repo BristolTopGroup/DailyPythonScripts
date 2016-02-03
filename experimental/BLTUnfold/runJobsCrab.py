@@ -11,12 +11,12 @@ jobs = [
         '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s herwigpp',
 
-        # # # # PS scale samples
-        # # # '--centreOfMassEnergy 13 -s scaleup',
-        # # # '--centreOfMassEnergy 13 -s scaledown',
-        # # # ME scale weights
-        # '--centreOfMassEnergy 13 --generatorWeight 4',
-        # '--centreOfMassEnergy 13 --generatorWeight 8',
+        # # # PS scale samples
+        # # '--centreOfMassEnergy 13 -s scaleup',
+        # # '--centreOfMassEnergy 13 -s scaledown',
+        # # ME scale weights
+        '--centreOfMassEnergy 13 --generatorWeight 4',
+        '--centreOfMassEnergy 13 --generatorWeight 8',
 
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
@@ -45,18 +45,18 @@ jobs = [
         '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
 
-# # #  Add pdf variations to list of jobs
-# nPDFPerJob = 6
-# minPDF = 9
-# maxPDF = 109
-# variation = 9
-# while variation < maxPDF :
-#     nForThisJob = nPDFPerJob
-#     if variation + nPDFPerJob > maxPDF:
-#         nForThisJob = maxPDF - variation
-#     jobs.append('--centreOfMassEnergy 13 --generatorWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
-#     variation += nPDFPerJob
-#     pass
+# #  Add pdf variations to list of jobs
+nPDFPerJob = 1
+minPDF = 9
+maxPDF = 109
+variation = 9
+while variation < maxPDF :
+    nForThisJob = nPDFPerJob
+    if variation + nPDFPerJob > maxPDF:
+        nForThisJob = maxPDF - variation
+    jobs.append('--centreOfMassEnergy 13 --generatorWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
+    variation += nPDFPerJob
+    pass
 
 def parse_args(parameters = []):
     parser = OptionParser( __doc__ )
