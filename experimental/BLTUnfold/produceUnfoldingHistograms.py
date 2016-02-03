@@ -229,7 +229,7 @@ def main():
 
                         if options.fineBinned:
                             minVar = trunc( allVariablesBins[variable][0] )
-                            maxVar = trunc( max( tree.GetMaximum(genVariable_particle), tree.GetMaximum( recoVariable ) ) * 1.2 )
+                            maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
                             nBins = int(maxVar - minVar)
                             if variable is 'lepton_eta' or variable is 'bjets_eta':
                                 maxVar = 2.5
@@ -336,8 +336,8 @@ def main():
                     # Generator weight
                     # Scale up/down, pdf
                     if meWeight >= 0:
-                        genWeight *= weight.__getattr__('genWeight_%i' % meWeight)
-                        offlineWeight *= weight.__getattr__('genWeight_%i' % meWeight)
+                        genWeight *= branch('genWeight_%i' % meWeight)
+                        offlineWeight *= branch('genWeight_%i' % meWeight)
                         pass
 
                     for channel in channels:
@@ -437,8 +437,11 @@ def main():
                 # Output histgorams to file
                 #
                 for variable in allVariablesBins:
+                    if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                        continue
                     for channel in channels:
 
+                        
                         # Fill phase space info
                         h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
                         h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])
