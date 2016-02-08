@@ -98,7 +98,7 @@ class XSectionConfig():
         self.analysis_types = {
                 'electron':'EPlusJets',
                 'muon':'MuPlusJets',
-                'combined':'Combined'
+                'combined':'combined'
                 }
 
         # measurement script options
