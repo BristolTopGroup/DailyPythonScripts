@@ -157,7 +157,11 @@ def main():
 
                 # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
                 allVariablesBins = bin_edges_vis.copy()
+<<<<<<< HEAD
                 for variable in bin_edges_vis:
+=======
+                for variable in bin_edges:
+>>>>>>> Use TUnfold convention for definint response matrix and data histogram to be unfolded.
                     if 'Rap' in variable:
                         allVariablesBins['abs_%s' % variable] = [0,bin_edges_vis[variable][-1]]
 
@@ -222,17 +226,29 @@ def main():
                         h['truth'] = Hist( allVariablesBins[variable], name='truth')
                         h['truthVis'] = Hist( allVariablesBins[variable], name='truthVis')
                         h['truth_parton'] = Hist( allVariablesBins[variable], name='truth_parton')                
+<<<<<<< HEAD
                         h['measured'] = Hist( reco_bin_edges_vis[variable], name='measured')
                         h['measuredVis'] = Hist( reco_bin_edges_vis[variable], name='measuredVis')
                         h['measured_without_fakes'] = Hist( reco_bin_edges_vis[variable], name='measured_without_fakes')
                         h['measuredVis_without_fakes'] = Hist( reco_bin_edges_vis[variable], name='measuredVis_without_fakes')
                         h['fake'] = Hist( reco_bin_edges_vis[variable], name='fake')
                         h['fakeVis'] = Hist( reco_bin_edges_vis[variable], name='fakeVis')
+=======
+                        h['measured'] = Hist( allVariablesBins[variable], name='measured')
+                        h['measuredVis'] = Hist( allVariablesBins[variable], name='measuredVis')
+                        h['fake'] = Hist( allVariablesBins[variable], name='fake')
+                        h['fakeVis'] = Hist( allVariablesBins[variable], name='fakeVis')
+>>>>>>> Use TUnfold convention for definint response matrix and data histogram to be unfolded.
                         # 2D histograms
                         h['response'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response')
                         h['response_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes')
 
+<<<<<<< HEAD
                         h['responseVis_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='responseVis_without_fakes')
+=======
+                        h['responseVis_without_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_without_fakes')
+                        h['responseVis_only_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_only_fakes')
+>>>>>>> Use TUnfold convention for definint response matrix and data histogram to be unfolded.
 
                         h['response_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
                         h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
@@ -406,8 +422,12 @@ def main():
                             # if recoVariable > allVariablesBins[variable][-1]:
                             #     print 'Big reco variable : ',recoVariable
                             #     print 'Setting to :',min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
+<<<<<<< HEAD
                             if not options.fineBinned:
                                 recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
+=======
+                            recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
+>>>>>>> Use TUnfold convention for definint response matrix and data histogram to be unfolded.
 
                             genVariable_particle = branch(genVariable_particle_names[variable])
                             if 'abs' in variable:
@@ -437,6 +457,8 @@ def main():
                                     histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
                                 elif genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
+                                    # if genVariable_particle < 0 : print recoVariable, genVariable_particle
+                                    # if genVariable_particle < 0 : print genVariable_particle
 
                                 if offlineSelection and genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
