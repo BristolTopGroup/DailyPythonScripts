@@ -145,10 +145,10 @@ def main():
                 #     tree.SetBranchStatus('genWeight_%i' % meWeight, 1)
 
                 # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
-                allVariablesBins = bin_edges.copy()
+                allVariablesBins = bin_edges_vis.copy()
                 for variable in bin_edges:
                     if 'Rap' in variable:
-                        allVariablesBins['abs_%s' % variable] = [0,bin_edges[variable][-1]]
+                        allVariablesBins['abs_%s' % variable] = [0,bin_edges_vis[variable][-1]]
 
 
                 recoVariableNames = {}
@@ -209,10 +209,10 @@ def main():
                         histograms[variable][channel.channelName] = {}
                         h = histograms[variable][channel.channelName]
                         h['truth'] = Hist( allVariablesBins[variable], name='truth')
-                        h['truthVis'] = Hist( bin_edges_vis[variable], name='truthVis')
+                        h['truthVis'] = Hist( allVariablesBins[variable], name='truthVis')
                         h['truth_parton'] = Hist( allVariablesBins[variable], name='truth_parton')                
                         h['measured'] = Hist( allVariablesBins[variable], name='measured')
-                        h['measuredVis'] = Hist( bin_edges_vis[variable], name='measuredVis')
+                        h['measuredVis'] = Hist( allVariablesBins[variable], name='measuredVis')
                         h['fake'] = Hist( allVariablesBins[variable], name='fake')
                         h['fakeVis'] = Hist( allVariablesBins[variable], name='fakeVis')
                         # 2D histograms
@@ -220,8 +220,8 @@ def main():
                         h['response_without_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes')
                         h['response_only_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes')
 
-                        h['responseVis_without_fakes'] = Hist2D( bin_edges_vis[variable], bin_edges_vis[variable], name='responseVis_without_fakes')
-                        h['responseVis_only_fakes'] = Hist2D( bin_edges_vis[variable], bin_edges_vis[variable], name='responseVis_only_fakes')
+                        h['responseVis_without_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_without_fakes')
+                        h['responseVis_only_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_only_fakes')
 
                         h['response_parton'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_parton')
                         h['response_without_fakes_parton'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes_parton')
@@ -290,7 +290,6 @@ def main():
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                    # if n > 1000 : break
 
                     # # #
                     # # # Weights and selection
@@ -386,13 +385,19 @@ def main():
                             if variable in ['MET', 'ST', 'WPT'] and \
                             sysIndex != None and ( offlineSelection or fakeSelection or fakeSelectionVis ) :
                                 recoVariable = recoVariable[sysIndex]
-                            if 'abs' in recoVariableName:
+                            
+                            if 'abs' in variable:
                                 recoVariable = abs(recoVariable)
 
-                            genVariable_particle = branch(genVariable_particle_names[variable])
-                            if 'abs' in genVariable_particle_name:
-                                genVariable_particle = abs(genVariable_particle)
+                            # With TUnfold, reco variable never goes in the overflow (or underflow)
+                            # if recoVariable > allVariablesBins[variable][-1]:
+                            #     print 'Big reco variable : ',recoVariable
+                            #     print 'Setting to :',min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
+                            recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
 
+                            genVariable_particle = branch(genVariable_particle_names[variable])
+                            if 'abs' in variable:
+                                genVariable_particle = abs(genVariable_particle)
                             # #
                             # # Fill histograms
                             # #
@@ -412,9 +417,15 @@ def main():
 
                                 if offlineSelection and genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
+                                    if genVariable_particle < 0 : print recoVariable, genVariable_particle
+                                elif genSelection:
+                                    histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
+                                    if genVariable_particle < 0 : print genVariable_particle
 
                                 if offlineSelection and genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
+                                elif genSelectionVis:
+                                    histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
 
                                 if fakeSelection:
                                     histogramsToFill['fake'].Fill( recoVariable, offlineWeight)

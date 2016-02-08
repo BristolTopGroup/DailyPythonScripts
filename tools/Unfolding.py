@@ -66,7 +66,6 @@ class Unfolding:
                     if self.tau >= 0:
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
             elif self.method == 'TUnfold':
-
               self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeDerivative)
               self.unfoldObject.SetInput( self.data )
               # self.unfoldObject.ScanLcurve( 30, 0, 0 )
@@ -193,10 +192,6 @@ def get_unfold_histogram_tuple(
       h_truth.Scale( scale )
       h_measured.Scale( scale )
       h_response.Scale( scale )
-
-    # h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
-    # if load_fakes:
-    #    h_fakes = fix_overflow( h_fakes )
 
     return h_truth, h_measured, h_response, h_fakes
 

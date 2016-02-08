@@ -105,8 +105,8 @@ class TTJetNormalisation:
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
-            # hist = fix_overflow(hist)
-            # histograms[sample] = hist
+            hist = fix_overflow(hist)
+            histograms[sample] = hist
             self.initial_normalisation[
                 sample] = hist_to_value_error_tuplelist(hist)
             if self.method == self.BACKGROUND_SUBTRACTION and sample != 'TTJet':
