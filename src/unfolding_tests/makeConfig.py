@@ -14,7 +14,7 @@ make_folder_if_not_exists('config/unfolding/VisiblePS/')
 for channel in config.analysis_types.keys():
 	for variable in bin_edges.keys():
 
-		histogramTemplate = "unfolding_%s_analyser_%s_channel" % ( variable, channel )
+		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
 		    "output_folder": "plots/%sTeV/unfolding_tests/FullPS" % com, 
 		    "output_format": ["png", "pdf"], 
@@ -46,7 +46,7 @@ for channel in config.analysis_types.keys():
 
 	for variable in bin_edges_vis.keys():
 
-		histogramTemplate = "unfolding_%s_analyser_%s_channel" % ( variable, channel )
+		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
 		    "output_folder": "plots/%sTeV/unfolding_tests/VisiblePS" % com, 
 		    "output_format": ["png", "pdf"], 
