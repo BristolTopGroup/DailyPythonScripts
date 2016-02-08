@@ -66,9 +66,10 @@ class Unfolding:
                     if self.tau >= 0:
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
             elif self.method == 'TUnfold':
-                self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeDerivative)
-                self.unfoldObject.SetInput( self.data )
-                # self.unfoldObject.ScanLcurve( 30, 0, 0 )
+
+              self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeDerivative)
+              self.unfoldObject.SetInput( self.data )
+              # self.unfoldObject.ScanLcurve( 30, 0, 0 )
 
     def unfold( self ):
         # if data is None:
@@ -142,35 +143,35 @@ def get_unfold_histogram_tuple(
     h_measured = None
     h_response = None
     h_fakes = None
+
     if not channel == 'combined':
-        if not 'HT' in variable:
-            folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
-        else:
-            folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
-
-        if visiblePS:
-            h_truth = asrootpy( folder.truthVis.Clone() )
-            h_measured = asrootpy( folder.measuredVis.Clone() )
-            h_response = asrootpy( folder.responseVis_without_fakes.Clone() )
-        else :
-            h_truth = asrootpy( folder.truth.Clone() )
-            h_measured = asrootpy( folder.measured.Clone() )
-            h_response = asrootpy( folder.response_without_fakes.Clone() )
-
-        if load_fakes:
-            h_fakes = asrootpy( folder.fake.Clone() )
+        folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
     else:
-        return get_combined_unfold_histogram_tuple( inputfile = inputfile,
-                                                   variable = variable,
-                                                   met_type = met_type,
-                                                   centre_of_mass = centre_of_mass,
-                                                   ttbar_xsection = ttbar_xsection,
-                                                   luminosity = luminosity,
-                                                   load_fakes = load_fakes,
-                                                   scale_to_lumi = scale_to_lumi,
-                                                   visiblePS = visiblePS,
-                                                   scale = 1,
-                                                   )
+        folder = inputfile.Get( '%s_COMBINED' % ( variable ) )
+
+    if visiblePS:
+      h_truth = asrootpy( folder.truthVis.Clone() )
+      h_measured = asrootpy( folder.measuredVis.Clone() )
+      h_response = asrootpy( folder.responseVis_without_fakes.Clone() )
+    else :
+      h_truth = asrootpy( folder.truth.Clone() )
+      h_measured = asrootpy( folder.measured.Clone() )
+      h_response = asrootpy( folder.response_without_fakes.Clone() )
+
+    if load_fakes:
+        h_fakes = asrootpy( folder.fake.Clone() )
+    # else:
+    #     return get_combined_unfold_histogram_tuple( inputfile = inputfile,
+    #                                                variable = variable,
+    #                                                met_type = met_type,
+    #                                                centre_of_mass = centre_of_mass,
+    #                                                ttbar_xsection = ttbar_xsection,
+    #                                                luminosity = luminosity,
+    #                                                load_fakes = load_fakes,
+    #                                                scale_to_lumi = scale_to_lumi,
+    #                                                visiblePS = visiblePS,
+    #                                                scale = 1,
+    #                                                )
 
     if scale_to_lumi:
         lumiweight = 1. # 13 TeV unfolding files are scaled.
@@ -187,11 +188,11 @@ def get_unfold_histogram_tuple(
         h_response.Scale( lumiweight )
 
     if not scale ==1:
-        if load_fakes:
-            h_fakes.Scale( scale )
-        h_truth.Scale( scale )
-        h_measured.Scale( scale )
-        h_response.Scale( scale )
+      if load_fakes:
+          h_fakes.Scale( scale )
+      h_truth.Scale( scale )
+      h_measured.Scale( scale )
+      h_response.Scale( scale )
 
     # h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
     # if load_fakes:
@@ -243,5 +244,5 @@ def get_combined_unfold_histogram_tuple(
     h_fakes = None
     if load_fakes:
         h_fakes = h_fakes_e + h_fakes_mu
-
+    print list(h_response.z())
     return h_truth, h_measured, h_response, h_fakes
