@@ -154,14 +154,14 @@ def main():
                             )
         # h_response.Draw('COLZ')
         # raw_input('...')
-        get_condition_number( unfolding.unfoldObject )
+        # get_condition_number( unfolding.unfoldObject )
 
-        # tau_results = get_best_tau( regularisation_settings )
-        # results[com][variable][channel] = (tau_results)
+        tau_results = get_best_tau( regularisation_settings )
+        results[com][variable][channel] = (tau_results)
         # plot(regularisation_settings, (k_results, tau_results), 
         #          use_current_k_values)
     print 'Results :',results
-    # table(results, use_current_k_values, options.style)
+    table(results)
 
 def parse_options():
     parser = OptionParser( __doc__ )
@@ -194,28 +194,34 @@ def tau_from_L_curve( unfoldingObject ):
     lCurve = TGraph()
     logTauX = TSpline3()
     logTauY = TSpline3()
-    print 'Scanning'
-    iBest = unfoldingObject.ScanLcurve(100,0.00001,100.0, lCurve, logTauX, logTauY);
-    print 'Done'
+    # print 'Scanning'
+    iBest = unfoldingObject.ScanLcurve(70,1.E-6,1E-2, lCurve, logTauX, logTauY);
+    print iBest
+    print 'Best tau :',unfoldingObject.GetTau()
+    # print 'Done'
     # Additional info, plots
-    # t = Double(0)
-    # x = Double(0)
-    # y = Double(0)
-    # logTauX.GetKnot(iBest,t,x);
-    # logTauY.GetKnot(iBest,t,y);
+    t = Double(0)
+    x = Double(0)
+    y = Double(0)
+    logTauX.GetKnot(iBest,t,x);
+    logTauY.GetKnot(iBest,t,y);
 
-    # bestLcurve = Graph(1);
-    # bestLcurve.SetPoint(1,x,y);
+    bestLcurve = Graph(1);
+    bestLcurve.SetPoint(1,x,y);
+
     # bestLogTauLogChi2 = Graph(1);
     # bestLogTauLogChi2.SetPoint(1,t,x);
 
     # logTauX.Draw()
     # bestLogTauLogChi2.markercolor = 'red'
-    # # bestLogTauLogChi2.Draw("*")
-    # lCurve.Draw("AL");
-    # raw_input('...')
-    # bestLcurve.markercolor = 'red'
-    # bestLcurve.Draw("*");
+    # bestLogTauLogChi2.Draw("*")
+    lCurve.SetMarkerColor(600)
+    lCurve.SetMarkerSize(1)
+    lCurve.SetMarkerStyle(5)
+
+    lCurve.Draw("AP");
+    bestLcurve.markercolor = 'red'
+    bestLcurve.Draw("*");
 
     return unfoldingObject.GetTau()
 
@@ -225,10 +231,13 @@ def tau_from_scan( unfoldingObject ):
     # logTauY = TSpline3()
     d = 'signal'
     a = ''
-    nScan = 20
-    iBest = unfoldingObject.ScanTau(nScan,0.0001,10., scanResult, TUnfoldDensity.kEScanTauRhoAvg);
-    # scanResult.Draw()
-    # raw_input('...')
+    nScan = 100
+    iBest = unfoldingObject.ScanTau(nScan,1.E-6,1., scanResult, TUnfoldDensity.kEScanTauRhoAvg);
+    print 'Best tau :',unfoldingObject.GetTau()
+    scanResult.SetMarkerColor(600)
+    scanResult.SetMarkerSize(1)
+    scanResult.SetMarkerStyle(5)
+    scanResult.Draw('LP')
 
     # t = Double(0)
     # x = Double(0)
@@ -243,6 +252,7 @@ def tau_from_scan( unfoldingObject ):
     #     x = Double(0)
     #     y = Double(0)
     #     scanResult.GetKnot(i,t,x);
+    #     print x,y,t
     #     knots.SetPoint(i,t,x)
     # knots.Draw('*')
     # bestTau.markercolor = 'red'
@@ -289,8 +299,11 @@ def get_best_tau( regularisation_settings ):
                             tau = 1.12332403298 
                         )
 
-    bestTau_LCurve = tau_from_L_curve( unfolding.unfoldObject )
-    unfolding.tau = bestTau_LCurve
+    # bestTau_LCurve = tau_from_L_curve( unfolding.unfoldObject )
+    # unfolding.tau = bestTau_LCurve
+
+    bestTauScan = tau_from_scan( unfolding.unfoldObject )
+    unfolding.tau = bestTauScan
 
     return unfolding.tau
 
@@ -318,6 +331,109 @@ def get_condition_number( unfoldingObject ):
     # condition = 1
     print condition
     return condition
+
+def table(result_dict):
+    '''
+        result_dict has the form
+        {
+            centre-of-mass energy : 
+            {
+                variable : 
+                {
+                    channel : (k_results,  tau_results)
+                }
+            }
+        }
+        <reg>_results are of the form:
+            best_<reg>, best_<reg>_rho, <reg>s, rhos
+    '''
+
+    for com in result_dict.keys():
+        # # step 1: group the results by centre of mass energy
+        # headers = []
+        # if use_current_k_values:
+        #     headers = ['Variable', 'current k', 'closest tau', 'best tau', 'best k']
+        # else:
+        #     headers = ['Variable', 'best k', 'rho (best k)', 'best tau', 'rho (best tau)']
+        # data = []
+        # configOutputElectron = {}
+        # configOutputMuon = {}
+        # configOutputCombined = {}
+        # measurement_config = XSectionConfig(com)
+
+        for variable in result_dict[com].keys():
+
+            print '"%s" : %s,' % (variable, result_dict[com][variable]['combined'])
+            # has_both_channels = len(result_dict[com][variable]) == 3
+            # # step 2: if have electron and muon channel, group them: electron (muon)
+            # if has_both_channels:
+            #     electron_results = result_dict[com][variable]['electron']
+            #     muon_results = result_dict[com][variable]['muon']
+            #     combined_results = result_dict[com][variable]['combined']
+                
+            #     configOutputElectron[variable] = electron_results[1][0]
+            #     configOutputMuon[variable] = muon_results[1][0]
+            #     configOutputCombined[variable] = combined_results[1][0]
+            #     entry = []
+            #     if use_current_k_values:
+            #         electron_set = get_k_tau_set(measurement_config, 'electron',
+            #                                     variable, electron_results)
+            #         muon_set = get_k_tau_set(measurement_config, 'muon',
+            #                                     variable, muon_results)
+            #         combined_set = get_k_tau_set(measurement_config, 'combined',
+            #                                     variable, combined_results)
+            #         entry = [variable, 
+            #                  '%d (%d)' % (electron_set[0], muon_set[0], combined_set[0]),
+            #                  '%.1f (%.1f)' % (electron_set[1], muon_set[1], combined_set[1]),
+            #                  '%.1f (%.1f)' % (electron_set[2], muon_set[2], combined_set[2]),
+            #                  '%d (%d)' % (electron_set[3], muon_set[3], combined_set[3]), 
+            #                  ]
+            #     else:
+            #         entry = [variable, 
+            #                  '%d %d %d' % (electron_results[0][0], muon_results[0][0], combined_results[0][0]),
+            #                  '%.1f %.1f %.1f' % (electron_results[0][1], muon_results[0][1], combined_results[0][1]),
+            #                  '%.1f %.1f %.1f' % (electron_results[1][0], muon_results[1][0], combined_results[1][0]),
+            #                  '%.1f %.1f %.1f' % (electron_results[1][1], muon_results[1][1], combined_results[1][1]),    
+            #                  ]
+                    
+            #     data.append(entry)
+            # else:
+            #     channel = result_dict[com][variable].keys()[0]
+            #     results = result_dict[com][variable][channel]
+            #     print channel
+            #     if channel == 'electron':
+            #         configOutputElectron[variable] = results[1][0]
+            #     elif channel == 'muon':
+            #         configOutputMuon[variable] = results[1][0]
+            #     else :
+            #         configOutputCombined[variable] = results[1][0]
+
+            #     if use_current_k_values:
+            #         result_set = get_k_tau_set(measurement_config, channel,
+            #                                     variable, results)
+            #         entry = [variable, 
+            #                  '%d' % result_set[0],
+            #                  '%.1f' % result_set[1],
+            #                  '%.1f' % result_set[2],
+            #                  '%d' % result_set[3],    
+            #                  ]
+            #     else:
+            #         entry = [variable, 
+            #                  '%d' % results[0][0],
+            #                  '%.1f' % results[0][1],
+            #                  '%.1f' % results[1][0],
+            #                  '%.1f' % results[1][1],    
+            #                  ]
+                    
+            #     data.append(entry)
+        
+        # print '\nOutput for __init__\n'
+        # print 'Combined'
+        # for var in configOutputCombined:
+        #     print '"%s" : %s,' % (var, configOutputCombined[var])
+        # print '\n'
+        # table = PrintTable(data, headers)
+        
 
 if __name__ == '__main__':
     set_root_defaults( set_batch = False, msg_ignore_level = 3001 )
