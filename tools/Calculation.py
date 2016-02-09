@@ -261,7 +261,7 @@ def calculate_stabilities( gen_vs_reco_histogram ):
     s_i = \frac{N^{\text{rec\&gen}}}{N^{\text{rec}}}
     '''
     # assume reco = x axis and gen = y axis
-    gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
+    gen = asrootpy( gen_vs_reco_histogram.ProjectionY( 'py', 1 ) )
     gen_i = list( gen.y() )
     n_bins = len( gen_i )
     

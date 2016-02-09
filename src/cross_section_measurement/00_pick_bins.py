@@ -151,15 +151,9 @@ def get_histograms( variable, options ):
     else :
         histogram_name = 'response_without_fakes'
 
-    if variable == 'HT':
-        path_electron = 'unfolding_HT_analyser_electron_channel/%s' % histogram_name
-        path_muon = 'unfolding_HT_analyser_muon_channel/%s' % histogram_name
-        path_combined = 'unfolding_HT_analyser_COMBINED_channel/%s' % histogram_name
-
-    else :
-        path_electron = 'unfolding_%s_analyser_electron_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
-        path_muon = 'unfolding_%s_analyser_muon_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
-        path_combined = 'unfolding_%s_analyser_COMBINED_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
+    path_electron = '%s_electron/%s' % ( variable, histogram_name )
+    path_muon = '%s_muon/%s' % ( variable, histogram_name )
+    path_combined = '%s_COMBINED/%s' % ( variable, histogram_name )
 
     histogram_information = [
                 {'file': config.unfolding_central_raw,
@@ -255,19 +249,20 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
     current_bin_end = bin_end
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
-        gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
+        gen = asrootpy( gen_vs_reco_histogram.ProjectionY( 'py', 1 ) )
         reco_i = list( reco.y() )
         gen_i = list( gen.y() )
+
         # keep the start bin the same but roll the end bin
         for bin_i in range ( current_bin_end, len( reco_i ) + 1 ):
-            n_reco = sum( reco_i[current_bin_start:bin_i] )
-            n_gen = sum( gen_i[current_bin_start:bin_i] )
-            n_gen_and_reco = 0
-
             binWidth = reco.GetXaxis().GetBinLowEdge(bin_i) - reco.GetXaxis().GetBinUpEdge(current_bin_start)
             if binWidth < min_width:
                 current_bin_end = bin_i
                 continue
+
+            n_reco = sum( reco_i[current_bin_start:bin_i] )
+            n_gen = sum( gen_i[current_bin_start:bin_i] )
+            n_gen_and_reco = 0
 
             if bin_i < current_bin_start + 1:
                 n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start + 1, bin_i + 1, current_bin_start + 1, bin_i + 1 )
@@ -284,6 +279,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
             # print('New bin : ',current_bin_start,current_bin_end,p,s
+
             if p >= p_min and s >= s_min and n_reco >= n_min:
                 current_bin_end = bin_i
                 break
