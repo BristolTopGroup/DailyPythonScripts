@@ -281,6 +281,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
             # print('New bin : ',current_bin_start,current_bin_end,p,s
+
             if p >= p_min and s >= s_min and n_reco >= n_min:
                 current_bin_end = bin_i
                 break
