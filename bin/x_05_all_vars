@@ -38,17 +38,5 @@ for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	fi
 done
 
-i=0
-# for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
-# 	echo "Tabulating diff. x-section for distribution: $var"
-# 	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c $com -p $input_folder -o $output_folder -a &> logs/05_${var}_table_${com}TeV.log &
-# 	let i+=1
-# 	if (( $i % N_JOBS == 0 ))
-# 	then
-# 		echo "Waiting on the above to finish."
-#     	wait;
-# 	fi
-# done
-
 wait;
 echo "All done!"

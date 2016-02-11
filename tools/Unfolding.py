@@ -227,9 +227,9 @@ def get_unfold_histogram_tuple(
     h_fakes = None
     if not channel == 'combined':
         if not 'HT' in variable:
-            folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel_%s' % ( variable, channel, met_type ) )
+            folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
         else:
-            folder = inputfile.Get( 'unfolding_%s_analyser_%s_channel' % ( variable, channel ) )
+            folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
 
         if visiblePS:
             h_truth = asrootpy( folder.truthVis.Clone() )

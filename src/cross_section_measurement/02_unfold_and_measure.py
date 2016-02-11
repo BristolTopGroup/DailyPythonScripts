@@ -68,45 +68,43 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
     global use_ptreweight
 
     files_for_systematics = {
-                             # ttbar_theory_systematic_prefix + 'matchingdown'    :  file_for_matchingdown,
-                             # ttbar_theory_systematic_prefix + 'matchingup'      :  file_for_matchingup,
                              ttbar_theory_systematic_prefix + 'scaledown'       :  file_for_scaledown,
                              ttbar_theory_systematic_prefix + 'scaleup'         :  file_for_scaleup,
                              ttbar_theory_systematic_prefix + 'massdown'        :  file_for_massdown,
                              ttbar_theory_systematic_prefix + 'massup'          :  file_for_massup,
 
-                             # 'JES_down'        :  file_for_jesdown,
-                             # 'JES_up'        :  file_for_jesup,
+                             'JES_down'        :  file_for_jesdown,
+                             'JES_up'        :  file_for_jesup,
 
-                             # 'JER_down'        :  file_for_jerdown,
-                             # 'JER_up'        :  file_for_jerup,
+                             'JER_down'        :  file_for_jerdown,
+                             'JER_up'        :  file_for_jerup,
 
-                             # 'BJet_up'        :  file_for_bjetdown,
-                             # 'BJet_down'        :  file_for_bjetup,
+                             'BJet_up'        :  file_for_bjetdown,
+                             'BJet_down'        :  file_for_bjetup,
 
                              ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_amcatnlo_herwig,
                              ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
 
-                             # 'ElectronEnUp' : file_for_ElectronEnUp,
-                             # 'ElectronEnDown' : file_for_ElectronEnDown,
-                             # 'MuonEnUp' : file_for_MuonEnUp,
-                             # 'MuonEnDown' : file_for_MuonEnDown,
-                             # 'TauEnUp' : file_for_TauEnUp,
-                             # 'TauEnDown' : file_for_TauEnDown,
-                             # 'UnclusteredEnUp' : file_for_UnclusteredEnUp,
-                             # 'UnclusteredEnDown' : file_for_UnclusteredEnDown,
+                             'ElectronEnUp' : file_for_ElectronEnUp,
+                             'ElectronEnDown' : file_for_ElectronEnDown,
+                             'MuonEnUp' : file_for_MuonEnUp,
+                             'MuonEnDown' : file_for_MuonEnDown,
+                             'TauEnUp' : file_for_TauEnUp,
+                             'TauEnDown' : file_for_TauEnDown,
+                             'UnclusteredEnUp' : file_for_UnclusteredEnUp,
+                             'UnclusteredEnDown' : file_for_UnclusteredEnDown,
 
-                             # 'Muon_up' : file_for_LeptonUp,
-                             # 'Muon_down' : file_for_LeptonDown,
-                             # 'Electron_up' : file_for_LeptonUp,
-                             # 'Electron_down' : file_for_LeptonDown,
+                             'Muon_up' : file_for_LeptonUp,
+                             'Muon_down' : file_for_LeptonDown,
+                             'Electron_up' : file_for_LeptonUp,
+                             'Electron_down' : file_for_LeptonDown,
 
-                             # 'PileUpSystematic' : file_for_PUSystematic,
+                             'PileUpSystematic' : file_for_PUSystematic,
                              }
 
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
     # Systematics where you change the response matrix
-    if category in ttbar_generator_systematics or category in files_for_systematics :
+    if category in files_for_systematics :
         print 'Doing category',category,'by changing response matrix'
         h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_systematics[category],
                                                                               variable = variable,
@@ -129,7 +127,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               load_fakes = load_fakes,
                                                                               visiblePS = visiblePS,
                                                                               )
-    # Systematics where you change input MC
+    # Central and systematics where you just change input MC
     else:
         h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = file_for_unfolding,
                                                                               variable = variable,
@@ -165,24 +163,6 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
     #
 
     if category == 'central':
-        # h_truth_matchingdown, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_matchingdown,
-        #                                             variable = variable,
-        #                                             channel = channel,
-        #                                             met_type = met_type,
-        #                                             centre_of_mass = centre_of_mass,
-        #                                             ttbar_xsection = ttbar_xsection,
-        #                                             luminosity = luminosity,
-        #                                             load_fakes = load_fakes
-        #                                             )
-        # h_truth_matchingup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_matchingup,
-        #                                             variable = variable,
-        #                                             channel = channel,
-        #                                             met_type = met_type,
-        #                                             centre_of_mass = centre_of_mass,
-        #                                             ttbar_xsection = ttbar_xsection,
-        #                                             luminosity = luminosity,
-        #                                             load_fakes = load_fakes
-        #                                             )
         h_truth_scaledown, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_scaledown,
                                                     variable = variable,
                                                     channel = channel,
@@ -531,7 +511,6 @@ if __name__ == '__main__':
     all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
-    all_measurements.extend( ['central_TTJet'] )
 
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
