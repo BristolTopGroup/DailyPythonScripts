@@ -53,13 +53,14 @@ if __name__ == '__main__':
 		chain.SetBranchStatus("PUWeight",1)
 		chain.SetBranchStatus("ElectronEfficiencyCorrection",1)
 		chain.SetBranchStatus("MuonEfficiencyCorrection",1)
-	# n=0
 
 	########## 			FILL HISTOGRAMS 		##########
 	print 'Electron channel'
+	n=0
 	for event in E_Chain:
-		# n=n+1
-		# if n==10000: break
+		n=n+1
+		if n==100000: print n, "th Event"
+
 		NJets = event.__getattr__("NJets")
 		if (NJets <= 0): continue;
 
@@ -101,10 +102,10 @@ if __name__ == '__main__':
 			# 		gluonQuarkJets_BTags_Hist.Fill(pt[JetIndex], eta[JetIndex], weight)
 
 	print 'Muon channel'
-	# n=0
+	n=0
 	for event in Mu_Chain:
-		# n=n+1
-		# if n==10000: break
+		n=n+1
+		if n==100000: print n, "th Event"
 
 		NJets = event.__getattr__("NJets")
 		if (NJets <= 0): continue;

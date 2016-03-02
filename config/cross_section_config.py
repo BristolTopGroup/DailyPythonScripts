@@ -442,121 +442,18 @@ class XSectionConfig():
                 else:
                     self.typical_systematics.extend(tuple)
 
-    def __fill_defaults_7TeV__( self ):
-        middle = self.middle
-        path_to_files = self.path_to_files
-
-        self.new_luminosity = self.luminosity  # pb^-1
-        self.ttbar_xsection = 177.31 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
-
-        self.data_file_electron = path_to_files + 'central/ElectronHad' + middle + '.root'
-        self.rate_changing_systematics = {
-                        'luminosity': 0.022,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupSystematicErrors
-                        'SingleTop_cross_section': 0.3,
-                        'TTJet_cross_section': 0.15,
-                        'V+Jets_cross_section': 0.3,
-                        'QCD_cross_section' : 1.,
-                         }
-
-        # optimal regularisation parameters
-        self.k_values_electron = {
-                   'MET' : 2,
-                   'HT' : 3,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 3,
-                   }
-
-        self.k_values_muon = {
-                   'MET' : 2,
-                   'HT' : 3,
-                   'ST' : 3,
-                   'MT' : 2,
-                   'WPT' : 3
-                   }
-        #keeping combined values for backward compatibility
-        self.k_values_combined = {
-                   'MET' : 0,
-                   'HT' : 0,
-                   'ST' : 0,
-                   'MT' : 0,
-                   'WPT' : 0
-                   }
-
-        self.tau_values_electron = {
-        }
-
-        self.tau_values_muon = {
-        }
-        
-        self.categories_and_prefixes['PU_down'] = '_PU_64600mb'
-        self.categories_and_prefixes['PU_up'] = '_PU_71400mb'
-
-        self.special_muon_histogram = 'etaAbs_ge2j_data'
-
-    def __fill_defaults_8TeV__( self ):
-        middle = self.middle
-        path_to_files = self.path_to_files
-
-        self.new_luminosity = self.luminosity  # pb^-1
-        self.ttbar_xsection = 252.89 # pb from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
-
-        self.data_file_electron = path_to_files + 'central/SingleElectron' + middle + '.root'
-        self.rate_changing_systematics = {
-                        'luminosity': 0.026,  # https://hypernews.cern.ch/HyperNews/CMS/get/physics-announcements/2526.html
-                        'SingleTop_cross_section': 0.034,  # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
-                        'TTJet_cross_section': 0.043,
-                        'V+Jets_cross_section': 0.3,
-                        'QCD_cross_section' : 1.,
-                         }
-
-        # optimal regularisation parameters
-        self.k_values_electron = {
-                   'MET' : 3,
-                   'HT' : 3,
-                   'ST' : 2,
-                   'MT' : 2,
-                   'WPT' : 2
-                   }
-
-        self.k_values_muon = {
-                   'MET' : 3,
-                   'HT' : 2,
-                   'ST' : 2,
-                   'MT' : 2,
-                   'WPT' : 3
-                   }
-        #keeping combined values for backward compatibility
-        self.k_values_combined = {
-                   'MET' : 0,
-                   'HT' : 0,
-                   'ST' : 0,
-                   'MT' : 0,
-                   'WPT' : 0
-                   }
-
-        self.tau_values_electron = {
-        }
-
-        self.tau_values_muon = {
-        }
-
-        self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
-        self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
-
-        self.special_muon_histogram = 'muon_AbsEta_0btag'
-
-
 
     def __fill_defaults_13TeV__( self ):
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 2215.18  # pb^-1
+        # self.new_luminosity = 2215.18  # pb^-1
+        self.new_luminosity = 2263.552 
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
-                        'luminosity': 0.048,  # Best guess for 13 TeV
+                        'luminosity': 0.027,  # Best guess for 13 TeV 4.8->2.7
+
                         'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
                         # 'TTJet_cross_section': 0.043, # Currently same as 8 TeV
                         'V+Jets_cross_section': 0.5,

@@ -25,21 +25,21 @@ echo "... enforcing conda python environment"
 source environment_conda.sh
 echo "DailyPythonScripts are set up"
 
-ls -l experimental/BLTUnfold/runJobsCrab.py
-chmod a+x experimental/BLTUnfold/runJobsCrab.py
-jobArguments=`experimental/BLTUnfold/runJobsCrab.py --return_job_options -j $1`
+ls -l src/BLTUnfold/runJobsCrab.py
+chmod a+x src/BLTUnfold/runJobsCrab.py
+jobArguments=`src/BLTUnfold/runJobsCrab.py --return_job_options -j $1`
 echo "Job arguments "$jobArguments
 if [[ $jobArguments == *"generatorWeight"* ]]
 then
 	echo "Will copy input file locally"
-	hadoop fs -copyToLocal /TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_tree.root ${_CONDOR_JOB_IWD}/CMSSW_7_4_7/src/DailyPythonScripts/localInputFile.root
+	hadoop fs -copyToLocal /TopQuarkGroup/run2/atOutput/13TeV/25ns/TTJets_PowhegPythia8_tree.root ${_CONDOR_JOB_IWD}/CMSSW_7_4_7/src/DailyPythonScripts/localInputFile.root
 fi
 
 echo "Running payload"
 >&2 echo "Running payload"
 mkdir -p unfolding/13TeV
 echo "Running script"
-time python experimental/BLTUnfold/runJobsCrab.py -j $1
+time python src/BLTUnfold/runJobsCrab.py -j $1
 
 echo "Unfolding folder contents:"
 ls -l unfolding

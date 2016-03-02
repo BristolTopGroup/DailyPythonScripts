@@ -2,6 +2,6 @@
 ./condor/prepare_dps.sh
 
 echo "Submitting jobs to DICE..."
-condor_submit experimental/BLTUnfold/submitBLTUnfold.description
+condor_submit src/BLTUnfold/submitBLTUnfold.description
 echo "Done."
 condor_q `whoami`

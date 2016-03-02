@@ -83,7 +83,7 @@ def main(options, args = []):
     parser = OptionParser()
           
     print 'Running job :',jobs[options.jobNumber-1]
-    os.system('python experimental/BLTUnfold/produceUnfoldingHistograms.py %s ' % jobs[options.jobNumber-1] )
+    os.system('python src/BLTUnfold/produceUnfoldingHistograms.py %s ' % jobs[options.jobNumber-1] )
 
 if __name__ == '__main__':
     options, args = parse_args()

@@ -173,11 +173,8 @@ if __name__ == '__main__':
         title = title_template % ( measurement_config.centre_of_mass_energy, channels_latex[channel], '$\geq$ 4 jets', b_tag_bins_latex[b_tag_bin] )
         for variable in bin_edges_to_use.keys():
             print '--- ',variable
-
-            if variable is 'HT':
-                histogram_path = 'unfolding_%s_analyser_%s_channel/%s' % (variable, channel, histogram_name)
-            else :
-                histogram_path = 'unfolding_%s_analyser_%s_channel_patType1CorrectedPFMet/%s' % (variable, channel, histogram_name)
+            histogram_path = '%s_%s/%s' % (variable, channel, histogram_name)
+            
             make_scatter_plot( hist_file, histogram_path, bin_edges_to_use, channel, variable, title )
 
             makePurityStabilityPlots( measurement_config.unfolding_central, histogram_path, bin_edges_to_use[variable], channel, variable, options.visiblePhaseSpace)

@@ -290,7 +290,6 @@ def main():
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                    # if n > 1000 : break
 
                     # # #
                     # # # Weights and selection

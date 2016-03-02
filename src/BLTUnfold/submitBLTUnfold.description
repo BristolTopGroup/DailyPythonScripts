@@ -1,4 +1,4 @@
-Executable = experimental/BLTUnfold/runCondor.sh
+Executable = src/BLTUnfold/runCondor.sh
 Universe = vanilla
 Output = bltUnfold.job.$(cluster).$(process).out
 Error = bltUnfold.job.$(cluster).$(process).err

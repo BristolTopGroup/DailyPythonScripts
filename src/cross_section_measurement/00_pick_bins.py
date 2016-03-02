@@ -92,7 +92,7 @@ def main():
         elif variable == 'abs_lepton_eta':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
         else:
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable] )
 
         if 'Rap' in variable:
             for b in list(best_binning):
@@ -151,15 +151,9 @@ def get_histograms( variable, options ):
     else :
         histogram_name = 'response_without_fakes'
 
-    if variable == 'HT':
-        path_electron = 'unfolding_HT_analyser_electron_channel/%s' % histogram_name
-        path_muon = 'unfolding_HT_analyser_muon_channel/%s' % histogram_name
-        path_combined = 'unfolding_HT_analyser_COMBINED_channel/%s' % histogram_name
-
-    else :
-        path_electron = 'unfolding_%s_analyser_electron_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
-        path_muon = 'unfolding_%s_analyser_muon_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
-        path_combined = 'unfolding_%s_analyser_COMBINED_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
+    path_electron = '%s_electron/%s' % ( variable, histogram_name )
+    path_muon = '%s_muon/%s' % ( variable, histogram_name )
+    path_combined = '%s_COMBINED/%s' % ( variable, histogram_name )
 
     histogram_information = [
                 {'file': config.unfolding_central_raw,

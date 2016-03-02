@@ -48,8 +48,8 @@ def getHistograms( histogram_files,
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_electron
-        # if not 'QCD' in channel and not 'NPU' in branchName:
-        #     weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
+        if not 'QCD' in channel and not 'NPU' in branchName:
+            weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
@@ -57,8 +57,9 @@ def getHistograms( histogram_files,
             normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_muon
-        if not 'QCD' in channel and not 'NPU' in branchName:
+        if not 'QCD' in channel:
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
+    print weightBranchSignalRegion
 
     # Apply selection to avoid non-physical values
     if branchName == 'abs(lepton_eta)' :
@@ -78,10 +79,10 @@ def getHistograms( histogram_files,
         histogram_files_muon['data'] = measurement_config.data_file_muon_trees
         histogram_files_muon['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
 
-        # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
-        histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         # histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
 
         if use_qcd_data_region:
             qcd_control_region = signal_region_tree.replace('Ref selection','QCD_Control')
@@ -159,11 +160,11 @@ def getHistograms( histogram_files,
         if not n_qcd_control_region == 0:
             dataDrivenQCDScale = n_qcd_predicted_mc_signal / n_qcd_predicted_mc_control
             qcd_from_data.Scale( dataDrivenQCDScale.nominal_value )
-            signalToControlScale = n_qcd_predicted_mc_signal / n_qcd_control_region
-            dataToMCscale = n_qcd_control_region / n_qcd_predicted_mc_control
+            # signalToControlScale = n_qcd_predicted_mc_signal / n_qcd_control_region
+            # dataToMCscale = n_qcd_control_region / n_qcd_predicted_mc_control
     else:
         qcd_from_data = signal_region_hists['QCD']
-
+        
     return signal_region_hists, control_region_hists, qcd_from_data
 
 def make_plot( channel, x_axis_title, y_axis_title,
@@ -201,7 +202,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
         elif '_NBJets_LightUp' in name_prefix: weightBranchSignalRegion += ' * LightJetUpWeight'
         elif '_NBJets_LightDown' in name_prefix: weightBranchSignalRegion += ' * LightJetDownWeight'
         else: weightBranchSignalRegion += ' * BJetWeight'
-    print weightBranchSignalRegion
     # Get all histograms
     signal_region_hists, control_region_hists, qcd_from_data = getHistograms( histogram_files, signal_region_tree, use_qcd_data_region, channel, branchName, weightBranchSignalRegion, nBins, rebin, x_limits )
 
@@ -211,7 +211,8 @@ def make_plot( channel, x_axis_title, y_axis_title,
     histogram_lables = []
     histogram_colors = []
 
-    histograms_to_draw = [signal_region_hists['data'], qcd_from_data,
+    histograms_to_draw = [signal_region_hists['data'], 
+                          qcd_from_data,
                           signal_region_hists['V+Jets'],
                           signal_region_hists['SingleTop'],
                           signal_region_hists['TTJet']]
@@ -375,11 +376,11 @@ if __name__ == '__main__':
                         'NBJetsDown',
                         'NBJets_LightUp',
                         'NBJets_LightDown',
+                        'JetPt',
 
                         # # # # # # # # 'Mjj',
                         # # # # # # # # 'M3',
                         # # # # # # # # 'angle_bl',
-                        'JetPt',
                         # 'AbsLeptonEta',
                         # 'RelIso',
                         # 'sigmaietaieta'
@@ -403,16 +404,16 @@ if __name__ == '__main__':
 
 
     for channel, label in {
-                            # 'electron' : 'EPlusJets', 
+                            'electron' : 'EPlusJets', 
                             'muon' : 'MuPlusJets',
-                            # 'combined' : 'COMBINED'
+                            'combined' : 'COMBINED'
                             }.iteritems() :
         b_tag_bin = '2orMoreBtags'
 
         # Set folder for this batch of plots
         output_folder = output_folder_base + "/Variables/"
         make_folder_if_not_exists(output_folder)
-
+        print '--->', channel
         ###################################################
         # HT
         ###################################################
@@ -447,27 +448,6 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'MET',
                       name_prefix = '%s_MET_' % label,
-                      x_limits = control_plots_bins['MET'],
-                      nBins = len(control_plots_bins['MET'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
-
-        ###################################################
-        # MET
-        ###################################################
-        norm_variable = 'MET'
-        if 'METNoHF' in include_plots:
-            print '---> METNoHF'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
-                      branchName = 'METNoHF',
-                      name_prefix = '%s_METNoHF_' % label,
                       x_limits = control_plots_bins['MET'],
                       nBins = len(control_plots_bins['MET'])-1,
                       rebin = 1,
