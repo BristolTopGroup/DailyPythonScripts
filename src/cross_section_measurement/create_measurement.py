@@ -439,7 +439,7 @@ def create_input(config, sample, variable, category, channel, template,
         lumi_scale = 1.
         scale = 1.
 
-    edges = variable_binning.reco_bin_edges_full[variable]
+    edges = variable_binning.reco_bin_edges_vis_full[variable]
     if phase_space == 'VisiblePS':
         edges = variable_binning.reco_bin_edges_vis[variable]
 
