@@ -4,7 +4,7 @@ from rootpy.io import root_open, File
 #from rootpy.interactive import wait
 from optparse import OptionParser
 from config import XSectionConfig
-from config.variable_binning import bin_edges, bin_edges_vis
+from config.variable_binning import bin_edges, bin_edges_vis, reco_bin_edges_vis
 from config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from tools.file_utilities import make_folder_if_not_exists
 from math import trunc
@@ -146,7 +146,7 @@ def main():
 
                 # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
                 allVariablesBins = bin_edges_vis.copy()
-                for variable in bin_edges:
+                for variable in bin_edges_vis:
                     if 'Rap' in variable:
                         allVariablesBins['abs_%s' % variable] = [0,bin_edges_vis[variable][-1]]
 
@@ -211,21 +211,20 @@ def main():
                         h['truth'] = Hist( allVariablesBins[variable], name='truth')
                         h['truthVis'] = Hist( allVariablesBins[variable], name='truthVis')
                         h['truth_parton'] = Hist( allVariablesBins[variable], name='truth_parton')                
-                        h['measured'] = Hist( allVariablesBins[variable], name='measured')
-                        h['measuredVis'] = Hist( allVariablesBins[variable], name='measuredVis')
-                        h['fake'] = Hist( allVariablesBins[variable], name='fake')
-                        h['fakeVis'] = Hist( allVariablesBins[variable], name='fakeVis')
+                        h['measured'] = Hist( reco_bin_edges_vis[variable], name='measured')
+                        h['measuredVis'] = Hist( reco_bin_edges_vis[variable], name='measuredVis')
+                        h['measured_without_fakes'] = Hist( reco_bin_edges_vis[variable], name='measured_without_fakes')
+                        h['measuredVis_without_fakes'] = Hist( reco_bin_edges_vis[variable], name='measuredVis_without_fakes')
+                        h['fake'] = Hist( reco_bin_edges_vis[variable], name='fake')
+                        h['fakeVis'] = Hist( reco_bin_edges_vis[variable], name='fakeVis')
                         # 2D histograms
-                        h['response'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response')
-                        h['response_without_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes')
-                        h['response_only_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes')
+                        h['response'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response')
+                        h['response_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes')
 
-                        h['responseVis_without_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_without_fakes')
-                        h['responseVis_only_fakes'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='responseVis_only_fakes')
+                        h['responseVis_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='responseVis_without_fakes')
 
-                        h['response_parton'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_parton')
-                        h['response_without_fakes_parton'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_without_fakes_parton')
-                        h['response_only_fakes_parton'] = Hist2D( allVariablesBins[variable], allVariablesBins[variable], name='response_only_fakes_parton')
+                        h['response_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
+                        h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
 
                         if options.fineBinned:
                             minVar = trunc( allVariablesBins[variable][0] )
@@ -245,25 +244,24 @@ def main():
                                 nBins = 1000
                             elif 'NJets' in variable:
                                 maxVar = 20.5
-                                minVar = -0.5
-                                nBins = 21
+                                minVar = 3.5
+                                nBins = 17
 
                             h['truth'] = Hist( nBins, minVar, maxVar, name='truth')
                             h['truthVis'] = Hist( nBins, minVar, maxVar, name='truthVis')
                             h['truth_parton'] = Hist( nBins, minVar, maxVar, name='truth_parton')
                             h['measured'] = Hist( nBins, minVar, maxVar, name='measured')
                             h['measuredVis'] = Hist( nBins, minVar, maxVar, name='measuredVis')
+                            h['measured_without_fakes'] = Hist( nBins, minVar, maxVar, name='measured_without_fakes')
+                            h['measuredVis_without_fakes'] = Hist( nBins, minVar, maxVar, name='measuredVis_without_fakes')
                             h['fake'] = Hist( nBins, minVar, maxVar, name='fake')
                             h['fakeVis'] = Hist( nBins, minVar, maxVar, name='fakeVis')
                             h['response'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
                             h['response_without_fakes'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
-                            h['response_only_fakes'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes')
                             h['responseVis_without_fakes'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_without_fakes')
-                            h['responseVis_only_fakes'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_only_fakes')
 
                             h['response_parton'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_parton')
                             h['response_without_fakes_parton'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes_parton')
-                            h['response_only_fakes_parton'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_only_fakes_parton')
 
                         # Some interesting histograms
                         h['puOffline'] = Hist( 20, 0, 2, name='puWeights_offline')
@@ -290,7 +288,6 @@ def main():
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-
                     # # #
                     # # # Weights and selection
                     # # #
@@ -393,7 +390,8 @@ def main():
                             # if recoVariable > allVariablesBins[variable][-1]:
                             #     print 'Big reco variable : ',recoVariable
                             #     print 'Setting to :',min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
-                            recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
+                            if not options.fineBinned:
+                                recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
 
                             genVariable_particle = branch(genVariable_particle_names[variable])
                             if 'abs' in variable:
@@ -413,14 +411,16 @@ def main():
                                 if offlineSelection:
                                     histogramsToFill['measured'].Fill( recoVariable, offlineWeight)
                                     histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight)
+                                    if genSelectionVis :
+                                        histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight)
+                                    if genSelection:
+                                        histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight)
                                     histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight )
 
                                 if offlineSelection and genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
-                                    if genVariable_particle < 0 : print recoVariable, genVariable_particle
                                 elif genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
-                                    if genVariable_particle < 0 : print genVariable_particle
 
                                 if offlineSelection and genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
@@ -429,11 +429,9 @@ def main():
 
                                 if fakeSelection:
                                     histogramsToFill['fake'].Fill( recoVariable, offlineWeight)
-                                    histogramsToFill['response_only_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
 
                                 if fakeSelectionVis:
                                     histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight)
-                                    histogramsToFill['responseVis_only_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
 
                                 if options.extraHists:
                                     if genSelection:
@@ -472,7 +470,7 @@ def main():
             # Done all channels, now combine the two channels, and output to the same file
             for path, dirs, objects in out.walk():
                 if 'electron' in path:
-                    outputDir = out.mkdir(path.replace('electron','COMBINED'))
+                    outputDir = out.mkdir(path.replace('electron','combined'))
                     outputDir.cd()
                     for h in objects:
                         h_e = out.Get(path+'/'+h)
