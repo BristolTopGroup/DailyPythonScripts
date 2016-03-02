@@ -46,7 +46,7 @@ from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config import XSectionConfig
 from optparse import OptionParser
-from config.variable_binning import bin_edges, minimum_bin_width
+from config.variable_binning import bin_edges_full, minimum_bin_width
 from tools.file_utilities import write_data_to_JSON
 
 def main():
@@ -73,7 +73,7 @@ def main():
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
-    variables = bin_edges.keys()
+    variables = bin_edges_full.keys()
     for variable in variables:
         print('--- Doing variable',variable)
         variableToUse = variable
@@ -279,7 +279,6 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 s = round( n_gen_and_reco / n_gen, 3 )
             # find the bin range that matches
             # print('New bin : ',current_bin_start,current_bin_end,p,s
-
             if p >= p_min and s >= s_min and n_reco >= n_min:
                 current_bin_end = bin_i
                 break
