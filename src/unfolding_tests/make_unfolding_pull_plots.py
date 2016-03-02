@@ -34,6 +34,7 @@ from rootpy.plotting import Hist
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
 
+from math import sqrt
 
 from config.variable_binning import bin_edges
 from config import CMS, latex_labels, XSectionConfig
@@ -68,46 +69,54 @@ class fitResults:
         }
         return d
 
+def get_tau_from_file_name(file_name):
+    print (file_name)
+    return float(file_name.split('_')[-1].split('.txt')[0])
+
+def get_channel_from_file_name(file_name):
+    return file_name.split('TUnfold_')[-1].split('_')[0]
+
+def get_variable_from_file_name(file_name):
+    return file_name.split('/')[3]
+
+def get_sample_from_file_name(file_name):
+    return file_name.split('/')[4]
+
+def get_com_from_file_name(file_name):
+    return int(file_name.split('/')[2].split('TeV')[0])
+
+def get_info_from_file_name(file_name):
+    tau_value = get_tau_from_file_name( file_name )
+    channel = get_channel_from_file_name( file_name )
+    variable = get_variable_from_file_name( file_name )
+    sample = get_sample_from_file_name( file_name )
+    com = get_com_from_file_name( file_name )
+    return com, channel, variable, sample, tau_value
 
 def main():
     parser = OptionParser(__doc__)
-    parser.add_option("-v", "--variable", dest="variable", default='MET',
-                      help="set the variable to analyse (MET, HT, ST, MT, WPT)")
-    parser.add_option("-s", "--centre-of-mass-energy", dest="CoM", default=8,
-                      help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
     parser.add_option("-o", "--output",
                       dest="output_folder", default='plots/unfolding_pulls',
                       help="output folder for unfolding pull plots")
-    parser.add_option("-c", "--channel", type='string',
-                      dest="channel", default='combined',
-                      help="channel to be analysed: electron|muon|combined")
-    parser.add_option("-k", "--k_value", type='int',
-                      dest="k_value", default=-1,
-                      help="k-value used in SVD unfolding, only for categorisation purpose at this stage")
-    parser.add_option("--tau", type='float',
-                      dest="tau_value", default=-1.,
-                      help="tau-value for SVD unfolding")
 
     (options, args) = parser.parse_args()
 #     measurement_config = XSectionConfig(options.CoM)
 
     if len(args) == 0:
-        print('No input files specified.')
+        print('No input file specified.')
         print('Run script with "-h" for usage')
         sys.exit(-1)
-    files = args
-    centre_of_mass = options.CoM
-    variable = options.variable
-    channel = options.channel
-    config = XSectionConfig(centre_of_mass)
-    k_value = get_k_value(options.k_value, config, channel, variable)
-    tau_value = get_tau_value(options.tau_value, config, channel, variable)
+    file_name = args[0]
 
-    output_folder = '{option_output}/{centre_of_mass}TeV/{variable}/{channel}/'
+    centre_of_mass, channel, variable, sample, tau_value = get_info_from_file_name( file_name )
+
+    k_value = 0
+    output_folder = '{option_output}/{centre_of_mass}TeV/{variable}/{channel}/{sample}/'
     output_folder = output_folder.format(option_output=options.output_folder,
                                          centre_of_mass=centre_of_mass,
                                          variable=variable,
-                                         channel=channel)
+                                         channel=channel,
+                                         sample = sample)
     make_folder_if_not_exists(output_folder)
     output_formats = ['pdf']
 
@@ -116,27 +125,42 @@ def main():
 
     msg = 'Producing unfolding pull plots for {0} variable, channel: {1}'
     print(msg.format(variable, channel))
-    value = get_value_title(k_value, tau_value)
-    print('Using {0}'.format(value))
     print ('Output folder: {0}'.format(output_folder))
 
-    pulls = get_data(files, subset='pull')
-
+    pulls = get_data(file_name, subset='pull')
+    bias = get_data(file_name, subset='bias')
+    
     fit_results = []
+    mean_bias_in_each_bin = []
+    sumBias2 = 0
     for bin_i in range(0, nbins):
         fr = plot_pull(pulls, centre_of_mass, channel, variable, k_value,
                        tau_value, output_folder, output_formats,
                        bin_index=bin_i, n_bins=nbins)
+
+        mean_bias_in_bin_i = mean_bias(bias, bin_index=bin_i, n_bins=nbins)
+
+        sumBias2 += mean_bias_in_bin_i**2
+        mean_bias_in_each_bin.append( abs(mean_bias_in_bin_i) * 100 )
         fit_results.append(fr)
+
+    mean_bias_over_all_bins = sqrt(sumBias2) / nbins * 100
 
     plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value, tau_value,
                      output_folder, output_formats, bins)
+
+    plot_bias_in_all_bins( mean_bias_in_each_bin,
+                            mean_bias_over_all_bins,
+                            centre_of_mass, channel, variable, tau_value,
+                            output_folder, output_formats, 
+                            bins
+                            )
     # plot all bins
     plot_pull(pulls, centre_of_mass, channel, variable, k_value, tau_value,
               output_folder, output_formats)
     del pulls  # deleting to make space in memory
 
-    difference = get_data(files, subset='difference')
+    difference = get_data(file_name, subset='difference')
     plot_difference(difference, centre_of_mass, channel, variable, k_value,
                     tau_value, output_folder, output_formats)
 
@@ -172,18 +196,17 @@ def get_value_title(k_value, tau_value):
     return value
 
 
-def get_data(files, subset=''):
+def get_data(file_name, subset=''):
     # this takes a LOT of memory, please use subset!!
     all_data = []
     extend = all_data.extend
-    for f in files:
-        data = read_data_from_JSON(f)
+    data = read_data_from_JSON(file_name)
 
-        if subset:
-            for entry in data:  # loop over all data entries
-                extend(entry[subset])
-        else:
-            extend(data)
+    if subset:
+        for entry in data:  # loop over all data entries
+            extend(entry[subset])
+    else:
+        extend(data)
 
     return all_data
 
@@ -201,11 +224,15 @@ def plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value,
     h_sigma = Hist(bin_edges, type='D')
     n_bins = h_mean.nbins()
     assert len(fit_results) == n_bins
+
+    mean_abs_pull = 0
     for i, fr in enumerate(fit_results):
+        mean_abs_pull += abs(fr.mean)
         h_mean.SetBinContent(i + 1, fr.mean)
         h_mean.SetBinError(i + 1, fr.meanError)
         h_sigma.SetBinContent(i + 1, fr.sigma)
         h_sigma.SetBinError(i + 1, fr.sigmaError)
+    mean_abs_pull /= n_bins
     histogram_properties = Histogram_properties()
     name_mpt = 'pull_distribution_mean_and_sigma_{0}_{1}_{2}TeV'
     histogram_properties.name = name_mpt.format(
@@ -215,16 +242,18 @@ def plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value,
     )
     histogram_properties.y_axis_title = r'$\mu_{\text{pull}}$ ($\sigma_{\text{pull}}$)'
     histogram_properties.x_axis_title = latex_labels.variables_latex[variable]
+    histogram_properties.legend_location = (0.98, 0.48)
     value = get_value_title(k_value, tau_value)
     title = 'pull distribution mean \& sigma for {0}'.format(value)
     histogram_properties.title = title
-    histogram_properties.y_limits = [-0.5, 2]
+    histogram_properties.y_limits = [-2, 2]
     histogram_properties.xerr = True
 
     compare_measurements(
         models={
+            'mean $|\mu|$':make_line_hist(bin_edges,mean_abs_pull),
             'ideal $\mu$': make_line_hist(bin_edges, 0),
-            'ideal $\sigma$': make_line_hist(bin_edges, 1)
+            'ideal $\sigma$': make_line_hist(bin_edges, 1),
         },
         measurements={
             r'$\mu_{\text{pull}}$': h_mean,
@@ -235,6 +264,66 @@ def plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value,
         save_folder=output_folder,
         save_as=output_formats)
 
+def plot_bias_in_all_bins(biases, mean_bias, centre_of_mass, channel, variable,
+                        tau_value, output_folder, output_formats, bin_edges):
+    h_bias = Hist(bin_edges, type='D')
+    n_bins = h_bias.nbins()
+    assert len(biases) == n_bins
+    for i, bias in enumerate(biases):
+        h_bias.SetBinContent(i+1, bias)
+    histogram_properties = Histogram_properties()
+    name_mpt = 'bias_{0}_{1}_{2}TeV'
+    histogram_properties.name = name_mpt.format(
+        variable,
+        channel,
+        centre_of_mass
+    )
+    histogram_properties.y_axis_title = 'Bias'
+    histogram_properties.x_axis_title = latex_labels.variables_latex[variable]
+    title = 'pull distribution mean \& sigma for {0}'.format(tau_value)
+    histogram_properties.title = title
+    histogram_properties.y_limits = [0, 10]
+    histogram_properties.xerr = True
+
+    compare_measurements(
+        models={
+            'Mean bias':make_line_hist(bin_edges, mean_bias)
+        },
+        measurements={
+            'Bias': h_bias
+        },
+        show_measurement_errors=True,
+        histogram_properties=histogram_properties,
+        save_folder=output_folder,
+        save_as=output_formats)
+
+def mean_bias(bias, bin_index, n_bins):
+    sumBias = 0
+    stats = 0
+    for i, bias in enumerate(bias):
+        if not bin_index is None:
+            matches_bin = (i - bin_index) % (n_bins) == 0
+            if i < n_bins:  # first set correction
+                matches_bin = i == bin_index
+            if not matches_bin:
+                continue
+        sumBias += bias
+        stats += 1
+    return sumBias / stats
+
+def mean_unfolded(unfolded, bin_index, n_bins):
+    sumBias = 0
+    stats = 0
+    for i, unfolded in enumerate(unfolded):
+        if not bin_index is None:
+            matches_bin = (i - bin_index) % (n_bins) == 0
+            if i < n_bins:  # first set correction
+                matches_bin = i == bin_index
+            if not matches_bin:
+                continue
+        sumBias += unfolded[0]
+        stats += 1
+    return sumBias / stats
 
 def plot_pull(pulls, centre_of_mass, channel, variable, k_value, tau_value,
               output_folder, output_formats,
@@ -259,21 +348,17 @@ def plot_pull(pulls, centre_of_mass, channel, variable, k_value, tau_value,
         filling(pull)
         stats += 1
 
-#    printstats
-#    h_list = hist_to_value_error_tuplelist(h_pull)
-#    printh_list
-#    printlen(hist_data), min(hist_data), max(hist_data)
     fr = None
     if bin_index is None:
         fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value,
                          tau_value, output_folder,
                          output_formats, stats=stats,
-                         name='pull_from_files_all_bins_stats_%d' % stats)
+                         name='pull_from_files_all_bins')
     else:
         fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value,
                          tau_value, output_folder,
                          output_formats, stats=stats,
-                         name='pull_from_files_bin_%d_stats_%d' % (bin_index, stats))
+                         name='pull_from_files_bin_%d' % (bin_index))
 
     return fr
 
@@ -393,7 +478,7 @@ def plot_difference(difference, centre_of_mass, channel, variable, k_value, tau_
 
     for save in output_formats:
         plt.savefig(
-            output_folder + 'difference_stats_' + str(stats) + '.' + save)
+            output_folder + 'difference.' + save)
 
     min_x, max_x = min(errors), max(errors)
     h_errors = Hist(1000, min_x, max_x)
@@ -416,7 +501,7 @@ def plot_difference(difference, centre_of_mass, channel, variable, k_value, tau_
 
     for save in output_formats:
         plt.savefig(
-            output_folder + 'difference_errors_stats_' + str(stats) + '.' + save)
+            output_folder + 'difference_errors.' + save)
 
 
 if __name__ == "__main__":
