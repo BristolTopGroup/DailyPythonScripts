@@ -54,7 +54,7 @@ class Unfolding:
     def setup_unfolding ( self ):
         if not self.unfoldObject:
             
-            if not self.unfoldResponse:
+            if not self.unfoldResponse and not self.method == 'TUnfold':
                 self.unfoldResponse = self._makeUnfoldResponse()
             
             if self.method == 'RooUnfoldBayes':
@@ -66,7 +66,7 @@ class Unfolding:
                     if self.tau >= 0:
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
             elif self.method == 'TUnfold':
-              self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeDerivative)
+              self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeCurvature)
               self.unfoldObject.SetInput( self.data )
               # self.unfoldObject.ScanLcurve( 30, 0, 0 )
 
@@ -121,6 +121,19 @@ class Unfolding:
             chi2 = value, error
         return chi2
 
+    def pull ( self ):
+      result = [9999999]
+
+      if self.unfolded_data and self.truth:
+          for bin in range(0,self.truth.GetNbinsX()):
+            self.truth.SetBinError(bin,0)
+
+          diff = self.unfolded_data - self.truth
+          value_error_tuplelist = hist_to_value_error_tuplelist( diff )
+          result = [value / error for value, error in value_error_tuplelist]
+
+      return result
+
     def Impl(self):
         return self.unfoldObject.Impl()
 
@@ -143,22 +156,19 @@ def get_unfold_histogram_tuple(
     h_response = None
     h_fakes = None
 
-    if not channel == 'combined':
-        folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
-    else:
-        folder = inputfile.Get( '%s_COMBINED' % ( variable ) )
+    folder = inputfile.Get( '%s_%s' % ( variable, channel ) )
 
     if visiblePS:
       h_truth = asrootpy( folder.truthVis.Clone() )
-      h_measured = asrootpy( folder.measuredVis.Clone() )
+      h_measured = asrootpy( folder.measuredVis_without_fakes.Clone() )
       h_response = asrootpy( folder.responseVis_without_fakes.Clone() )
     else :
       h_truth = asrootpy( folder.truth.Clone() )
-      h_measured = asrootpy( folder.measured.Clone() )
+      h_measured = asrootpy( folder.measured_without_fakes.Clone() )
       h_response = asrootpy( folder.response_without_fakes.Clone() )
 
     if load_fakes:
-        h_fakes = asrootpy( folder.fake.Clone() )
+        h_fakes = asrootpy( folder.fakeVis.Clone() )
     # else:
     #     return get_combined_unfold_histogram_tuple( inputfile = inputfile,
     #                                                variable = variable,
@@ -239,5 +249,13 @@ def get_combined_unfold_histogram_tuple(
     h_fakes = None
     if load_fakes:
         h_fakes = h_fakes_e + h_fakes_mu
-    print list(h_response.z())
     return h_truth, h_measured, h_response, h_fakes
+
+def removeFakes( h_measured, h_data, h_response ):
+  fakes = h_measured - h_response.ProjectionX()
+  nonFakeRatio = 1 - fakes / h_measured
+  if h_measured != None:
+    h_measured *= nonFakeRatio
+  if h_data != None:
+    h_data *= nonFakeRatio
+  return h_measured, h_data
