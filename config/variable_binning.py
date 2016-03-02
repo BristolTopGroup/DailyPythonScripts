@@ -80,11 +80,11 @@ bin_widths = {}
 variable_bins_ROOT = {}
 variable_bins_latex = {}
 # calculate all the other variables
-for variable in bin_edges.keys():
+for variable in bin_edges_full.keys():
     bin_widths[variable] = []
     variable_bins_ROOT[variable] = []
     variable_bins_latex[variable] = {}
-    number_of_edges = len( bin_edges[variable] )
+    number_of_edges = len( bin_edges_full[variable] )
     unit = '\GeV'
     bin_name_template = '%d--%d'
     bin_name_latex_template = '%d--%d%s'
@@ -94,8 +94,8 @@ for variable in bin_edges.keys():
     if 'eta' in variable or variable == 'NJets':
         unit = ''
     for i in range( number_of_edges - 1 ):
-        lower_edge = bin_edges[variable][i]
-        upper_edge = bin_edges[variable][i + 1]
+        lower_edge = bin_edges_full[variable][i]
+        upper_edge = bin_edges_full[variable][i + 1]
         bin_widths[variable].append( upper_edge - lower_edge )
         bin_name = bin_name_template % ( lower_edge, upper_edge )
         bin_name_latex = bin_name_latex_template % ( lower_edge, upper_edge, unit )
