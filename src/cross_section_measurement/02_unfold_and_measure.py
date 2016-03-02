@@ -377,7 +377,7 @@ if __name__ == '__main__':
     set_root_defaults( msg_ignore_level = 3001 )
     # setup
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
+    parser.add_option( "-p", "--path", dest = "path", default = 'data/normalisation/',
                       help = "set path to JSON files" )
     parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
                       help = "set the variable to analyse (MET, HT, ST, MT)" )
