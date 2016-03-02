@@ -6,36 +6,49 @@
 
 set -e
 
-# Install a ROOT binary that we custom-built in a 64-bit Ubuntu VM
-# for the correct python / ROOT version
-time wget --no-check-certificate https://copy.com/s3BcYu1drmZa/ci/root_builds/root_v${ROOT}_python_${TRAVIS_PYTHON_VERSION}.tar.gz
-time tar zxf root_v${ROOT}_python_${TRAVIS_PYTHON_VERSION}.tar.gz
-mv root_v${ROOT}_python_${TRAVIS_PYTHON_VERSION} root
-source root/bin/thisroot.sh
-
-# test ROOT install 
-# Check if ROOT and PyROOT work
-root -l -q
-python -c "import ROOT; ROOT.TBrowser()"
+major_root_version=`echo $ROOT | cut -d- -f1`
 
 #DailyPythonTools location
 export base=`pwd`
 
-# setup vpython with all packages
-# package list from FinalStateAnalysis 
-# (https://github.com/uwcms/FinalStateAnalysis/blob/master/recipe/install_python.sh)
+sudo apt-get update
+
+# install miniconda
+if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+	wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+else
+	wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+fi
+bash miniconda.sh -b -p $HOME/miniconda
+export PATH="$HOME/miniconda/bin:$PATH"
+hash -r
+conda config --set always_yes yes --set changeps1 no
+conda update -q conda
+conda info -a
+conda create -q -n dps python=$TRAVIS_PYTHON_VERSION nose pytest flake8 gcc cmake
+
+source activate dps
+conda install -c https://conda.anaconda.org/nlesc root=${major_root_version} rootpy
+# workaround for https://github.com/remenska/root-conda-recipes/issues/6
+source deactivate && source activate dps
+
+# install other dependencies
 echo "Installing uncertainties <-- awesome error propagation"
-time pip install -U uncertainties
+pip install -U uncertainties
 echo "Installing tabulate (latex table printing, etc)"
 pip install tabulate
 
-echo "Installing rootpy"
-time pip install --user -e $base/external/rootpy
+# test ROOT install 
+# Check if ROOT and PyROOT work
+echo "Checking ROOT & PyROOT"
+root -l -q
+python -c "import ROOT; ROOT.TBrowser()"
+# Check that rootpy can be imported
+time python -c 'import rootpy'
+# What if ROOT has already been initialized?
+time python -c 'from ROOT import kTRUE; import rootpy'
 
-echo "Installing root_numpy"
-git clone https://github.com/rootpy/root_numpy.git && (cd root_numpy && python setup.py install --user)
 cd $base
-major_root_version=`echo $ROOT | cut -d- -f1`
 
 if [ ! -d "$base/external/lib" ]; then
 	mkdir $base/external/lib

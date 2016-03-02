@@ -4,22 +4,33 @@ Created on 21 Jul 2015
 @author: phxlk
 '''
 import unittest
-from tests.data import create_test_hist, create_test_tree
+from tests.data import create_test_hist
 from rootpy.io.file import File
+from rootpy.tree import Tree
+from random import gauss
 
 class Test(unittest.TestCase):
 
 
     def setUp(self):
-        f = File('test.root', 'recreate')
-        f.mkdir('TTbar_plus_X_analysis/EPlusJets/Ref selection', recurse=True)
-        f.cd('TTbar_plus_X_analysis/EPlusJets/Ref selection')
-        tree = create_test_tree()
-        h = create_test_hist()
-        h.write()
-        tree.write()
-        f.write()
-        f.Close()
+        with File.open('test.root', 'recreate') as f:
+            f.mkdir('TTbar_plus_X_analysis/EPlusJets/Ref selection', recurse=True)
+            f.cd('TTbar_plus_X_analysis/EPlusJets/Ref selection')
+            tree = Tree("test")
+            tree.create_branches(
+                {'x': 'F',
+                 'y': 'F',
+                 'z': 'F',
+                 'i': 'I'})
+            for i in xrange(10000):
+                tree.x = gauss(.5, 1.)
+                tree.y = gauss(.3, 2.)
+                tree.z = gauss(13., 42.)
+                tree.i = i
+                tree.fill()
+            h = create_test_hist()
+            h.write()
+            tree.write()
 
 
     def tearDown(self):

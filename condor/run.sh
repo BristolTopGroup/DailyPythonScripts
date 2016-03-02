@@ -23,10 +23,10 @@ echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
 tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
 echo "... running setup routine"
 >&2 "... running setup routine"
-time source setup_with_conda.sh
+time source setup.sh
 echo "... enforcing conda python environment"
 # this is safe, as the dangerous part is only executed on soolin
-source environment_conda.sh
+source environment.sh
 echo "DailyPythonScripts are set up"
 
 echo "Running payload"

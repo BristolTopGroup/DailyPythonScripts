@@ -15,7 +15,6 @@ env:
     - GCC_VERSION=4.9
     - BOOST_VERSION=1.55
 
-before_install: source ci/before_install.sh
 install: source ci/install.sh
-script: bash ci/test.sh
+script: time make test
 cache: apt

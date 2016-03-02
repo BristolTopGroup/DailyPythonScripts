@@ -1,20 +1,16 @@
 export base=`pwd`
+export conda_base=/software/miniconda/envs/dps
 export vpython=$base/external/vpython
+export PATH=/software/miniconda/bin:$PATH
 
-if [ -d "$vpython" ]; then
-	echo "Activating virtual python environment"
-	export VIRTUAL_ENV_DISABLE_PROMPT=1
-	source $vpython/bin/activate
-fi
+source activate dps
 
-cd $base
 export PYTHONPATH=$PYTHONPATH:`pwd`
 
 if [ ! -z "$CMSSW_BASE" ]; then
 	echo "CMSSW has been set up..."
-	echo "...giving priority to vpython."
-    export PYTHONPATH=$vpython/lib/python2.7/site-packages:$PYTHONPATH
-    export PYTHONPATH=$vpython/lib/python2.6/site-packages:$PYTHONPATH
+	echo "...giving priority to conda dps."
+    export PYTHONPATH=$conda_base/lib/python2.7/site-packages:$PYTHONPATH
 fi
 
 export PATH=$PATH:$base/bin

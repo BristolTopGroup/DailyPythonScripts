@@ -13,6 +13,7 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         f = File('test.root', 'recreate')
+        f.cd()
         tree = create_test_tree()
         h = create_test_hist()
         h.write()
@@ -77,7 +78,7 @@ class Test(unittest.TestCase):
                   hist='test_hist',
                   )
         d = i.toDict()
-        self.assertEqual(d, {'input_file': 'test.root', 'hist': 'test_hist'})
+        self.assertEqual(d, {'hist': 'test_hist', 'class': 'tools.input.Input', 'input_file': 'test.root'})
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

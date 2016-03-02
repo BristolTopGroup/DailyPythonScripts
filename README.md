@@ -16,16 +16,18 @@ cd DailyPythonScripts
 # get submodules:
 git submodule init && git submodule update
 
-# setup run:
-source setup_conda.sh
+# run the setup script (requires a set up [Conda](#conda))
+# this compiles RooUnfold
+source setup.sh
 
-# setup environment (using virtualenv for python):
-source environment_conda.sh
+# setup environment (using conda):
+source environment.sh
 
 # make sure matplotlib is up to date (should return 1.3.1 or above):
 python -c 'import matplotlib; print matplotlib.__version__'
 ```
 
+DEPRECATED, use above instead
 If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
 
 ```
@@ -112,3 +114,37 @@ x_make_control_plots
 x_make_fit_variable_plots
 ```
 (script AN-14-071 runs all of these scripts automatically if you are confident everything will run smoothly(!))
+
+## Conda
+DailyPythonScripts relies on a (mini)conda environment to provide all necessary dependencies. This section describes how to set up this environment from scratch.
+As a first step, download and install conda (you can skip this step if you are using a shared conda install, e.g. on soolin):
+```bash
+# for a python 2.7 base use
+wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+# or for a python 3 base use
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+bash miniconda.sh -b -p $HOME/miniconda # or a different location
+```
+Even if you install python 3 (and vice versa) you will be able to create python 2 (3) environments.
+
+Next let us create a new conda environment with some base packages:
+```bash
+conda create -q -n dps python=2.7 nose pytest flake8 gcc cmake
+```
+Then activate the environment and install the remaining dependencies
+```bash
+source activate dps
+conda install -c https://conda.anaconda.org/nlesc root rootpy
+# workaround for https://github.com/remenska/root-conda-recipes/issues/6
+source deactivate && source activate dps
+# install dependencies that have no conda recipe
+pip install -U uncertainties
+pip install -U tabulate
+```
+At this point you should have all necessary dependencies which you can try out with:
+```bash
+root -l -q
+time python -c "import ROOT; ROOT.TBrowser()"
+time python -c 'import rootpy'
+time python -c 'from ROOT import kTRUE; import rootpy'
+```
