@@ -31,8 +31,8 @@ ls -trlh environment.sh
 source environment.sh
 mkdir unfolding # For output file
 
-python experimental/BLTUnfold/runJobsCrab.py -j $1
-#python experimental/BLTUnfold/produceUnfoldingHistograms.py
+python src/BLTUnfold/runJobsCrab.py -j $1
+#python src/BLTUnfold/produceUnfoldingHistograms.py
 
 pwd
 ls -trlh

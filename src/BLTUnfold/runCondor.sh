@@ -32,7 +32,7 @@ echo "Job arguments "$jobArguments
 if [[ $jobArguments == *"generatorWeight"* ]]
 then
 	echo "Will copy input file locally"
-	hadoop fs -copyToLocal /TopQuarkGroup/run2/atOutput/13TeV/50ns/TTJets_PowhegPythia8_tree.root ${_CONDOR_JOB_IWD}/CMSSW_7_4_7/src/DailyPythonScripts/localInputFile.root
+	hadoop fs -copyToLocal /TopQuarkGroup/run2/atOutput/13TeV/25ns/TTJets_PowhegPythia8_tree.root ${_CONDOR_JOB_IWD}/CMSSW_7_4_7/src/DailyPythonScripts/localInputFile.root
 fi
 
 echo "Running payload"
