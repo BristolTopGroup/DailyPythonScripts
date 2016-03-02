@@ -92,7 +92,7 @@ def main():
         elif variable == 'abs_lepton_eta':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
         else:
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable] )
 
         if 'Rap' in variable:
             for b in list(best_binning):
