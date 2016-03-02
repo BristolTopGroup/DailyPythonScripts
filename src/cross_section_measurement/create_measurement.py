@@ -43,7 +43,7 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic or 'NLO' in systematic)])
 
-    for variable in variable_binning.bin_edges.keys():
+    for variable in variable_binning.bin_edges_vis.keys():
         for category in categories:
             for channel in ['electron', 'muon']:
                 if channel == 'electron' and (category == 'Muon_down' or category == 'Muon_up'):
@@ -439,9 +439,9 @@ def create_input(config, sample, variable, category, channel, template,
         lumi_scale = 1.
         scale = 1.
 
-    edges = variable_binning.bin_edges[variable]
+    edges = variable_binning.reco_bin_edges_vis_full[variable]
     if phase_space == 'VisiblePS':
-        edges = variable_binning.bin_edges_vis[variable]
+        edges = variable_binning.reco_bin_edges_vis[variable]
 
     weight_branches = []
     if sample == 'data':
