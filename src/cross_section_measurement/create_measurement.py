@@ -43,7 +43,7 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic or 'NLO' in systematic)])
 
-    for variable in variable_binning.bin_edges_vis.keys():
+    for variable in measurement_config.variables():
         for category in categories:
             for channel in ['electron', 'muon']:
                 if channel == 'electron' and (category == 'Muon_down' or category == 'Muon_up'):

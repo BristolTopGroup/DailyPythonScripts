@@ -24,7 +24,7 @@ def main():
 
     for channel in ['combined']:
 
-        # for variable in bin_edges_vis.keys():
+        # for variable in config.variables:
         for variable in ['HT']:
         
             print variable

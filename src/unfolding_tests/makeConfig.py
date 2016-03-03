@@ -12,7 +12,7 @@ make_folder_if_not_exists('config/unfolding/FullPS/')
 make_folder_if_not_exists('config/unfolding/VisiblePS/')
 
 for channel in config.analysis_types.keys():
-	for variable in bin_edges_full.keys():
+	for variable in config.variables:
 
 		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
@@ -44,7 +44,7 @@ for channel in config.analysis_types.keys():
 			# print outputJson
 			outfile.write( json.dumps(outputJson , sort_keys=True, indent=4, separators=(',', ': ') ) )
 
-	for variable in bin_edges_vis.keys():
+	for variable in config.variables:
 
 		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {

@@ -54,6 +54,17 @@ class XSectionConfig():
                   'vjets_theory_systematic_prefix'
                   ]
     samples = ['TTJet', 'V+Jets', 'SingleTop', 'QCD']
+
+    variables = [
+    'HT',
+    'MET',
+    'ST',
+    'WPT',
+    'NJets',
+    'lepton_pt',
+    'abs_lepton_eta'
+    ]
+
     variables_no_met = ['HT', 'NJets', 'lepton_pt', 'lepton_eta',
                         'abs_lepton_eta', 'bjets_pt', 'bjets_eta',
                         'abs_bjets_eta']

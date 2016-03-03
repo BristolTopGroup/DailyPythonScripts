@@ -17,7 +17,7 @@ def main():
     method = 'RooUnfoldBayes'
     file_for_unfolding = File(config.unfolding_central, 'read')
     for channel in ['electron', 'muon', 'combined']:
-        for variable in bin_edges_vis.keys():
+        for variable in config.variables:
             tau_value = get_tau_value(config, channel, variable)
             h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple(
                 inputfile=file_for_unfolding,
