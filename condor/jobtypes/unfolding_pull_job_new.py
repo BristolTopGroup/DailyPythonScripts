@@ -32,16 +32,16 @@ class UnfoldingPullJob(Job):
         self.all_tau_values = tau_values
         self.cross_section_config = XSectionConfig(self.centre_of_mass)
 
-        self.additional_input_files = []
-        for sample in self.all_samples:
-            additional_input_file_template = '{directory}/toy_mc_{sample}_N_{n}_{com}TeV.root'
-            additional_input_file = additional_input_file_template.format(
-                                                                    directory = self.input_file_directory,
-                                                                    sample = sample,
-                                                                    n = self.n_toy_data,
-                                                                    com = self.centre_of_mass
-                                                                    )
-            self.additional_input_files.append(additional_input_file)
+        # self.additional_input_files = []
+        # for sample in self.all_samples:
+        #     additional_input_file_template = '{directory}/toy_mc_{sample}_N_{n}_{com}TeV.root'
+        #     additional_input_file = additional_input_file_template.format(
+        #                                                             directory = self.input_file_directory,
+        #                                                             sample = sample,
+        #                                                             n = self.n_toy_data,
+        #                                                             com = self.centre_of_mass
+        #                                                             )
+        #     self.additional_input_files.append(additional_input_file)
 
     def run(self):
         '''
@@ -95,7 +95,7 @@ class UnfoldingPullJob(Job):
 
                         input_file_name = self.get_input_file_name( self.input_file_directory, sample, self.centre_of_mass, self.n_toy_data)
                         j.input_file_name = input_file_name
-                        j.additional_input_files = [input_file_name]
+                        # j.additional_input_files = [input_file_name]
 
                         subjobs.append(j)
         if len(subjobs) != n :

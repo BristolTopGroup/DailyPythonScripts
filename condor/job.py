@@ -5,6 +5,7 @@ import pickle
 from tools.file_utilities import make_folder_if_not_exists
 import time
 import subprocess
+import getpass
 
 
 class Condor(object):
@@ -47,17 +48,27 @@ class Condor(object):
             job_template = template.read()
         condor_jobs = []
 
+        # prepare DPS for submission
+        self._dps_tar_directory_on_hdfs = '/TopQuarkGroup/condor_dps/{you}/{now}/'.format(
+                                                                                            you = getpass.getuser(), 
+                                                                                            now = time.strftime('%d_%m_%Y_%H_%M') 
+                                                                                            )
+        prepare_process = subprocess.Popen(['./condor/prepare_dps.sh',self._dps_tar_directory_on_hdfs])
+        prepare_process.communicate()
+
         for i, job in enumerate(self.prepared_jobs):
             job_file = job_folder + 'job_{0}.pkl'.format(i)
             job_desc_file = job_folder + 'job_{0}.dsc'.format(i)
             job_description = job_template.replace('%pkl_file%', job_file)
+            job_description = job_description.replace('%dir_of_dps_on_hdfs%',
+                                                      self._dps_tar_directory_on_hdfs)
             job_description = job_description.replace('%total_memory%',
                                                       str(self.request_memory))
             job_description = job_description.replace('%n_jobs_to_run%',
                                                       str(self.n_jobs_to_run))
             job_description = job_description.replace('%n_jobs_to_split%',
                                                       str(self.n_jobs_to_split))
-            input_files = ['dps.tar']
+            input_files = []
             if hasattr(job, 'additional_input_files'):
                 input_files.extend(job.additional_input_files)
             input_files_str = ','.join(input_files)
@@ -71,9 +82,8 @@ class Condor(object):
                 jdf.write(job_description)
 
             condor_jobs.append(job_desc_file)
-        # prepare DPS for submission
-        subprocess.Popen(['./condor/prepare_dps.sh'])
-        # submit jobs
+
+        # # submit jobs
         for j in condor_jobs:
             p = subprocess.Popen(['condor_submit', j])
             p.communicate()  # wait until command completed
