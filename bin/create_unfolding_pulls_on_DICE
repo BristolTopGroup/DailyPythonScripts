@@ -6,10 +6,20 @@ from __future__ import print_function
 from optparse import OptionParser
 from config import XSectionConfig
 from condor import job
-from condor.jobtypes.unfolding_pull_job import UnfoldingPullJob
+from condor.jobtypes.unfolding_pull_job_new import UnfoldingPullJob
+from math import log10
 import os
 import sys
 
+def get_tau_values(min, max, spacing):
+    taus = []
+    logMin = log10(min)
+    logMax = log10(max)
+    r = int(logMax - logMin)
+    for i in range(r*spacing):
+        t = 10**(logMin + i/float(spacing))
+        taus.append(t)
+    return taus
 
 def main():
     parser = OptionParser(__doc__)
@@ -17,75 +27,69 @@ def main():
                       help="Centre-of-mass energy to be used for submission")
     parser.add_option("-v", "--variables", dest="variables",
                       help="Variables to be analysed, separated by commas")
-    parser.add_option("-i", "--input_file", dest="input_file",
-                      help="Toy MC input file")
-    parser.add_option("-f", "--filter_jobs", dest="filter_jobs",
-                      help="Only submit jobs that match the IDs specified here. Multiple values separated by comma.",
-                      default='')
+    parser.add_option("-i", "--input_directory", dest="input_directory",
+                      help="Toy MC input directory", default='data/toy_mc/')
+    parser.add_option("--scan_tau", dest="scan_tau",
+                      help="Produce unfolding pulls for a range of tau values", default=False)
+    parser.add_option("--tau_min", dest="tau_min",
+                      help="Minimum tau", default=1E-4)
+    parser.add_option("--tau_max", dest="tau_max",
+                      help="Maximum tau", default=1e-1)
+    parser.add_option("--spacing", dest="spacing",
+                      help="Number points between each factor of 10 in tau", default = 5)
+    parser.add_option("--doBestTau", dest="do_best_tau", action='store_true',
+                      help="In addition to scanning tau, include best choice for tau from config", default = False)
     parser.add_option("-m", "--method", dest="method",
-                      help="Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes",
-                      default='RooUnfoldSvd')
+                      help="Unfolding method: TUnfold (default), RooUnfoldSvd, TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes",
+                      default='TUnfold')
+    parser.add_option("-s", "--samples", dest="samples",
+                      help="Which input toy samples to run on, separated by commas: madgraph, powhegPythia, amcatnlo",
+                      default='powhegPythia')
+
     (options, _) = parser.parse_args()
 
     # first the global variables
     centre_of_mass_energy = options.com
     config = XSectionConfig(centre_of_mass_energy)
     method = options.method
-    n_toy_mc = n_toy_data = 300
+    n_toy_data = 10000
     output_folder = 'data/pull_data/'
-    offset_toy_mc = offset_toy_data = 0
-    tau_value = -1
-    k_value = -1
 
+    do_best_tau = options.do_best_tau
+    tau_range = []
+    scan_tau = options.scan_tau
+    if scan_tau:
+        tau_range.extend( get_tau_values( options.tau_min, options.tau_max, options.spacing ) )
+
+    samples = options.samples.split(',')
+    channels = ['combined']
     variables = options.variables.split(',')
-    filter_jobs = job.parse_filter_jobs(options.filter_jobs)
-    input_file_name = options.input_file
+    input_file_directory = options.input_directory
 
     pull_jobs = []
 
-    for variable in variables:
-        # check if file exists
-        if not os.path.exists(input_file_name):
-            print('Input file {0} does not exist'.format(input_file_name))
-            sys.exit(1)
-        for channel in ['electron', 'muon']:
-            if centre_of_mass_energy == 13:
-                if channel == 'electron':
-                    tau_value = config.tau_values_electron[variable]
-                else:
-                    tau_value = config.tau_values_muon[variable]
-            else:
-                if channel == 'electron':
-                    k_value = config.k_values_electron[variable]
-                else:
-                    k_value = config.k_values_muon[variable]
+    pull_job = UnfoldingPullJob(
+        input_file_directory=input_file_directory,
+        method=method,
+        channels=channels,
+        centre_of_mass=centre_of_mass_energy,
+        response=config.unfolding_central,
+        samples=samples,
+        variables=variables,
+        n_toy_data=n_toy_data,
+        output_folder=output_folder,
+        do_best_tau=do_best_tau,
+        tau_values=tau_range
+    )
 
-            pull_job = UnfoldingPullJob(
-                input_file_name=input_file_name,
-                method=method,
-                channel=channel,
-                centre_of_mass=centre_of_mass_energy,
-                variable=variable,
-                n_toy_mc=n_toy_mc,
-                n_toy_data=n_toy_data,
-                output_folder=output_folder,
-                offset_toy_mc=offset_toy_mc,
-                offset_toy_data=offset_toy_data,
-                k_value=k_value,
-                tau_value=tau_value,
-            )
-            pull_jobs.append(pull_job)
+    # One job per variable
+    n_sub_jobs = len(samples) * len(variables) * len(channels) * len(tau_range)
+    if do_best_tau:
+        n_sub_jobs += len(samples) * len(variables) * len(channels)
 
-    # Since we are analysing 300 x 300 = 90000 samples and one 10x10 sample
-    # takes around 7 seconds it will take 1.75h in a single job.
-    # For very fast (~1 min) processing we want at least 100 jobs.
-    n_jobs_to_run = 100  # this is per pull_job
-    n_jobs_to_split = 100
-    if filter_jobs:
-        n_jobs_to_run = len(filter_jobs)
-    condor_job = job.Condor(n_jobs_to_run, n_jobs_to_split, request_memory=50)
-    for j in pull_jobs:
-        condor_job.add_job(j)
+    condor_job = job.Condor(n_sub_jobs, -1, request_memory=50)
+    condor_job.add_job( pull_job )
+
     condor_job.submit()
     print('All jobs submitted')
 
