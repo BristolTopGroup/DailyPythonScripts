@@ -29,10 +29,10 @@ def main():
                       help="Variables to be analysed, separated by commas")
     parser.add_option("-i", "--input_directory", dest="input_directory",
                       help="Toy MC input directory", default='data/toy_mc/')
-    parser.add_option("--scan_tau", dest="scan_tau",
+    parser.add_option("--scan_tau", dest="scan_tau", action='store_true',
                       help="Produce unfolding pulls for a range of tau values", default=False)
     parser.add_option("--tau_min", dest="tau_min",
-                      help="Minimum tau", default=1E-4)
+                      help="Minimum tau", default=1E-6)
     parser.add_option("--tau_max", dest="tau_max",
                       help="Maximum tau", default=1e-1)
     parser.add_option("--spacing", dest="spacing",
