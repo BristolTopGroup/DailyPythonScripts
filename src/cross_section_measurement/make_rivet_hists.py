@@ -15,7 +15,7 @@
 '''
 from optparse import OptionParser
 from config import XSectionConfig
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_full
 from tools.file_utilities import read_data_from_JSON
 from rootpy.io import File
 from tools.hist_utilities import value_error_tuplelist_to_hist,\
@@ -53,14 +53,14 @@ def main(options, args):
                 path + '/' + m_with_errors_file)
 
             for name, result in m.items():
-                h = make_histogram(result, bin_edges[variable])
+                h = make_histogram(result, bin_edges_full[variable])
                 h.SetName(name)
                 h.write()
 
             for name, result in m_with_errors.items():
                 if not 'TTJet' in name:
                     continue
-                h = make_histogram(result, bin_edges[variable])
+                h = make_histogram(result, bin_edges_full[variable])
                 h.SetName(name + '_with_syst')
                 h.write()
             dv.write()

@@ -17,7 +17,7 @@ from rootpy.io import File
 from config import XSectionConfig
 from tools.ROOT_utils import set_root_defaults
 from rootpy.io.file import root_open
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_vis
 from rootpy import asrootpy
 
 
@@ -73,7 +73,7 @@ def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttba
     make_folder_if_not_exists(output_folder)
     input_file_hists = File(input_file)
     output_file_name = get_output_file_name(output_folder, sample, n_toy, centre_of_mass)
-    variable_bins = bin_edges.copy()
+    variable_bins = bin_edges_vis.copy()
     with root_open(output_file_name, 'recreate') as f_out:
         for channel in ['combined']:
             for variable in variable_bins:

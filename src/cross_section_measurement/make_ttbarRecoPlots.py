@@ -1,7 +1,7 @@
 from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex, channel_latex, \
     variables_latex, fit_variables_latex, control_plots_latex
-from config.variable_binning import variable_bins_ROOT, bin_edges, fit_variable_bin_edges, control_plots_bins
+from config.variable_binning import variable_bins_ROOT, bin_edges_vis, control_plots_bins
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
@@ -302,7 +302,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'lepTopPt',
                       name_prefix = '%s_lepTopPt_' % label,
-                      x_limits = bin_edges['lepTopPt'],
+                      x_limits = bin_edges_vis['lepTopPt'],
                       nBins = 30,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
@@ -321,7 +321,7 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/FitVariables' % label,
                       branchName = 'ttbarRap',
                       name_prefix = '%s_ttbarRap_' % label,
-                      x_limits = bin_edges['ttbarRap'],
+                      x_limits = bin_edges_vis['ttbarRap'],
                       nBins = 30,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),

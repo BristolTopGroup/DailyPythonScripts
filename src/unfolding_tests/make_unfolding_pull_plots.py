@@ -36,7 +36,7 @@ import matplotlib.pyplot as plt
 
 from math import sqrt
 
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_vis
 from config import CMS, latex_labels, XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, make_line_hist
@@ -120,7 +120,7 @@ def main():
     make_folder_if_not_exists(output_folder)
     output_formats = ['pdf']
 
-    bins = array('d', bin_edges[variable])
+    bins = array('d', bin_edges_vis[variable])
     nbins = len(bins) - 1
 
     msg = 'Producing unfolding pull plots for {0} variable, channel: {1}'

@@ -4,7 +4,7 @@ from rootpy.io import root_open, File
 #from rootpy.interactive import wait
 from optparse import OptionParser
 from config import XSectionConfig
-from config.variable_binning import bin_edges, bin_edges_vis, reco_bin_edges_vis
+from config.variable_binning import bin_edges_vis, reco_bin_edges_vis
 from config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from tools.file_utilities import make_folder_if_not_exists
 from math import trunc

@@ -1,7 +1,7 @@
 # Library for all cross section measurement specific functions
 # that need to be shared between scripts
 from rootpy.io import File
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_vis
 
 from tools.hist_utilities import value_error_tuplelist_to_hist, value_errors_tuplelist_to_graph
 from tools.file_utilities import read_data_from_JSON
@@ -217,9 +217,9 @@ def convert_unfolding_histograms(file_name,
             if name == 'EventCounter':
                 new_histograms[path][name] = hist.Clone()
             else:
-                new_hist = hist.rebinned(bin_edges[variable])
+                new_hist = hist.rebinned(bin_edges_vis[variable])
                 if 'TH2' in new_hist.class_name():
-                    new_hist = new_hist.rebinned(bin_edges[variable], axis=1)
+                    new_hist = new_hist.rebinned(bin_edges_vis[variable], axis=1)
                 new_histograms[path][name] = new_hist
 
     # save_to_file

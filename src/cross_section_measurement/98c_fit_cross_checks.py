@@ -10,7 +10,7 @@ from config import XSectionConfig, fit_var_inputs, latex_labels
 from src.cross_section_measurement.lib import closure_tests, read_fit_templates, \
     read_initial_normalisation
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
-from config.variable_binning import variable_bins_ROOT, fit_variable_bin_edges, bin_edges
+from config.variable_binning import variable_bins_ROOT, fit_variable_bin_edges, bin_edges_vis
 from tools.Fitting import FitData, FitDataCollection, Minuit
 from tools.hist_utilities import value_tuplelist_to_hist
 from tools.plotting import Histogram_properties, compare_measurements
@@ -279,7 +279,7 @@ def plot_results ( results ):
                             if not histograms.has_key(sample):
                                 histograms[sample] = {}
                             # reverse order of test and sample
-                            histograms[sample][test] = value_tuplelist_to_hist(chi2[sample], bin_edges[variable])
+                            histograms[sample][test] = value_tuplelist_to_hist(chi2[sample], bin_edges_vis[variable])
                     for sample in histograms.keys():
                         hist_properties = Histogram_properties()
                         hist_properties.name = sample.replace('+', '') + '_chi2'

@@ -16,7 +16,7 @@ import rootpy.plotting.root2matplotlib as rplt
 from src.unfolding_tests.make_unfolding_pull_plots import get_data, \
     plot_pull
 from config import XSectionConfig, CMS
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_full
 from tools.ROOT_utils import set_root_defaults
 from tools.file_utilities import make_folder_if_not_exists
 
@@ -49,7 +49,7 @@ def main():
     make_folder_if_not_exists(output_folder_base)
     output_formats = ['pdf']
 
-    bins = array('d', bin_edges[variable])
+    bins = array('d', bin_edges_full[variable])
     nbins = len(bins) - 1
 
     kValues = sorted(getkValueRange(files))
