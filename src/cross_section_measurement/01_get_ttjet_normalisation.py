@@ -35,7 +35,7 @@ from tools.Calculation import combine_complex_results
 mylog = log["01b_get_ttjet_normalisation"]
 
 
-class TTJetNormalisation:
+class TTJetNormalisation(object):
 
     '''
         Determines the normalisation for top quark pair production based on

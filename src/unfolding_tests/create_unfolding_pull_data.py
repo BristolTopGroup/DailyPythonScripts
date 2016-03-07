@@ -111,7 +111,6 @@ def create_unfolding_pull_data(input_file_name, method, channel,
         n_toy_data,
         output_folder, 
         tau_value,
-        run_matrix,
     )
     print('Runtime', timer.elapsed_time())
 
@@ -129,8 +128,8 @@ def check_multiple_data_multiple_unfolding(
         input_file, method, channel, variable,
         responseMatrix,
         n_toy_data, output_folder,
-        tau_value=-1,
-        run_matrix=None):
+        tau_value=-1
+        ):
     '''
         Loops through a n_toy_data of pseudo data, 
         unfolds the pseudo data and compares it to the MC truth

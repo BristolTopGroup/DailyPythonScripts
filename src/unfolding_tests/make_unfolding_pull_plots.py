@@ -45,7 +45,7 @@ from tools.latex import setup_matplotlib
 setup_matplotlib()
 
 
-class fitResults:
+class fitResults(object):
 
     def __init__(self, fit_pull):
         self.A = fit_pull.GetParameter(0)
@@ -301,7 +301,7 @@ def mean_bias(bias, bin_index, n_bins):
     sumBias = 0
     stats = 0
     for i, bias in enumerate(bias):
-        if not bin_index is None:
+        if bin_index is not None:
             matches_bin = (i - bin_index) % (n_bins) == 0
             if i < n_bins:  # first set correction
                 matches_bin = i == bin_index
@@ -315,7 +315,7 @@ def mean_unfolded(unfolded, bin_index, n_bins):
     sumBias = 0
     stats = 0
     for i, unfolded in enumerate(unfolded):
-        if not bin_index is None:
+        if bin_index is not None:
             matches_bin = (i - bin_index) % (n_bins) == 0
             if i < n_bins:  # first set correction
                 matches_bin = i == bin_index

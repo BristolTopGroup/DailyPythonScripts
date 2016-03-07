@@ -44,7 +44,10 @@ from numpy.linalg import svd
 rc('font',**CMS.font)
 rc( 'text', usetex = True )
 
-class RegularisationSettings():
+class RegularisationSettings(object):
+    '''
+        Class for storing input configuration, and for getting and storing response matrix histograms
+    '''
     n_toy = int( 1000 )
     n_tau_scan_points = int( 100 )
     
@@ -62,9 +65,9 @@ class RegularisationSettings():
         self.data = input_values['data']
 
         # optional
-        if input_values.has_key('n_tau_scan_points'):
+        if 'n_tau_scan_points' in input_values:
             self.n_tau_scan_points = input_values['n_tau_scan_points']
-        if input_values.has_key('n_toy'):
+        if 'n_toy' in input_values:
             self.n_toy = input_values['n_toy']
             
         self.__set_unfolding_histograms__()
@@ -130,7 +133,7 @@ def main():
         com = regularisation_settings.centre_of_mass_energy
         if not results.has_key(com): results[com] = {}
         if not results[com].has_key(variable): results[com][variable] = {}
-        print 'Variable = %s, channel = "%s", sqrt(s) = %d' % (variable, channel, com)
+        print 'Variable = {0}, channel = {1}, sqrt(s) = {2}'.format(variable, channel, com)
 
         h_truth, h_response, h_measured, h_data, h_fakes = regularisation_settings.get_histograms()
 
@@ -243,7 +246,7 @@ def tau_from_scan( unfoldingObject, regularisation_settings ):
     # Write to file
     output_dir = regularisation_settings.output_folder
     make_folder_if_not_exists(output_dir)
-    canvas.SaveAs(output_dir + '/%s.pdf' % variable)
+    canvas.SaveAs(output_dir + '/{0}.pdf'.format(variable) )
 
     return unfoldingObject.GetTau()
 
@@ -309,7 +312,7 @@ def print_results_to_screen(result_dict):
 
     for com in result_dict.keys():
         for variable in result_dict[com].keys():
-            print '"%s" : %s,' % (variable, result_dict[com][variable]['combined'])
+            print '"{0}" : {1},'.format(variable, result_dict[com][variable]['combined'])
         
 
 if __name__ == '__main__':

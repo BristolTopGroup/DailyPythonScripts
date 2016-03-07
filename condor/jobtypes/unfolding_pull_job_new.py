@@ -98,6 +98,8 @@ class UnfoldingPullJob(Job):
                         j.additional_input_files = [input_file_name]
 
                         subjobs.append(j)
+        if len(subjobs) != n :
+            print ('Warning : Did not get the expected number of subjobs')
         return subjobs
 
     def tar_output(self, job_id, subjob_id):
