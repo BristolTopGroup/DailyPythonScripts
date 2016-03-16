@@ -1,6 +1,6 @@
 from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex, samples_latex, fit_variables_latex, fit_variables_units_latex, variables_latex, control_plots_latex
-from config.variable_binning import fit_variable_bin_edges, bin_edges, control_plots_bins
+from config.variable_binning import fit_variable_bin_edges, bin_edges_vis, control_plots_bins
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.plotting import make_data_mc_comparison_plot, Histogram_properties, \
@@ -111,7 +111,7 @@ if __name__ == '__main__':
                 print var  
                 controlTree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % ( channel, control_region )
 
-                bins = bin_edges[var]
+                bins = bin_edges_vis[var]
                 xMin = bins[0]
                 xMax = bins[-1]
                 nBins = 40

@@ -46,7 +46,7 @@ from tools.Calculation import calculate_purities, calculate_stabilities
 from tools.hist_utilities import rebin_2d
 from config import XSectionConfig
 from optparse import OptionParser
-from config.variable_binning import bin_edges, minimum_bin_width
+from config.variable_binning import bin_edges_full, minimum_bin_width
 from tools.file_utilities import write_data_to_JSON
 
 def main():
@@ -73,7 +73,7 @@ def main():
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
-    variables = bin_edges.keys()
+    variables = bin_edges_full.keys()
     for variable in variables:
         print('--- Doing variable',variable)
         variableToUse = variable
@@ -151,15 +151,9 @@ def get_histograms( variable, options ):
     else :
         histogram_name = 'response_without_fakes'
 
-    if variable == 'HT':
-        path_electron = 'unfolding_HT_analyser_electron_channel/%s' % histogram_name
-        path_muon = 'unfolding_HT_analyser_muon_channel/%s' % histogram_name
-        path_combined = 'unfolding_HT_analyser_COMBINED_channel/%s' % histogram_name
-
-    else :
-        path_electron = 'unfolding_%s_analyser_electron_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
-        path_muon = 'unfolding_%s_analyser_muon_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
-        path_combined = 'unfolding_%s_analyser_COMBINED_channel_patType1CorrectedPFMet/%s' % ( variable, histogram_name )
+    path_electron = '%s_electron/%s' % ( variable, histogram_name )
+    path_muon = '%s_muon/%s' % ( variable, histogram_name )
+    path_combined = '%s_COMBINED/%s' % ( variable, histogram_name )
 
     histogram_information = [
                 {'file': config.unfolding_central_raw,
@@ -255,19 +249,20 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
     current_bin_end = bin_end
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
-        gen = asrootpy( gen_vs_reco_histogram.ProjectionY() )
+        gen = asrootpy( gen_vs_reco_histogram.ProjectionY( 'py', 1 ) )
         reco_i = list( reco.y() )
         gen_i = list( gen.y() )
+
         # keep the start bin the same but roll the end bin
         for bin_i in range ( current_bin_end, len( reco_i ) + 1 ):
-            n_reco = sum( reco_i[current_bin_start:bin_i] )
-            n_gen = sum( gen_i[current_bin_start:bin_i] )
-            n_gen_and_reco = 0
-
             binWidth = reco.GetXaxis().GetBinLowEdge(bin_i) - reco.GetXaxis().GetBinUpEdge(current_bin_start)
             if binWidth < min_width:
                 current_bin_end = bin_i
                 continue
+
+            n_reco = sum( reco_i[current_bin_start:bin_i] )
+            n_gen = sum( gen_i[current_bin_start:bin_i] )
+            n_gen_and_reco = 0
 
             if bin_i < current_bin_start + 1:
                 n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start + 1, bin_i + 1, current_bin_start + 1, bin_i + 1 )

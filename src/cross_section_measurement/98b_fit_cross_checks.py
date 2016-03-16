@@ -1,6 +1,6 @@
 from optparse import OptionParser
 from config import XSectionConfig, fit_var_inputs
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_vis
 from lib import read_normalisation, closure_tests
 # from tools.file_utilities import read_data_from_JSON
 # from tools.plotting import Histogram_properties
@@ -39,23 +39,23 @@ def plot_fit_results( fit_results, initial_values, channel ):
             latex_string = create_latex_string( fit_var_input )
             fit_data = fit_results[fit_var_input][sample]
             h = value_error_tuplelist_to_hist( fit_data,
-                                              bin_edges[variable] )
+                                              bin_edges_vis[variable] )
             if fit_var_input == 'absolute_eta':
                 h_absolute_eta = h
             elif fit_var_input == 'before':
                 h_before = h
             else:
                 histograms[latex_string] = h
-        graphs = spread_x( histograms.values(), bin_edges[variable] )
+        graphs = spread_x( histograms.values(), bin_edges_vis[variable] )
         for key, graph in zip( histograms.keys(), graphs ):
             histograms[key] = graph
         filename = sample.replace( '+', '_' ) + '_fit_var_comparison_' + channel
         histogram_properties.name = filename
         histogram_properties.y_limits = 0, limit_range_y( h_absolute_eta )[1] * 1.3
-        histogram_properties.x_limits = bin_edges[variable][0], bin_edges[variable][-1]
+        histogram_properties.x_limits = bin_edges_vis[variable][0], bin_edges_vis[variable][-1]
         
         h_initial_values = value_error_tuplelist_to_hist( initial_values[sample],
-                                                         bin_edges[variable] )
+                                                         bin_edges_vis[variable] )
         h_initial_values.Scale(closure_tests['simple'][sample])
         
         compare_measurements( models = {fit_variables_latex['absolute_eta']:h_absolute_eta,

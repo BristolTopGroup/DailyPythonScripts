@@ -20,7 +20,7 @@ from tools.file_utilities import make_folder_if_not_exists
 from tools.hist_utilities import get_fit_results_histogram
 from tools.plotting import make_plot, Histogram_properties
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_vis
 from config import CMS, XSectionConfig
 from config.latex_labels import variables_latex
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
                                channel = channel,
                                variable = variable,
                                met_type = met_type,
-                               bin_edges = bin_edges[variable] )
+                               bin_edges = bin_edges_vis[variable] )
                 output_folder = output_folder_base + '/' + variable + '_data/'
             elif test == 'bias':
                 h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 

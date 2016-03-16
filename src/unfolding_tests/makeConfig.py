@@ -1,6 +1,6 @@
 import json
 from config import XSectionConfig
-from config.variable_binning import bin_edges, bin_edges_vis
+from config.variable_binning import bin_edges_full, bin_edges_vis
 from tools.file_utilities import make_folder_if_not_exists
 
 com = 13
@@ -12,11 +12,11 @@ make_folder_if_not_exists('config/unfolding/FullPS/')
 make_folder_if_not_exists('config/unfolding/VisiblePS/')
 
 for channel in config.analysis_types.keys():
-	for variable in bin_edges.keys():
+	for variable in config.variables:
 
-		histogramTemplate = "unfolding_%s_analyser_%s_channel" % ( variable, channel )
+		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
-		    "output_folder": "plots/%sTeV/unfolding_tests/FullPS" % com, 
+		    "output_folder": "plots/unfolding_tests/bestRegularisation/FullPS", 
 		    "output_format": ["png", "pdf"], 
 		    "centre-of-mass energy" : com,
 		    "channel": "%s" % channel,
@@ -44,11 +44,11 @@ for channel in config.analysis_types.keys():
 			# print outputJson
 			outfile.write( json.dumps(outputJson , sort_keys=True, indent=4, separators=(',', ': ') ) )
 
-	for variable in bin_edges_vis.keys():
+	for variable in config.variables:
 
-		histogramTemplate = "unfolding_%s_analyser_%s_channel" % ( variable, channel )
+		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
-		    "output_folder": "plots/%sTeV/unfolding_tests/VisiblePS" % com, 
+		    "output_folder": "plots/unfolding_tests/bestRegularisation/VisiblePS", 
 		    "output_format": ["png", "pdf"], 
 		    "centre-of-mass energy" : com,
 		    "channel": "%s" % channel,

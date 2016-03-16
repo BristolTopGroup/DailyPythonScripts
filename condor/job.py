@@ -46,6 +46,7 @@ class Condor(object):
         with open('condor/job_template', 'r') as template:
             job_template = template.read()
         condor_jobs = []
+
         for i, job in enumerate(self.prepared_jobs):
             job_file = job_folder + 'job_{0}.pkl'.format(i)
             job_desc_file = job_folder + 'job_{0}.dsc'.format(i)

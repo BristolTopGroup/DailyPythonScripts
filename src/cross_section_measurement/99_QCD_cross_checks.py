@@ -1,7 +1,7 @@
 from config import CMS
 from optparse import OptionParser
 from config.latex_labels import b_tag_bins_latex
-from config.variable_binning import bin_edges, variable_bins_ROOT
+from config.variable_binning import bin_edges_vis, variable_bins_ROOT
 from config import XSectionConfig
 from tools.ROOT_utils import get_histograms_from_files
 from tools.file_utilities import read_data_from_JSON
@@ -72,7 +72,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
         region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])
         
         fit_results_QCD = normalisation[variable]['QCD']
-        region_2 = value_error_tuplelist_to_hist(fit_results_QCD, bin_edges[variable])
+        region_2 = value_error_tuplelist_to_hist(fit_results_QCD, bin_edges_vis[variable])
         
         histogram_properties = Histogram_properties()
         histogram_properties.name = 'QCD_control_region_comparison_' + channel + '_' + variable + '_fits_with_conversions_' + b_tag_bin
@@ -90,7 +90,7 @@ def do_shape_check(channel, control_region_1, control_region_2, variable, normal
     histograms = get_histograms_from_files([control_region_2], histogram_files)
     
     region_1_tmp = histograms[channel][control_region_2].Clone() - histograms['TTJet'][control_region_2].Clone() - histograms['V+Jets'][control_region_2].Clone() - histograms['SingleTop'][control_region_2].Clone()
-    region_1 = rebin_asymmetric(region_1_tmp, bin_edges[variable])    
+    region_1 = rebin_asymmetric(region_1_tmp, bin_edges_vis[variable])    
     
     fit_results_QCD = normalisation[variable]['QCD']
     region_2 = value_error_tuplelist_to_hist(fit_results_QCD, bin_edges[variable])

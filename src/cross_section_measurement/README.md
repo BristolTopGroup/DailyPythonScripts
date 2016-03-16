@@ -124,7 +124,7 @@ for ```if options.fineBinned:```
 If the variable has a defined minimum (maximum) bigger (smaller) than the
 variable range, add entry in the variable loop:
 ```python
-for variable in bin_edges.keys():
+for variable in variables:
     ...
     elif variable == '<variable with xmin>':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, x_min=<xmin> )

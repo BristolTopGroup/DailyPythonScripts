@@ -21,7 +21,7 @@ import collections
 from rootpy.io import File
 
 from config import latex_labels, XSectionConfig
-from config.variable_binning import bin_widths, bin_edges
+from config.variable_binning import bin_widths, bin_edges_vis
 from tools.plotting import Histogram_properties, compare_measurements
 from tools.Unfolding import get_unfold_histogram_tuple, Unfolding
 from tools.Calculation import calculate_normalised_xsection
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                                channel = channel,
                                variable = variable,
                                met_type = met_type,
-                               bin_edges = bin_edges[variable] )
+                               bin_edges = bin_edges_vis[variable] )
                 h_expected = deepcopy( h_data )
             elif test == 'bias':
                 h_truth_bias, h_measured_bias, _, h_fakes = get_unfold_histogram_tuple( 
@@ -207,6 +207,6 @@ if __name__ == '__main__':
                 
             compare( central_mc = h_truth, expected_result = h_expected, measured_result = h_data,
                      results = results, variable = variable, channel = channel,
-                     bin_edges = bin_edges[variable] )
+                     bin_edges = bin_edges_vis[variable] )
     # done
     

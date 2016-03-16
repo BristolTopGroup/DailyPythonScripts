@@ -17,6 +17,8 @@ def generate_toy_MC_from_distribution( distribution ):
     return toy_MC
 
 def generate_toy_MC_from_values( values ):
+    values = [ 0 if i < 0 else i for i in values ]
+
     new_values = [poisson( value ) for value in values]
     # statistical errors
     new_errors = [sqrt( value ) for value in new_values]
@@ -34,6 +36,7 @@ def generate_toy_MC_from_2Ddistribution( distribution ):
     for bin_x in range(1, n_bins_x + 1):
         for bin_y in range(1, n_bins_y + 1):
             value = get_bin_content(bin_x, bin_y)
+            if value < 0 : value = 0
             new_value = poisson(value)
             error = sqrt(new_value)
             set_bin_content(bin_x, bin_y, new_value)

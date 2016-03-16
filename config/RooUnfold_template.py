@@ -4,12 +4,9 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 availablemethods = [
-                    'RooUnfoldTUnfold',
+                    'TUnfold',
                     'RooUnfoldBayes',
                     'RooUnfoldSvd',
-                    'RooUnfoldBinByBin',
-                    'RooUnfoldInvert',
-                    'TSVDUnfold',
                     ]
 
 SVD_k_value = 5

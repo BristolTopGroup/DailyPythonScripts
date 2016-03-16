@@ -54,6 +54,17 @@ class XSectionConfig():
                   'vjets_theory_systematic_prefix'
                   ]
     samples = ['TTJet', 'V+Jets', 'SingleTop', 'QCD']
+
+    variables = [
+    'HT',
+    'MET',
+    'ST',
+    'WPT',
+    'NJets',
+    'lepton_pt',
+    'abs_lepton_eta'
+    ]
+
     variables_no_met = ['HT', 'NJets', 'lepton_pt', 'lepton_eta',
                         'abs_lepton_eta', 'bjets_pt', 'bjets_eta',
                         'abs_bjets_eta']
@@ -98,7 +109,7 @@ class XSectionConfig():
         self.analysis_types = {
                 'electron':'EPlusJets',
                 'muon':'MuPlusJets',
-                'combined':'Combined'
+                'combined':'combined'
                 }
 
         # measurement script options
@@ -672,13 +683,22 @@ class XSectionConfig():
             "ttbarRap" : 236.448941265,
         }
         self.tau_values_combined = {
-"MET" : 2.15443469003,
-"WPT" : 1.12332403298,
-"NJets" : 1.12332403298,
-"abs_lepton_eta" : 0.1,
-"ST" : 0.642807311728,
-"lepton_pt" : 0.585702081806,
-"HT" : 0.585702081806,
+
+"NJets" : 2.80247253528e-05,
+"WPT" : 0.00118114317748,
+"lepton_pt" : 0.000696486973737,
+"abs_lepton_eta" : 2.41560295104e-06,
+"ST" : 0.00235430314689,
+"MET" : 0.000960230158467,
+"HT" : 0.00168151327509,
+
+# "NJets" : 0.000103151115773,
+# "WPT" : 0.00738860629239,
+# "lepton_pt" : 2.69403524378e-05,
+# "abs_lepton_eta" : 7.49116838639e-06,
+# "ST" : 0.00785311000096,
+# "MET" : 0.00282283937019,
+# "HT" : 0.00759804931812,
 
             'bjets_pt': 0.,
             'bjets_eta': 0.,

@@ -10,5 +10,5 @@ echo "... creating tar file (dps.tar)"
 mkdir -p jobs
 tar -cf dps.tar bin condor config jobs src tools setup.sh environment.sh \
 setup_with_conda.sh environment_conda.sh experimental \
---exclude="*.pyc" --exclude="jobs/*/logs" --exclude "config/RooUnfold.py" \
---exclude "*.tar"
+--exclude="*.pyc" --exclude="jobs/*/logs" \
+--exclude "*.tar" --exclude="config/unfolding" --exclude="experimental/topReco"

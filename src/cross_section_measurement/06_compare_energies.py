@@ -12,7 +12,7 @@ import rootpy.plotting.root2matplotlib as rplt
 
 from src.cross_section_measurement.lib import read_xsection_measurement_results
 from config import XSectionConfig
-from config.variable_binning import bin_edges
+from config.variable_binning import bin_edges_full
 from config.latex_labels import variables_latex
 from config import CMS
 from rootpy.plotting import Graph
@@ -34,7 +34,7 @@ def main():
     # and the central samples + errors
     results_7TeV, _ = read_xsection_measurement_results( path_to_JSON_7TeV,
                                                      variable,
-                                                     bin_edges,
+                                                     bin_edges_full,
                                                      category = 'central',
                                                      channel = 'combined',
                                                      k_values = {
@@ -42,7 +42,7 @@ def main():
                                                      )
     results_8TeV, _ = read_xsection_measurement_results( path_to_JSON_8TeV,
                                                      variable,
-                                                     bin_edges,
+                                                     bin_edges_full,
                                                      category = 'central',
                                                      channel = 'combined',
                                                      k_values = {
