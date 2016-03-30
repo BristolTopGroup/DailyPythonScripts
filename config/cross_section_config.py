@@ -98,7 +98,7 @@ class XSectionConfig():
             self.path_to_unfolding_histograms = self.path_to_files + 'unfolding/'
         else:
             self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/25ns/'
-            self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/25ns/15_02_16/'
+            self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/25ns/'
 
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
@@ -612,7 +612,6 @@ class XSectionConfig():
 "ST" : 0.00626425547204,
 "MET" : 0.000143301257024,
 "HT" : 0.00468724990318,
-
 
 
             'bjets_pt': 0.,
