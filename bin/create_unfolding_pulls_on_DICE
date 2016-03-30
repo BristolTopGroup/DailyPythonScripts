@@ -29,6 +29,8 @@ def main():
                       help="Variables to be analysed, separated by commas")
     parser.add_option("-i", "--input_directory", dest="input_directory",
                       help="Toy MC input directory", default='data/toy_mc/')
+    parser.add_option("-n", dest="n_toy_data",
+                      help="Number of toy datasets to analyse", default=3000)
     parser.add_option("--scan_tau", dest="scan_tau", action='store_true',
                       help="Produce unfolding pulls for a range of tau values", default=False)
     parser.add_option("--tau_min", dest="tau_min",
@@ -52,7 +54,7 @@ def main():
     centre_of_mass_energy = options.com
     config = XSectionConfig(centre_of_mass_energy)
     method = options.method
-    n_toy_data = 10000
+    n_toy_data = options.n_toy_data
     output_folder = 'data/pull_data/'
 
     do_best_tau = options.do_best_tau
