@@ -9,7 +9,6 @@ import numpy
 from math import sqrt
 from config.met_systematics import metsystematics_sources
 from rootpy import asrootpy
-from config.variable_binning import bin_edges
 
 def calculate_xsection(inputs, luminosity, efficiency=1.):
     '''
@@ -278,12 +277,3 @@ def calculate_stabilities( gen_vs_reco_histogram ):
         
     return stabilities
     
-def which_variable_bin(variable, value):
-    variable_bin = 0
-    # last bin is to INF
-    for i,edge in enumerate(bin_edges[variable][:-1]):
-        if value > edge:
-            variable_bin = i
-        else:
-            break
-    return variable_bin
