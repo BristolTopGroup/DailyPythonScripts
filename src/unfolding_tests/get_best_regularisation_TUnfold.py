@@ -258,7 +258,7 @@ def get_best_tau( regularisation_settings ):
     h_truth, h_response, h_measured, h_data, h_fakes = regularisation_settings.get_histograms()
     variable = regularisation_settings.variable
 
-    h_measured, h_data = removeFakes( h_measured, h_data, h_response)
+    h_data = removeFakes( h_measured, h_fakes, h_data )
 
     unfolding = Unfolding( 
                             h_data, 

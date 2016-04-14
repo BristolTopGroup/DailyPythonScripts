@@ -251,11 +251,7 @@ def get_combined_unfold_histogram_tuple(
         h_fakes = h_fakes_e + h_fakes_mu
     return h_truth, h_measured, h_response, h_fakes
 
-def removeFakes( h_measured, h_data, h_response ):
-  fakes = h_measured - h_response.ProjectionX()
-  nonFakeRatio = 1 - fakes / h_measured
-  if h_measured != None:
-    h_measured *= nonFakeRatio
-  if h_data != None:
-    h_data *= nonFakeRatio
-  return h_measured, h_data
+def removeFakes( h_measured, h_fakes, h_data ):
+  nonFakeRatio = 1 - h_fakes / ( h_measured + h_fakes )
+  h_data *= nonFakeRatio
+  return h_data

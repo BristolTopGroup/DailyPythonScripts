@@ -7,35 +7,27 @@ from rootpy.io import File, root_open
 from rootpy.plotting import Hist2D
 # DailyPythonScripts
 import config.RooUnfold as unfoldCfg
-from config.variable_binning import bin_widths, bin_widths_visiblePS, bin_edges, bin_edges_vis
+from config.variable_binning import bin_widths, bin_widths_visiblePS, reco_bin_edges_full, reco_bin_edges_vis
 from config import XSectionConfig
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, \
 combine_complex_results
 from tools.hist_utilities import hist_to_value_error_tuplelist, \
 value_error_tuplelist_to_hist
-from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
+from tools.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from copy import deepcopy
 from tools.ROOT_utils import set_root_defaults
 # from ROOT import TGraph, TSpline3, TUnfoldDensity
 
-def removeFakes( h_measured, h_data, h_response ):
-  fakes = h_measured - h_response.ProjectionX()
-  nonFakeRatio = 1 - fakes / h_measured
-  h_measured *= nonFakeRatio
-  h_data *= nonFakeRatio
-
-  return h_measured, h_data
-
 def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method, visiblePS ):
     global variable, path_to_JSON, options
-    edges = bin_edges[variable]
+    edges = reco_bin_edges_full[variable]
     if visiblePS:
-        edges = bin_edges_vis[variable]
+        edges = reco_bin_edges_vis[variable]
     h_data = value_error_tuplelist_to_hist( results, edges )
 
     # Remove fakes before unfolding
-    h_measured, h_data = removeFakes( h_measured, h_data, h_response )
+    h_data = removeFakes( h_measured, h_fakes, h_data )
 
     unfolding = Unfolding( h_data, h_truth, h_measured, h_response, h_fakes, method = method, k_value = -1, tau = tau_value )
 
@@ -61,7 +53,7 @@ def data_covariance_matrix( data ):
 
 def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value, visiblePS ):
     global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_amcatnlo_herwig, file_for_ptreweight, files_for_pdfs
-    global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
+    global centre_of_mass, luminosity, ttbar_xsection, method
     global file_for_powhegPythia8, file_for_madgraphMLM, file_for_amcatnlo
     # global file_for_matchingdown, file_for_matchingup
     global file_for_scaledown, file_for_scaleup
@@ -115,7 +107,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               centre_of_mass = centre_of_mass,
                                                                               ttbar_xsection = ttbar_xsection,
                                                                               luminosity = luminosity,
-                                                                              load_fakes = load_fakes,
+                                                                              load_fakes = True,
                                                                               visiblePS = visiblePS,
                                                                               )
     elif category in pdf_uncertainties:
@@ -126,7 +118,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               centre_of_mass = centre_of_mass,
                                                                               ttbar_xsection = ttbar_xsection,
                                                                               luminosity = luminosity,
-                                                                              load_fakes = load_fakes,
+                                                                              load_fakes = True,
                                                                               visiblePS = visiblePS,
                                                                               )
     # Central and systematics where you just change input MC
@@ -138,7 +130,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                                               centre_of_mass = centre_of_mass,
                                                                               ttbar_xsection = ttbar_xsection,
                                                                               luminosity = luminosity,
-                                                                              load_fakes = load_fakes,
+                                                                              load_fakes = True,
                                                                               visiblePS = visiblePS,
                                                                               )
 
@@ -172,7 +164,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     centre_of_mass = centre_of_mass,
                                                     ttbar_xsection = ttbar_xsection,
                                                     luminosity = luminosity,
-                                                    load_fakes = load_fakes,
+                                                    load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
         h_truth_scaleup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_scaleup,
@@ -182,7 +174,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     centre_of_mass = centre_of_mass,
                                                     ttbar_xsection = ttbar_xsection,
                                                     luminosity = luminosity,
-                                                    load_fakes = load_fakes,
+                                                    load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
 
@@ -193,7 +185,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     centre_of_mass = centre_of_mass,
                                                     ttbar_xsection = ttbar_xsection,
                                                     luminosity = luminosity,
-                                                    load_fakes = load_fakes,
+                                                    load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
         h_truth_massup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_massup,
@@ -203,7 +195,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     centre_of_mass = centre_of_mass,
                                                     ttbar_xsection = ttbar_xsection,
                                                     luminosity = luminosity,
-                                                    load_fakes = load_fakes,
+                                                    load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
 
@@ -214,7 +206,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes,
+                                                load_fakes = True,
                                                 visiblePS = visiblePS,
                                                 )
 
@@ -225,7 +217,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                 centre_of_mass = centre_of_mass,
                                                 ttbar_xsection = ttbar_xsection,
                                                 luminosity = luminosity,
-                                                load_fakes = load_fakes,
+                                                load_fakes = True,
                                                 visiblePS = visiblePS,
                                                 )
 
@@ -236,7 +228,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     centre_of_mass = centre_of_mass,
                                                     ttbar_xsection = ttbar_xsection,
                                                     luminosity = luminosity,
-                                                    load_fakes = load_fakes,
+                                                    load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
         h_truth_amcatnlo_HERWIG, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_amcatnlo_herwig,
@@ -246,7 +238,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     centre_of_mass = centre_of_mass,
                                                     ttbar_xsection = ttbar_xsection,
                                                     luminosity = luminosity,
-                                                    load_fakes = load_fakes,
+                                                    load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
 
@@ -385,8 +377,6 @@ if __name__ == '__main__':
                       help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
     parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
                       help = "set MET type for analysis of MET, ST or MT" )
-    parser.add_option( "-f", "--load_fakes", dest = "load_fakes", action = "store_true",
-                      help = "Load fakes histogram and perform manual fake subtraction in TSVDUnfold" )
     parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
     parser.add_option( "-e", "--error_treatment", type = 'int',
@@ -480,7 +470,6 @@ if __name__ == '__main__':
     if visiblePS:
         phase_space = "VisiblePS"
 
-    load_fakes = options.load_fakes
     unfoldCfg.error_treatment = options.error_treatment
     method = options.unfolding_method
     combine_before_unfolding = options.combine_before_unfolding
