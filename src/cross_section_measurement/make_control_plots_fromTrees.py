@@ -39,7 +39,7 @@ def getHistograms( histogram_files,
     # Names of QCD regions to use
     qcd_data_region = ''
     qcd_data_region_electron = 'QCDConversions'
-    qcd_data_region_muon = 'QCD non iso mu+jets 3toInf'
+    qcd_data_region_muon = 'QCD non iso mu+jets 1p5to3'
     
     # Channel specific files and weights
     if 'electron' in channel:
@@ -285,20 +285,20 @@ def make_plot( channel, x_axis_title, y_axis_title,
         getPUWeights(histograms_to_draw, histogram_lables)
 
     # Actually draw histograms
-    # make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-    #                              histogram_properties, save_folder = output_folder_to_use,
-    #                              show_ratio = False, normalise = normalise,
-    #                              )
-    # Draw same histogram, but with ratio plot
-    histogram_properties.name += '_with_ratio'
-    loc = histogram_properties.legend_location
-    # adjust legend location as it is relative to canvas!
-    histogram_properties.legend_location = ( loc[0], loc[1] + 0.05 )
-
     make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
                                  histogram_properties, save_folder = output_folder_to_use,
-                                 show_ratio = True, normalise = normalise
-                                  )
+                                 show_ratio = False, normalise = normalise,
+                                 )
+    # Draw same histogram, but with ratio plot
+    # histogram_properties.name += '_with_ratio'
+    # loc = histogram_properties.legend_location
+    # # adjust legend location as it is relative to canvas!
+    # histogram_properties.legend_location = ( loc[0], loc[1] + 0.05 )
+
+    # make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+    #                              histogram_properties, save_folder = output_folder_to_use,
+    #                              show_ratio = True, normalise = normalise
+    #                               )
     print ("Plot written to : ", output_folder_to_use)
     # make_plot_tmp( qcd_from_data, histogram_properties, save_folder = output_folder_to_use+'test' )
 
@@ -362,30 +362,30 @@ if __name__ == '__main__':
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
-                        'HT',
-                        'MET',
-                        'ST',
-                        'WPT',
-                        'NVertex',
-                        'NVertexNoWeight',
-                        'NVertexUp',
-                        'NVertexDown',
-                        'LeptonPt',
-                        'AbsLeptonEta',
-                        'NJets',
-                        'NBJets',
-                        'NBJetsNoWeight',
-                        'NBJetsUp',
-                        'NBJetsDown',
-                        'NBJets_LightUp',
-                        'NBJets_LightDown',
-                        'JetPt',
+                        # 'HT',
+                        # 'MET',
+                        # 'ST',
+                        # 'WPT',
+                        # 'NVertex',
+                        # 'NVertexNoWeight',
+                        # 'NVertexUp',
+                        # 'NVertexDown',
+                        # 'LeptonPt',
+                        # 'AbsLeptonEta',
+                        # 'NJets',
+                        # 'NBJets',
+                        # 'NBJetsNoWeight',
+                        # 'NBJetsUp',
+                        # 'NBJetsDown',
+                        # 'NBJets_LightUp',
+                        # 'NBJets_LightDown',
+                        # 'JetPt',
 
-                        # # # # # # # # 'Mjj',
-                        # # # # # # # # 'M3',
-                        # # # # # # # # 'angle_bl',
-                        'RelIso',
-                        # 'sigmaietaieta'
+                        # # # # # # # # # 'Mjj',
+                        # # # # # # # # # 'M3',
+                        # # # # # # # # # 'angle_bl',
+                        # 'RelIso',
+                        # # 'sigmaietaieta'
                         ]
 
     additional_qcd_plots = [
@@ -409,7 +409,7 @@ if __name__ == '__main__':
     for channel, label in {
                             'electron' : 'EPlusJets', 
                             'muon' : 'MuPlusJets',
-                            # 'combined' : 'COMBINED'
+                            'combined' : 'COMBINED'
                             }.iteritems() :
         b_tag_bin = '2orMoreBtags'
 

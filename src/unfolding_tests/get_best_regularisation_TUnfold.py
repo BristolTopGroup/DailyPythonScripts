@@ -273,11 +273,11 @@ def get_best_tau( regularisation_settings ):
                             tau = -1
                         )
 
-    bestTau_LCurve = tau_from_L_curve( unfolding.unfoldObject )
-    unfolding.tau = bestTau_LCurve
+    # bestTau_LCurve = tau_from_L_curve( unfolding.unfoldObject )
+    # unfolding.tau = bestTau_LCurve
 
-    # bestTauScan = tau_from_scan( unfolding.unfoldObject, regularisation_settings )
-    # unfolding.tau = bestTauScan
+    bestTauScan = tau_from_scan( unfolding.unfoldObject, regularisation_settings )
+    unfolding.tau = bestTauScan
 
     return unfolding.tau
 

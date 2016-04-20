@@ -7,11 +7,7 @@ from rootpy.io import File, root_open
 from rootpy.plotting import Hist2D
 # DailyPythonScripts
 import config.RooUnfold as unfoldCfg
-<<<<<<< Updated upstream
 from config.variable_binning import bin_widths, bin_widths_visiblePS, reco_bin_edges_full, reco_bin_edges_vis
-=======
-from config.variable_binning import bin_widths, bin_widths_visiblePS, bin_edges_full, bin_edges_vis, reco_bin_edges_full, reco_bin_edges_vis
->>>>>>> Stashed changes
 from config import XSectionConfig
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, \
 combine_complex_results
