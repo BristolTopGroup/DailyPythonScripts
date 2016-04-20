@@ -52,9 +52,9 @@ def read_xsection_measurement_results( category, channel ):
     edges = bin_edges_full[variable]
     if phase_space == 'VisiblePS':
         edges = bin_edges_vis[variable]
+
     h_normalised_xsection = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], edges )
     h_normalised_xsection_unfolded = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], edges )
-
 
     histograms_normalised_xsection_different_generators = {'measured':h_normalised_xsection,
                                                            'unfolded':h_normalised_xsection_unfolded}
@@ -67,7 +67,7 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
         h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
         h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
-        h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo_HERWIG'], edges )
+        h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHERWIG'], edges )
 
         h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
         h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
@@ -78,7 +78,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                      'powhegPythia8':h_normalised_xsection_powhegPythia8,
                                                                      'amcatnlo':h_normalised_xsection_amcatnlo,
                                                                      'madgraphMLM':h_normalised_xsection_madgraphMLM,
-                                                                     'amcatnlo_HERWIG':h_normalised_xsection_amcatnloHerwigpp,
+                                                                     'powhegHERWIG':h_normalised_xsection_powhegHerwigpp,
                                                                 })
 
         histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
@@ -339,7 +339,7 @@ def get_cms_labels( channel ):
     return label, channel_label
 
 @xsec_04_log.trace()
-def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_before_unfolding = False ):
+def make_plots( histograms, category, output_folder, histname, show_ratio = True, show_generator_ratio = False, show_before_unfolding = False ):
     global variable, phase_space
 
     channel = 'electron'
@@ -368,7 +368,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     hist_measured.color = 'red'
 
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
-    if show_ratio:
+
+    if show_ratio and show_generator_ratio:
+        gs = gridspec.GridSpec( 3, 1, height_ratios = [5, 1, 1] )
+        axes = plt.subplot( gs[0] )
+    elif show_ratio or show_generator_ratio:
         gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
         axes = plt.subplot( gs[0] )
     else:
@@ -377,6 +381,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             plt.xlabel( '$%s$' % variables_latex[variable], CMS.x_axis_title )
         else:
             plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+
     if not variable in ['NJets']:
         axes.minorticks_on()
     if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
@@ -388,6 +393,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         plt.tick_params( **CMS.axis_label_minor )
 
     hist_data.visible = True
+
     if category == 'central':
         hist_data_with_systematics.visible = True
         rplt.errorbar( hist_data_with_systematics, axes = axes, label = 'do_not_show', xerr = None, capsize = 0, elinewidth = 2, zorder = len( histograms ) + 1 )
@@ -400,6 +406,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     dashes = {}
     for key, hist in sorted( histograms.items() ):
         zorder = sorted( histograms, reverse = False ).index( key )
+        print (key)
         if key == 'powhegPythia8' and zorder != len(histograms) - 3:
             zorder = len(histograms) - 3
         elif key != 'powhegPythia8' and not 'unfolded' in key:
@@ -410,7 +417,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             hist.linewidth = 4
             # setting colours
             linestyle = None
-            if 'amcatnlo_HERWIG' in key or 'massdown' in key:
+            if 'powhegHERWIG' in key or 'massdown' in key:
                 hist.SetLineColor( kBlue )
                 dashes[key] = [25,5,5,5,5,5,5,5]
             elif 'madgraphMLM' in key or 'scaledown' in key:
@@ -422,7 +429,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 linestyle = 'solid'
                 dashes[key] = None
                 hist.SetLineColor( 633 )
-            elif 'massup' in key or 'amcatnlo' in key:
+            elif 'amcatnlo' in key or 'massup' in key:
                 hist.SetLineColor( 807 )
                 dashes[key] = [20,5]
             elif 'MCATNLO' in key or 'scaleup' in key:
@@ -451,7 +458,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     labelOrder = ['data', 
         measurements_latex['powhegPythia8'],
         measurements_latex['amcatnlo'],
-        measurements_latex['amcatnlo_HERWIG'],
+        measurements_latex['powhegHERWIG'],
         measurements_latex['madgraphMLM'],
         measurements_latex['scaleup'], 
         measurements_latex['scaledown'],
@@ -510,7 +517,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         axes.set_ylim(ymax = ylim[1]*1.2)
 
 
-    if show_ratio:
+    if show_ratio or show_generator_ratio:
         plt.setp( axes.get_xticklabels(), visible = False )
         ax1 = plt.subplot( gs[1] )
         if not variable in ['NJets']:
@@ -523,10 +530,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         if not variable in ['NJets']:
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
-        if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
-            plt.xlabel('$%s$' % variables_latex[variable], CMS.x_axis_title )
-        else:
-            plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+        if not show_ratio or not show_generator_ratio:
+            if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
+                plt.xlabel('$%s$' % variables_latex[variable], CMS.x_axis_title )
+            else:
+                plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
 
         plt.tick_params( **CMS.axis_label_major )
         if not variable in ['NJets']:
@@ -614,6 +622,79 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             ax1.set_ylim( ymin = 0.8, ymax = 1.3 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+
+
+    if show_ratio and show_generator_ratio:
+
+        plt.setp( axes.get_xticklabels(), visible = False ) #Remove DataMC Comparision Axis
+        plt.setp( ax1.get_xticklabels(), visible = False ) # Remove Ratio Axis
+
+        ax2 = plt.subplot( gs[2] )
+        if not variable in ['NJets']:
+            ax2.minorticks_on()
+        #ax2.grid( True, 'major', linewidth = 1 )
+        # setting the x_limits identical to the main plot
+        x_limits = axes.get_xlim()
+        ax2.set_xlim(x_limits)
+
+        ax2.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+        if not variable in ['NJets']:
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+
+        if variable in ['NJets', 'abs_lepton_eta', 'lepton_eta']:
+            plt.xlabel('$%s$' % variables_latex[variable], CMS.x_axis_title )
+        else:
+            plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+
+        plt.tick_params( **CMS.axis_label_major )
+        if not variable in ['NJets']:
+            plt.tick_params( **CMS.axis_label_minor )
+        plt.ylabel( '$\\frac{\\textrm{generator}}{\\textrm{central}}$', CMS.y_axis_title )
+        ax2.yaxis.set_label_coords(-0.115, 0.8)
+        #draw a horizontal line at y=1 for data
+        plt.axhline(y = 1, color = 'black', linewidth = 2)
+
+        central_mc = histograms['powhegPythia8']
+        for key, hist in sorted( histograms.iteritems() ):
+            if not 'unfolded' in key and not 'measured' in key:
+                ratio = hist.Clone()
+                ratio.Divide( central_mc ) #divide by data
+                line, h = rplt.hist( ratio, axes = ax2, label = 'do_not_show' )
+                if dashes[key] != None:
+                    h.set_dashes(dashes[key])
+
+        if variable == 'MET':
+            ax2.set_ylim( ymin = 0.8, ymax = 1.2 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+#             ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        if variable == 'MT':
+            ax2.set_ylim( ymin = 0.8, ymax = 1.2 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'HT':
+            ax2.set_ylim( ymin = 0.8, ymax = 1.37 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'ST':
+            ax2.set_ylim( ymin = 0.7, ymax = 1.5 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'WPT':
+            ax2.set_ylim( ymin = 0.8, ymax = 1.2 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'NJets':
+            ax2.set_ylim( ymin = 0.7, ymax = 1.5 )
+        elif variable == 'abs_lepton_eta':
+            ax2.set_ylim( ymin = 0.8, ymax = 1.2 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'lepton_pt':
+            ax2.set_ylim( ymin = 0.8, ymax = 1.3 )
+            ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+
+
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -730,13 +811,15 @@ if __name__ == '__main__':
     parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
                       help = """Draws additional plots like the comparison of different
                       systematics to the central result.""" )
+    parser.add_option( "-g", "--show-generator-ratio", action = "store_true", dest = "show_generator_ratio",
+                      help = "Show the ratio of generators to central" )
     parser.add_option( "-d", "--debug", action = "store_true", dest = "debug",
                       help = """Enables debugging output""" )
     parser.add_option("--draw-systematics", action = "store_true", dest = "draw_systematics",
                       help = "creates a set of plots for each systematic (in addition to central result)." )
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
-    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     output_formats = ['png', 'pdf']
@@ -753,7 +836,7 @@ if __name__ == '__main__':
     method = options.unfolding_method
 
     variable = options.variable
-
+    show_generator_ratio = options.show_generator_ratio
     visiblePS = options.visiblePS
     phase_space = 'FullPS'
     if visiblePS:
@@ -795,8 +878,9 @@ if __name__ == '__main__':
     # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
     for channel in ['combinedBeforeUnfolding']:
         for category in all_measurements:
-            if not category == 'central' and not options.additional_plots:
-                continue
+
+            if not category == 'central' and not options.additional_plots: continue
+
             # if variable == 'HT' and category in met_uncertainties:
             #     continue
             # setting up systematic MET for JES up/down samples for reading fit templates
@@ -826,7 +910,7 @@ if __name__ == '__main__':
                             phase_space = phase_space)
             if method != 'RooUnfoldSvd':
                 histname += '_' + method
-            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators' )
+            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators', show_generator_ratio = show_generator_ratio )
             make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, histname + '_systematics_shifts' )
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts

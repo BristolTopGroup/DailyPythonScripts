@@ -64,11 +64,11 @@ def main():
                       help = "Combine channels" )
     ( options, _ ) = parser.parse_args()
 
-    p_min = 0.6
+    p_min = 0.6 # 0.5 for MET
     s_min = 0.6
     # we also want the statistical error to be larger than 5%
     # this translates (error -= 1/sqrt(N)) to (1/0.05)^2 = 400
-    n_min = 200
+    n_min = 500
     n_min_lepton = 500
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
@@ -85,6 +85,8 @@ def main():
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=100. )
         elif variable == 'ST':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=123. )
+        elif variable == 'MET':
+            best_binning, histogram_information = get_best_binning( histogram_information , 0.5, 0.5, n_min, minimum_bin_width[variable] )
         elif variable == 'NJets':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=3.5 )
         elif variable == 'lepton_pt':
@@ -153,7 +155,7 @@ def get_histograms( variable, options ):
 
     path_electron = '%s_electron/%s' % ( variable, histogram_name )
     path_muon = '%s_muon/%s' % ( variable, histogram_name )
-    path_combined = '%s_COMBINED/%s' % ( variable, histogram_name )
+    path_combined = '%s_combined/%s' % ( variable, histogram_name )
 
     histogram_information = [
                 {'file': config.unfolding_central_raw,

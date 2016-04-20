@@ -29,6 +29,8 @@ variables_latex = {
     'ttbarRap': '\ensuremath{y_{\mathrm{t\\bar{t}}}}',
     'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
     'lepton_pt': '\ensuremath{ p_{\mathrm{T}}^\mathrm{l} }',
+    'lepton_pt_+': '\ensuremath{ p_{\mathrm{T}+}^\mathrm{l} }',
+    'lepton_pt_-': '\ensuremath{ p_{\mathrm{T}-}^\mathrm{l} }',
     'lepton_eta': '\ensuremath{ \eta^\mathrm{l} }',
     'abs_lepton_eta': '\ensuremath{ |\eta^\mathrm{l}| }',
     'bjets_pt': '\ensuremath{ \mathrm{b-jet} p_{\mathrm{T}} }',
@@ -66,7 +68,7 @@ measurements_latex = {
     'amcatnlo_HERWIG': 'aMC@NLO Herwig++',
     'madgraphMLM': 'Madgraph Pythia8',
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
-    'POWHEG_HERWIG': 'Powheg Herwig++',
+    'powhegHERWIG': 'Powheg Herwig++',
     'powhegPythia8': 'Powheg Pythia8',
     'pythia8': '$t\\bar{t}$ (Pythia8)',
     'matchingdown': '$t\\bar{t}$ (matching down)',
@@ -191,7 +193,7 @@ channel_latex = {
                  'electronQCDNonIso' : r"Non-iso e + jets",
                  'electronQCDConversions' : r"Conversion e + jets",
                  'muonQCDNonIso' : r"Non-iso $\mu$ + jets (iso $>$ 0.3)",
-                 'muonQCDNonIso2' : r"Non-iso $\mu$ + jets (0.12 $<$ iso $<$ 0.3)",
+                 'muonQCDNonIso2' : r"Non-iso $\mu$ + jets (0.15 $<$ iso $<$ 0.3)",
                  }
 
 fit_variables_units_latex = {

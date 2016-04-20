@@ -19,8 +19,8 @@ def calculate_xsection(inputs, luminosity, efficiency=1.):
     result = []
     add_result = result.append
     for value, error in inputs:
-        xsection = value / luminosity / efficiency
-        xsection_error = error / luminosity / efficiency
+        xsection = value / (luminosity * efficiency)
+        xsection_error = error / (luminosity * efficiency)
         add_result((xsection, xsection_error))        
     return result
 
@@ -277,3 +277,4 @@ def calculate_stabilities( gen_vs_reco_histogram ):
         
     return stabilities
     
+

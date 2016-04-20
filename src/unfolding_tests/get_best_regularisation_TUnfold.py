@@ -15,7 +15,7 @@ What it needs:
 usage:
     python get_best_regularisation.py config.json
     # for 13 TeV in the visible phase space :
-    python src/unfolding_tests/get_best_regularisation.py config/unfolding/VisiblePS/*.json
+    python src/unfolding_tests/get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/*.json
 '''
 # imports
 from __future__ import division
@@ -110,6 +110,7 @@ class RegularisationSettings(object):
             # assume configured bin edges
             edges = []
             edges = reco_bin_edges_vis[self.variable]
+
             json_input = read_data_from_JSON(data_file)
 
             if data_key == "": # JSON file == histogram
@@ -132,7 +133,8 @@ def main():
         channel = regularisation_settings.channel
         com = regularisation_settings.centre_of_mass_energy
         if not results.has_key(com): results[com] = {}
-        if not results[com].has_key(variable): results[com][variable] = {}
+        if not results[com].has_key(channel): results[com][channel] = {}
+        if not results[com][channel].has_key(variable): results[com][channel][variable] = {}
         print 'Variable = {0}, channel = {1}, sqrt(s) = {2}'.format(variable, channel, com)
 
         h_truth, h_response, h_measured, h_data, h_fakes = regularisation_settings.get_histograms()
@@ -150,7 +152,7 @@ def main():
 
         # get_condition_number( unfolding.unfoldObject )
         tau_results = get_best_tau( regularisation_settings )
-        results[com][variable][channel] = (tau_results)
+        results[com][channel][variable] = (tau_results)
     print_results_to_screen(results)
 
 def parse_options():
@@ -271,11 +273,11 @@ def get_best_tau( regularisation_settings ):
                             tau = -1
                         )
 
-    # bestTau_LCurve = tau_from_L_curve( unfolding.unfoldObject )
-    # unfolding.tau = bestTau_LCurve
+    bestTau_LCurve = tau_from_L_curve( unfolding.unfoldObject )
+    unfolding.tau = bestTau_LCurve
 
-    bestTauScan = tau_from_scan( unfolding.unfoldObject, regularisation_settings )
-    unfolding.tau = bestTauScan
+    # bestTauScan = tau_from_scan( unfolding.unfoldObject, regularisation_settings )
+    # unfolding.tau = bestTauScan
 
     return unfolding.tau
 
@@ -311,8 +313,10 @@ def print_results_to_screen(result_dict):
     '''
 
     for com in result_dict.keys():
-        for variable in result_dict[com].keys():
-            print '"{0}" : {1},'.format(variable, result_dict[com][variable]['combined'])
+        for channel in result_dict[com].keys():
+            print "\nCHANNEL : ", channel
+            for variable in result_dict[com][channel].keys():
+                print '"{0}" : {1},'.format(variable, result_dict[com][channel][variable])
         
 
 if __name__ == '__main__':

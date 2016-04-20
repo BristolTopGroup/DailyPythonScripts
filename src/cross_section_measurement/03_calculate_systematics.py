@@ -1,3 +1,4 @@
+
 '''
 Created on 10 April 2013
 
@@ -95,14 +96,12 @@ def summarise_systematics( list_of_central_measurements, dictionary_of_systemati
         elif hadronisation_systematic:
             # always symmetric: absolute value of the difference between powheg_herwig and powheg_pythia
             powheg_herwig = dictionary_of_systematics['TTJets_hadronisation'][bin_i][0]
-            powheg_pythia = dictionary_of_systematics['TTJets_NLOgenerator'][bin_i][0]
+            powheg_pythia = central_value
             difference = powheg_herwig - powheg_pythia
-            mean = (powheg_herwig + powheg_pythia)/2.0
             difference = abs(difference)
-            # now scale the error to the central value
-            relative_error = difference/mean
-            error_down = relative_error * central_value
-            error_up = error_down
+            error_down = difference
+            error_up = difference
+
         elif mass_systematic:
             list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, False )
@@ -199,7 +198,7 @@ if __name__ == "__main__":
                       help = "Makes the errors symmetric" )
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
-    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     ( options, args ) = parser.parse_args()
@@ -235,6 +234,7 @@ if __name__ == "__main__":
     ttbar_generator_systematics_list = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     # Remove hadronisation systematic from this list
     ttbar_generator_systematics_list.remove(ttbar_theory_systematic_prefix + 'hadronisation')
+
     ### vjets_generator_systematics_list = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
 
     # ttbar theory systematics: ptreweighting, hadronisation systematic (powheg_pythia - powheg_herwig)
@@ -268,6 +268,7 @@ if __name__ == "__main__":
         ttbar_generator_systematics, ttbar_generator_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_generator_systematics_list, channel = channel )
         # ttbar_ptreweight_systematic, ttbar_ptreweight_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_ptreweight_systematic_list, channel = channel )
         ttbar_hadronisation_systematic, ttbar_hadronisation_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_hadronisation_systematic_list, channel = channel )
+        
         pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = pdf_uncertainties, channel = channel )
         experimental_systematics, experimental_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = experimental_uncertainties_list, channel = channel )
         other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = other_uncertainties_list, channel = channel )
@@ -282,7 +283,9 @@ if __name__ == "__main__":
         ### # ttbar_ptreweight_min_unfolded, ttbar_ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_ptreweight_systematic_unfolded )
         ttbar_hadronisation_min, ttbar_hadronisation_max = summarise_systematics( central_measurement, ttbar_hadronisation_systematic, hadronisation_systematic = True )
         ttbar_hadronisation_min_unfolded, ttbar_hadronisation_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_hadronisation_systematic_unfolded, hadronisation_systematic = True )
-        # 100 PDFs
+       
+
+       # 100 PDFs
         pdf_min, pdf_max = summarise_systematics( central_measurement, pdf_systematics, pdf_calculation = True )
         pdf_min_unfolded, pdf_max_unfolded = summarise_systematics( central_measurement_unfolded, pdf_systematics_unfolded, pdf_calculation = True )
 
@@ -313,10 +316,10 @@ if __name__ == "__main__":
                                                                                                 ### met_max,
                                                                                                 experimental_max,
                                                                                                 other_max] )
+
         central_measurement_with_systematics_but_without_generator = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [
                                                                                                 ttbar_hadronisation_min,
-                                                                                                ###ttbar_ptreweight_min,
                                                                                                 ###ttbar_mass_min,
 #                                                                                               ###  kValue_min,
                                                                                                 pdf_min,
@@ -325,7 +328,6 @@ if __name__ == "__main__":
                                                                                                 other_min],
                                                                                                 [
                                                                                                 ttbar_hadronisation_max,
-                                                                                                ### ttbar_ptreweight_max,
                                                                                                 ###ttbar_mass_max,
 #                                                                                               ###  kValue_max,
                                                                                                 pdf_max,
@@ -350,7 +352,8 @@ if __name__ == "__main__":
 
         central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
                                                                                                 [
-                                                                                                ttbar_generator_min_unfolded, #ttbar_ptreweight_min_unfolded,
+                                                                                                ttbar_generator_min_unfolded, 
+                                                                                                #ttbar_ptreweight_min_unfolded,
                                                                                                 ttbar_hadronisation_min_unfolded,
                                                                                                 ###ttbar_mass_min_unfolded,
 #                                                                                               ###  kValue_min_unfolded,
@@ -359,7 +362,8 @@ if __name__ == "__main__":
                                                                                                 experimental_min_unfolded,
                                                                                                 other_min_unfolded],
                                                                                                 [
-                                                                                                ttbar_generator_max_unfolded, #ttbar_ptreweight_max_unfolded,
+                                                                                                ttbar_generator_max_unfolded, 
+                                                                                                #ttbar_ptreweight_max_unfolded,
                                                                                                 ttbar_hadronisation_max_unfolded,
                                                                                                 ###ttbar_mass_max_unfolded,
 #                                                                                               ###  kValue_max_unfolded,
@@ -370,7 +374,7 @@ if __name__ == "__main__":
         central_measurement_unfolded_with_systematics_but_without_generator = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
                                                                                                 [
                                                                                                 ttbar_hadronisation_min_unfolded,
-                                                                                                ### ttbar_ptreweight_min_unfolded, 
+                                                                                                ### ttbar_ptreweight_min_unfolded,
                                                                                                 ###ttbar_mass_min_unfolded,
 #                                                                                               ###  kValue_min_unfolded,
                                                                                                 pdf_min_unfolded,
@@ -380,7 +384,7 @@ if __name__ == "__main__":
                                                                                                 [
                                                                                                 ttbar_hadronisation_max_unfolded,
                                                                                                 ### ttbar_ptreweight_max_unfolded,
-                                                                                                ###ttbar_mass_max_unfolded,
+                                                                                                ### ttbar_mass_max_unfolded,
 #                                                                                               ###  kValue_max_unfolded,
                                                                                                 pdf_max_unfolded,
                                                                                                 experimental_max_unfolded,
@@ -394,7 +398,7 @@ if __name__ == "__main__":
                                                                                                 experimental_min_unfolded,
                                                                                                 other_min_unfolded],
                                                                                                 [
-                                                                                                ttbar_generator_max_unfolded,
+                                                                                                ttbar_hadronisation_max_unfolded,
                                                                                                 pdf_max_unfolded,
                                                                                                 experimental_max_unfolded,
                                                                                                 other_max_unfolded],
@@ -437,6 +441,7 @@ if __name__ == "__main__":
 
         ttbar_hadronisation_systematic['TTJets_hadronisation'], ttbar_hadronisation_systematic['TTJets_hadronisation'] = ttbar_hadronisation_min, ttbar_hadronisation_max
         ttbar_hadronisation_systematic_unfolded['TTJets_hadronisation'], ttbar_hadronisation_systematic_unfolded['TTJets_hadronisation'] = ttbar_hadronisation_min_unfolded, ttbar_hadronisation_max_unfolded
+        
         other_systematics['total_lower'], other_systematics['total_upper'] = other_min, other_max
 
         other_systematics_unfolded['total_lower'], other_systematics_unfolded['total_upper'] = other_min_unfolded, other_max_unfolded

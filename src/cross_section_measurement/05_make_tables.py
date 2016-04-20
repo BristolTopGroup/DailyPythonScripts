@@ -2,7 +2,7 @@ from __future__ import division  # the result of the division will be always a f
 from optparse import OptionParser
 from copy import deepcopy
 from config.latex_labels import variables_latex, variables_NonLatex, measurements_latex, samples_latex, typical_systematics_latex, met_systematics_latex
-from config.variable_binning import variable_bins_latex, variable_bins_ROOT, variable_bins_visiblePS_ROOT, variable_bins_visiblePS_latex, bin_edges_vis, bin_edges
+from config.variable_binning import variable_bins_latex, variable_bins_ROOT, variable_bins_visiblePS_ROOT, variable_bins_visiblePS_latex, bin_edges_vis, bin_edges_full
 from config import XSectionConfig
 from tools.Calculation import getRelativeError
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists, read_xsection_measurement_results_with_errors
@@ -368,7 +368,7 @@ def print_error_table(central_values, errors, channel, toFile = True, print_befo
     elif phase_space == 'FullPS':
         bins = variable_bins_ROOT[variable]
         bins_latex = variable_bins_latex[variable]
-        binEdges = bin_edges[variable]
+        binEdges = bin_edges_full[variable]
     printout = '%% ' + '=' * 60
     printout += '\n'
     printout += '%% Systematics table for %s variable, %s channel, met type %s, %s b-tag region\n' % (variable, channel, met_type, b_tag_bin)
@@ -638,7 +638,7 @@ if __name__ == '__main__':
                       help="creates a set of tables for each systematic (in addition to central result).")
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
-    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'RooUnfoldSvd',
+    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
                       help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     (options, args) = parser.parse_args()

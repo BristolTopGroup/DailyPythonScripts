@@ -43,7 +43,7 @@ def main():
     categories.extend([measurement_config.vjets_theory_systematic_prefix +
                        systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic or 'NLO' in systematic)])
 
-    for variable in measurement_config.variables():
+    for variable in measurement_config.variables:
         for category in categories:
             for channel in ['electron', 'muon']:
                 if channel == 'electron' and (category == 'Muon_down' or category == 'Muon_up'):
@@ -64,7 +64,7 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
     if com == 13:
         # exclude non existing systematics
         if 'VJets' in category and 'scale' in category:
-            print('Exculding {0} for now'.format(category))
+            print('Excluding {0} for now'.format(category))
             return
     config = XSectionConfig(com)
     met_type = get_met_type(category, config)
@@ -439,7 +439,7 @@ def create_input(config, sample, variable, category, channel, template,
         lumi_scale = 1.
         scale = 1.
 
-    edges = variable_binning.reco_bin_edges_vis_full[variable]
+    edges = variable_binning.reco_bin_edges_full[variable]
     if phase_space == 'VisiblePS':
         edges = variable_binning.reco_bin_edges_vis[variable]
 

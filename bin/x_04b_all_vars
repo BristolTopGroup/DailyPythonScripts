@@ -15,7 +15,7 @@ i=0
 echo "Visible phase space"
 for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Plotting diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04_${var}_plot_Vis_13TeV.log & # -a  <--add this option for additional plots
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py --visiblePS --show-generator-ratio -v $var -c 13 -u TUnfold -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04_${var}_plot_Vis_13TeV.log & # -a  <--add this option for additional plots
 	let i+=1
 	shallIwait $i $N_JOBS
 done

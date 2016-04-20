@@ -34,7 +34,7 @@ from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
 #from src.cross_section_measurement.lib import get_unfold_histogram_tuple
 from tools.ROOT_utils import set_root_defaults, get_histogram_from_file
 from config import XSectionConfig
-from config.variable_binning import bin_edges, bin_edges_vis
+from config.variable_binning import bin_edges_full, bin_edges_vis
 from tools.hist_utilities import value_error_tuplelist_to_hist
 from tools.table import PrintTable
 import matplotlib.pyplot as plt
@@ -100,7 +100,7 @@ class RegularisationSettings():
             # assume configured bin edges
             edges = []
             if self.phaseSpace == 'FullPS':
-                edges = bin_edges[self.variable]
+                edges = bin_edges_full[self.variable]
             elif self.phaseSpace == 'VisiblePS':
                 edges = bin_edges_vis[self.variable]
             json_input = read_data_from_JSON(data_file)

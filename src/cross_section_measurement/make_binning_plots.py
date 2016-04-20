@@ -13,7 +13,7 @@ from config import CMS
 import matplotlib.cm as cm
 # from itertools import cycle
 from config.latex_labels import b_tag_bins_latex, variables_latex
-from config.variable_binning import bin_edges, bin_edges_vis
+from config.variable_binning import bin_edges_full, bin_edges_vis
 from config import XSectionConfig
 from tools.ROOT_utils import get_histogram_from_file
 from tools.file_utilities import make_folder_if_not_exists
@@ -82,11 +82,15 @@ def makePurityStabilityPlots(input_file, histogram, bin_edges, channel, variable
     global output_folder, output_formats
  
     hist = get_histogram_from_file( histogram, input_file )
+    print "bin edges contents   : ", bin_edges
+    new_hist = rebin_2d( hist, bin_edges, bin_edges ).Clone()
 
     # get_bin_content = hist.ProjectionX().GetBinContent
-    purities = calculate_purities( hist.Clone() )
-    stabilities = calculate_stabilities( hist.Clone() )
+    purities = calculate_purities( new_hist.Clone() )
+    stabilities = calculate_stabilities( new_hist.Clone() )
     # n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
+    print "purities contents    : ", purities
+    print "stabilities contents : ", stabilities
 
     hist_stability = value_tuplelist_to_hist(stabilities, bin_edges)
     hist_purity = value_tuplelist_to_hist(purities, bin_edges)
@@ -160,10 +164,10 @@ if __name__ == '__main__':
         bin_edges_to_use = bin_edges_vis
     else :
         histogram_name = 'response_without_fakes'
-        bin_edges_to_use = bin_edges
+        bin_edges_to_use = bin_edges_full
 
-    channels = ['electron', 'muon', 'COMBINED']
-    channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets', 'COMBINED':'e+$\mu$+jets combined' }
+    channels = ['electron', 'muon', 'combined']
+    channels_latex = { 'electron':'e+jets', 'muon':'$\mu$+jets', 'combined':'e+$\mu$+jets combined' }
 
     b_tag_bin = '2orMoreBtags'
     title_template = 'CMS Simulation, $\sqrt{s}$ = %d TeV, %s, %s, %s'
@@ -177,4 +181,4 @@ if __name__ == '__main__':
             
             make_scatter_plot( hist_file, histogram_path, bin_edges_to_use, channel, variable, title )
 
-            makePurityStabilityPlots( measurement_config.unfolding_central, histogram_path, bin_edges_to_use[variable], channel, variable, options.visiblePhaseSpace)
+            makePurityStabilityPlots( measurement_config.unfolding_central_raw, histogram_path, bin_edges_to_use[variable], channel, variable, options.visiblePhaseSpace)
