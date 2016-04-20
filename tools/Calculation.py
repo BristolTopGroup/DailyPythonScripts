@@ -276,3 +276,4 @@ def calculate_stabilities( gen_vs_reco_histogram ):
         add_stability( s )
         
     return stabilities
+
