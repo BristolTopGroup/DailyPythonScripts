@@ -157,7 +157,6 @@ def main():
                 histograms = {}
                 outputDirs = {}
                 for variable in allVariablesBins:
-                    print "Variable : ", variable
                     if options.debug and variable != 'HT' : continue
 
                     if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
@@ -198,7 +197,6 @@ def main():
                     genVariable_parton_names[variable] = genVariable_parton
 
                     for channel in channels:
-                        print "Channel : ", channel.channelName
                         # Make dir in output file
                         outputDirName = variable+'_'+channel.outputDirName
                         outputDir = out.mkdir(outputDirName)
@@ -229,7 +227,6 @@ def main():
                         h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
 
                         if options.fineBinned:
-                            print "Is FineBinned : "
                             minVar = trunc( allVariablesBins[variable][0] )
                             maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
                             nBins = int(maxVar - minVar)
@@ -290,16 +287,9 @@ def main():
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                    # if n == 100000: break
                     # # #
                     # # # Weights and selection
                     # # #
-
-
-
-
-
-
 
                     # Pileup weight
                     # Don't apply if calculating systematic
@@ -384,15 +374,6 @@ def main():
                         for variable in allVariablesBins:
                             if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                                 continue
-
-
-                            if variable == 'lepton_pt_+':
-                                if branch('leptonCharge') != +1 : continue
-
-                            if variable == 'lepton_pt_-' : 
-                                if branch('leptonCharge') != -1 : continue
-
-
                             # # #
                             # # # Variable to plot
                             # # #

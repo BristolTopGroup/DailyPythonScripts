@@ -29,8 +29,6 @@ branchNames = {
     'abs_bjets_eta': 'abs(bEta)',
 
     'lepton_pt': 'leptonPt',
-    'lepton_pt_+': 'leptonPt',
-    'lepton_pt_-': 'leptonPt',
     'lepton_eta': 'leptonEta',
     'abs_lepton_eta': 'leptonEta',
 }
@@ -61,8 +59,6 @@ genBranchNames_particle = {
     'abs_bjets_eta': 'abs(pseudoB_eta)',
 
     'lepton_pt': 'pseudoLepton_pT',
-    'lepton_pt_+': 'pseudoLepton_pT',
-    'lepton_pt_-': 'pseudoLepton_pT',
     'lepton_eta': 'pseudoLepton_eta',
     'abs_lepton_eta': 'pseudoLepton_eta',
 }

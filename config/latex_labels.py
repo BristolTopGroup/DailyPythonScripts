@@ -29,8 +29,6 @@ variables_latex = {
     'ttbarRap': '\ensuremath{y_{\mathrm{t\\bar{t}}}}',
     'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
     'lepton_pt': '\ensuremath{ p_{\mathrm{T}}^\mathrm{l} }',
-    'lepton_pt_+': '\ensuremath{ p_{\mathrm{T}+}^\mathrm{l} }',
-    'lepton_pt_-': '\ensuremath{ p_{\mathrm{T}-}^\mathrm{l} }',
     'lepton_eta': '\ensuremath{ \eta^\mathrm{l} }',
     'abs_lepton_eta': '\ensuremath{ |\eta^\mathrm{l}| }',
     'bjets_pt': '\ensuremath{ \mathrm{b-jet} p_{\mathrm{T}} }',
