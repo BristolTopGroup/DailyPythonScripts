@@ -55,8 +55,8 @@ def data_covariance_matrix( data ):
 
 def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value, visiblePS ):
     global centre_of_mass, luminosity, ttbar_xsection, method
-    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_herwig, file_for_ptreweight, files_for_pdfs
-    global file_for_powhegPythia8, file_for_madgraphMLM, file_for_amcatnlo
+    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_ptreweight, files_for_pdfs
+    global file_for_powhegPythia8, file_for_madgraphMLM, file_for_amcatnlo, file_for_amcatnlo_herwig
     # global file_for_matchingdown, file_for_matchingup
     global file_for_scaledown, file_for_scaleup
     global file_for_massdown, file_for_massup
@@ -78,7 +78,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                              'BJet_up'        :  file_for_bjetdown,
                              'BJet_down'        :  file_for_bjetup,
 
-                             ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_herwig,
+                             ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_powheg_herwig,
                              ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
 
                              'ElectronEnUp' : file_for_ElectronEnUp,
@@ -233,7 +233,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     load_fakes = True,
                                                     visiblePS = visiblePS,
                                                     )
-        h_truth_powhegHERWIG, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_herwig,
+        h_truth_powheg_herwig, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_herwig,
                                                     variable = variable,
                                                     channel = channel,
                                                     met_type = met_type,
@@ -244,6 +244,16 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                                                     visiblePS = visiblePS,
                                                     )
 
+        h_truth_amcatnlo_herwig, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_amcatnlo_herwig,
+                                                    variable = variable,
+                                                    channel = channel,
+                                                    met_type = met_type,
+                                                    centre_of_mass = centre_of_mass,
+                                                    ttbar_xsection = ttbar_xsection,
+                                                    luminosity = luminosity,
+                                                    load_fakes = True,
+                                                    visiblePS = visiblePS,
+                                                    )
     
         # MADGRAPH_ptreweight_results = hist_to_value_error_tuplelist( h_truth_ptreweight )
         # POWHEG_PYTHIA_results = hist_to_value_error_tuplelist( h_truth_POWHEG_PYTHIA )
@@ -251,7 +261,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
         powhegPythia8_results = hist_to_value_error_tuplelist( h_truth_powhegPythia8 )
         madgraphMLM_results = hist_to_value_error_tuplelist( h_truth_madgraphMLM )
         AMCATNLO_results = hist_to_value_error_tuplelist( h_truth_amcatnlo )
-        powhegHERWIG_results = hist_to_value_error_tuplelist( h_truth_powhegHERWIG )
+        powheg_herwig_results = hist_to_value_error_tuplelist( h_truth_powheg_herwig )
+        amcatnlo_herwig_results = hist_to_value_error_tuplelist( h_truth_amcatnlo_herwig )
 
         # matchingdown_results = hist_to_value_error_tuplelist( h_truth_matchingdown )
         # matchingup_results = hist_to_value_error_tuplelist( h_truth_matchingup )
@@ -263,7 +274,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
         normalisation_unfolded['powhegPythia8'] =  powhegPythia8_results
         normalisation_unfolded['amcatnlo'] =  AMCATNLO_results
         normalisation_unfolded['madgraphMLM'] = madgraphMLM_results
-        normalisation_unfolded['powhegHERWIG'] =  powhegHERWIG_results
+        normalisation_unfolded['powhegHerwig'] =  powheg_herwig_results
+        normalisation_unfolded['amcatnloHerwig'] =  amcatnlo_herwig_results
         normalisation_unfolded['scaledown'] =  scaledown_results
         normalisation_unfolded['scaleup'] =  scaleup_results
         normalisation_unfolded['massdown'] =  massdown_results
@@ -290,7 +302,8 @@ def calculate_xsections( normalisation, category, channel ):
     if category == 'central':
         powhegPythia8_xsection = calculate_xsection( normalisation['powhegPythia8'], luminosity, branching_ratio )  # L in pb1
         amcatnlo_xsection = calculate_xsection( normalisation['amcatnlo'], luminosity, branching_ratio )  # L in pb1
-        powhegHERWIG_xsection = calculate_xsection( normalisation['powhegHERWIG'], luminosity, branching_ratio )  # L in pb1
+        powhegHerwig_xsection = calculate_xsection( normalisation['powhegHerwig'], luminosity, branching_ratio )  # L in pb1
+        amcatnloHerwig_xsection = calculate_xsection( normalisation['amcatnloHerwig'], luminosity, branching_ratio )  # L in pb1
         scaledown_xsection = calculate_xsection( normalisation['scaledown'], luminosity, branching_ratio )  # L in pb1
         scaleup_xsection = calculate_xsection( normalisation['scaleup'], luminosity, branching_ratio )  # L in pb1
         massdown_xsection = calculate_xsection( normalisation['massdown'], luminosity, branching_ratio )  # L in pb1
@@ -301,7 +314,8 @@ def calculate_xsections( normalisation, category, channel ):
         xsection_unfolded['powhegPythia8'] =  powhegPythia8_xsection
         xsection_unfolded['amcatnlo'] =  amcatnlo_xsection
         xsection_unfolded['madgraphMLM'] =  madgraphMLM_xsection
-        xsection_unfolded['powhegHERWIG'] =  powhegHERWIG_xsection
+        xsection_unfolded['powhegHerwig'] =  powhegHerwig_xsection
+        xsection_unfolded['amcatnloHerwig'] =  amcatnloHerwig_xsection
         xsection_unfolded['scaledown'] =  scaledown_xsection
         xsection_unfolded['scaleup'] =  scaleup_xsection
         xsection_unfolded['massdown'] =  massdown_xsection
@@ -337,19 +351,19 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
     if category == 'central':
         powhegPythia8_normalised_xsection = calculate_normalised_xsection( normalisation['powhegPythia8'], binWidths[variable], normalise_to_one )
         amcatnlo_normalised_xsection = calculate_normalised_xsection( normalisation['amcatnlo'], binWidths[variable], normalise_to_one )
-        powhegHERWIG_normalised_xsection = calculate_normalised_xsection( normalisation['powhegHERWIG'], binWidths[variable], normalise_to_one )
+        powhegHerwig_normalised_xsection = calculate_normalised_xsection( normalisation['powhegHerwig'], binWidths[variable], normalise_to_one )
+        amcatnloHerwig_normalised_xsection = calculate_normalised_xsection( normalisation['amcatnloHerwig'], binWidths[variable], normalise_to_one )
+        madgraphMLM_normalised_xsection = calculate_normalised_xsection( normalisation['madgraphMLM'], binWidths[variable], normalise_to_one )
         scaledown_normalised_xsection = calculate_normalised_xsection( normalisation['scaledown'], binWidths[variable], normalise_to_one )
         scaleup_normalised_xsection = calculate_normalised_xsection( normalisation['scaleup'], binWidths[variable], normalise_to_one )
         massdown_normalised_xsection = calculate_normalised_xsection( normalisation['massdown'], binWidths[variable], normalise_to_one )
         massup_normalised_xsection = calculate_normalised_xsection( normalisation['massup'], binWidths[variable], normalise_to_one )
 
-        madgraphMLM_normalised_xsection = calculate_normalised_xsection( normalisation['madgraphMLM'], binWidths[variable], normalise_to_one )
-
-
         normalised_xsection['powhegPythia8'] = powhegPythia8_normalised_xsection
         normalised_xsection['amcatnlo'] = amcatnlo_normalised_xsection
         normalised_xsection['madgraphMLM' ] = madgraphMLM_normalised_xsection
-        normalised_xsection['powhegHERWIG'] = powhegHERWIG_normalised_xsection
+        normalised_xsection['powhegHerwig'] = powhegHerwig_normalised_xsection
+        normalised_xsection['amcatnloHerwig'] = amcatnloHerwig_normalised_xsection
         normalised_xsection['scaledown'] = scaledown_normalised_xsection
         normalised_xsection['scaleup'] = scaleup_normalised_xsection
         normalised_xsection['massdown'] = massdown_normalised_xsection
@@ -458,8 +472,9 @@ if __name__ == '__main__':
 
     file_for_powhegPythia8 = File( measurement_config.unfolding_powheg_pythia8, 'read')
     file_for_amcatnlo = File( measurement_config.unfolding_amcatnlo, 'read')
+    file_for_amcatnlo_herwig = File( measurement_config.unfolding_amcatnlo_herwig, 'read')
     file_for_madgraphMLM = File( measurement_config.unfolding_madgraphMLM, 'read')
-    file_for_herwig = File( measurement_config.unfolding_herwig, 'read' )
+    file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
 
     variable = options.variable
 
