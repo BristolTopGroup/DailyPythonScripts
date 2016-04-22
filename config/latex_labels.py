@@ -62,11 +62,11 @@ measurements_latex = {
     'measured': 'measured',
     'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
     'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
-    'amcatnlo': 'aMC@NLO Pythia8',
-    'amcatnlo_HERWIG': 'aMC@NLO Herwig++',
+    'amcatnloPythia8': 'aMC@NLO Pythia8',
+    'amcatnloHerwig': 'aMC@NLO Herwig++',
     'madgraphMLM': 'Madgraph Pythia8',
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
-    'POWHEG_HERWIG': 'Powheg Herwig++',
+    'powhegHerwig': 'Powheg Herwig++',
     'powhegPythia8': 'Powheg Pythia8',
     'pythia8': '$t\\bar{t}$ (Pythia8)',
     'matchingdown': '$t\\bar{t}$ (matching down)',
@@ -191,7 +191,7 @@ channel_latex = {
                  'electronQCDNonIso' : r"Non-iso e + jets",
                  'electronQCDConversions' : r"Conversion e + jets",
                  'muonQCDNonIso' : r"Non-iso $\mu$ + jets (iso $>$ 0.3)",
-                 'muonQCDNonIso2' : r"Non-iso $\mu$ + jets (0.12 $<$ iso $<$ 0.3)",
+                 'muonQCDNonIso2' : r"Non-iso $\mu$ + jets (0.15 $<$ iso $<$ 0.3)",
                  }
 
 fit_variables_units_latex = {

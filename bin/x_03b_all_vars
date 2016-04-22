@@ -15,7 +15,7 @@ i=0
 echo "Visible phase space"
 for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Calculating diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/03_calculate_systematics.py --visiblePS  -s -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/03_${var}_calculate_Vis_13TeV.log &
+	nohup time python src/cross_section_measurement/03_calculate_systematics.py --visiblePS  -s -v $var -c 13 -u TUnfold -p data/normalisation/background_subtraction/ &> logs/03_${var}_calculate_Vis_13TeV.log &
 	let i+=1
 	shallIwait $i $N_JOBS
 done

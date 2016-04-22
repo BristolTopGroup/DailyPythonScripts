@@ -44,7 +44,6 @@ jobs = [
         '--centreOfMassEnergy 13 -s UnclusteredEnUp',
         '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
-
 # #  Add pdf variations to list of jobs
 nPDFPerJob = 1
 minPDF = 9

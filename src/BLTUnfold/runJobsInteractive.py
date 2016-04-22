@@ -77,6 +77,6 @@ if pdfVariations:
 
 # Set up job for each job
 for job in jobs:
-    command = 'nohup python DailyPythonScripts/experimental/BLTUnfold/produceUnfoldingHistograms.py '+job+' &> unfolding/log_'+job.replace(' ','').replace('-','')+'.log &'
+    command = 'nohup python DailyPythonScripts/src/BLTUnfold/produceUnfoldingHistograms.py '+job+' &> unfolding/log_'+job.replace(' ','').replace('-','')+'.log &'
     os.system(command)
     pass
