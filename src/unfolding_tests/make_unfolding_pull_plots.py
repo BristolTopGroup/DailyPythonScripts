@@ -108,11 +108,14 @@ def main():
         sys.exit(-1)
     file_name = args[0]
 
+    makeAllPlots(file_name, options.output_folder)
+
+def makeAllPlots(file_name, output_directory_base):
     centre_of_mass, channel, variable, sample, tau_value = get_info_from_file_name( file_name )
 
     k_value = 0
     output_folder = '{option_output}/{centre_of_mass}TeV/{variable}/{channel}/{sample}/'
-    output_folder = output_folder.format(option_output=options.output_folder,
+    output_folder = output_folder.format(option_output=output_directory_base,
                                          centre_of_mass=centre_of_mass,
                                          variable=variable,
                                          channel=channel,
@@ -190,7 +193,7 @@ def get_tau_value(tau_value, config, channel, variable):
 
 def get_value_title(k_value, tau_value):
     if tau_value >= 0:  # prefer tau
-        value = 'tau-value = {0}'.format(round(tau_value, 1))
+        value = 'tau-value = {0}'.format(round(tau_value, -1))
     else:
         value = 'k-value = {0}'.format(k_value)
     return value
