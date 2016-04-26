@@ -7,6 +7,8 @@ jobs = [
         '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
+        '--centreOfMassEnergy 13 -s central --topPtReweighting'
+
         '--centreOfMassEnergy 13 -s amcatnlo',
         '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s herwigpp',
