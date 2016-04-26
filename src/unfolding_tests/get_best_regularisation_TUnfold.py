@@ -41,6 +41,8 @@ from config import CMS
 from config.latex_labels import variables_latex
 from ROOT import TGraph, TSpline3, Double, TUnfoldDensity, TUnfold, TDecompSVD, TMatrixD, TCanvas, gROOT
 from numpy.linalg import svd
+from rootpy import asrootpy
+
 rc('font',**CMS.font)
 rc( 'text', usetex = True )
 
@@ -97,10 +99,10 @@ class RegularisationSettings(object):
                                               load_fakes = True,
                                               visiblePS = visiblePS
                                             )
-        self.h_truth = t
-        self.h_response = r
-        self.h_measured = m
-        self.h_fakes = f
+        self.h_truth = asrootpy ( t )
+        self.h_response = asrootpy ( r )
+        self.h_measured = asrootpy ( m )
+        self.h_fakes = asrootpy ( f )
         
         data_file = self.data['file']
         if data_file.endswith('.root'):
@@ -179,7 +181,7 @@ def tau_from_L_curve( unfoldingObject ):
     lCurve = TGraph()
     logTauX = TSpline3()
     logTauY = TSpline3()
-    iBest = unfoldingObject.ScanLcurve(100, 0., 0., lCurve, logTauX, logTauY);
+    iBest = unfoldingObject.ScanLcurve(500, 0., 0., lCurve, logTauX, logTauY);
 
     # Additional info, plots
     t = Double(0)
@@ -211,9 +213,9 @@ def tau_from_scan( unfoldingObject, regularisation_settings ):
 
     # Parameters of scan
     # Number of points to scan, and min/max tau
-    nScan = 100
-    minTau = 1.E-4
-    maxTau = 1.E-1
+    nScan = 1000
+    minTau = 1.E-6
+    maxTau = 1.E-0
 
     if variable == 'abs_lepton_eta':
         minTau = 1.E-8
