@@ -36,7 +36,7 @@ for f in additional_input_files:
     file_name = f.split('/')[-1]
     folder = f.replace(file_name, '')
     make_folder_if_not_exists(folder)
-    shutil.copyfile(base_dir + '/' + file_name, f)
+    shutil.copyfile(f, base_dir + '/' + file_name)
 
 subjobs = job.split(n_jobs)
 # pick the correct subjob
