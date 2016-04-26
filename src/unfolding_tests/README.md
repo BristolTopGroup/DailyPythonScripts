@@ -3,6 +3,7 @@
 ## Get the best value for tau
 
 Make the configs.  These store where the input unfolding files and input data (ttbar normalisation) are.
+Check that you pick up the correct files - typically they are in your local dps directory, or on hdfs.
 ```shell
 python src/unfolding_tests/makeConfig.py 
 ```
@@ -15,6 +16,24 @@ or run on several using wildcards.  To run on all 13TeV variables, combined chan
 python src/unfolding_tests/get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/*_13TeV_combined_channel.json
 ```
 
+## Closure test
+This will unfold a few pseudodata distributions with the central response matrix.
+E.g. Currently it unfolds the powheg pythia measured distribution with the powheg pythia response matrix, and compares the unfolded 'data' with the
+truth distribution.  It should give almost perfect agreement.
+It also unfolds a reweighted powheg pythia distribution and the madgraph distribution, and compares with the corresponding reweighted/madgraph truth.
+```shell
+python src/unfolding_tests/closure_test.py 
+```
+
+
+Making the plots (just pass a file created by the previous step):
+```shell
+python src/unfolding_tests/make_unfolding_pull_plots.py data/pull_data/13TeV/HT/powhegPythia/Pull_data_TUnfold_combined_0.001905.txt 
+```
+for more information on which plots are going to be produce please consult
+```shell
+python src/unfolding_tests/make_unfolding_pull_plots.py -h
+```
 
 ## Creating toy MC
 First we need to create a set of toy MC. Run
@@ -49,22 +68,18 @@ create_unfolding_pulls_on_DICE -c 13 -v MET,HT,ST,WPT,abs_lepton_eta,lepton_pt,N
 ```
 
 This will submit a one job per tau value, for each variable (just in combined channel, as that's what we are typically interested in), and for each sample.
-Passing --scan_tau will tell the script to submit jobs for a range of tau values (from --tau_min, to --tau_max) equally spaced on a log scale (same number of jobs between 0.1-1, and 1-10 etc.).  The number of tau values to consider between each factor of 10 is set with --spacing.
 
 Passing --doBestTau will run one job for the best tau value, as specified in the main configuration file (config/cross_section_config.py)
 
+Passing --scan_tau will tell the script to submit jobs for a range of tau values (from --tau_min, to --tau_max) equally spaced on a log scale (same number of jobs between 0.1-1, and 1-10 etc.).  The number of tau values to consider between each factor of 10 is set with --spacing.  Running with this option is not paritcularly useful at the moment.
+
 
 ## Analysing pull data
-Making the plots:
+Making the plots (just pass a file created by the previous step):
 ```shell
-python src/unfolding_tests/make_unfolding_pull_plots.py -s 8 -c electron data/pull_data/8TeV/MET/10_input_toy_mc/10_input_toy_data/k_value_3/*.txt
+python src/unfolding_tests/make_unfolding_pull_plots.py data/pull_data/13TeV/HT/powhegPythia/Pull_data_TUnfold_combined_0.001905.txt 
 ```
 for more information on which plots are going to be produce please consult
 ```shell
 python src/unfolding_tests/make_unfolding_pull_plots.py -h
 ```
-
-
-python src/unfolding_tests/create_unfolding_pull_data.py -f data/toy_mc/toy_mc_madgraph_N_10_13TeV.root -c combined -n 10 -v MET -s test --tau 0.001
-
-create_unfolding_pulls_on_DICE -c 13 -v MET,HT,ST,WPT,abs_lepton_eta,lepton_pt,NJets -s powhegPythia,madgraph,amcatnlo --scan_tau --doBestTau
