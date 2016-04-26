@@ -54,8 +54,8 @@ def main():
     centre_of_mass_energy = options.com
     config = XSectionConfig(centre_of_mass_energy)
     method = options.method
-    n_toy_data = options.n_toy_data
-    output_folder = 'data/pull_data/'
+    n_toy_data = int( options.n_toy_data )
+    output_folder = 'data/pull_data'
 
     do_best_tau = options.do_best_tau
     tau_range = []
@@ -89,7 +89,7 @@ def main():
     if do_best_tau:
         n_sub_jobs += len(samples) * len(variables) * len(channels)
 
-    condor_job = job.Condor(n_sub_jobs, -1, request_memory=50)
+    condor_job = job.Condor(n_sub_jobs, -1, request_memory=10)
     condor_job.add_job( pull_job )
 
     condor_job.submit()
