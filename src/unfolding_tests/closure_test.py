@@ -4,37 +4,39 @@
 '''
 from rootpy.io import File
 
-from config.variable_binning import bin_edges_vis
+from config.variable_binning import bin_edges_vis, bin_widths_visiblePS
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
-from tools.hist_utilities import hist_to_value_error_tuplelist
+from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
+from tools.Calculation import calculate_normalised_xsection
 from config.cross_section_config import XSectionConfig
 from tools.plotting import compare_measurements, Histogram_properties
 from config import latex_labels
 from rootpy import asrootpy
 from collections import OrderedDict
-
+from tools.latex import setup_matplotlib
+# latex, font, etc
+setup_matplotlib()
 def main():
     config = XSectionConfig(13)
     method = 'TUnfold'
 
     file_for_response = File(config.unfolding_central, 'read')
-
     file_for_powhegPythia  = File(config.unfolding_central, 'read')
-    file_for_madgraph = File(config.unfolding_madgraphMLM, 'read')
-    file_for_amcatnlo = File(config.unfolding_amcatnlo, 'read')
+    file_for_madgraph  = File(config.unfolding_madgraphMLM, 'read')
 
     samples_and_files_to_compare = {
-    'powhegPythia' : file_for_powhegPythia,
-    'madgraph' : file_for_madgraph,
-    'amcatnlo' : file_for_amcatnlo
+    'Central' : file_for_powhegPythia,
+    'Reweighted' : File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting.root','read'),
+    'Madgraph' : file_for_madgraph,
+
     }
 
     for channel in ['combined']:
-        # for variable in config.variables:
-        for variable in ['WPT']:
+        for variable in config.variables:
+        # for variable in ['ST']:
 
 
-            print ('Variable :',variable)
+            print 'Variable :',variable
 
             # Always unfold with the same response matrix and tau value
             tau_value = get_tau_value(config, channel, variable) 
@@ -49,6 +51,8 @@ def main():
                 load_fakes=False,
                 visiblePS=True,
             )
+
+            integralOfResponse = asrootpy(h_response.ProjectionY()).integral(0,-1)
 
             # Dictionary to hold results
             unfolded_and_truth_for_sample = {}
@@ -70,6 +74,9 @@ def main():
                 measured = asrootpy(h_response_to_unfold.ProjectionX('px',1))
                 truth = asrootpy(h_response_to_unfold.ProjectionY())
 
+                scale = integralOfResponse / truth.integral(0,-1)
+                measured.Scale( scale )
+                truth.Scale( scale )
                 # Unfold, and set 'data' to 'measured' 
                 unfolding = Unfolding( measured,
                     truth, measured, h_response, None,
@@ -77,26 +84,13 @@ def main():
                 
                 unfolded_data = unfolding.unfold()
 
+                unfolded_xsection = calculate_xsection( unfolded_data, variable )
+                truth_xsection = calculate_xsection( truth, variable )
+
                 unfolded_and_truth_for_sample[sample] = {
-                                                            'truth' : truth.Clone(),
-                                                            'unfolded' : unfolded_data.Clone()
+                                                            'truth' : truth_xsection,
+                                                            'unfolded' : unfolded_xsection
                 }
-
-                # print ('Measured :', list ( measured.y() ) )
-                # print ('Unfolded :', list ( unfolded_data.y() ) )
-                # print ('Truth :', list ( truth.y() ) )
-
-                # relDiff = ( unfolded_data - truth ) / truth * 100
-
-                # truth_tuple = hist_to_value_error_tuplelist(truth)
-                # unfolded_data_tuple = hist_to_value_error_tuplelist(unfolded_data)
-                # relDiff_tuple = hist_to_value_error_tuplelist(relDiff)
-
-                # for r in relDiff_tuple:
-                #     print (r[0],r[1])
-                # for u,t in zip( unfolded_data_tuple, truth_tuple ) :
-                #     print ( 'Unfolded :',u[0], u[1],'Truth :',t[0],t[1] )
-                #     # print ( ( u[0]/t[0] - 1) * 100, u[1], t[1])
 
             plot_closure(unfolded_and_truth_for_sample, variable, channel,
                          config.centre_of_mass_energy, method)
@@ -120,10 +114,11 @@ def plot_closure(unfolded_and_truths, variable, channel, come, method):
     )
     v_latex = latex_labels.variables_latex[variable]
     unit = ''
-    if variable in ['HT', 'ST', 'MET', 'WPT']:
+    if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
         unit = ' [GeV]'
     hp.x_axis_title = v_latex + unit
-    hp.y_axis_title = 'Events'
+    # plt.ylabel( r, CMS.y_axis_title )
+    hp.y_axis_title = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + v_latex + '}$' + unit
     hp.title = 'Closure tests for {variable}'.format(variable=v_latex)
 
     output_folder = 'plots/unfolding/closure_test/{0}/'.format(method)
@@ -134,25 +129,20 @@ def plot_closure(unfolded_and_truths, variable, channel, come, method):
         models[sample + ' truth'] = unfolded_and_truths[sample]['truth']
         measurements[sample + ' unfolded'] = unfolded_and_truths[sample]['unfolded']
 
-    # models['powhegPythia'] = unfolded_and_truths['powhegPythia']['truth']
-    # models['madgraph'] = unfolded_and_truths['madgraph']['truth']
-
-    # measurements['powhegPythia'] = unfolded_and_truths['powhegPythia']['unfolded']
-    # measurements['madgraph'] = unfolded_and_truths['madgraph']['unfolded']
-
-    print (models)
-    print (measurements)
 
     compare_measurements(
                          models = models,
                          measurements = measurements,
-                         # models={'MC truth': h_truth},
-                         # measurements={'unfolded reco': unfolded_data},
                          show_measurement_errors=True,
                          histogram_properties=hp,
                          save_folder=output_folder,
                          save_as=['pdf'],
                          match_models_to_measurements = True)
+
+def calculate_xsection( nEventsHistogram, variable ):
+    resultsAsTuple = hist_to_value_error_tuplelist( nEventsHistogram )
+    normalised_xsection = calculate_normalised_xsection( resultsAsTuple, bin_widths_visiblePS[variable], False )
+    return value_error_tuplelist_to_hist(normalised_xsection, bin_edges_vis[variable])
 
 if __name__ == '__main__':
     main()
