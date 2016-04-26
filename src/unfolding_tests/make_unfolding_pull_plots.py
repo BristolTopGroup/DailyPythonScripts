@@ -96,7 +96,7 @@ def get_info_from_file_name(file_name):
 def main():
     parser = OptionParser(__doc__)
     parser.add_option("-o", "--output",
-                      dest="output_folder", default='plots/unfolding_pulls',
+                      dest="output_folder", default='plots/unfolding/pulls',
                       help="output folder for unfolding pull plots")
 
     (options, args) = parser.parse_args()
