@@ -19,6 +19,8 @@ git checkout ${git_branch}
 echo "... setting up git submodules"
 >&2 echo "... setting up git submodules"
 time git submodule init && git submodule update
+echo "... copying dps.tar from hdfs"
+hadoop fs -copyToLocal $5/dps.tar ${_CONDOR_JOB_IWD}/dps.tar
 echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
 tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
 echo "... running setup routine"
@@ -32,3 +34,6 @@ echo "DailyPythonScripts are set up"
 echo "Running payload"
 >&2 echo "Running payload"
 time env PATH=$PATH PYTHONPATH=$PYTHONPATH ./condor/run_job $@
+
+echo "Cleaning up files"
+rm ${_CONDOR_JOB_IWD}/dps.tar

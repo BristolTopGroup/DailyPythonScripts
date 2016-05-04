@@ -826,7 +826,7 @@ if __name__ == '__main__':
     parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
     parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
-                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
+                      help = "Unfolding method: TUnfold (default), RooUnfoldSvd, TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
     output_formats = ['png', 'pdf']
     ( options, args ) = parser.parse_args()

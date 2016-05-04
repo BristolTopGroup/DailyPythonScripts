@@ -16,7 +16,7 @@ for channel in config.analysis_types.keys():
 
 		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
-		    "output_folder": "plots/unfolding_tests/bestRegularisation/FullPS", 
+		    "output_folder": "plots/unfolding/bestRegularisation/FullPS", 
 		    "output_format": ["png", "pdf"], 
 		    "centre-of-mass energy" : com,
 		    "channel": "%s" % channel,
@@ -48,7 +48,7 @@ for channel in config.analysis_types.keys():
 
 		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
-		    "output_folder": "plots/unfolding_tests/bestRegularisation/VisiblePS", 
+		    "output_folder": "plots/unfolding/bestRegularisation/VisiblePS", 
 		    "output_format": ["png", "pdf"], 
 		    "centre-of-mass energy" : com,
 		    "channel": "%s" % channel,

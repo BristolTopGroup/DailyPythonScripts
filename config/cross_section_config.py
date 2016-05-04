@@ -614,7 +614,6 @@ class XSectionConfig():
 "HT" : 0.00468724990318,
 
 
-
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,

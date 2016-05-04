@@ -609,7 +609,8 @@ def compare_measurements( models = {}, measurements = {},
                             show_measurement_errors = True,
                             histogram_properties = Histogram_properties(),
                             save_folder = 'plots/',
-                            save_as = ['pdf', 'png'] ):
+                            save_as = ['pdf', 'png'],
+                            match_models_to_measurements = False ):
     """
         This function takes one or more models and compares it to a set of measurements.
         Models and measurements are supplied as dictionaries in the form of {'label': histogram}
@@ -632,12 +633,12 @@ def compare_measurements( models = {}, measurements = {},
     colorcycler = cycle( colors )
     
 #     markers = ['circle', 'triangledown', 'triangleup', 'diamond', 'square', 'star']
-    markers = [20, 23, 22, 33, 21, 29]
+    markers = [20, 21, 22, 33, 23, 29]
     markercycler = cycle( markers )
     # matplotlib
 #     lines = ["-", "--", "-.", ":"]
     # rootpy
-    lines = ["dashed", "solid", "dashdot", "dotted"]
+    lines = ["dashed"]
     linecycler = cycle( lines )
     
     for label, histogram in models.iteritems():
@@ -647,12 +648,18 @@ def compare_measurements( models = {}, measurements = {},
         histogram.color = next( colorcycler )
         histogram.linestyle = next( linecycler ) 
         rplt.hist( histogram, axex = axes, label = label )
-        
+    
+    if match_models_to_measurements:
+        colorcycler = cycle( colors )
+        markercycler = cycle( markers )
+        linecycler = cycle( lines )
+
     for label, histogram in measurements.iteritems():
-        histogram.markersize = 2 
+        histogram.markersize = 2
         histogram.markerstyle = next( markercycler )
         histogram.color = next( colorcycler )
         rplt.errorbar( histogram, axes = axes, label = label ,
+                        elinewidth = 2,
                        yerr = show_measurement_errors,
                        xerr = histogram_properties.xerr )
     

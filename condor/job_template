@@ -3,7 +3,7 @@ Universe = vanilla
 Output = jobs/%today%/logs/job.$(cluster).$(process).out
 Error = jobs/%today%/logs/job.$(cluster).$(process).err
 Log = jobs/%today%/logs/job.$(cluster).$(process).log
-arguments = %pkl_file% $(cluster) $(process) %n_jobs_to_split%
+arguments = %pkl_file% $(cluster) $(process) %n_jobs_to_split% %dir_of_dps_on_hdfs% 
 
 transfer_input_files = %input_files%
 should_transfer_files = YES

@@ -32,16 +32,16 @@ class UnfoldingPullJob(Job):
         self.all_tau_values = tau_values
         self.cross_section_config = XSectionConfig(self.centre_of_mass)
 
-        self.additional_input_files = []
-        for sample in self.all_samples:
-            additional_input_file_template = '{directory}/toy_mc_{sample}_N_{n}_{com}TeV.root'
-            additional_input_file = additional_input_file_template.format(
-                                                                    directory = self.input_file_directory,
-                                                                    sample = sample,
-                                                                    n = self.n_toy_data,
-                                                                    com = self.centre_of_mass
-                                                                    )
-            self.additional_input_files.append(additional_input_file)
+        # self.additional_input_files = []
+        # for sample in self.all_samples:
+        #     additional_input_file_template = '{directory}/toy_mc_{sample}_N_{n}_{com}TeV.root'
+        #     additional_input_file = additional_input_file_template.format(
+        #                                                             directory = self.input_file_directory,
+        #                                                             sample = sample,
+        #                                                             n = self.n_toy_data,
+        #                                                             com = self.centre_of_mass
+        #                                                             )
+        #     self.additional_input_files.append(additional_input_file)
 
     def run(self):
         '''
@@ -50,7 +50,7 @@ class UnfoldingPullJob(Job):
         import src.unfolding_tests.create_unfolding_pull_data as pull
         from tools.ROOT_utils import set_root_defaults
         set_root_defaults(msg_ignore_level=3001)
-        pull.create_unfolding_pull_data(self.input_file_name,
+        pulls_file_name = pull.create_unfolding_pull_data(self.input_file_name,
                                         self.method,
                                         self.channel_to_run,
                                         self.centre_of_mass,
@@ -61,6 +61,12 @@ class UnfoldingPullJob(Job):
                                         self.output_folder,
                                         self.tau_value_to_run
                                         )
+
+        # import src.unfolding_tests.make_unfolding_pull_plots as plots
+        # plots.makeAllPlots(
+        #     file_name = pulls_file_name,
+        #     output_directory_base = 'plots/unfolding_pulls'
+        #     )
 
     def split(self, n):
         subjobs = []
@@ -95,11 +101,12 @@ class UnfoldingPullJob(Job):
 
                         input_file_name = self.get_input_file_name( self.input_file_directory, sample, self.centre_of_mass, self.n_toy_data)
                         j.input_file_name = input_file_name
-                        j.additional_input_files = [input_file_name]
+                        # j.additional_input_files = [input_file_name]
 
                         subjobs.append(j)
         if len(subjobs) != n :
-            print ('Warning : Did not get the expected number of subjobs')
+            print ('Warning in unfolding_pull_job_new split() : Did not get the expected number of subjobs')
+            print ('n :',n,'subjobs :',len(subjobs))
         return subjobs
 
     def tar_output(self, job_id, subjob_id):

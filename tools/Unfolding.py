@@ -5,6 +5,8 @@ Created on 31 Oct 2012
 '''
 from ROOT import gSystem, cout, TDecompSVD
 import config.RooUnfold as unfoldCfg
+from tools.ROOT_utils import set_root_defaults
+set_root_defaults( set_batch = True, msg_ignore_level = 3001 )
 from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
 gSystem.Load( unfoldCfg.library )
 from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
@@ -66,8 +68,10 @@ class Unfolding:
                     if self.tau >= 0:
                         self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
             elif self.method == 'TUnfold':
-              self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert, TUnfold.kRegModeCurvature)
-              self.unfoldObject.SetInput( self.data )
+              self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert,
+                                                  TUnfold.kRegModeCurvature,
+                                                )
+              self.unfoldObject.SetInput( self.data, 1.0 )
               # self.unfoldObject.ScanLcurve( 30, 0, 0 )
 
     def unfold( self ):

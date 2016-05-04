@@ -33,9 +33,7 @@ def main():
                       dest="output_folder", default='data/toy_mc/',
                       help="output folder for toy MC")
     parser.add_option("-s", dest="sample", default='madgraph',
-                        help='set underlying sample for creating the toy MC')
-    parser.add_option("-m", "--metType", dest="metType", default='type1',
-                      help="set MET type for analysis of MET, ST or MT")
+                        help='set underlying sample for creating the toy MC.  Possible options : madgraph, powhegPythia, amcatnlo.  Default is madgraph')
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13,
                       help="set the centre of mass energy for analysis. Default = 13 [TeV]", type=int)
     parser.add_option('-V', '--verbose', dest="verbose", action="store_true",
@@ -44,8 +42,6 @@ def main():
     (options, _) = parser.parse_args()
 
     measurement_config = XSectionConfig(options.CoM)
-#     variable = options.variable
-    met_type = measurement_config.translate_options[options.metType]
 
     input_file = None
     if options.sample == 'madgraph':
@@ -62,11 +58,11 @@ def main():
 #                   variable=variable,
                   n_toy=options.n_toy_mc,
                   centre_of_mass=options.CoM,
-                  ttbar_xsection=measurement_config.ttbar_xsection,
-                  met_type=met_type)
+                  ttbar_xsection=measurement_config.ttbar_xsection
+                  )
 
 
-def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttbar_xsection, met_type):
+def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttbar_xsection):
     from tools.file_utilities import make_folder_if_not_exists
     from tools.toy_mc import generate_toy_MC_from_distribution, generate_toy_MC_from_2Ddistribution
     from tools.Unfolding import get_unfold_histogram_tuple
@@ -83,9 +79,8 @@ def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttba
                 h_truth, h_measured, h_response, _ = get_unfold_histogram_tuple(input_file_hists,
                                                                         variable,
                                                                         channel,
-                                                                        met_type,
-                                                                        centre_of_mass,
-                                                                        ttbar_xsection,
+                                                                        centre_of_mass = centre_of_mass,
+                                                                        ttbar_xsection = ttbar_xsection,
                                                                         visiblePS = True,
                                                                         load_fakes=False)
 

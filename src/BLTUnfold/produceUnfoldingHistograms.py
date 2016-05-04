@@ -22,6 +22,9 @@ class channel:
         pass
     pass
 
+def calculateTopPtWeight( lepTopPt, hadTopPt ):
+    return max ( ( 1 + ( branch('lepTopPt_parton') - 100 ) / 500 ) * ( 1 + ( branch('hadTopPt_parton') - 100 ) / 500 ) , 0.1 )
+
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
@@ -334,6 +337,11 @@ def main():
                         genWeight *= branch('genWeight_%i' % meWeight)
                         offlineWeight *= branch('genWeight_%i' % meWeight)
                         pass
+
+                    if options.applyTopPtReweighting:
+                        ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
+                        offlineWeight *= ptWeight
+                        genWeight *= ptWeight
 
                     for channel in channels:
                         # Generator level selection

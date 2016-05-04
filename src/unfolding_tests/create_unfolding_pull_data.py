@@ -105,14 +105,16 @@ def create_unfolding_pull_data(input_file_name, method, channel,
     print(msg_template.format(**inputs))
     print('Output folder: {0}'.format(output_folder))
     print ('Response here :',h_response)
-    check_multiple_data_multiple_unfolding(
-        input_file, method, channel, variable, 
-        h_response,
-        n_toy_data,
-        output_folder, 
-        tau_value,
-    )
+    output_file_name = check_multiple_data_multiple_unfolding(
+                                input_file, method, channel, variable, 
+                                h_response,
+                                n_toy_data,
+                                output_folder, 
+                                tau_value,
+                            )
     print('Runtime', timer.elapsed_time())
+
+    return output_file_name
 
 
 def create_run_matrix(n_toy_mc, n_toy_data
@@ -156,13 +158,28 @@ def check_multiple_data_multiple_unfolding(
     print('Done reading toy MC in', time() - start1, 's')
 
 
+    # Get truth and measured histograms
     h_truth = get_truth_histogram( get_folder('{channel}/{variable}/Original'.format(channel=channel, variable=variable) ) )
+    h_measured = get_measured_histogram( get_folder('{channel}/{variable}/Original'.format(channel=channel, variable=variable) ) )
+
+    # Set response matrix
     h_response = responseMatrix
+
+
+    # Make sure the pseudo data to be unfolded has the same integral as the response matrix
+    measured_from_response = asrootpy( h_response.ProjectionX('px',1) )
+    truth_from_response = asrootpy( h_response.ProjectionY() )
+    truthScale = truth_from_response.Integral() / h_truth.Integral()
+    h_truth.Scale( truthScale )
+    h_measured.Scale( truthScale )
+
     for nth_toy_data in data_range:
         if nth_toy_data % 100 == 0 :
             print(
                 'Doing data no', nth_toy_data)
         h_data = histograms[nth_toy_data]
+
+        h_data.Scale( truthScale )
 
         unfolding_obj = Unfolding(
             h_data,
@@ -174,7 +191,7 @@ def check_multiple_data_multiple_unfolding(
 
         unfold()
         pull = get_pull()
-        diff = unfolding_obj.unfolded_data - unfolding_obj.truth
+        diff = unfolding_obj.unfolded_data - h_truth
         diff_tuple = hist_to_value_error_tuplelist(diff)
 
         truth_tuple = hist_to_value_error_tuplelist(unfolding_obj.truth)
@@ -187,6 +204,7 @@ def check_multiple_data_multiple_unfolding(
 
         unfolded = unfolding_obj.unfolded_data
         unfolded_tuple = hist_to_value_error_tuplelist(unfolded)
+
         all_data = {'unfolded': unfolded_tuple,
                     'difference': diff_tuple,
                     'truth': truth_tuple,
@@ -198,9 +216,10 @@ def check_multiple_data_multiple_unfolding(
         add_pull(all_data)
         reset()
 
-    save_pulls(pulls, method,
-               channel, tau_value, output_folder)
+    output_file_name = save_pulls(pulls, method,
+                                channel, tau_value, output_folder)
 
+    return output_file_name
 
 def save_pulls(pulls, method, channel, tau_value, output_folder):
     '''
@@ -211,6 +230,7 @@ def save_pulls(pulls, method, channel, tau_value, output_folder):
         file_template % (method, channel, tau_value)
     write_data_to_JSON(pulls, output_file)
     print('Pulls saved in file: ', output_file)
+    return output_file
 
 def get_response_histogram(responseFileName, variable, channel):
     '''
@@ -236,8 +256,8 @@ def get_measured_histogram(folder):
         clones the pseudo data histogram given a TDirectory
         @folder: A directory containting the histograms 'measured'
     '''
-    h_measured = asrootpy( folder.measured.Clone() )
-
+    h_response = folder.response.Clone()
+    h_measured = asrootpy( h_response.ProjectionX('px',1) )
     return h_measured
 
 if __name__ == "__main__":
