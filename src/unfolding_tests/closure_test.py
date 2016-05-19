@@ -14,6 +14,7 @@ from config import latex_labels
 from rootpy import asrootpy
 from collections import OrderedDict
 from tools.latex import setup_matplotlib
+from math import sqrt
 # latex, font, etc
 setup_matplotlib()
 def main():
@@ -23,12 +24,17 @@ def main():
     file_for_response = File(config.unfolding_central, 'read')
     file_for_powhegPythia  = File(config.unfolding_central, 'read')
     file_for_madgraph  = File(config.unfolding_madgraphMLM, 'read')
+    file_for_amcatnlo  = File(config.unfolding_amcatnlo, 'read')
+    file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
+    file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
 
     samples_and_files_to_compare = {
     'Central' : file_for_powhegPythia,
-    'Reweighted' : File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting.root','read'),
-    'Madgraph' : file_for_madgraph,
+    'Reweighted Up' : file_for_ptReweight_up,
+    'Reweighted Down' : file_for_ptReweight_down,
 
+    # 'Madgraph' : file_for_madgraph,
+    # 'amc@NLO' : file_for_amcatnlo
     }
 
     for channel in ['combined']:
@@ -87,12 +93,17 @@ def main():
                 unfolded_xsection = calculate_xsection( unfolded_data, variable )
                 truth_xsection = calculate_xsection( truth, variable )
 
+                bias = calculate_bias( truth, unfolded_data )
                 unfolded_and_truth_for_sample[sample] = {
                                                             'truth' : truth_xsection,
-                                                            'unfolded' : unfolded_xsection
+                                                            'unfolded' : unfolded_xsection,
+                                                            'bias' : bias
                 }
 
             plot_closure(unfolded_and_truth_for_sample, variable, channel,
+                         config.centre_of_mass_energy, method)
+
+            plot_bias(unfolded_and_truth_for_sample, variable, channel,
                          config.centre_of_mass_energy, method)
 
 
@@ -139,10 +150,50 @@ def plot_closure(unfolded_and_truths, variable, channel, come, method):
                          save_as=['pdf'],
                          match_models_to_measurements = True)
 
+def plot_bias(unfolded_and_truths, variable, channel, come, method):
+    hp = Histogram_properties()
+    hp.name = 'Bias_{channel}_{variable}_at_{come}TeV'.format(
+        channel=channel,
+        variable=variable,
+        come=come,
+    )
+    v_latex = latex_labels.variables_latex[variable]
+    unit = ''
+    if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
+        unit = ' [GeV]'
+    hp.x_axis_title = v_latex + unit
+    # plt.ylabel( r, CMS.y_axis_title )
+    hp.y_axis_title = 'Unfolded / Truth'
+    hp.y_limits = [0.92, 1.08]
+    hp.title = 'Bias for {variable}'.format(variable=v_latex)
+
+    output_folder = 'plots/unfolding/bias_test/'
+
+    measurements = { 'Central' : unfolded_and_truths['Central']['bias'] }
+
+    models = {}
+    for sample in unfolded_and_truths:
+        if sample == 'Central' : continue
+        models[sample] = unfolded_and_truths[sample]['bias']
+
+
+    compare_measurements(
+                         models = models,
+                         measurements = measurements,
+                         show_measurement_errors=True,
+                         histogram_properties=hp,
+                         save_folder=output_folder,
+                         save_as=['pdf'],
+                         match_models_to_measurements = True)
+
 def calculate_xsection( nEventsHistogram, variable ):
     resultsAsTuple = hist_to_value_error_tuplelist( nEventsHistogram )
     normalised_xsection = calculate_normalised_xsection( resultsAsTuple, bin_widths_visiblePS[variable], False )
     return value_error_tuplelist_to_hist(normalised_xsection, bin_edges_vis[variable])
+
+def calculate_bias( true_histogram, unfolded_histogram ):
+    bias_histogram = ( unfolded_histogram ) / true_histogram
+    return bias_histogram
 
 if __name__ == '__main__':
     main()
