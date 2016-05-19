@@ -22,8 +22,14 @@ class channel:
         pass
     pass
 
-def calculateTopPtWeight( lepTopPt, hadTopPt ):
-    return max ( ( 1 + ( branch('lepTopPt_parton') - 100 ) / 500 ) * ( 1 + ( branch('hadTopPt_parton') - 100 ) / 500 ) , 0.1 )
+def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
+    # return max ( ( 1 - ( lepTopPt - 100 ) / 500 ) * ( 1 - ( hadTopPt - 100 ) / 500 ) , 0.1 )
+    if whichWayToWeight == -1 :
+        return max ( (-0.001 * lepTopPt + 1.2 ) * (-0.001 * hadTopPt + 1.2), 0.1 )
+    elif whichWayToWeight == 1 :
+        return max ( (0.001 * lepTopPt + 0.8 ) * (0.001 * hadTopPt + 0.8), 0.1 )
+    else :
+        return 1
 
 def getFileName( com, sample, measurementConfig ) :
 
@@ -32,7 +38,6 @@ def getFileName( com, sample, measurementConfig ) :
                         'central' : measurementConfig.ttbar_category_templates_trees['central'],
                         'amcatnlo' : measurementConfig.ttbar_amc_category_templates_trees,
                         'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
-                        'herwigpp' : measurementConfig.ttbar_herwigpp_category_templates_trees,
                         'scaleup' : measurementConfig.ttbar_scaleup_category_templates_trees,
                         'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
                         'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
@@ -70,7 +75,7 @@ channels = [
 def main():
     
     parser = OptionParser()
-    parser.add_option('--topPtReweighting', action='store_true', dest='applyTopPtReweighting', default=False )
+    parser.add_option('--topPtReweighting', dest='applyTopPtReweighting', type='int', default=0 )
     parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
     parser.add_option('--generatorWeight', type='int', dest='generatorWeight', default=-1 )
     parser.add_option('--nGeneratorWeights', type='int', dest='nGeneratorWeights', default=1 )
@@ -110,8 +115,11 @@ def main():
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
 
     for meWeight in generatorWeightsToRun :
-        if options.applyTopPtReweighting:
-            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
+        if options.applyTopPtReweighting != 0:
+            if options.applyTopPtReweighting == 1:
+                outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
+            elif options.applyTopPtReweighting == -1:
+                outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_down.root' % energySuffix            
         elif meWeight == 4:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_scaleUpWeight.root' % ( energySuffix )
         elif meWeight == 8:
@@ -338,8 +346,8 @@ def main():
                         offlineWeight *= branch('genWeight_%i' % meWeight)
                         pass
 
-                    if options.applyTopPtReweighting:
-                        ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
+                    if options.applyTopPtReweighting != 0:
+                        ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
                         offlineWeight *= ptWeight
                         genWeight *= ptWeight
 
