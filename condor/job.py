@@ -53,8 +53,6 @@ class Condor(object):
                                                                                             you = getpass.getuser(), 
                                                                                             now = time.strftime('%d_%m_%Y_%H_%M') 
                                                                                             )
-        prepare_process = subprocess.Popen(['./condor/prepare_dps.sh',self._dps_tar_directory_on_hdfs])
-        prepare_process.communicate()
 
         for i, job in enumerate(self.prepared_jobs):
             job_file = job_folder + 'job_{0}.pkl'.format(i)
@@ -83,6 +81,9 @@ class Condor(object):
 
             condor_jobs.append(job_desc_file)
 
+        prepare_process = subprocess.Popen(['./condor/prepare_dps.sh',self._dps_tar_directory_on_hdfs])
+        prepare_process.communicate()
+        
         # # submit jobs
         for j in condor_jobs:
             p = subprocess.Popen(['condor_submit', j])

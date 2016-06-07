@@ -1,5 +1,14 @@
 # Unfolding Tests
 
+Summary of what to run:
+-Get the best tau value
+-Update tau values in config
+-Run reweighting check
+-Run closure test
+-Create toy MC for central MC
+-Make unfolding pulls for central MC
+-Produce pull plots for central MC
+
 ## Get the best value for tau
 
 Make the configs.  These store where the input unfolding files and input data (ttbar normalisation) are.
@@ -16,24 +25,33 @@ or run on several using wildcards.  To run on all 13TeV variables, combined chan
 python src/unfolding_tests/get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/*_13TeV_combined_channel.json
 ```
 
+## Reweighting check
+This plots the measured data (after background and fake subtraction) as points.  
+The measured central sample (Powheg Pythia), and two top pt reweighted samples, are plotted as lines.
+The aim is for the central sample to provide a reasonable description of the data, and for
+the envelope of the two reweighted samples to cover any discrepancies between the central MC and data.
+Any bias (difference between the unfolded result and truth) in data, caused by the difference between Powheg Pythia 
+and the underlying true distribution in data, should then be smaller than (or similar to)
+the bias seen in the unfolded distributions for the reweighted samples.
+
+```shell
+python src/unfolding_tests/compare_reweighting.py
+```
+
+
 ## Closure test
 This will unfold a few pseudodata distributions with the central response matrix.
-E.g. Currently it unfolds the powheg pythia measured distribution with the powheg pythia response matrix, and compares the unfolded 'data' with the
-truth distribution.  It should give almost perfect agreement.
-It also unfolds a reweighted powheg pythia distribution and the madgraph distribution, and compares with the corresponding reweighted/madgraph truth.
+Two sets of plots are produced.  The first set plots the unfolded normalised cross section for each pseudodata/MC sample, 
+and the corresponding truth distribution from the same sample (if there's not much bias, the points should lie on top of the lines of the same colour).
+The second set of plots (bias) show the unfolded number of events divided by the true number of events (if there is no bias, this should be 1).
+The "central" case, where the powheg pythia measured distribution is unfolded with the powheg pythia response matrix, should give perfect results.
+For the bias plots, the central case is plotted as points, and all other MC samples as dotted lines.
+ 
+ Currently, the central sample (Powheg Pythia) is plotted, along with two reweighted MC samples.  The reweighting is performed on the top pt.
 ```shell
 python src/unfolding_tests/closure_test.py 
 ```
 
-
-Making the plots (just pass a file created by the previous step):
-```shell
-python src/unfolding_tests/make_unfolding_pull_plots.py data/pull_data/13TeV/HT/powhegPythia/Pull_data_TUnfold_combined_0.001905.txt 
-```
-for more information on which plots are going to be produce please consult
-```shell
-python src/unfolding_tests/make_unfolding_pull_plots.py -h
-```
 
 ## Creating toy MC
 First we need to create a set of toy MC. Run
