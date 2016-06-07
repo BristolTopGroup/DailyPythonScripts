@@ -78,6 +78,9 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                              'BJet_up'        :  file_for_bjetdown,
                              'BJet_down'        :  file_for_bjetup,
 
+                             'LightJet_up'        :  file_for_lightjetdown,
+                             'LightJet_down'        :  file_for_lightjetup,
+
                              ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_powheg_herwig,
                              ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
 
@@ -264,7 +267,6 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
         amcatnloPythia8_results = hist_to_value_error_tuplelist( h_truth_amcatnlo )
         powheg_herwig_results = hist_to_value_error_tuplelist( h_truth_powheg_herwig )
         amcatnlo_herwig_results = hist_to_value_error_tuplelist( h_truth_amcatnlo_herwig )
-
 
         # matchingdown_results = hist_to_value_error_tuplelist( h_truth_matchingdown )
         # matchingup_results = hist_to_value_error_tuplelist( h_truth_matchingup )
@@ -459,6 +461,9 @@ if __name__ == '__main__':
     file_for_bjetdown = File( measurement_config.unfolding_bjet_down, 'read' )
     file_for_bjetup = File( measurement_config.unfolding_bjet_up, 'read' )
     ###
+    file_for_lightjetdown = File( measurement_config.unfolding_lightjet_down, 'read' )
+    file_for_lightjetup = File( measurement_config.unfolding_lightjet_up, 'read' )
+    ###
     file_for_LeptonDown = File( measurement_config.unfolding_Lepton_down, 'read' )
     file_for_LeptonUp = File( measurement_config.unfolding_Lepton_up, 'read' )
     ###
@@ -509,19 +514,20 @@ if __name__ == '__main__':
     # No generator or theory systematics yet
     ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     ### vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    categories.extend( ttbar_generator_systematics )
+    # categories.extend( ttbar_generator_systematics )
     ### categories.extend( vjets_generator_systematics )
 
-    # ### ttbar theory systematics, including pt reweighting and hadronisation systematic
+    # ### ttbar theory systematics, including pt reweightingnsystematic
     # ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
-    # ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'HERWIG'] )
     # categories.extend( ttbar_theory_systematics )
 
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 0, 100 )]
     rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics_names]
     #  all MET uncertainties except JES as this is already included
     met_uncertainties = [suffix for suffix in measurement_config.met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
+    
     all_measurements = deepcopy( categories )
+    all_measurements.extend( ttbar_generator_systematics )
     all_measurements.extend( pdf_uncertainties )
     all_measurements.extend( ['QCD_shape'] )
     all_measurements.extend( rate_changing_systematics )
