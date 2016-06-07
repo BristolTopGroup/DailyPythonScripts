@@ -4,9 +4,9 @@ import os
 
 jobs = [
         # # # 13 TeV
-        '--centreOfMassEnergy 13 -f',
+        # '--centreOfMassEnergy 13 -f',
 
-        # '--centreOfMassEnergy 13 -s central',
+        '--centreOfMassEnergy 13 -s central',
         '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
         '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
 
