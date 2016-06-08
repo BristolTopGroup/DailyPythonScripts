@@ -242,6 +242,14 @@ class XSectionConfig():
             'NLOgenerator'
         ]
 
+        self.generator_mcsamples = [
+            'powhegPythia',
+            'powhegHerwig',
+            'amcatnloPythia',
+            'amcatnloHerwig',    
+            'madgraph'    
+        ]
+
         self.k_values = {
             'electron' : self.k_values_electron,
             'muon' : self.k_values_muon,
