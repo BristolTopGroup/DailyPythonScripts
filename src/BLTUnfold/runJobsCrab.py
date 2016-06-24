@@ -55,7 +55,7 @@ jobs = [
 nPDFPerJob = 1
 minPDF = 9
 maxPDF = 109
-variation = 9
+variation = minPDF
 while variation < maxPDF :
     nForThisJob = nPDFPerJob
     if variation + nPDFPerJob > maxPDF:

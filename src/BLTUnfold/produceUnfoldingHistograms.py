@@ -50,12 +50,6 @@ def getFileName( com, sample, measurementConfig ) :
                         'jerup' : measurementConfig.ttbar_jerup_category_templates_trees,
                         'bjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'bjetup' : measurementConfig.ttbar_category_templates_trees['central'],
-
-
-                        # 'bjetdown_had_sf' : measurementConfig.ttbar_category_templates_trees['central'],
-                        # 'bjetup_had_sf' : measurementConfig.ttbar_category_templates_trees['central'],
-
-
                         'lightjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'lightjetup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'leptondown' : measurementConfig.ttbar_category_templates_trees['central'],
@@ -108,16 +102,19 @@ def main():
         print "Error: Unrecognised centre of mass energy."
 
     generatorWeightsToRun = []
+    # nGeneratorWeights = How many PDF weights do you want to run in 1 job (specified in runJobsCrab.py)
     if options.nGeneratorWeights > 1 :
         for i in range (0, options.nGeneratorWeights):
             generatorWeightsToRun.append( options.generatorWeight + i )
+    # generatorWeights = 1 for PDF Variations
+    # generatorWeights either 4 or 8 for alpha_s, renormalisation, hadronisation
     elif options.generatorWeight >= 0 :
         generatorWeightsToRun.append(options.generatorWeight)
     else: generatorWeightsToRun.append( -1 )
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'unfolding/%sTeV/BTagRescaled' % options.centreOfMassEnergy
+    outputFileDir = 'unfolding/%sTeV/' % options.centreOfMassEnergy
     make_folder_if_not_exists(outputFileDir)
    
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
@@ -177,7 +174,6 @@ def main():
                 histograms = {}
                 outputDirs = {}
                 for variable in allVariablesBins:
-                    print "Variable : ", variable
                     if options.debug and variable != 'HT' : continue
 
                     if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
@@ -208,17 +204,18 @@ def main():
                             recoVariableName += '_METUncertainties'
                             sysIndex = measurement_config.met_systematics[options.sample]
 
-                    genVariable_particle_name = genBranchNames_particle[variable]
-                    genVariable_parton = None
+                    genVariable_particle_name = None
+                    genVariable_parton_name = None
+                    if variable in genBranchNames_particle:
+                        genVariable_particle_name = genBranchNames_particle[variable]
                     if variable in genBranchNames_parton:
-                        genVariable_parton = genBranchNames_parton[variable]
+                        genVariable_parton_name = genBranchNames_parton[variable]
 
                     recoVariableNames[variable] = recoVariableName
                     genVariable_particle_names[variable] = genVariable_particle_name
-                    genVariable_parton_names[variable] = genVariable_parton
+                    genVariable_parton_names[variable] = genVariable_parton_name 
 
                     for channel in channels:
-                        print "Channel : ", channel.channelName
                         # Make dir in output file
                         outputDirName = variable+'_'+channel.outputDirName
                         outputDir = out.mkdir(outputDirName)
@@ -247,7 +244,6 @@ def main():
                         h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
 
                         if options.fineBinned:
-                            print "Is FineBinned : "
                             minVar = trunc( allVariablesBins[variable][0] )
                             maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
                             nBins = int(maxVar - minVar)
@@ -312,12 +308,6 @@ def main():
                     # # #
                     # # # Weights and selection
                     # # #
-
-
-
-
-
-
 
                     # Pileup weight
                     # Don't apply if calculating systematic
@@ -406,14 +396,6 @@ def main():
                             if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                                 continue
 
-
-                            if variable == 'lepton_pt_+':
-                                if branch('leptonCharge') != +1 : continue
-
-                            if variable == 'lepton_pt_-' : 
-                                if branch('leptonCharge') != -1 : continue
-
-
                             # # #
                             # # # Variable to plot
                             # # #
@@ -479,9 +461,6 @@ def main():
                                         histogramsToFill['genWeightHist'].Fill(genWeight)
                                         histogramsToFill['offlineWeightHist'].Fill(offlineWeight)
 
-
-
-
                 #
                 # Output histgorams to file
                 #
@@ -490,7 +469,6 @@ def main():
                         continue
                     for channel in channels:
 
-                        
                         # Fill phase space info
                         h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
                         h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])
