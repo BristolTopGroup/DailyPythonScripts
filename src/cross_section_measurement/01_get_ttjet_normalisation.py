@@ -252,9 +252,7 @@ def parse_options():
 @mylog.trace()
 def main():
     # construct categories from files:
-    input_template = options.input + '{energy}TeV/{channel}/{variable}/'
-    input_template += '{phase_space}/*.json'
-
+    input_template = options.input + '{energy}TeV/{channel}/{variable}/{phase_space}/*.json'
     categories = ['QCD_shape']
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)

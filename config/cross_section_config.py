@@ -24,6 +24,7 @@ class XSectionConfig():
         'general_category_templates_trees',
         'generator_systematic_vjets_templates',
         'generator_systematics',
+        'generator_mcsamples',
         'higgs_category_templates', 'higgs_file',
         'include_higgs',
         'k_values_combined', 'k_values_electron', 'k_values_muon',
@@ -38,6 +39,7 @@ class XSectionConfig():
         'rebin', 'special_muon_histogram', 'translate_options',
         'ttbar_category_templates',
         'ttbar_category_templates_trees',
+        'ttbar_generator_category_templates_trees',
         'ttbar_theory_systematic_prefix', 'ttbar_xsection',
         'unfolding_central', 'unfolding_central_raw',
         'unfolding_powheg_pythia8', 'unfolding_powheg_pythia8_raw',
@@ -243,10 +245,10 @@ class XSectionConfig():
         ]
 
         self.generator_mcsamples = [
-            'powhegPythia',
-            'powhegHerwig',
-            'amcatnloPythia',
-            'amcatnloHerwig',    
+            'PowhegPythia8',
+            'powhegHerwigpp',
+            'amc',
+            'amcatnloHerwigpp',    
             'madgraph'    
         ]
 
@@ -303,6 +305,7 @@ class XSectionConfig():
         self.kValueSystematic = [ 'kValue_up', 'kValue_down']
 
         categories_and_prefixes = self.categories_and_prefixes
+        generator_mcsamples = self.generator_mcsamples
 
         # File Templates
         self.general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
@@ -319,9 +322,11 @@ class XSectionConfig():
         self.VJets_category_templates_trees = {category: path_to_files + '/VJets_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.electron_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Electron_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.muon_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Muon_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.ttbar_generator_category_templates_trees = {category: path_to_files + '/TTJets_' + category + '_tree.root' for category in generator_mcsamples}
         
         self.ttbar_amc_category_templates_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_category_templates_trees = path_to_files + '/TTJets_madgraph_tree.root'
+        self.ttbar_powhegpythia8_category_templates_trees = path_to_files + '/TTJets_powhegPythia8_tree.root'
         self.ttbar_powhegherwigpp_category_templates_trees = path_to_files + '/TTJets_powhegHerwigpp_tree.root'
         self.ttbar_amcatnloherwigpp_category_templates_trees = path_to_files + '/TTJets_amcatnloHerwigpp_tree.root'
         self.ttbar_scaleup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaleup_tree.root'
@@ -579,21 +584,13 @@ class XSectionConfig():
                    }
 
         self.tau_values_electron = {
-# "NJets" : 7.40294908943e-05,
-# "WPT" : 0.00430340758474,
-# "lepton_pt" : 0.00190573521649,
-# "abs_lepton_eta" : 9.17390335498e-06,
-# "ST" : 0.00862392757898,
-# "MET" : 0.00265102161031,
-# "HT" : 0.00627751099561,
-"NJets" : 7.14796891782e-05,
-"WPT" : 0.00412139982544,
-"lepton_pt" : 0.00180610492182,
-"abs_lepton_eta" : 9.22789295178e-06,
-"ST" : 0.00831731550316,
-"MET" : 0.00256070232044,
-"HT" : 0.00602354830601,
-
+"NJets" : 7.14289851984e-05,
+"WPT" : 0.00412403632721,
+"lepton_pt" : 0.0018054271566,
+"abs_lepton_eta" : 9.24702326429e-06,
+"ST" : 0.00831765143666,
+"MET" : 0.00256015359682,
+"HT" : 0.00602254137204,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -608,20 +605,13 @@ class XSectionConfig():
            }
 
         self.tau_values_muon = {
-# "NJets" : 7.95438745354e-05,
-# "WPT" : 0.00466092806338,
-# "lepton_pt" : 0.0024749208784,
-# "abs_lepton_eta" : 9.12565206983e-06,
-# "ST" : 0.00962164972273,
-# "MET" : 0.00282487006595,
-# "HT" : 0.00731972861341,
-"NJets" : 8.02178221371e-05,
-"WPT" : 0.00476273555468,
-"lepton_pt" : 0.00242388359583,
-"abs_lepton_eta" : 9.66084137028e-06,
-"ST" : 0.00973999311445,
-"MET" : 0.00290502443043,
-"HT" : 0.00741623015566,
+"NJets" : 8.00904290212e-05,
+"WPT" : 0.00475761126845,
+"lepton_pt" : 0.00242164061853,
+"abs_lepton_eta" : 9.61561880023e-06,
+"ST" : 0.00972730152042,
+"MET" : 0.00290173731922,
+"HT" : 0.00740965179358,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -635,20 +625,13 @@ class XSectionConfig():
             "ttbarRap" : 236.448941265,
         }
         self.tau_values_combined = {
-# "NJets" : 5.25335153942e-05,
-# "WPT" : 0.00305416528307,
-# "lepton_pt" : 0.00144311408625,
-# "abs_lepton_eta" : 6.65419197707e-06,
-# "ST" : 0.00626425547204,
-# "MET" : 0.000143301257024,
-# "HT" : 0.00468724990318,
-"NJets" : 5.36781510284e-05,
-"WPT" : 0.00314803040726,
-"lepton_pt" : 0.00147703865562,
-"abs_lepton_eta" : 6.81805935741e-06,
-"ST" : 0.0063988883469,
-"MET" : 0.00193312822587,
-"HT" : 0.00475881927497,
+"NJets" : 5.36127675343e-05,
+"WPT" : 0.00314702299339,
+"lepton_pt" : 0.00147570139616,
+"abs_lepton_eta" : 6.80304236095e-06,
+"ST" : 0.00639445248766,
+"MET" : 0.00193179941017,
+"HT" : 0.00475657045286,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
