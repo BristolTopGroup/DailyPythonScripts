@@ -178,19 +178,19 @@ if __name__ == '__main__':
 
 			# Easy access to .pngs 
 			b_Canvas = TCanvas("bQuarkJet","bQuarkJet", 0, 0, 800, 600)
-			b_Hist.SetTitle(" ; pt; eta")
+			b_Hist.SetTitle("b quark b tagging efficiency ; pt; eta")
 			b_Hist.Draw("colz")
 			b_Canvas.Update()
 			b_Canvas.SaveAs("plots/bQuarkJet_"+generator+"_BTagEfficiency.png")
 
 			c_Canvas = TCanvas("cQuarkJet","cQuarkJet", 0, 0, 800, 600)
-			c_Hist.SetTitle(" ; pt; eta")
+			c_Hist.SetTitle("c quark b tagging efficiency ; pt; eta")
 			c_Hist.Draw("colz")
 			c_Canvas.Update()
 			c_Canvas.SaveAs("plots/cQuarkJet_"+generator+"_BTagEfficiency.png")
 			
 			udsg_Canvas = TCanvas("udsgQuarkJet","udsgQuarkJet", 0, 0, 800, 600)
-			udsg_Hist.SetTitle(" ; pt; eta")
+			udsg_Hist.SetTitle("udsg quark b tagging efficiency ; pt; eta")
 			udsg_Hist.Draw("colz")
 			udsg_Canvas.Update()
 			udsg_Canvas.SaveAs("plots/udsgQuarkJet_"+generator+"_BTagEfficiency.png")
