@@ -4,48 +4,42 @@
 
 Python scripts for the daily tasks in particle physics (*Run 2*) - Daily Python Scripts (aka DPS)
 
-Quick installation recipe:
+Setting up conda environment (you can skip this step on soolin or DICE):
 ```
-# get the code from the repository
-git clone https://github.com/BristolTopGroup/DailyPythonScripts
-cd DailyPythonScripts
-
-# for Run 1 code, please checkout the run1 branch
-# git checkout run1
-
-# get submodules:
-git submodule init && git submodule update
-
-# setup run:
-source setup_conda.sh
-
-# setup environment (using virtualenv for python):
-source environment_conda.sh
-
-# make sure matplotlib is up to date (should return 1.3.1 or above):
-python -c 'import matplotlib; print matplotlib.__version__'
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+# follow instructions
+export CONDAINSTALL=<path to miniconda install>
+export PATH="$CONDAINSTALL/miniconda/bin:$PATH"
+export ENVNAME=dps
+conda update -q conda
+conda install -q psutil
+conda config --add channels http://conda.anaconda.org/NLeSC
+conda config --set show_channel_urls yes
+conda create -q -n $ENVNAME python=2.7 root=6 root-numpy numpy matplotlib nose sphinx pytables rootpy
+export CONDA_ENV_PATH=$CONDAINSTALL/miniconda/envs/$ENVNAME
+source activate $ENVNAME
+pip install -U uncertainties
 ```
 
 If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
-
 ```
-# install CMSSW and setup environment:
-export SCRAM_ARCH=slc6_amd64_gcc491
-scram p -n CMSSW_7_4_7_DPS_ CMSSW_7_4_7
-cd CMSSW_7_4_7_DPS/src/
-cmsenv
-# This version comes with ROOT 6.02/05
-
-# then install DailyPythonScripts according to the recipe above
-
+export CONDA_ENV_PATH=/software/miniconda/envs/dps-new
+source activate dps-new # This version comes with ROOT 6.04
+git clone https://github.com/BristolTopGroup/DailyPythonScripts
+cd DailyPythonScripts
+export PYTHONPATH=$PYTHONPATH:`pwd`
+export PATH=$PATH:$base/bin
+# make sure matplotlib is up to date (should return 1.5.1 or above):
+python -c 'import matplotlib; print matplotlib.__version__'
 ```
 
 ## Dependencies
-[ROOT](http://root.cern.ch) &ge; 6.02
+[ROOT](http://root.cern.ch) &ge; 6.04
 
 [freetype](http://www.freetype.org)
 
-[matplotlib](http://matplotlib.org/) &ge; 1.3
+[matplotlib](http://matplotlib.org/) &ge; 1.5
 
 ## Disclaimer
 All plots/histograms provided by this package are based on either toy MC or simulated events from the CMS experiment.
@@ -57,8 +51,6 @@ config/* - files to save presets for available modules
 data/* - for input/output of ROOT & JSON files (will be created by some scripts)
 
 examples/* - generic examples for available modules
-
-external/* - external projects (virtualenv, RooUnfold, etc)
 
 plots/* - default output folder for plots (will be created by some scripts)
 
