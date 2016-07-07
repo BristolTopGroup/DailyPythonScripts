@@ -4,7 +4,20 @@
 
 Python scripts for the daily tasks in particle physics (*Run 2*) - Daily Python Scripts (aka DPS)
 
-Setting up conda environment (you can skip this step on soolin or DICE):
+If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
+```
+export PATH="/software/miniconda/bin:$PATH"
+export CONDA_ENV_PATH=/software/miniconda/envs/dps-new
+source activate dps-new # This version comes with ROOT 6.04
+git clone https://github.com/BristolTopGroup/DailyPythonScripts
+cd DailyPythonScripts
+export PYTHONPATH=$PYTHONPATH:`pwd`
+export PATH=$PATH:$base/bin
+# make sure matplotlib is up to date (should return 1.5.1 or above):
+python -c 'import matplotlib; print matplotlib.__version__'
+```
+
+Setting up conda environment on your own machine:
 ```
 wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
@@ -20,18 +33,6 @@ conda create -q -n $ENVNAME python=2.7 root=6 root-numpy numpy matplotlib nose s
 export CONDA_ENV_PATH=$CONDAINSTALL/miniconda/envs/$ENVNAME
 source activate $ENVNAME
 pip install -U uncertainties
-```
-
-If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
-```
-export CONDA_ENV_PATH=/software/miniconda/envs/dps-new
-source activate dps-new # This version comes with ROOT 6.04
-git clone https://github.com/BristolTopGroup/DailyPythonScripts
-cd DailyPythonScripts
-export PYTHONPATH=$PYTHONPATH:`pwd`
-export PATH=$PATH:$base/bin
-# make sure matplotlib is up to date (should return 1.5.1 or above):
-python -c 'import matplotlib; print matplotlib.__version__'
 ```
 
 ## Dependencies
