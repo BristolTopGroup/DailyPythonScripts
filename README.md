@@ -6,34 +6,19 @@ Python scripts for the daily tasks in particle physics (*Run 2*) - Daily Python 
 
 If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
 ```
-export PATH="/software/miniconda/bin:$PATH"
-export CONDA_ENV_PATH=/software/miniconda/envs/dps-new
-source activate dps-new # This version comes with ROOT 6.04
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 cd DailyPythonScripts
-export PYTHONPATH=$PYTHONPATH:`pwd`
-export PATH=$PATH:$base/bin
+source bin/env.sh
 # make sure matplotlib is up to date (should return 1.5.1 or above):
 python -c 'import matplotlib; print matplotlib.__version__'
+# test ROOT and rootpy
+root -l -q
+time python -c "import ROOT; ROOT.TBrowser()"
+time python -c 'import rootpy'
+time python -c 'from ROOT import kTRUE; import rootpy'
 ```
 
-Setting up conda environment on your own machine:
-```
-wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh
-# follow instructions
-export CONDAINSTALL=<path to miniconda install>
-export PATH="$CONDAINSTALL/miniconda/bin:$PATH"
-export ENVNAME=dps
-conda update -q conda
-conda install -q psutil
-conda config --add channels http://conda.anaconda.org/NLeSC
-conda config --set show_channel_urls yes
-conda create -q -n $ENVNAME python=2.7 root=6 root-numpy numpy matplotlib nose sphinx pytables rootpy
-export CONDA_ENV_PATH=$CONDAINSTALL/miniconda/envs/$ENVNAME
-source activate $ENVNAME
-pip install -U uncertainties
-```
+Setting up conda environment on your own machine, please have a look under the `Conda` section.
 
 ## Dependencies
 [ROOT](http://root.cern.ch) &ge; 6.04
@@ -105,3 +90,37 @@ x_make_control_plots
 x_make_fit_variable_plots
 ```
 (script AN-14-071 runs all of these scripts automatically if you are confident everything will run smoothly(!))
+
+## Conda
+DailyPythonScripts relies on a (mini)conda environment to provide all necessary dependencies. This section describes how to set up this environment from scratch.
+As a first step, download and install conda (you can skip this step if you are using a shared conda install, e.g. on soolin):
+```bash
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+export CONDAINSTALL=<path to miniconda install> # e.g. /software/miniconda
+bash miniconda.sh -b -p $CONDAINSTALL # or a different location
+```
+
+Next let us create a new conda environment with some base packages:
+```bash
+export PATH="$CONDAINSTALL/bin:$PATH"
+export ENV_NAME=dps
+export CONDA_ENV_PATH=$CONDAINSTALL/envs/${ENV_NAME}
+conda config --add channels http://conda.anaconda.org/NLeSC
+conda config --set show_channel_urls yes
+conda update -y conda
+conda install -y psutil
+conda create -y -n ${ENV_NAME} python=2.7 root=6 root-numpy numpy matplotlib nose sphinx pytables rootpy
+```
+Then activate the environment and install the remaining dependencies
+```bash
+source activate $ENV_NAME
+# install dependencies that have no conda recipe
+pip install -U uncertainties tabulate
+```
+At this point you should have all necessary dependencies which you can try out with:
+```bash
+root -l -q
+time python -c "import ROOT; ROOT.TBrowser()"
+time python -c 'import rootpy'
+time python -c 'from ROOT import kTRUE; import rootpy'
+```

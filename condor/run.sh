@@ -1,14 +1,7 @@
 #!/bin/bash
-export CONDAINSTALL=/software
-export PATH="$CONDAINSTALL/miniconda/bin:$PATH"
-export ENVNAME=dps-new
-export CONDA_ENV_PATH=$CONDAINSTALL/miniconda/envs/$ENVNAME
-
-source activate dps-new # This version comes with ROOT 6.04
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 cd DailyPythonScripts
-export PYTHONPATH=$PYTHONPATH:`pwd`
-export PATH=$PATH:$base/bin
+source bin/env.sh
 
 echo "Setting up DailyPythonScripts from tar file ..."
 echo "... getting ${git_branch} branch"
