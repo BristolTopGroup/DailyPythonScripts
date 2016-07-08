@@ -24,6 +24,7 @@ class XSectionConfig():
         'general_category_templates_trees',
         'generator_systematic_vjets_templates',
         'generator_systematics',
+        'generator_mcsamples',
         'higgs_category_templates', 'higgs_file',
         'include_higgs',
         'k_values_combined', 'k_values_electron', 'k_values_muon',
@@ -38,6 +39,7 @@ class XSectionConfig():
         'rebin', 'special_muon_histogram', 'translate_options',
         'ttbar_category_templates',
         'ttbar_category_templates_trees',
+        'ttbar_generator_category_templates_trees',
         'ttbar_theory_systematic_prefix', 'ttbar_xsection',
         'unfolding_central', 'unfolding_central_raw',
         'unfolding_powheg_pythia8', 'unfolding_powheg_pythia8_raw',
@@ -206,14 +208,15 @@ class XSectionConfig():
             'Muon_up':'MuonUp',
             'BJet_down':'BJetDown',
             'BJet_up':'BJetUp',
+            'LightJet_down':'LightJetDown',
+            'LightJet_up':'LightJetUp',
             'JES_down':'_JESDown',
             'JES_up':'_JESUp',
             # 'JES_down_alphaCorr':'_JESDown_alphaCorr',
             # 'JES_up_alphaCorr':'_JESUp_alphaCorr',
             'JER_down':'_JERDown',
             'JER_up':'_JERUp',
-            # 'LightJet_down':'_minusLightJet',
-            # 'LightJet_up':'_plusLightJet',
+
 
             'PileUpSystematic' : '',
 
@@ -239,6 +242,14 @@ class XSectionConfig():
             'massup', 'massdown',
             'hadronisation',
             'NLOgenerator'
+        ]
+
+        self.generator_mcsamples = [
+            'PowhegPythia8',
+            'powhegHerwigpp',
+            'amc',
+            'amcatnloHerwigpp',    
+            'madgraph'    
         ]
 
         self.k_values = {
@@ -294,6 +305,7 @@ class XSectionConfig():
         self.kValueSystematic = [ 'kValue_up', 'kValue_down']
 
         categories_and_prefixes = self.categories_and_prefixes
+        generator_mcsamples = self.generator_mcsamples
 
         # File Templates
         self.general_category_templates = {category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
@@ -310,9 +322,11 @@ class XSectionConfig():
         self.VJets_category_templates_trees = {category: path_to_files + '/VJets_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.electron_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Electron_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.muon_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Muon_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
+        self.ttbar_generator_category_templates_trees = {category: path_to_files + '/TTJets_' + category + '_tree.root' for category in generator_mcsamples}
         
         self.ttbar_amc_category_templates_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_category_templates_trees = path_to_files + '/TTJets_madgraph_tree.root'
+        self.ttbar_powhegpythia8_category_templates_trees = path_to_files + '/TTJets_powhegPythia8_tree.root'
         self.ttbar_powhegherwigpp_category_templates_trees = path_to_files + '/TTJets_powhegHerwigpp_tree.root'
         self.ttbar_amcatnloherwigpp_category_templates_trees = path_to_files + '/TTJets_amcatnloHerwigpp_tree.root'
         self.ttbar_scaleup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaleup_tree.root'
@@ -342,8 +356,8 @@ class XSectionConfig():
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
         self.unfolding_amcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnlo.root' % self.centre_of_mass_energy
         self.unfolding_madgraphMLM_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_madgraph.root' % self.centre_of_mass_energy
-        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_herwigpp.root' % self.centre_of_mass_energy
-        self.unfolding_amcatnlo_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_herwigpp.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegherwigpp.root' % self.centre_of_mass_energy
+        self.unfolding_amcatnlo_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnloherwigpp.root' % self.centre_of_mass_energy
 
         # Choose central MC Sample
         self.unfolding_central_raw = self.unfolding_powheg_pythia8_raw
@@ -381,6 +395,8 @@ class XSectionConfig():
         self.unfolding_jer_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jerup_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_bjet_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_bjetdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_bjet_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_bjetup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_lightjet_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_lightjetdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_lightjet_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_lightjetup_asymmetric.root' % self.centre_of_mass_energy
 
         self.unfolding_ElectronEn_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ElectronEnDown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_ElectronEn_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ElectronEnUp_asymmetric.root' % self.centre_of_mass_energy
@@ -442,7 +458,8 @@ class XSectionConfig():
                 ('JES_down', 'JES_up', 'JER_down', 'JER_up')
             ],
             'B-tagging' : [
-                ('BJet_down', 'BJet_up')
+                ('BJet_down', 'BJet_up'),
+                ('LightJet_down', 'LightJet_up')
             ],
             '\met' : [
                 ('ElectronEnDown', 'ElectronEnUp'), 
@@ -567,13 +584,13 @@ class XSectionConfig():
                    }
 
         self.tau_values_electron = {
-"NJets" : 7.01709784152e-05,
-"WPT" : 0.00405221546909,
-"lepton_pt" : 0.0018018584057,
-"abs_lepton_eta" : 9.04882514124e-06,
-"ST" : 0.00819214840909,
-"MET" : 0.00251365428441,
-"HT" : 0.00598912536223,
+"NJets" : 7.14289851984e-05,
+"WPT" : 0.00412403632721,
+"lepton_pt" : 0.0018054271566,
+"abs_lepton_eta" : 9.24702326429e-06,
+"ST" : 0.00831765143666,
+"MET" : 0.00256015359682,
+"HT" : 0.00602254137204,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -588,13 +605,13 @@ class XSectionConfig():
            }
 
         self.tau_values_muon = {
-"NJets" : 7.80818061768e-05,
-"WPT" : 0.00456749598096,
-"lepton_pt" : 0.0023203738699,
-"abs_lepton_eta" : 9.34057573916e-06,
-"ST" : 0.00949131291812,
-"MET" : 0.0027781136603,
-"HT" : 0.00723438444419,
+"NJets" : 8.00904290212e-05,
+"WPT" : 0.00475761126845,
+"lepton_pt" : 0.00242164061853,
+"abs_lepton_eta" : 9.61561880023e-06,
+"ST" : 0.00972730152042,
+"MET" : 0.00290173731922,
+"HT" : 0.00740965179358,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -608,15 +625,13 @@ class XSectionConfig():
             "ttbarRap" : 236.448941265,
         }
         self.tau_values_combined = {
-"NJets" : 5.25335153942e-05,
-"WPT" : 0.00305416528307,
-"lepton_pt" : 0.00144311408625,
-"abs_lepton_eta" : 6.65419197707e-06,
-"ST" : 0.00626425547204,
-"MET" : 0.000143301257024,
-"HT" : 0.00468724990318,
-
-
+"NJets" : 5.36127675343e-05,
+"WPT" : 0.00314702299339,
+"lepton_pt" : 0.00147570139616,
+"abs_lepton_eta" : 6.80304236095e-06,
+"ST" : 0.00639445248766,
+"MET" : 0.00193179941017,
+"HT" : 0.00475657045286,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,

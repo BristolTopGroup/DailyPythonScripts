@@ -4,15 +4,16 @@ import os
 
 jobs = [
         # # # 13 TeV
-        '--centreOfMassEnergy 13 -f',
+        # '--centreOfMassEnergy 13 -f',
 
-        # '--centreOfMassEnergy 13 -s central',
+        '--centreOfMassEnergy 13 -s central',
         '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
         '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
 
         '--centreOfMassEnergy 13 -s amcatnlo',
         '--centreOfMassEnergy 13 -s madgraph',
-        # '--centreOfMassEnergy 13 -s herwigpp',
+        '--centreOfMassEnergy 13 -s powhegherwigpp',
+        '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
         # # # PS scale samples
         # # '--centreOfMassEnergy 13 -s scaleup',
@@ -36,6 +37,9 @@ jobs = [
         '--centreOfMassEnergy 13 -s bjetup',
         '--centreOfMassEnergy 13 -s bjetdown',
 
+        '--centreOfMassEnergy 13 -s lightjetup',
+        '--centreOfMassEnergy 13 -s lightjetdown',
+
         '--centreOfMassEnergy 13 -s pileupSystematic',
 
         '--centreOfMassEnergy 13 -s ElectronEnUp',
@@ -51,7 +55,7 @@ jobs = [
 nPDFPerJob = 1
 minPDF = 9
 maxPDF = 109
-variation = 9
+variation = minPDF
 while variation < maxPDF :
     nForThisJob = nPDFPerJob
     if variation + nPDFPerJob > maxPDF:

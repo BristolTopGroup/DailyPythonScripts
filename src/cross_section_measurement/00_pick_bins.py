@@ -48,7 +48,7 @@ from config import XSectionConfig
 from optparse import OptionParser
 from config.variable_binning import bin_edges_full, minimum_bin_width
 from tools.file_utilities import write_data_to_JSON
-
+from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray
 def main():
     '''
     Step 1: Get the 2D histogram for every sample (channel and/or centre of mass energy)
@@ -64,6 +64,8 @@ def main():
                       help = "Combine channels" )
     ( options, _ ) = parser.parse_args()
 
+    measurement_config = XSectionConfig(13)
+
     p_min = 0.6 # 0.5 for MET
     s_min = 0.6
     # we also want the statistical error to be larger than 5%
@@ -73,8 +75,11 @@ def main():
 #     n_min = 200 # N = 200 -> 7.1 % stat error
      
     bin_choices = {}
-    variables = bin_edges_full.keys()
+    # variables = bin_edges_full.keys()
+    variables = measurement_config.variables
     for variable in variables:
+        global var
+        var=variable
         print('--- Doing variable',variable)
         variableToUse = variable
         if 'Rap' in variable:
@@ -192,7 +197,6 @@ def get_histograms( variable, options ):
         f.close()
 
     return histogram_information
-    
 
 def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None ):
     '''
@@ -208,7 +212,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
     current_bin_start = 0
     current_bin_end = 0
         
-
     first_hist = histograms[0]
     n_bins = first_hist.GetNbinsX()
     if x_min:
@@ -239,16 +242,48 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
             purities = calculate_purities( new_hist.Clone() )
             stabilities = calculate_stabilities( new_hist.Clone() )
             n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
+        
         info['p_i'] = purities
         info['s_i'] = stabilities
         info['N'] = n_events
         
     return bin_edges, histogram_information
 
- 
+def get_bin_resolution( fine_binned_response , bin_middle ):
+    gen_resolution = 0
+    reco_resolution = 0
+
+    reco_array = TObjArray()
+    gen_array = TObjArray()
+
+    # produces 4 TH1D histograms
+    # 0 : constant
+    # 1 : mean
+    # 2 : sigma
+    # 3 : chi-squared of it
+    gen_slices = fine_binned_response.FitSlicesY(0, bin_middle, bin_middle, 1, "Q", gen_array)
+    # for hist in gen_array:
+    #     print (type(hist))
+    # print("Gen Sigma : ", gen_array[2].GetBinContent(bin_middle))
+    # print("Gen Mean : ", gen_array[1].GetBinContent(bin_middle))
+    # print("Gen Constant : ", gen_array[0].GetBinContent(bin_middle))
+    gen_resolution = gen_array[2].GetBinContent(bin_middle)
+
+    reco_slices = fine_binned_response.FitSlicesX(0, bin_middle, bin_middle, 1, "Q", reco_array) 
+    # for hist in reco_array:
+    #     print (type(hist))
+    # print("Reco Sigma : ", reco_array[2].GetBinContent(bin_middle))
+    # print("Reco Mean : ", reco_array[1].GetBinContent(bin_middle))
+    # print("Reco Constant : ", reco_array[0].GetBinContent(bin_middle))
+    reco_resolution = reco_array[2].GetBinContent(bin_middle)
+
+    resolution = max(gen_resolution, reco_resolution)
+    return resolution
+
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width ): 
     current_bin_start = bin_start
     current_bin_end = bin_end
+
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
         gen = asrootpy( gen_vs_reco_histogram.ProjectionY( 'py', 1 ) )
@@ -279,13 +314,30 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 p = round( n_gen_and_reco / n_reco, 3 )
             if n_gen > 0:
                 s = round( n_gen_and_reco / n_gen, 3 )
+
+
             # find the bin range that matches
             # print('New bin : ',current_bin_start,current_bin_end,p,s
+
             if p >= p_min and s >= s_min and n_reco >= n_min:
-                current_bin_end = bin_i
-                break
+                # Now that purity and stability are statisfied... What about the resolution?
+                # Find slices of X and Y between bin edges and fit them with a Gaussian. 
+                # The StdDev of Gaussian = Resolution.
+                # If Resolution < Bin width then we are all good
+
+                # Choose the middle fine bin of the total bin width as the resolution
+                current_bin_mid = int((bin_start+current_bin_end)/2)
+
+                resolution = get_bin_resolution( gen_vs_reco_histogram, current_bin_mid)
+                # print ("Max Resolution : ", resolution)
+                # print ("Bin Width : ", binWidth)
+                if (binWidth > 2*resolution) :
+                    current_bin_end = bin_i
+                    break
+
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
+
     return current_bin_end, p, s, n_reco
 
 def print_console(info, old_purities, old_stabilities, print_old = False):

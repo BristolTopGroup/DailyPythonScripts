@@ -2,13 +2,13 @@ import os
 from optparse import OptionParser
 
 vars = [
-	'MET',
-	'HT',
-	'ST',
-	'WPT',
-	'NJets',
-	'lepton_pt',
-	'abs_lepton_eta',
+	# 'MET',
+	# 'HT',
+	# 'ST',
+	# 'WPT',
+	# 'NJets',
+	# 'lepton_pt',
+	# 'abs_lepton_eta',
 
 	'MET --visiblePS',
 	'HT --visiblePS',

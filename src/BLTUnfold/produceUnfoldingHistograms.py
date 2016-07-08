@@ -38,6 +38,8 @@ def getFileName( com, sample, measurementConfig ) :
                         'central' : measurementConfig.ttbar_category_templates_trees['central'],
                         'amcatnlo' : measurementConfig.ttbar_amc_category_templates_trees,
                         'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
+                        'powhegherwigpp' : measurementConfig.ttbar_powhegherwigpp_category_templates_trees,
+                        'amcatnloherwigpp' : measurementConfig.ttbar_amcatnloherwigpp_category_templates_trees,
                         'scaleup' : measurementConfig.ttbar_scaleup_category_templates_trees,
                         'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
                         'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
@@ -48,8 +50,8 @@ def getFileName( com, sample, measurementConfig ) :
                         'jerup' : measurementConfig.ttbar_jerup_category_templates_trees,
                         'bjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'bjetup' : measurementConfig.ttbar_category_templates_trees['central'],
-                        # 'lightjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        # 'lightjetup' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'lightjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'lightjetup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'leptondown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'leptonup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'pileupSystematic' : measurementConfig.ttbar_category_templates_trees['central'],
@@ -100,9 +102,12 @@ def main():
         print "Error: Unrecognised centre of mass energy."
 
     generatorWeightsToRun = []
+    # nGeneratorWeights = How many PDF weights do you want to run in 1 job (specified in runJobsCrab.py)
     if options.nGeneratorWeights > 1 :
         for i in range (0, options.nGeneratorWeights):
             generatorWeightsToRun.append( options.generatorWeight + i )
+    # generatorWeights = 1 for PDF Variations
+    # generatorWeights either 4 or 8 for alpha_s, renormalisation, hadronisation
     elif options.generatorWeight >= 0 :
         generatorWeightsToRun.append(options.generatorWeight)
     else: generatorWeightsToRun.append( -1 )
@@ -158,6 +163,7 @@ def main():
                 # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
                 allVariablesBins = bin_edges_vis.copy()
                 for variable in bin_edges_vis:
+
                     if 'Rap' in variable:
                         allVariablesBins['abs_%s' % variable] = [0,bin_edges_vis[variable][-1]]
 
@@ -198,14 +204,16 @@ def main():
                             recoVariableName += '_METUncertainties'
                             sysIndex = measurement_config.met_systematics[options.sample]
 
-                    genVariable_particle_name = genBranchNames_particle[variable]
-                    genVariable_parton = None
+                    genVariable_particle_name = None
+                    genVariable_parton_name = None
+                    if variable in genBranchNames_particle:
+                        genVariable_particle_name = genBranchNames_particle[variable]
                     if variable in genBranchNames_parton:
-                        genVariable_parton = genBranchNames_parton[variable]
+                        genVariable_parton_name = genBranchNames_parton[variable]
 
                     recoVariableNames[variable] = recoVariableName
                     genVariable_particle_names[variable] = genVariable_particle_name
-                    genVariable_parton_names[variable] = genVariable_parton
+                    genVariable_parton_names[variable] = genVariable_parton_name 
 
                     for channel in channels:
                         # Make dir in output file
@@ -231,9 +239,7 @@ def main():
                         # 2D histograms
                         h['response'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response')
                         h['response_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes')
-
                         h['responseVis_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='responseVis_without_fakes')
-
                         h['response_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
                         h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
 
@@ -298,6 +304,7 @@ def main():
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
+                    # if n == 100000: break
                     # # #
                     # # # Weights and selection
                     # # #
@@ -327,12 +334,10 @@ def main():
                         bjetWeight = event.BJetUpWeight
                     elif options.sample == "bjetdown":
                         bjetWeight = event.BJetDownWeight
-
-                    # # lightjetWeight = "LightJetWeight"
-                    # # if options.sample == "lightjetup":
-                    # #     lightjetWeight = "LightJetUpWeight"
-                    # # elif options.sample == "lightjetdown":
-                    # #     lightjetWeight = "LightJetDownWeight"
+                    elif options.sample == "lightjetup":
+                        bjetWeight = event.LightJetUpWeight
+                    elif options.sample == "lightjetdown":
+                        bjetWeight = event.LightJetDownWeight
 
                     offlineWeight = event.EventWeight * measurement_config.luminosity_scale
                     offlineWeight *= pileupWeight
@@ -390,6 +395,7 @@ def main():
                         for variable in allVariablesBins:
                             if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                                 continue
+
                             # # #
                             # # # Variable to plot
                             # # #
@@ -407,7 +413,6 @@ def main():
                             #     print 'Setting to :',min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
                             if not options.fineBinned:
                                 recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
-
                             genVariable_particle = branch(genVariable_particle_names[variable])
                             if 'abs' in variable:
                                 genVariable_particle = abs(genVariable_particle)
@@ -436,6 +441,8 @@ def main():
                                     histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
                                 elif genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
+                                    # if genVariable_particle < 0 : print recoVariable, genVariable_particle
+                                    # if genVariable_particle < 0 : print genVariable_particle
 
                                 if offlineSelection and genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
@@ -454,9 +461,6 @@ def main():
                                         histogramsToFill['genWeightHist'].Fill(genWeight)
                                         histogramsToFill['offlineWeightHist'].Fill(offlineWeight)
 
-
-
-
                 #
                 # Output histgorams to file
                 #
@@ -465,7 +469,6 @@ def main():
                         continue
                     for channel in channels:
 
-                        
                         # Fill phase space info
                         h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
                         h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])

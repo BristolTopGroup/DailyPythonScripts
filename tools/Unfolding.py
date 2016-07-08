@@ -72,6 +72,7 @@ class Unfolding:
                                                   TUnfold.kRegModeCurvature,
                                                 )
               self.unfoldObject.SetInput( self.data, 1.0 )
+
               # self.unfoldObject.ScanLcurve( 30, 0, 0 )
 
     def unfold( self ):
