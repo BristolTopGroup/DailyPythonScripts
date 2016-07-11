@@ -22,12 +22,20 @@ class channel:
         pass
     pass
 
+def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
+    if whichWayToWeight == -1 :
+        return max ( (-0.24 * abs(lepTopRap) + 1.24) * (-0.24 * abs(hadTopRap) + 1.24), 0.1 )
+    elif whichWayToWeight == 1 :
+        return max ( ( 0.24 * abs(lepTopRap) + 0.76) * ( 0.24 * abs(hadTopRap) + 0.76), 0.1 )
+    else :
+        return 1
+
 def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     # return max ( ( 1 - ( lepTopPt - 100 ) / 500 ) * ( 1 - ( hadTopPt - 100 ) / 500 ) , 0.1 )
     if whichWayToWeight == -1 :
-        return max ( (-0.001 * lepTopPt + 1.2 ) * (-0.001 * hadTopPt + 1.2), 0.1 )
+        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
     elif whichWayToWeight == 1 :
-        return max ( (0.001 * lepTopPt + 0.8 ) * (0.001 * hadTopPt + 0.8), 0.1 )
+        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
     else :
         return 1
 
@@ -78,6 +86,7 @@ def main():
     
     parser = OptionParser()
     parser.add_option('--topPtReweighting', dest='applyTopPtReweighting', type='int', default=0 )
+    parser.add_option('--topEtaReweighting', dest='applyTopEtaReweighting', type='int', default=0 )
     parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
     parser.add_option('--generatorWeight', type='int', dest='generatorWeight', default=-1 )
     parser.add_option('--nGeneratorWeights', type='int', dest='nGeneratorWeights', default=1 )
@@ -101,6 +110,8 @@ def main():
     else:
         print "Error: Unrecognised centre of mass energy."
 
+    print options.nGeneratorWeights
+
     generatorWeightsToRun = []
     # nGeneratorWeights = How many PDF weights do you want to run in 1 job (specified in runJobsCrab.py)
     if options.nGeneratorWeights > 1 :
@@ -120,7 +131,12 @@ def main():
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
 
     for meWeight in generatorWeightsToRun :
-        if options.applyTopPtReweighting != 0:
+        if options.applyTopEtaReweighting != 0:
+            if options.applyTopEtaReweighting == 1:
+                outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_up.root' % energySuffix
+            elif options.applyTopEtaReweighting == -1:
+                outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_down.root' % energySuffix
+        elif options.applyTopPtReweighting != 0:
             if options.applyTopPtReweighting == 1:
                 outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
             elif options.applyTopPtReweighting == -1:
@@ -138,6 +154,8 @@ def main():
         else:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
 
+        print options.sample
+
         with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
             
                 # Get the tree
@@ -153,7 +171,6 @@ def main():
 
                 tree = f.Get(treeName)
                 nEntries = tree.GetEntries()
-    
                 # weightTree = f.Get('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
                 # if meWeight >= 0 :
                 #     tree.AddFriend('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
@@ -173,6 +190,7 @@ def main():
                 genVariable_parton_names = {}
                 histograms = {}
                 outputDirs = {}
+
                 for variable in allVariablesBins:
                     if options.debug and variable != 'HT' : continue
 
@@ -301,6 +319,9 @@ def main():
                 # Event Loop
                 # for event, weight in zip(tree,weightTree):
                 for event in tree:
+
+                    if n>3500000:
+                        break
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
@@ -353,6 +374,11 @@ def main():
 
                     if options.applyTopPtReweighting != 0:
                         ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
+                        offlineWeight *= ptWeight
+                        genWeight *= ptWeight
+                    
+                    if options.applyTopEtaReweighting != 0:
+                        ptWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), options.applyTopEtaReweighting)
                         offlineWeight *= ptWeight
                         genWeight *= ptWeight
 
