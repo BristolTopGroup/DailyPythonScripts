@@ -31,7 +31,6 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
         return 1
 
 def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
-    # return max ( ( 1 - ( lepTopPt - 100 ) / 500 ) * ( 1 - ( hadTopPt - 100 ) / 500 ) , 0.1 )
     if whichWayToWeight == -1 :
         return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
     elif whichWayToWeight == 1 :
@@ -320,7 +319,7 @@ def main():
                 # for event, weight in zip(tree,weightTree):
                 for event in tree:
 
-                    if n>3500000:
+                    if n>3800000:
                         break
                     branch = event.__getattr__
                     n+=1
@@ -378,9 +377,9 @@ def main():
                         genWeight *= ptWeight
                     
                     if options.applyTopEtaReweighting != 0:
-                        ptWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), options.applyTopEtaReweighting)
-                        offlineWeight *= ptWeight
-                        genWeight *= ptWeight
+                        etaWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), options.applyTopEtaReweighting)
+                        offlineWeight *= etaWeight
+                        genWeight *= etaWeight
 
                     for channel in channels:
                         # Generator level selection
@@ -450,10 +449,8 @@ def main():
 
                                 if genSelection:
                                     histogramsToFill['truth'].Fill( genVariable_particle, genWeight)
-
                                 if genSelectionVis:
                                     histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
-
                                 if offlineSelection:
                                     histogramsToFill['measured'].Fill( recoVariable, offlineWeight)
                                     histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight)
@@ -462,22 +459,18 @@ def main():
                                     if genSelection:
                                         histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight)
                                     histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight )
-
                                 if offlineSelection and genSelection:
-                                    histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
+                                    histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight ) 
                                 elif genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
                                     # if genVariable_particle < 0 : print recoVariable, genVariable_particle
                                     # if genVariable_particle < 0 : print genVariable_particle
-
                                 if offlineSelection and genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
                                 elif genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
-
                                 if fakeSelection:
                                     histogramsToFill['fake'].Fill( recoVariable, offlineWeight)
-
                                 if fakeSelectionVis:
                                     histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight)
 

@@ -15,10 +15,12 @@ def main():
 
 	config = XSectionConfig(13)
 
-	file_for_powhegPythia  = File(config.unfolding_central, 'read')
-	file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
-	file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
-	file_for_data_template = 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_combined_patType1CorrectedPFMet.txt'
+	file_for_powhegPythia  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root', 'read')
+	file_for_ptReweight_up  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting_up.root', 'read')
+	file_for_ptReweight_down  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting_down.root', 'read')
+	file_for_etaReweight_up = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopEtaReweighting_up.root', 'read')
+	file_for_etaReweight_down = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopEtaReweighting_down.root', 'read')
+	file_for_data_template = '/hdfs/TopQuarkGroup/run2/dpsData/25ns/data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_combined_patType1CorrectedPFMet.txt'
 
 
 
@@ -41,7 +43,7 @@ def main():
 
 
 			# Get the reweighted powheg pythia distributions
-			_, _, response_reweighted_up, _ = get_unfold_histogram_tuple(
+			_, _, response_pt_reweighted_up, _ = get_unfold_histogram_tuple(
 				inputfile=file_for_ptReweight_up,
 				variable=variable,
 				channel=channel,
@@ -50,10 +52,10 @@ def main():
 				visiblePS=True
 			)
 
-			measured_reweighted_up = asrootpy(response_reweighted_up.ProjectionX('px',1))
-			truth_reweighted_up = asrootpy(response_reweighted_up.ProjectionY())
+			measured_pt_reweighted_up = asrootpy(response_pt_reweighted_up.ProjectionX('px',1))
+			truth_pt_reweighted_up = asrootpy(response_pt_reweighted_up.ProjectionY())
 
-			_, _, response_reweighted_down, _ = get_unfold_histogram_tuple(
+			_, _, response_pt_reweighted_down, _ = get_unfold_histogram_tuple(
 				inputfile=file_for_ptReweight_down,
 				variable=variable,
 				channel=channel,
@@ -61,9 +63,33 @@ def main():
 				load_fakes=False,
 				visiblePS=True
 			)
+				
+			measured_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionX('px',1))
+			truth_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionY())
+			
+			_, _, response_eta_reweighted_up, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_etaReweight_up,
+				variable=variable,
+				channel=channel,
+				centre_of_mass=13,
+				load_fakes=False,
+				visiblePS=True
+			)
 
-			measured_reweighted_down = asrootpy(response_reweighted_down.ProjectionX('px',1))
-			truth_reweighted_down = asrootpy(response_reweighted_down.ProjectionY())
+			measured_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionX('px',1))
+			truth_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionY())
+
+			_, _, response_eta_reweighted_down, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_etaReweight_down,
+				variable=variable,
+				channel=channel,
+				centre_of_mass=13,
+				load_fakes=False,
+				visiblePS=True
+			)
+
+			measured_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionX('px',1))
+			truth_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionY())
 
 			# Get the data input (data after background subtraction, and fake removal)
 			file_for_data = file_for_data_template.format( variable = variable )
@@ -89,18 +115,22 @@ def main():
 			hp.title = 'Reweighting check for {variable}'.format(variable=v_latex)
 
 			measured_central.Rebin(2)
-			measured_reweighted_up.Rebin(2)
-			measured_reweighted_down.Rebin(2)
+			measured_pt_reweighted_up.Rebin(2)
+			measured_pt_reweighted_down.Rebin(2)
+			measured_eta_reweighted_up.Rebin(2)
+			measured_eta_reweighted_down.Rebin(2)
 			data.Rebin(2)
 
 			measured_central.Scale( 1 / measured_central.Integral() )
-			measured_reweighted_up.Scale( 1 / measured_reweighted_up.Integral() )
-			measured_reweighted_down.Scale( 1 / measured_reweighted_down.Integral() )
+			measured_pt_reweighted_up.Scale( 1 / measured_pt_reweighted_up.Integral() )
+			measured_pt_reweighted_down.Scale( 1 / measured_pt_reweighted_down.Integral() )
+			measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
+			measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
 
 			data.Scale( 1 / data.Integral() )
 
 			compare_measurements(
-					models = {'Central' : measured_central, 'Reweighted Up' : measured_reweighted_up, 'Reweighted Down' : measured_reweighted_down},
+					models = {'Central' : measured_central, 'PtReweighted Up' : measured_pt_reweighted_up, 'PtReweighted Down' : measured_pt_reweighted_down, 'EtaReweighted Up' : measured_eta_reweighted_up, 'EtaReweighted Down' : measured_eta_reweighted_down},
 					measurements = {'Data' : data},
 					show_measurement_errors=True,
 					histogram_properties=hp,
