@@ -22,12 +22,19 @@ class channel:
         pass
     pass
 
-def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
-    # return max ( ( 1 - ( lepTopPt - 100 ) / 500 ) * ( 1 - ( hadTopPt - 100 ) / 500 ) , 0.1 )
+def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
     if whichWayToWeight == -1 :
-        return max ( (-0.001 * lepTopPt + 1.2 ) * (-0.001 * hadTopPt + 1.2), 0.1 )
+        return max ( (-0.24 * abs(lepTopRap) + 1.24) * (-0.24 * abs(hadTopRap) + 1.24), 0.1 )
     elif whichWayToWeight == 1 :
-        return max ( (0.001 * lepTopPt + 0.8 ) * (0.001 * hadTopPt + 0.8), 0.1 )
+        return max ( ( 0.24 * abs(lepTopRap) + 0.76) * ( 0.24 * abs(hadTopRap) + 0.76), 0.1 )
+    else :
+        return 1
+
+def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
+    if whichWayToWeight == -1 :
+        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
+    elif whichWayToWeight == 1 :
+        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
     else :
         return 1
 
@@ -78,6 +85,7 @@ def main():
     
     parser = OptionParser()
     parser.add_option('--topPtReweighting', dest='applyTopPtReweighting', type='int', default=0 )
+    parser.add_option('--topEtaReweighting', dest='applyTopEtaReweighting', type='int', default=0 )
     parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
     parser.add_option('--generatorWeight', type='int', dest='generatorWeight', default=-1 )
     parser.add_option('--nGeneratorWeights', type='int', dest='nGeneratorWeights', default=1 )
@@ -120,7 +128,12 @@ def main():
     energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
 
     for meWeight in generatorWeightsToRun :
-        if options.applyTopPtReweighting != 0:
+        if options.applyTopEtaReweighting != 0:
+            if options.applyTopEtaReweighting == 1:
+                outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_up.root' % energySuffix
+            elif options.applyTopEtaReweighting == -1:
+                outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_down.root' % energySuffix
+        elif options.applyTopPtReweighting != 0:
             if options.applyTopPtReweighting == 1:
                 outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
             elif options.applyTopPtReweighting == -1:
@@ -153,7 +166,6 @@ def main():
 
                 tree = f.Get(treeName)
                 nEntries = tree.GetEntries()
-    
                 # weightTree = f.Get('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
                 # if meWeight >= 0 :
                 #     tree.AddFriend('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
@@ -173,6 +185,7 @@ def main():
                 genVariable_parton_names = {}
                 histograms = {}
                 outputDirs = {}
+
                 for variable in allVariablesBins:
                     if options.debug and variable != 'HT' : continue
 
@@ -355,6 +368,11 @@ def main():
                         ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
                         offlineWeight *= ptWeight
                         genWeight *= ptWeight
+                    
+                    if options.applyTopEtaReweighting != 0:
+                        etaWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), options.applyTopEtaReweighting)
+                        offlineWeight *= etaWeight
+                        genWeight *= etaWeight
 
                     for channel in channels:
                         # Generator level selection
@@ -424,10 +442,8 @@ def main():
 
                                 if genSelection:
                                     histogramsToFill['truth'].Fill( genVariable_particle, genWeight)
-
                                 if genSelectionVis:
                                     histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
-
                                 if offlineSelection:
                                     histogramsToFill['measured'].Fill( recoVariable, offlineWeight)
                                     histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight)
@@ -436,22 +452,18 @@ def main():
                                     if genSelection:
                                         histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight)
                                     histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight )
-
                                 if offlineSelection and genSelection:
-                                    histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
+                                    histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight ) 
                                 elif genSelection:
                                     histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
                                     # if genVariable_particle < 0 : print recoVariable, genVariable_particle
                                     # if genVariable_particle < 0 : print genVariable_particle
-
                                 if offlineSelection and genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
                                 elif genSelectionVis:
                                     histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
-
                                 if fakeSelection:
                                     histogramsToFill['fake'].Fill( recoVariable, offlineWeight)
-
                                 if fakeSelectionVis:
                                     histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight)
 

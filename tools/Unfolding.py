@@ -4,12 +4,12 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 from ROOT import gSystem, cout, TDecompSVD
-import config.RooUnfold as unfoldCfg
+# import config.RooUnfold as unfoldCfg
 from tools.ROOT_utils import set_root_defaults
 set_root_defaults( set_batch = True, msg_ignore_level = 3001 )
 from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
-gSystem.Load( unfoldCfg.library )
-from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
+# gSystem.Load( unfoldCfg.library )
+# from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import TUnfoldDensity, TUnfold
 from ROOT import TH2D, TH1D, TGraph
 from rootpy import asrootpy
@@ -25,15 +25,15 @@ class Unfolding:
                  response,
                  fakes = None,
                  method = 'RooUnfoldSvd',
-                 tau = unfoldCfg.SVD_tau_value,
-                 k_value = unfoldCfg.SVD_k_value,
-                 n_toy = unfoldCfg.SVD_n_toy,
-                 Bayes_n_repeat = unfoldCfg.Bayes_n_repeat,
-                 error_treatment = unfoldCfg.error_treatment,
+                 tau = -1,#unfoldCfg.SVD_tau_value,
+                 k_value = 0,#unfoldCfg.SVD_k_value,
+                 n_toy = 1000,#unfoldCfg.SVD_n_toy,
+                 Bayes_n_repeat = 4,#unfoldCfg.Bayes_n_repeat,
+                 error_treatment = 3,#unfoldCfg.error_treatment,
                  measured_truth_without_fakes = None,
                  verbose = 0 ):
-        if not method in unfoldCfg.availablemethods:
-            raise ValueError( 'Unknown unfolding method "%s". Available methods: %s' % ( method, str( unfoldCfg.availablemethods ) ) )
+        # if not method in unfoldCfg.availablemethods:
+        #     raise ValueError( 'Unknown unfolding method "%s". Available methods: %s' % ( method, str( unfoldCfg.availablemethods ) ) )
         self.method = method
         self.truth = truth
         self.measured = measured
