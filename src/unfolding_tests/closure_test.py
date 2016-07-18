@@ -21,14 +21,14 @@ def main():
     config = XSectionConfig(13)
     method = 'TUnfold'
 
-    file_for_response = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root', 'read')
-    file_for_powhegPythia  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root', 'read')
-    #file_for_madgraph  = File(config.unfolding_madgraphMLM, 'read')
-    #file_for_amcatnlo  = File(config.unfolding_amcatnlo, 'read')
-    file_for_ptReweight_up  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting_up.root', 'read')
-    file_for_ptReweight_down  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting_down.root', 'read')
-    file_for_etaReweight_up = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopEtaReweighting_up.root', 'read')
-    file_for_etaReweight_down = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopEtaReweighting_down.root', 'read')
+    file_for_response = File(config.unfolding_central, 'read')
+    file_for_powhegPythia  = File(config.unfolding_central, 'read')
+    file_for_madgraph  = File(config.unfolding_madgraphMLM, 'read')
+    file_for_amcatnlo  = File(config.unfolding_amcatnlo, 'read')
+    file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
+    file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
+    file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
+    file_for_etaReweight_down = File(config.unfolding_etareweight_down, 'read')
 
     samples_and_files_to_compare = {
     'Central' : file_for_powhegPythia,

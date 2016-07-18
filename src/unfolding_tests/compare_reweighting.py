@@ -15,12 +15,12 @@ def main():
 
 	config = XSectionConfig(13)
 
-	file_for_powhegPythia  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric.root', 'read')
-	file_for_ptReweight_up  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting_up.root', 'read')
-	file_for_ptReweight_down  = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopPtReweighting_down.root', 'read')
-	file_for_etaReweight_up = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopEtaReweighting_up.root', 'read')
-	file_for_etaReweight_down = File('unfolding/13TeV/unfolding_TTJets_13TeV_asymmetric_withTopEtaReweighting_down.root', 'read')
-	file_for_data_template = '/hdfs/TopQuarkGroup/run2/dpsData/25ns/data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_combined_patType1CorrectedPFMet.txt'
+	file_for_powhegPythia  = File(config.unfolding_central, 'read')
+	file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
+	file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
+	file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
+	file_for_etaReweight_down = File(config.unfolding_etareweight_down, 'read')
+	file_for_data_template = 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_combined_patType1CorrectedPFMet.txt'
 
 
 

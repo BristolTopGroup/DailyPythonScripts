@@ -109,8 +109,6 @@ def main():
     else:
         print "Error: Unrecognised centre of mass energy."
 
-    print options.nGeneratorWeights
-
     generatorWeightsToRun = []
     # nGeneratorWeights = How many PDF weights do you want to run in 1 job (specified in runJobsCrab.py)
     if options.nGeneratorWeights > 1 :
@@ -152,8 +150,6 @@ def main():
             outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
         else:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
-
-        print options.sample
 
         with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
             
@@ -318,9 +314,6 @@ def main():
                 # Event Loop
                 # for event, weight in zip(tree,weightTree):
                 for event in tree:
-
-                    if n>3800000:
-                        break
                     branch = event.__getattr__
                     n+=1
                     if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
