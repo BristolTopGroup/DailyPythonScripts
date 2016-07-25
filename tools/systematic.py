@@ -422,6 +422,11 @@ def get_upper_lower_variations(options, all_normalised_measurements):
     return all_up_down_variations_measured, all_up_down_variations_unfolded
 
 def summarise_systematics(options, list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, experimentalUncertainty=False, mass_systematic = False, actualCentralMeasurements = [] ):
+    '''
+    Takes central measurements for each bin and a category of systematics. Calculates, per bin, the up and down variations 
+    of the combination of the systematics in that category of systematics.
+    Returns list of up/down errors in the form [Error 1, Error 2,...Error N] where Error N = combined up/down error in Bin N
+    '''
     symmetrise_errors = options['symmetrise_errors']
     # number of bins
 
@@ -718,6 +723,11 @@ def write_normalised_measurements(options, all_normalised_measurements, measurem
     return
 
 def get_type_of_variation(systematic_name):
+    '''
+    Returns +1 if systematic is a variation up
+    Returns -1 if systematic is a variation down
+    Returns 0 elsewise (systematic is symmetric)
+    '''
     variation=0
     if ("cross_section+" in systematic_name): variation=1
     elif ("luminosity+" in systematic_name): variation=1
