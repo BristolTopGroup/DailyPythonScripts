@@ -3,6 +3,7 @@ from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
 calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 from copy import deepcopy
+from math import sqrt
 
 def read_normalised_xsection_measurement(options, category):
     '''
@@ -31,7 +32,7 @@ def read_normalised_xsection_measurement(options, category):
             method = method
         )
     normalised_xsection = read_data_from_JSON( filename )
-    measurement = normalised_xsection['TTJet_measured']
+    measurement = normalised_xsection['TTJet_measured']#should this be measured without fakes???
     measurement_unfolded = normalised_xsection['TTJet_unfolded']
     return measurement, measurement_unfolded
   
@@ -88,7 +89,7 @@ def get_systematic_categories(options, measurement_config):
     ttbar_theory_systematic_prefix=options['ttbar_theory_systematic_prefix']
     vjets_theory_systematic_prefix=options['vjets_theory_systematic_prefix']
     met_systematics_suffixes=options['met_systematics_suffixes']
-    met_type=options['met_type']
+    # met_type=options['met_type']
 
     # SET UP SYSTEMATIC UNCERTAINTY LISTS
     # ttbar Generator Systematics
@@ -115,6 +116,7 @@ def get_systematic_categories(options, measurement_config):
 
     ttbar_hadronisation_systematic_list = [
         ttbar_theory_systematic_prefix + 'hadronisation', 
+        ttbar_theory_systematic_prefix + 'NLOgenerator', 
     ]
 
     ttbar_nlo_systematic_list = [
@@ -127,9 +129,9 @@ def get_systematic_categories(options, measurement_config):
     ]
 
     # all MET uncertainties except JES and JER as this is already included
-    met_uncertainties_list = [
-        met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix
-    ]
+    # met_uncertainties_list = [
+    #     met_type + suffix for suffix in met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix
+    # ]
 
     # rate changing systematics (luminosity, ttbar/single top cross section uncertainties)
     rate_changing_systematics_list = [
@@ -453,9 +455,19 @@ def get_upper_lower_variations(options, all_normalised_measurements):
 def summarise_systematics(options, list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, mass_systematic = False, experimentalUncertainty = False, actualCentralMeasurements = [] ):
     symmetrise_errors = options['symmetrise_errors']
     # number of bins
+
+    # TODO At the moment when retreiving up/down variations it combines all +ve variations and all -ve variations even if from massup/down are both +ve
+    # Split into paired syst - up/down
+    # And those that are symetric by nature like hadronisation
+
+    # PDF may be interesting - alternative up and down variations.
+
+
+
     number_of_bins = len( list_of_central_measurements )
     down_errors = [0] * number_of_bins
     up_errors = [0] * number_of_bins
+    list_of_systematics = {}
 
     for bin_i in range( number_of_bins ):
         central_value = list_of_central_measurements[bin_i][0]  # 0 = value, 1 = error
@@ -468,14 +480,16 @@ def summarise_systematics(options, list_of_central_measurements, dictionary_of_s
                 error_down = max( error_down, error_up )
                 error_up = max( error_down, error_up )
         elif hadronisation_systematic:
-            # always symmetric: absolute value of the difference between powheg_herwig and powheg_pythia
-            powheg_herwig = dictionary_of_systematics['TTJets_hadronisation'][bin_i][0]
             powheg_pythia = central_value
-            difference = powheg_herwig - powheg_pythia
-            difference = abs(difference)
-            error_down = difference
-            error_up = difference
-
+            for idex, systematic in dictionary_of_systematics.iteritems():
+                # choose which hadronisation systematic is needed : "TTJets_hadronisation" or "TTJets_NLOgenerator"
+                hadr_syst = dictionary_of_systematics[idex][bin_i][0]
+                # always symmetric: absolute value of the difference between hadronisation syst and central
+                difference = hadr_syst - powheg_pythia
+                difference = abs(difference)
+                error_down += difference**2
+            error_down=sqrt(error_down)
+            error_up=error_down
         elif mass_systematic:
             list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, False )
@@ -484,16 +498,30 @@ def summarise_systematics(options, list_of_central_measurements, dictionary_of_s
             error_down = error_down[0]
             error_up = error_up[0]
         elif experimentalUncertainty:
-            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
+            for systematic, value in dictionary_of_systematics.iteritems():
+                variation = get_type_of_variation(systematic)
+                # print(systematic)
+                # print(variation)
+
+                list_of_systematics[variation] = value[bin_i][0]
+            print (list_of_systematics.keys())
+            # list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
             actualCentralValue = actualCentralMeasurements[bin_i][0]
             error_down = error_down / central_value * actualCentralValue
             error_up = error_up / central_value * actualCentralValue
         else:
-            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
+            for systematic, value in dictionary_of_systematics.iteritems():
+                variation = get_type_of_variation(systematic)
+                list_of_systematics[variation] = value[bin_i][0]
+                # print(systematic)
+                # print(variation)
+            # list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
             error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
         down_errors[bin_i] = error_down
         up_errors[bin_i] = error_up
+
+    print(up_errors)
     
     return down_errors, up_errors
 
@@ -729,6 +757,26 @@ def write_normalised_measurements(options, all_normalised_measurements, measurem
         summary = 'experimental' 
     )
     return
+
+def get_type_of_variation(systematic_name):
+    variation=0
+
+
+    var = systematic_name[-2:-1]
+    if (var == "up"): variation=1
+    if (var == "Up"): variation=1
+
+    var = systematic_name[-1]
+    if (var == "+"): variation=1
+    if (var == "-"): variation=-1
+
+    var = systematic_name[-4:-1]
+    if (var == "down"): variation=-1
+    if (var == "Down"): variation=-1
+
+    return variation
+
+
 
 # def scaleTopMassSystematicErrors( error_down, error_up ):
 #     error_down_new, error_up_new = [], []

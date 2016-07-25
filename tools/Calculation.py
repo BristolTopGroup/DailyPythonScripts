@@ -135,7 +135,9 @@ def calculate_lower_and_upper_systematics(central_measurement, list_of_systemati
     '''
     negative_error = 0
     positive_error = 0
-    for systematic in list_of_systematics:
+    for variation, systematic in list_of_systematics.iteritems():
+        # print(variation)
+        # print(systematic)
         deviation = abs(systematic) - abs(central_measurement)
         
         if deviation > 0:
