@@ -1,0 +1,40 @@
+{
+    "command": "compare-hists", 
+    "files": [
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_8th_draft/8TeV/central/SingleElectron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    ],
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Binned_MET_Analysis/patType1CorrectedPFMet_bin_0-27/electron_absolute_eta_0btag",
+        "TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Binned_MET_Analysis/patType1CorrectedPFMet_bin_0-27/electron_absolute_eta_1btag",
+        "TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/Binned_MET_Analysis/patType1CorrectedPFMet_bin_0-27/electron_absolute_eta_2btags"
+    ],
+    "labels": [
+        "0 btag",
+        "1 btag",
+        "2 btags"
+    ], 
+    "output_folder": "plots/QCD_shape_e", 
+    "output_format": ["pdf"], 
+    "name_prefix": "compare_QCD_btag_regions_in_electron_abs_eta_",
+    "plot_type": "shape_comparison", 
+    "ratio_y_limits": [
+        [0.95, 1.05]
+    ], 
+    "title": [
+        "Comparison of electron $|\\eta|$ \\\\(QCD control regions: 0,1 and 2 btags) $\\sqrt{s}$ = 8 TeV"
+    ], 
+    "x_axis_title": [
+         "$|\\eta(e)|$"
+    ], 
+    "x_limits": [
+        [0, 3]
+    ],
+    "y_axis_title": [
+        "normalised to unit area"
+    ],
+    "y_limits": [
+        [0, 0.2]
+    ],
+    "colours": ["green", "yellow", "red"],
+    "normalise": 1
+}
