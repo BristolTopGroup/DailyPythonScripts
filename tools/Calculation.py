@@ -136,15 +136,19 @@ def calculate_lower_and_upper_systematics(central_measurement, list_of_systemati
     negative_error = 0
     positive_error = 0
     for variation, systematic in list_of_systematics.iteritems():
-        # print(variation)
-        # print(systematic)
-        deviation = abs(systematic) - abs(central_measurement)
-        
-        if deviation > 0:
+        systematic_value, up_or_down = systematic[0], systematic[1]
+        deviation = abs(systematic_value) - abs(central_measurement)
+
+        if up_or_down == 1:
             positive_error += deviation**2
-        else:
+        elif up_or_down == -1
             negative_error += deviation**2
-            
+        elif up_or_down == 0:
+            if deviation > 0:
+                positive_error += deviation**2
+            else:
+                negative_error += deviation**2
+
     negative_error = sqrt(negative_error)
     positive_error = sqrt(positive_error)
     
