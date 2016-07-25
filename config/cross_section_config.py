@@ -27,7 +27,6 @@ class XSectionConfig():
         'generator_mcsamples',
         'higgs_category_templates', 'higgs_file',
         'include_higgs',
-        'k_values_combined', 'k_values_electron', 'k_values_muon',
         'tau_values_electron', 'tau_values_muon',
         'known_centre_of_mass_energies', 'luminosities',
         'luminosity', 'luminosity_scale', 'met_systematics',
@@ -94,13 +93,9 @@ class XSectionConfig():
 
     def __fill_defaults__( self ):
         self.met_type = 'patType1CorrectedPFMet'
-        if self.centre_of_mass_energy != 13:
-            self.current_analysis_path = '/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_7th_draft/'
-            self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/'
-            self.path_to_unfolding_histograms = self.path_to_files + 'unfolding/'
-        else:
-            self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/25ns/'
-            self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/25ns/'
+
+        self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/25ns/'
+        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/25ns/'
 
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
@@ -109,18 +104,26 @@ class XSectionConfig():
 
         # general
         self.met_systematics = {
+            'JER_up' : 0,
+            'JER_down' : 1,
+            'JES_up' : 2,
+            'JES_down' : 3,
             'ElectronEnUp' : 6,
             'ElectronEnDown' : 7,
             'MuonEnUp' : 4,
             'MuonEnDown' : 5,
             'TauEnUp' : 8,
             'TauEnDown' : 9,
-            'JER_up' : 0,
-            'JER_down' : 1,
-            'JES_up' : 2,
-            'JES_down' : 3,
             'UnclusteredEnUp' : 10,
             'UnclusteredEnDown' : 11,
+            # 'ElectronEn_up' : 6,
+            # 'ElectronEn_down' : 7,
+            # 'MuonEn_up' : 4,
+            # 'MuonEn_down' : 5,
+            # 'TauEn_up' : 8,
+            # 'TauEn_down' : 9,
+            # 'UnclusteredEn_up' : 10,
+            # 'UnclusteredEn_down' : 11,
         }
 
         self.analysis_types = {
@@ -144,36 +147,6 @@ class XSectionConfig():
             # mettype:
             'pf':'PFMET',
             'type1':'patType1CorrectedPFMet',
-        }
-
-        self.fit_boundaries = {
-           'absolute_eta' : ( 0., 2.4 ),
-           'M3' : ( 0, 900 ),
-           'M_bl' : ( 0, 400 ),
-           'angle_bl' : ( 0, 4 ),
-       }
-
-        # dependent on rebin
-        self.fit_variable_bin_width = {
-            'absolute_eta' : 0.2,
-            'M3' : 20,
-            'M_bl' : 10,
-            'angle_bl' : 0.2,
-        }
-
-        # relates to fit_variable_bin_width
-        self.rebin = {
-            'absolute_eta' : 2, # 2 -> 0.2
-            'M3' : 5, # 5 -> 25 GeV
-            'M_bl' : 4, # 2 -> 20 GeV
-            'angle_bl' : 2, # 2 -> 0.2
-        }
-
-        self.fit_variable_unit = {
-            'absolute_eta' : '',
-            'M3' : 'GeV',
-            'M_bl' : 'GeV',
-            'angle_bl' : '',
         }
 
         self.ttbar_theory_systematic_prefix = 'TTJets_'
@@ -229,7 +202,25 @@ class XSectionConfig():
             'TauEnDown' : '',
             'UnclusteredEnUp' : '',
             'UnclusteredEnDown' : '',
+            # 'ElectronEn_up' : 'ElectronEnUp',
+            # 'ElectronEn_down' : 'ElectronEnDown',
+            # 'MuonEn_up' : 'MuonEnUp',
+            # 'MuonEn_down' : 'MuonEnDown',
+            # 'TauEn_up' : 'TauEnUp',
+            # 'TauEn_down' : 'TauEnDown',
+            # 'UnclusteredEn_up' : 'UnclusteredEnUp',
+            # 'UnclusteredEn_down' : 'UnclusteredEnDown',
         }
+
+
+# 'V+Jets_cross_section-', 'QCD_cross_section-', 'SingleTop_cross_section-', 'luminosity-'
+# 'V+Jets_cross_section+', 'QCD_cross_section+', 'SingleTop_cross_section+', 'luminosity+'
+
+# 'TTJets_scaleup', 'TTJets_massup',
+# 'TTJets_scaledown',  'TTJets_massdown'
+
+# 'JES_down', 'JER_down', 'ElectronEnDown', 'MuonEnDown', 'TauEnDown', 'UnclusteredEnDown', 'LightJet_down', 'BJet_down', 'Electron_down',  'Muon_down'
+# 'JES_up', 'JER_up', 'ElectronEnUp', 'MuonEnUp', 'TauEnUp', 'UnclusteredEnUp', 'LightJet_up', 'BJet_up',   'Electron_up', 'Muon_up' 
 
         self.met_systematics_suffixes = self.met_systematics.keys()
 
@@ -237,7 +228,6 @@ class XSectionConfig():
         self.__fill_defaults_13TeV__()
 
         self.generator_systematics = [ 
-            # 'matchingup', 'matchingdown', 
             'scaleup', 'scaledown',
             'massup', 'massdown',
             'hadronisation',
@@ -251,11 +241,6 @@ class XSectionConfig():
             'amcatnloHerwigpp',    
             'madgraph'    
         ]
-
-        self.k_values = {
-            'electron' : self.k_values_electron,
-            'muon' : self.k_values_muon,
-        }
 
         self.rate_changing_systematics_values = {}
         for systematic in self.rate_changing_systematics.keys():
@@ -271,6 +256,7 @@ class XSectionConfig():
 
             sp = tools.measurement.Systematic( 
                         systematic + '+',
+                        # systematic + '_up',
                         stype = tools.measurement.Systematic.RATE,
                         affected_samples = affected_samples,
                         scale = 1 + self.rate_changing_systematics[systematic],
@@ -280,6 +266,7 @@ class XSectionConfig():
 
             sm = tools.measurement.Systematic( 
                         systematic + '-',
+                        # systematic + '_down',
                         stype = tools.measurement.Systematic.RATE,
                         affected_samples = affected_samples,
                         scale = scale,
@@ -290,7 +277,12 @@ class XSectionConfig():
         self.rate_changing_systematics_names = self.rate_changing_systematics_values.keys()
 
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
-        self.topMasses = [169.5, 172.5, 173.5]
+        # self.topMass_systematics = [ 'TTJets_mass_up', 'TTJets_mass_down']
+        self.topMasses = [
+            169.5, 
+            172.5, 
+            173.5,
+        ]
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
@@ -301,8 +293,6 @@ class XSectionConfig():
             tmp = path_to_files + 'central/VJets-{0}_{1}pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
             tmp = tmp.format(systematic, self.luminosity)
             self.generator_systematic_vjets_templates[systematic] = tmp
-
-        self.kValueSystematic = [ 'kValue_up', 'kValue_down']
 
         categories_and_prefixes = self.categories_and_prefixes
         generator_mcsamples = self.generator_mcsamples
@@ -513,84 +503,20 @@ class XSectionConfig():
 
         self.rate_changing_systematics = {#TODO check where this is used
             'luminosity': 0.027,  # Best guess for 13 TeV 4.8->2.7
-
             'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
             # 'TTJet_cross_section': 0.043, # Currently same as 8 TeV
             'V+Jets_cross_section': 0.5,
             'QCD_cross_section' : 1.,
          }
 
-        # optimal regularisation parameters
-        self.k_values_electron = {
-                   'MET' : 3,
-                   'HT' : 3,
-                   'ST' : 4,
-                   'MT' : 2,
-                   'WPT' : 3,
-                   'lepTopPt' : 2,
-                   'lepTopRap' : 2,
-                   'hadTopPt' : 2,
-                   'hadTopRap' : 2,
-                   'ttbarPt' : 2,
-                   'ttbarRap' : 2,
-                   'ttbarM' : 2,
-                   'NJets' : 2,
-                   'bjets_pt': 2,
-                   'bjets_eta': 2,
-                   'lepton_pt': 2,
-                   'lepton_eta': 2,
-                   'abs_lepton_eta': 2,
-                   }
-
-        self.k_values_muon = {
-                   'MET' : 3,
-                   'HT' : 3,
-                   'ST' : 4,
-                   'MT' : 2,
-                   'WPT' : 3,
-                   'lepTopPt' : 1,
-                   'lepTopRap' : 1,
-                   'hadTopPt' : 1,
-                   'hadTopRap' : 1,
-                   'ttbarPt' : 1,
-                   'ttbarRap' : 1,
-                   'ttbarM' : 1,
-                   'NJets' : 2,
-                   'bjets_pt': 2,
-                   'bjets_eta': 2,
-                   'lepton_pt': 2,
-                   'lepton_eta': 2,
-                   'abs_lepton_eta': 2,
-                   }
-        #keeping combined values for backward compatibility
-        self.k_values_combined = {
-                   'MET' : 0,
-                   'HT' : 0,
-                   'ST' : 0,
-                   'MT' : 0,
-                   'WPT' : 0,
-                   'lepTopPt' : 1,
-                   'lepTopRap' : 1,
-                   'hadTopPt' : 1,
-                   'hadTopRap' : 1,
-                   'ttbarPt' : 1,
-                   'ttbarRap' : 1,
-                   'ttbarM' : 1,
-                   'NJets' : 2,
-                   'bjets_pt': 2,
-                   'bjets_eta': 2,
-                   'lepton_pt': 2,
-                   'lepton_eta': 2,
-                   }
-
         self.tau_values_electron = {
-"NJets" : 7.14289851984e-05,
-"WPT" : 0.00412403632721,
-"lepton_pt" : 0.0018054271566,
-"abs_lepton_eta" : 9.24702326429e-06,
-"ST" : 0.00831765143666,
-"MET" : 0.00256015359682,
-"HT" : 0.00602254137204,
+            "NJets" : 7.14289851984e-05,
+            "WPT" : 0.00412403632721,
+            "lepton_pt" : 0.0018054271566,
+            "abs_lepton_eta" : 9.24702326429e-06,
+            "ST" : 0.00831765143666,
+            "MET" : 0.00256015359682,
+            "HT" : 0.00602254137204,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -605,13 +531,13 @@ class XSectionConfig():
            }
 
         self.tau_values_muon = {
-"NJets" : 8.00904290212e-05,
-"WPT" : 0.00475761126845,
-"lepton_pt" : 0.00242164061853,
-"abs_lepton_eta" : 9.61561880023e-06,
-"ST" : 0.00972730152042,
-"MET" : 0.00290173731922,
-"HT" : 0.00740965179358,
+            "NJets" : 8.00904290212e-05,
+            "WPT" : 0.00475761126845,
+            "lepton_pt" : 0.00242164061853,
+            "abs_lepton_eta" : 9.61561880023e-06,
+            "ST" : 0.00972730152042,
+            "MET" : 0.00290173731922,
+            "HT" : 0.00740965179358,
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -624,14 +550,16 @@ class XSectionConfig():
             "lepTopRap" : 10.0,
             "ttbarRap" : 236.448941265,
         }
+
         self.tau_values_combined = {
-"NJets" : 5.36127675343e-05,
-"WPT" : 0.00314702299339,
-"lepton_pt" : 0.00147570139616,
-"abs_lepton_eta" : 6.80304236095e-06,
-"ST" : 0.00639445248766,
-"MET" : 0.00193179941017,
-"HT" : 0.00475657045286,
+            "WPT" : 0.00322241847459,
+            "NJets" : 5.37441937171e-05,
+            "lepton_pt" : 0.000939525715364,
+            "HT" : 0.00394515055942,
+            "ST" : 0.00621522525829,
+            "MET" : 0.00188739860157,
+            "abs_lepton_eta" : 4.55639578634e-06,
+
             'bjets_pt': 0.,
             'bjets_eta': 0.,
             'lepton_eta': 0.,
@@ -649,13 +577,3 @@ class XSectionConfig():
         # self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
 
         self.special_muon_histogram = 'muon_AbsEta_0btag'
-
-fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
-    'absolute_eta_angle_bl',
-    'absolute_eta_M3',
-    'absolute_eta_M_bl',
-    'absolute_eta_M_bl_angle_bl',
-    'absolute_eta_M3_angle_bl',
-    'absolute_eta_M_bl_M3',
-    'absolute_eta_M_bl_M3_angle_bl' 
-]
