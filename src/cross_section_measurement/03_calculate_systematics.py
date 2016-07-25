@@ -47,8 +47,6 @@ if __name__ == '__main__':
     measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
-    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
-    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
     met_systematics_suffixes = measurement_config.met_systematics_suffixes
     met_type = translate_options[options.metType]
     variables_no_met = measurement_config.variables_no_met
@@ -70,8 +68,6 @@ if __name__ == '__main__':
 
     # List of options to pass to systematic functions
     opts={
-    'ttbar_theory_systematic_prefix' : ttbar_theory_systematic_prefix,
-    'vjets_theory_systematic_prefix' : vjets_theory_systematic_prefix,
     'met_systematics_suffixes' : met_systematics_suffixes,
     'met_type' : met_type,
     'variables_no_met' : variables_no_met,
