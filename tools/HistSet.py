@@ -59,6 +59,7 @@ class HistSet():
         if plot_options.has_key('colours'):
             colours = plot_options['colours']
 
+        normalise = False
         if plot_options.has_key( 'normalise' ):
             normalise = plot_options['normalise']
         
