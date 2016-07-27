@@ -1,56 +1,7 @@
 from __future__ import division, print_function
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
-from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
-calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 from copy import deepcopy
 from math import sqrt
-
-def read_normalised_xsection_measurement(options, category):
-    '''
-    Returns the normalised measurement and normalised unfolded measurement for the file associated with the variable under study
-    '''
-    variables_no_met=options['variables_no_met']
-    path_to_JSON=options['path_to_JSON']
-    met_systematics_suffixes=options['met_systematics_suffixes']
-    method=options['method']
-    channel=options['channel']
-    variable=options['variable']
-
-    filename = '{path}/{category}/normalised_xsection_{channel}_{method}.txt'
-    if category in met_systematics_suffixes and ( variable in variables_no_met ) and not ('JES' in category or 'JER' in category):
-        filename = filename.format(
-            path = path_to_JSON,
-            channel = channel,
-            category = 'central',
-            method = method,
-        )
-    else:
-        filename = filename.format(
-            path = path_to_JSON,
-            channel = channel,
-            category = category,
-            method = method
-        )
-    normalised_xsection = read_data_from_JSON( filename )
-    measurement = normalised_xsection['TTJet_measured']#should this be measured without fakes???
-    measurement_unfolded = normalised_xsection['TTJet_unfolded']
-    return measurement, measurement_unfolded
-  
-def read_normalised_xsection_systematics(options, list_of_systematics):
-    '''
-    Returns the list of normalised measurements and normalised unfolded measurements for each systematic category
-    '''
-    channel=options['channel']
-    systematics = {}
-    systematics_unfolded = {}
-    
-    for systematic_name in list_of_systematics:
-        systematic, systematic_unfolded = read_normalised_xsection_measurement(options, systematic_name)
-        
-        systematics[systematic_name] = systematic
-        systematics_unfolded[systematic_name] = systematic_unfolded
-        
-    return systematics, systematics_unfolded
 
 def write_normalised_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
     '''
@@ -76,678 +27,266 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     
     write_data_to_JSON( output, output_file )
 
-def get_systematic_categories(options, measurement_config):
+    print("Data written to : ", output_file)
+
+# def print_systematic_categories(all_uncertainties):
+#     '''
+#     Allows for the contents of each systematic category to be printed to the terminal
+#     '''
+#     for key, list_of_uncertainties in all_uncertainties.iteritems():
+#         print("The {key} uncertainty group contains :\n{list_of_uncertainties}\n".format(
+#             key=key, 
+#             list_of_uncertainties=list_of_uncertainties, 
+#             ) 
+#         )
+#     return
+
+def append_PDF_uncertainties(all_systematics):
     '''
-    Returns a list of all the systematic categorys
-    Returns of the form:
-
-    [Systematic Category] : [Systemtic 1][Systemtic 2]...[Systemtic N] 
-           |                
-           |                               
-           |
+    Replace 'PDF' entry in list of all systematics with actual PDF variations
     '''
+    variation = []
+    for index in xrange (0, 100):
+        variation.append('PDFWeights_'+str(index))
+    all_systematics['PDF'] = variation
+    return all_systematics
 
-    met_systematics_suffixes=options['met_systematics_suffixes']
-    # met_type=options['met_type']
-
-    # SET UP SYSTEMATIC UNCERTAINTY LISTS
-    # ttbar Generator Systematics
-    ttbar_generator_systematics_list = [
-        'TTJets_' + systematic for systematic in measurement_config.generator_systematics
-    ]
-    # Remove hadronisation systematics from this list
-    ttbar_generator_systematics_list.remove('TTJets_hadronisation')
-    ttbar_generator_systematics_list.remove('TTJets_NLOgenerator')
-
-    # V+Jets Uncertainties - Should probably be reincluded at some point
-    # vjets_generator_systematics_list = [
-    #     'V+Jets_'  + systematic for systematic in measurement_config.generator_systematics
-    # ]
-
-    # ttbar theory systematics: leptonreweighting, hadronisation systematic
-    # ttbar_lepton_pt_reweight_systematic_list = [
-    #     'TTJets_ptreweight',
-    # ]
-
-    # ttbar_lepton_eta_reweight_systematic_list = [
-    #     'TTJets_etareweight',
-    # ]
-
-    ttbar_hadronisation_systematic_list = [
-        'TTJets_hadronisation', 
-        'TTJets_NLOgenerator', 
-    ]
-
-    ttbar_nlo_systematic_list = [
-        'TTJets_NLOgenerator',
-    ]
-
-    # 100 PDF uncertainties
-    pdf_uncertainties_systematic_list = [
-        'PDFWeights_%d' % index for index in range( 0, 100 )
-    ]
-
-    # rate changing systematics (luminosity, ttbar/single top cross section uncertainties)
-    rate_changing_systematics_list = [
-        systematic for systematic in measurement_config.rate_changing_systematics_names
-    ]
-
-    # all other uncertainties (including JES and JER) MET uncertainties included here
-    experimental_uncertainties_list = deepcopy( measurement_config.categories_and_prefixes.keys() )
-
-    other_uncertainties_list = [ 'QCD_shape' ]
-    other_uncertainties_list.extend( rate_changing_systematics_list )
-    # other_uncertainties_list.extend( vjets_generator_systematics_list )
-
-    all_uncertainties = {
-    'ttbar_generator'                 : ttbar_generator_systematics_list,
-    # 'ttbar_lepton_pt_reweight'  : ttbar_lepton_pt_reweight_systematic_list,
-    # 'ttbar_lepton_eta_reweight' : ttbar_lepton_eta_reweight_systematic_list,
-    'hadronisation'             : ttbar_hadronisation_systematic_list,
-    'ttbar_nlo'                 : ttbar_nlo_systematic_list,
-    'ttbar_pdf'                 : pdf_uncertainties_systematic_list,
-    'experimental'              : experimental_uncertainties_list,
-    'other'                     : other_uncertainties_list
-    }
-    return all_uncertainties
-
-def print_systematic_categories(all_uncertainties):
+def read_normalised_xsection_measurement(options, category):
     '''
-    Allows for the contents of each systematic category to be printed to the terminal
+    Returns the normalised measurement and normalised unfolded measurement for 
+    the file associated with the variable under study
     '''
-    for key, list_of_uncertainties in all_uncertainties.iteritems():
-        print("The {key} uncertainty group contains :\n{list_of_uncertainties}\n".format(
-            key=key, 
-            list_of_uncertainties=list_of_uncertainties, 
-            ) 
+    # print(options['channel'])
+    variable=options['variable']
+    variables_no_met=options['variables_no_met']
+    met_specific_systematics=options['met_specific_systematics']
+    path_to_JSON=options['path_to_JSON']
+    method=options['method']
+    channel=options['channel']
+    filename = '{path}/{category}/normalised_xsection_{channel}_{method}.txt'
+    # Disregarding Met Uncertainties if variable does not use MET
+    if (category in met_specific_systematics) and (variable in variables_no_met):
+        filename = filename.format(
+            path = path_to_JSON,
+            channel = channel,
+            category = 'central',
+            method = method,
         )
-    return
+    else:
+        filename = filename.format(
+            path = path_to_JSON,
+            channel = channel,
+            category = category,
+            method = method
+        )
+    # print(filename) 
+    normalised_xsection = read_data_from_JSON( filename )
+    measurement = normalised_xsection['TTJet_measured']#should this be measured without fakes???
+    measurement_unfolded = normalised_xsection['TTJet_unfolded']
+    return measurement, measurement_unfolded  
 
-def get_normalised_measurements(options, all_uncertainties):
+def read_normalised_xsection_systematics(options, variation, isPDF=False):
     '''
-    Returns a list of all the normalised measurements and unfolded measurements in each bin for each systematic category 
-    Returns of the form:
-
-    [Systematic Category] : ['measured'] : [][]...[]
-           |                ['unfolded'] : [Bin 1][Bin 2]...[Bin N]
-           |                               [Bin N]=[Normalised measurement]
-           |
+    Returns the list of normalised measurements and normalised unfolded measurements 
+    for each systematic category
     '''
-    central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement(
-        options, 
-        'central', 
-    )
-    ttbar_generator_systematics, ttbar_generator_systematics_unfolded = read_normalised_xsection_systematics(
-        options, 
-        list_of_systematics = all_uncertainties['ttbar_generator'], 
-    )
-    # ttbar_lepton_pt_reweight_systematics, ttbar_lepton_pt_reweight_systematics_unfolded = read_normalised_xsection_systematics(
-        # options, 
-        # list_of_systematics = all_uncertainties['ttbar_lepton_pt_reweight'], 
-        # )
-    # ttbar_lepton_eta_reweight_systematics, ttbar_lepton_eta_reweight_systematics_unfolded = read_normalised_xsection_systematics(
-        # options, 
-        # list_of_systematics = all_uncertainties['ttbar_lepton_eta_reweight'], 
-        # )
-    ttbar_hadronisation_systematics, ttbar_hadronisation_systematics_unfolded = read_normalised_xsection_systematics(
-        options, 
-        list_of_systematics = all_uncertainties['hadronisation'], 
-    )
-    ttbar_nlo_systematics, ttbar_nlo_systematics_unfolded = read_normalised_xsection_systematics(
-        options, 
-        list_of_systematics = all_uncertainties['ttbar_nlo'], 
-    )
-    pdf_systematics, pdf_systematics_unfolded = read_normalised_xsection_systematics(
-        options, 
-        list_of_systematics = all_uncertainties['ttbar_pdf'], 
-    )
-    experimental_systematics, experimental_systematics_unfolded = read_normalised_xsection_systematics(
-        options, 
-        list_of_systematics = all_uncertainties['experimental'], 
-    )
-    other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics(
-        options, 
-        list_of_systematics = all_uncertainties['other'], 
-    )
+    systematics = {}
+    systematics_unf = {}
 
-    # List of all normalised measurements for the cross section for each systematic category
-    all_normalised_measurements = {
-    'central'                   : { 'measured' : central_measurement, 
-                                    'unfolded' : central_measurement_unfolded
-                                },
-    'ttbar_generator'           : { 'measured' : ttbar_generator_systematics,
-                                    'unfolded' : ttbar_generator_systematics_unfolded
-                                },
-    # 'ttbar_lepton_pt_reweight'  : { 'measured' : ttbar_lepton_pt_reweight_systematics,
-    #                                 'unfolded' : ttbar_lepton_pt_reweight_systematics_unfolded
-    #                             },
-    # 'ttbar_lepton_eta_reweight' : { 'measured' : ttbar_lepton_eta_reweight_systematics,
-    #                                 'unfolded' : ttbar_lepton_eta_reweight_systematics_unfolded
-    #                             },
-    'ttbar_hadronisation'        : {'measured' : ttbar_hadronisation_systematics,
-                                    'unfolded' : ttbar_hadronisation_systematics_unfolded
-                                },
-    'ttbar_nlo'                  : {'measured' : ttbar_nlo_systematics,
-                                    'unfolded' : ttbar_nlo_systematics_unfolded
-                                },
-    'pdf'                       : { 'measured' : pdf_systematics,
-                                    'unfolded' : pdf_systematics_unfolded
-                                },
-    'experimental'              : { 'measured' : experimental_systematics,
-                                    'unfolded' : experimental_systematics_unfolded
-                                },
-    'other'                     : { 'measured' : other_systematics,
-                                    'unfolded' : other_systematics_unfolded
-                                },
-    }
-    return all_normalised_measurements
+    if isPDF:
+        for PDF_Weight in variation:
+            pdf_weight, pdf_weight_unf = read_normalised_xsection_measurement(options, PDF_Weight)
+            systematics[PDF_Weight] = pdf_weight
+            systematics_unf[PDF_Weight] = pdf_weight_unf  
+    else:
+        upper_variation = variation[0]
+        lower_variation = variation[1]
+        systematic_up, systematic_up_unf = read_normalised_xsection_measurement(options, upper_variation)
+        systematic_down, systematic_down_unf = read_normalised_xsection_measurement(options, lower_variation)
+        systematics['lower'] = systematic_down
+        systematics['upper'] = systematic_up        
+        systematics_unf['lower'] = systematic_down_unf
+        systematics_unf['upper'] = systematic_up_unf
 
-def print_normalised_measurements(all_normalised_measurements):
+    systematics = get_systematic_measured_values_only(options, systematics)   
+    systematics_unf = get_systematic_measured_values_only(options, systematics_unf)   
+    return systematics, systematics_unf
+
+def get_systematic_measured_values_only(options, syst_x_secs_and_errs):
     '''
-    Allows for printing of the normalised measurements for the cross section
+    When retreiveing systematic uncertainties they come in form [Value, Error]. 
+    This strips the Errors.
     '''
-    for syst_category, measurements in all_normalised_measurements.iteritems():
-        print( "Type of systematics being looked at is '{syst_category}'".format(syst_category=syst_category) )
-        for key, list_of_norm_xsec_meas in measurements.iteritems():
-            print("\nThe {key} normalised cross section measurements is :\n  {list_of_norm_xsec_meas}\n ".format(
-                key=key, 
-                list_of_norm_xsec_meas=list_of_norm_xsec_meas)
-            ) 
-    return
+    number_of_bins=options['number_of_bins']
+    for variation, x_sec_and_error in syst_x_secs_and_errs.iteritems():
+        for bin_i in xrange(number_of_bins):
+            x_sec = x_sec_and_error[bin_i][0]
+            x_sec_and_error[bin_i] = x_sec
+    return syst_x_secs_and_errs
 
-def get_upper_lower_variations(options, all_normalised_measurements):
+
+def get_normalised_cross_sections(options, list_of_systematics):
     '''
-    Returns a list of all the up and down variations in each bin for each systematic category 
-    as well as the central measurement and statistical uncertainty. Returns of the form:
-
-    [Central]             : [measurement, error]
-    [Systematic Category] : ['up']   : [][]...[]
-           |                ['down'] : [Bin 1][Bin 2]...[Bin N]
-           |                           [Bin N]=[Up/Down Variation]
-           |
+    Gets the normalised cross sections in the form:
+    Group of Systematics : { List of Systematics in Group : [[central], [upper], [lower]]}
+        [central] = [[x sec, unc], [x sec, unc]...[x sec, unc]] For N Bins
+        [upper]   = [[x sec], [x sec]...[x sec]] For N Bins
+        [lower]   = [[x sec], [x sec]...[x sec]] For N Bins
     '''
+    # Copy structure of the systmatic lists in order to replace systematic name with their normailsed x sections
+    normalised_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
+    unfolded_normalised_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
 
-    #### ttbar generator systematics (factorisation scale and matching threshold)
-    ttbar_generator_min, ttbar_generator_max = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['ttbar_generator']['measured'], 
-    )
-    ttbar_generator_min_unfolded, ttbar_generator_max_unfolded = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['ttbar_generator']['unfolded'], 
-    )
+    central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement(options, 'central')
+    for group_of_systematics, systematics_in_list in list_of_systematics.iteritems():
+        for systematic, variation in systematics_in_list.iteritems():
+            normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic] = [central_measurement]
+            unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic] = [central_measurement]
+            if (systematic == 'PDF'):
+                syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation, isPDF=True)
 
-    #### ttbar theory systematics (lepton reweighting and hadronisation)
-    # ttbar_lepton_pt_reweight_min, ttbar_lepton_pt_reweight_max = summarise_systematics( 
-        # options,
-    #     all_normalised_measurements['central']['measured'], 
-    #     all_normalised_measurements['ttbar_lepton_pt_reweight']['measured'], 
-    # )
-    # ttbar_lepton_pt_reweight_min_unfolded, ttbar_lepton_pt_reweight_max_unfolded = summarise_systematics( 
-        # options,
-    #     all_normalised_measurements['central']['unfolded'], 
-    #     all_normalised_measurements['ttbar_lepton_pt_reweight']['unfolded'], 
-    # )
+                # Get full PDF combination
+                pdf_total_lower, pdf_total_upper = calculate_total_PDFuncertainty(options, central_measurement, syst_unc_x_sec)
+                unf_pdf_total_lower, unf_pdf_total_upper = calculate_total_PDFuncertainty(options, central_measurement_unfolded, unf_syst_unc_x_sec)
 
-    # ttbar_lepton_eta_reweight_min, ttbar_lepton_eta_reweight_max = summarise_systematics( 
-        # options,
-    #     all_normalised_measurements['central']['measured'], 
-    #     all_normalised_measurements['ttbar_lepton_eta_reweight']['measured'], 
-    # )
-    # ttbar_lepton_eta_reweight_min_unfolded, ttbar_lepton_eta_reweight_max_unfolded = summarise_systematics( 
-        # options,
-    #     all_normalised_measurements['central']['unfolded'], 
-    #     all_normalised_measurements['ttbar_lepton_eta_reweight']['unfolded'], 
-    # )
+                for PDF_Weight in variation:
+                    normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(syst_unc_x_sec[PDF_Weight])
+                    unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(unf_syst_unc_x_sec[PDF_Weight])
+                normalised_systematic_uncertainty_x_sections[group_of_systematics]['PDF_Combined'] = \
+                    [central_measurement, pdf_total_upper, pdf_total_lower]
+                unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics]['PDF_Combined'] = \
+                    [central_measurement_unfolded, unf_pdf_total_upper, unf_pdf_total_lower]
+            else:
+                syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation)
+                normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(syst_unc_x_sec['upper'])
+                normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(syst_unc_x_sec['lower'])
+                unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(unf_syst_unc_x_sec['upper'])
+                unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(unf_syst_unc_x_sec['lower'])
+    # print(normalised_systematic_uncertainty_x_sections)
+    return normalised_systematic_uncertainty_x_sections, unfolded_normalised_systematic_uncertainty_x_sections
 
-    ttbar_hadronisation_min, ttbar_hadronisation_max = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['ttbar_hadronisation']['measured'], 
-        hadronisation_systematic = True 
-    )
-    ttbar_hadronisation_min_unfolded, ttbar_hadronisation_max_unfolded = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['ttbar_hadronisation']['unfolded'], 
-        hadronisation_systematic = True 
-    )
-
-    ttbar_nlo_min, ttbar_nlo_max = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['ttbar_nlo']['measured'], 
-    )
-    ttbar_nlo_min_unfolded, ttbar_nlo_max_unfolded = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['ttbar_nlo']['unfolded'], 
-    )
-
-    pdf_min, pdf_max = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['pdf']['measured'], 
-        pdf_calculation = True 
-    )
-    pdf_min_unfolded, pdf_max_unfolded = summarise_systematics( 
-        options,
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['pdf']['unfolded'], 
-        pdf_calculation = True 
-    )
-
-    experimental_min, experimental_max = summarise_systematics( 
-        options,        
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['experimental']['measured'], 
-    )
-    experimental_min_unfolded, experimental_max_unfolded = summarise_systematics( 
-        options,        
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['experimental']['unfolded'], 
-    )
-
-    # other
-    other_min, other_max = summarise_systematics( 
-        options,        
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['other']['measured'], 
-    )
-    other_min_unfolded, other_max_unfolded = summarise_systematics( 
-        options,        
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['other']['unfolded'], 
-    )
-
-    # Storing all up and down variations for the measurement
-    all_up_down_variations_measured = {
-    'central'               : all_normalised_measurements['central']['measured'],
-    'ttbar_generator'       : { 'up' : ttbar_generator_min,
-                                'down' : ttbar_generator_max
-                            },
-    # 'ttbar_lepton_pt_reweight': { 'up' : ttbar_lepton_pt_reweight_min,
-    #                           'down' : ttbar_lepton_pt_reweight_max
-    #                         },
-    # 'ttbar_lepton_eta_reweight' : { 'up' : ttbar_lepton_eta_reweight_min,
-    #                           'down' : ttbar_lepton_eta_reweight_max
-    #                         },
-    'ttbar_hadronisation'   : { 'up' : ttbar_hadronisation_min,
-                                'down' : ttbar_hadronisation_max
-                            },
-    'ttbar_nlo'             : { 'up' : ttbar_nlo_min,
-                                'down' : ttbar_nlo_max
-                            },
-    'pdf'                   : { 'up' : pdf_min,
-                                'down' : pdf_max
-                            },
-    'experimental'          : { 'up' : experimental_min,
-                                'down' : experimental_max
-                            },
-    'other'                 : { 'up' : other_min,
-                                'down' : other_max
-                            },
-    }
-
-    # Storing all up and down variations for the unfolded measurement
-    all_up_down_variations_unfolded = {
-    'central'               : all_normalised_measurements['central']['measured'],
-    'ttbar_generator'       : { 'up' : ttbar_generator_min_unfolded,
-                                'down' : ttbar_generator_max_unfolded
-                            },
-    # 'ttbar_lepton_pt_reweight'  : { 'up' : ttbar_lepton_pt_reweight_min_unfolded,
-                            #   'down' : ttbar_lepton_pt_reweight_max_unfolded
-                            # },
-    # 'ttbar_lepton_eta_reweight' : { 'up' : ttbar_lepton_eta_reweight_min_unfolded,
-                            #   'down' : ttbar_lepton_eta_reweight_max_unfolded
-                            # },
-    'ttbar_hadronisation'   : { 'up' : ttbar_hadronisation_min_unfolded,
-                                'down' : ttbar_hadronisation_max_unfolded
-                            },
-    'ttbar_nlo'             : { 'up' : ttbar_nlo_min_unfolded,
-                                'down' : ttbar_nlo_max_unfolded
-                            },
-    'pdf'                   : { 'up' : pdf_min_unfolded,
-                                'down' : pdf_max_unfolded
-                            },
-    'experimental'          : { 'up' : experimental_min_unfolded,
-                                'down' : experimental_max_unfolded
-                            },
-    'other'                 : { 'up' : other_min_unfolded,
-                                'down' : other_max_unfolded
-                            },
-    }
-    return all_up_down_variations_measured, all_up_down_variations_unfolded
-
-def summarise_systematics(options, list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, experimentalUncertainty=False, mass_systematic = False, actualCentralMeasurements = [] ):
+def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values={}):
     '''
-    Takes central measurements for each bin and a category of systematics. Calculates, per bin, the up and down variations 
-    of the combination of the systematics in that category of systematics.
-    Returns list of up/down errors in the form [Error 1, Error 2,...Error N] where Error N = combined up/down error in Bin N
+    Calculates the appropriate lower and upper PDF uncertainty
+    @param central_measurement: measurement from central PDF weight
+    @param pdf_uncertainty_values: dictionary of measurements with different PDF weights; 
+                                    format {PDFWeights_%d: measurement}
     '''
-    symmetrise_errors = options['symmetrise_errors']
-    # number of bins
-
-    # TODO At the moment when retreiving up/down variations it combines all +ve variations and all -ve variations even if from massup/down are both +ve
-    # Split into paired syst - up/down
-    # And those that are symetric by nature like hadronisation
-
-    number_of_bins = len( list_of_central_measurements )
-    down_errors = [0] * number_of_bins
-    up_errors = [0] * number_of_bins
-    list_of_systematics = {}
-
-    for bin_i in range( number_of_bins ):
-        central_value = list_of_central_measurements[bin_i][0]  # 0 = value, 1 = error
-        error_down, error_up = 0, 0
-        
-        if pdf_calculation:
-            pdf_uncertainty_values = {systematic:measurement[bin_i][0] for systematic, measurement in dictionary_of_systematics.iteritems()}
-            error_down, error_up = calculate_lower_and_upper_PDFuncertainty( central_value, pdf_uncertainty_values )
-            if symmetrise_errors:
-                error_down = max( error_down, error_up )
-                error_up = max( error_down, error_up )
-        elif hadronisation_systematic:
-            powheg_pythia = central_value
-            for idex, systematic in dictionary_of_systematics.iteritems():
-                # choose which hadronisation systematic is needed : "TTJets_hadronisation" or "TTJets_NLOgenerator"
-                hadr_syst = dictionary_of_systematics[idex][bin_i][0]
-                # always symmetric: absolute value of the difference between hadronisation syst and central
-                difference = hadr_syst - powheg_pythia
-                difference = abs(difference)
-                error_down += difference**2
-            error_down=sqrt(error_down)
-            error_up=error_down
-        elif mass_systematic:
-            for systematic, value in dictionary_of_systematics.iteritems():
-                variation = get_type_of_variation(systematic)
-                list_of_systematics[systematic] = [value[bin_i][0],variation]
-            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, False )
-            # Scale errors calculated using very different top masses
-            error_down, error_up = scaleTopMassSystematicErrors( [error_down], [error_up] )
-            error_down = error_down[0]
-            error_up = error_up[0]
-        elif experimentalUncertainty:
-            for systematic, value in dictionary_of_systematics.iteritems():
-                variation = get_type_of_variation(systematic)
-                list_of_systematics[systematic] = [value[bin_i][0],variation]
-            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
-            actualCentralValue = actualCentralMeasurements[bin_i][0]
-            error_down = error_down / central_value * actualCentralValue
-            error_up = error_up / central_value * actualCentralValue
-        else:
-            for systematic, value in dictionary_of_systematics.iteritems():
-                variation = get_type_of_variation(systematic)
-                list_of_systematics[systematic] = [value[bin_i][0],variation]
-            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
-            print(list_of_systematics)
-        
-        down_errors[bin_i] = error_down
-        up_errors[bin_i] = error_up
+    number_of_bins = options['number_of_bins']
+    pdf_min = []
+    pdf_max = []
     
-    return down_errors, up_errors
+    # split PDF uncertainties into downwards (negative) and upwards (positive) components
+    for bin_i in xrange(number_of_bins):
+        negative = []
+        positive = []
+        central = central_measurement[bin_i][0]
+        for index in range(0, 100):
+            pdf_weight = 'PDFWeights_%d' % index
+            pdf_uncertainty = pdf_uncertainty_values[pdf_weight][bin_i]
+            if index % 2 == 0:  # even == negative
+                negative.append(pdf_uncertainty)
+            else:
+                positive.append(pdf_uncertainty)
+                
+        pdf_max.append(sqrt(sum(max(x - central, y - central, 0) ** 2 for x, y in zip(negative, positive))))
+        pdf_min.append(sqrt(sum(max(central - x, central - y, 0) ** 2 for x, y in zip(negative, positive))))
 
-def get_measurement_with_systematics(options, measured, unfolded):
+    return pdf_min, pdf_max  
+
+def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs):
     '''
-    Returns the collection of measured or unfolded values with total upper and lower systematic uncertainty in the form
-    [Bin 1][Bin 2]...[Bin N] where [Bin N]=[Central Value, Lower Systemtic, Upper Systematic]
+    Gets the symmetrised normalised cross sections uncertainties in the form:
+    Group of Systematics : { List of Systematics in Group : [[central], [symmetrised uncertainty], [signed uncertainty]]}
+        [central]                   = [[x sec, unc], [x sec, unc]...[x sec, unc]] For N Bins
+        [symmetrised uncertainty]   = [sym unc, sym unc...sym unc] For N Bins
+        [signed uncertainty]        = [sign, sign...sign] For N Bins
     '''
-    central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors( 
-        measured,
-        symmetrise_errors = options['symmetrise_errors'],
-    )
-    central_measurement_with_systematics_but_without_generator = get_measurement_with_lower_and_upper_errors( 
-        measured,
-        withoutGenerator = True,
-        symmetrise_errors = options['symmetrise_errors'],
-    )
-    central_measurement_with_systematics_only = get_measurement_with_lower_and_upper_errors( 
-        measured,
-        systematicErrorsOnly = True,
-        symmetrise_errors = options['symmetrise_errors'],
-    )
-    central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors( 
-        unfolded,
-        symmetrise_errors = options['symmetrise_errors'],
-    )
-    central_measurement_unfolded_with_systematics_but_without_generator = get_measurement_with_lower_and_upper_errors( 
-        unfolded,
-        withoutGenerator = True, 
-        symmetrise_errors = options['symmetrise_errors'],
-    )
-    central_measurement_unfolded_with_systematics_only = get_measurement_with_lower_and_upper_errors( 
-        unfolded,
-        systematicErrorsOnly = True,
-        symmetrise_errors = options['symmetrise_errors'],
-    )
+    normalised_x_sections_with_symmetrised_systematics = deepcopy(norm_syst_unc_x_secs)
+    for group_of_systematics, systematics_in_list in norm_syst_unc_x_secs.iteritems():
+        for systematic, variation in systematics_in_list.iteritems():
+            # Don't need 'PDF' now we have 'PDF_Combined'
+            if systematic == 'PDF': continue
+            central_measurement = variation[0]
+            upper_measurement = variation[1]
+            lower_measurement = variation[2]
+            symmetrised_uncertainties, signed_uncertainties = get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement)
 
-    measurement_and_systematic_list = {
-    'meas_with_syst'                        : central_measurement_with_systematics,
-    'meas_with_syst_no_generator'           : central_measurement_with_systematics_but_without_generator,
-    'meas_with_syst_only'                   : central_measurement_with_systematics_only,
-    'meas_unfolded_with_syst'               : central_measurement_unfolded_with_systematics,
-    'meas_unfolded_with_syst_no_generator'  : central_measurement_unfolded_with_systematics_but_without_generator,
-    'meas_unfolded_with_syst_only'          : central_measurement_unfolded_with_systematics_only,
-     }
+            normalised_x_sections_with_symmetrised_systematics[group_of_systematics][systematic] = \
+                [central_measurement, symmetrised_uncertainties, signed_uncertainties] 
+    return normalised_x_sections_with_symmetrised_systematics           
 
-    return measurement_and_systematic_list
-
-def get_measurement_with_lower_and_upper_errors(list_of_variations, systematicErrorsOnly = False, withoutGenerator = False, symmetrise_errors=False ):
+def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement):
     '''
-    Combines a list of systematic errors with the error from the measurement in quadrature.
-    @param list_of_central_measurements: A list of measurements - one per bin - of the type (value,error)
-    @param lists_of_lower_systematic_errors: Lists of systematic errors - format: [error1, error2, ...] where errorX = [(error), ...] with length = len(list_of_central_measurements)
+    Returns the symmetric error in each bin for a specific systematic and also the sign of the systematic.
+    Sign is used for calculating the covariance matrices. Returns of the form:
+    [Symmetric Uncertainties],[Signed Uncertainties]
+        [symmetrised uncertainty]   = [sym unc, sym unc...sym unc] For N Bins
+        [signed uncertainty]        = [sign, sign...sign] For N Bins
     '''
-    lists_of_upper_systematic_errors, lists_of_lower_systematic_errors = [], []
-    # List of errors of the form : [Systematic 1][Systematic 2]...[Systematic N] where [Systematic N]=[Bin 1, Bin 2 ... Bin M]
+    number_of_bins = len(central_measurement)
+    symm_uncerts = []
+    sign_uncerts = []
 
-    # Get lists of up and down variations.
-    for syst_group, variation  in list_of_variations.iteritems():
-        if withoutGenerator and syst_group=='ttbar_generator' : continue
-        if syst_group=='central': 
-            list_of_central_measurements=variation
-        else:
-            for type_of_variation, measurement in variation.iteritems():
-                if type_of_variation=='up': lists_of_upper_systematic_errors.append(measurement)
-                if type_of_variation=='down': lists_of_lower_systematic_errors.append(measurement)
+    for c, u, l in zip(central_measurement, upper_measurement, lower_measurement):
+        central = c[0] # Getting the measurement, not the error [xsec, unc]
+        upper = u
+        lower = l
 
-    # How many bins this variable has
-    n_entries = len( list_of_central_measurements )
-    complete_measurement = [( 0, 0, 0 )] * n_entries
-    
-    for index in range( n_entries ):
-        # Get the central measurement in each bin and associated error [value,error]
-        central_value, central_error = list_of_central_measurements[index]  
-        # Get the lower and upper systematic certainties for this particular bin
-        lower_errors = [error[index] for error in lists_of_lower_systematic_errors]
-        upper_errors = [error[index] for error in lists_of_upper_systematic_errors]
-        # Add central error to the list (statistical)
-        if not systematicErrorsOnly:
-            lower_errors.append( central_error )
-            upper_errors.append( central_error )
+        upper_uncertainty = abs(central - upper)
+        lower_uncertainty = abs(central - lower)
+        symmetrised_uncertainty = max(upper_uncertainty, lower_uncertainty)
+        #  Getting the sign of the uncertainty
+        sign = get_sign(central, upper, lower, upper_uncertainty, lower_uncertainty)
+        symm_uncerts.append(symmetrised_uncertainty)
+        sign_uncerts.append(sign)
+    return symm_uncerts, sign_uncerts
 
-        # calculate total errors
-        total_lower_error = combine_errors_in_quadrature( lower_errors )
-        total_upper_error = combine_errors_in_quadrature( upper_errors )
-        # If symmetric errors are required
-        if symmetrise_errors:
-            total_lower_error = max( total_lower_error, total_upper_error )
-            total_upper_error = max( total_lower_error, total_upper_error )
-        # Store per bin the central measurement with its up and down systematic uncertainty
-        complete_measurement[index] = ( central_value, total_lower_error, total_upper_error )
-
-    return complete_measurement
-
-def replace_measurement_with_deviation_from_central(central_measurement, dictionary_of_systematic_measurements ):
+def get_sign(central, upper, lower, upper_variation, lower_variation):
     '''
-    For each uncertainty replace the measured value with the difference between that value and the central value
-    Returns of the form 
-    [Systematic Category] : [Bin 1][Bin 2]..[Bin N] where [Bin N]=[Difference to Central]
+    Returns the sign of the uncertainty - i.e. was the upper variation bigger than the lower variation
+    Returns 0 if the systematic is symmetrical
     '''
-    new_dictionary_of_systematic_measurements = {}
-    
-    for systematic, systematic_measurement in dictionary_of_systematic_measurements.iteritems():
-        new_set_of_values = []
-        # zip allows iteration over lists in parallel
-        for ( value, _ ), ( central, _ ) in zip( systematic_measurement, central_measurement ):
-            deviation = abs( value ) - abs( central )    
-            new_set_of_values.append( deviation )
-        new_dictionary_of_systematic_measurements[systematic] = new_set_of_values
-    return new_dictionary_of_systematic_measurements
+    if ((upper_variation > lower_variation) and (upper > central) ): return 1
+    elif ((upper_variation > lower_variation) and (upper < central) ): return -1
+    elif ((lower_variation > upper_variation) and (lower > central) ): return -1
+    elif ((lower_variation > upper_variation) and (lower < central) ): return 1
+    else: return 0
 
-def write_normalised_measurements(options, all_normalised_measurements, measurement_and_systematic_list, list_of_variations, list_of_variations_unfolded):
+def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmetrised_systematics):
     '''
-    Write all the normalised measurements and systematics to file
+    Returns the measurement with the total symmetrised systematic uncertainties of the form:
+    Group of Systematics : [central value][central uncertainty][symmetrised systematic uncertainty+][symmetrised systematic uncertainty-]
+        [central value]                         = [[x sec, unc], [x sec, unc],... [x sec, unc]] For N Bins
+        [symmetrised systematic uncertainty+]   = [central unc, central unc,... central unc] For N Bins
+        [symmetrised systematic uncertainty-]   = [sys unc, sys unc,... sys unc] For N Bins
     '''
-    write_normalised_xsection_measurement(
-        options, 
-        measurement_and_systematic_list['meas_with_syst'],
-        measurement_and_systematic_list['meas_unfolded_with_syst'],
-    )
-    write_normalised_xsection_measurement(
-        options, 
-        measurement_and_systematic_list['meas_with_syst_no_generator'],
-        measurement_and_systematic_list['meas_unfolded_with_syst_no_generator'],
-        summary = 'with_systematics_but_without_generator' 
-    )
-    write_normalised_xsection_measurement(
-        options, 
-        measurement_and_systematic_list['meas_with_syst_only'],
-        measurement_and_systematic_list['meas_unfolded_with_syst_only'],
-        summary = 'with_systematics_only' 
-    )
+    measurement_with_total_uncertainty = {}
+    number_of_bins = options['number_of_bins']
+    for group_of_systematics, systematics_in_list in x_sec_with_symmetrised_systematics.iteritems():
+        sys_unc = 0
+        tmp_meas = []
+        for bin_i in range( 0, number_of_bins ):
+            for systematic, measurement in systematics_in_list.iteritems():
+                central = measurement[0][bin_i] # Still [Value, Error]
+                sys_unc += measurement[1][bin_i]**2
+                # sign = measurement[2][bin_i]
+            tmp_meas.append( [central[0], sqrt(sys_unc), sqrt(sys_unc)] )
+        measurement_with_total_uncertainty[group_of_systematics] = tmp_meas
+        print(measurement_with_total_uncertainty)
+    return measurement_with_total_uncertainty
 
-    # Now to create output files for each individual systematic uncertainty category
-    # Replace measurement with deviation from central
-    all_normalised_measurements['ttbar_generator']['measured'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['ttbar_generator']['measured'] 
-    )
-    all_normalised_measurements['pdf']['measured'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['pdf']['measured'] 
-    )
-    all_normalised_measurements['ttbar_hadronisation']['measured'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['ttbar_hadronisation']['measured'] 
-    )
-    all_normalised_measurements['other']['measured'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['other']['measured'] 
-    )
-    all_normalised_measurements['experimental']['measured'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['measured'], 
-        all_normalised_measurements['experimental']['measured'] 
-    )
+                # MAYBE do this with a entry by entry list using \t???
+# def print_normalised_measurements(all_normalised_measurements):
+#     '''
+#     Allows for printing of the normalised measurements for the cross section
+#     '''
+#     for syst_category, measurements in all_normalised_measurements.iteritems():
+#         print( "Type of systematics being looked at is '{syst_category}'".format(syst_category=syst_category) )
+#         for key, list_of_norm_xsec_meas in measurements.iteritems():
+#             print("\nThe {key} normalised cross section measurements is :\n  {list_of_norm_xsec_meas}\n ".format(
+#                 key=key, 
+#                 list_of_norm_xsec_meas=list_of_norm_xsec_meas)
+#             ) 
+#     return
 
-    all_normalised_measurements['ttbar_generator']['unfolded'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['ttbar_generator']['unfolded'] 
-    )
-    all_normalised_measurements['pdf']['unfolded'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['pdf']['unfolded'] 
-    )
-    all_normalised_measurements['ttbar_hadronisation']['unfolded'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['ttbar_hadronisation']['unfolded'] 
-    )
-    all_normalised_measurements['other']['unfolded'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['other']['unfolded'] 
-    )
-    all_normalised_measurements['experimental']['unfolded'] = replace_measurement_with_deviation_from_central( 
-        all_normalised_measurements['central']['unfolded'], 
-        all_normalised_measurements['experimental']['unfolded'] 
-    )
-
-    # Add in the total errors
-    #### TODO: these are currently still storing the measurement, but should store the difference to the measurement like total_*
-    all_normalised_measurements['ttbar_generator']['measured']['total_lower'] = list_of_variations['ttbar_generator']['down']
-    all_normalised_measurements['ttbar_generator']['measured']['total_upper'] = list_of_variations['ttbar_generator']['up']
-    all_normalised_measurements['ttbar_generator']['unfolded']['total_lower'] = list_of_variations_unfolded['ttbar_generator']['down']
-    all_normalised_measurements['ttbar_generator']['unfolded']['total_upper'] = list_of_variations_unfolded['ttbar_generator']['up']
-
-    all_normalised_measurements['pdf']['measured']['total_lower'] = list_of_variations['pdf']['down']
-    all_normalised_measurements['pdf']['measured']['total_upper'] = list_of_variations['pdf']['up']
-    all_normalised_measurements['pdf']['unfolded']['total_lower'] = list_of_variations_unfolded['pdf']['down']
-    all_normalised_measurements['pdf']['unfolded']['total_upper'] = list_of_variations_unfolded['pdf']['up']
-
-    all_normalised_measurements['ttbar_hadronisation']['measured']['total_lower'] = list_of_variations['ttbar_hadronisation']['down']
-    all_normalised_measurements['ttbar_hadronisation']['measured']['total_upper'] = list_of_variations['ttbar_hadronisation']['up']
-    all_normalised_measurements['ttbar_hadronisation']['unfolded']['total_lower'] = list_of_variations_unfolded['ttbar_hadronisation']['down']
-    all_normalised_measurements['ttbar_hadronisation']['unfolded']['total_upper'] = list_of_variations_unfolded['ttbar_hadronisation']['up']
-
-    all_normalised_measurements['other']['measured']['total_lower'] = list_of_variations['other']['down']
-    all_normalised_measurements['other']['measured']['total_upper'] = list_of_variations['other']['up']
-    all_normalised_measurements['other']['unfolded']['total_lower'] = list_of_variations_unfolded['other']['down']
-    all_normalised_measurements['other']['unfolded']['total_upper'] = list_of_variations_unfolded['other']['up']
-
-    all_normalised_measurements['experimental']['measured']['total_lower'] = list_of_variations['experimental']['down']
-    all_normalised_measurements['experimental']['measured']['total_upper'] = list_of_variations['experimental']['up']
-    all_normalised_measurements['experimental']['unfolded']['total_lower'] = list_of_variations_unfolded['experimental']['down']
-    all_normalised_measurements['experimental']['unfolded']['total_upper'] = list_of_variations_unfolded['experimental']['up']
-
-    write_normalised_xsection_measurement(
-        options, 
-        all_normalised_measurements['ttbar_generator']['measured'], 
-        all_normalised_measurements['ttbar_generator']['unfolded'], 
-        summary = 'ttbar_generator' 
-    )
-    write_normalised_xsection_measurement(
-        options, 
-        all_normalised_measurements['pdf']['measured'], 
-        all_normalised_measurements['pdf']['unfolded'], 
-        summary = 'PDF' 
-    )
-    write_normalised_xsection_measurement(
-        options, 
-        all_normalised_measurements['ttbar_hadronisation']['measured'], 
-        all_normalised_measurements['ttbar_hadronisation']['unfolded'], 
-        summary = 'ttbar_hadronisation' 
-    )
-    write_normalised_xsection_measurement(
-        options, 
-        all_normalised_measurements['other']['measured'], 
-        all_normalised_measurements['other']['unfolded'], 
-        summary = 'other' 
-    )
-    write_normalised_xsection_measurement(
-        options, 
-        all_normalised_measurements['experimental']['measured'], 
-        all_normalised_measurements['experimental']['unfolded'], 
-        summary = 'experimental' 
-    )
-    return
-
-def get_type_of_variation(systematic_name):
-    '''
-    Returns +1 if systematic is a variation up
-    Returns -1 if systematic is a variation down
-    Returns 0 elsewise (systematic is symmetric)
-    '''
-    variation=0
-    if ("cross_section+" in systematic_name): variation=1
-    elif ("luminosity+" in systematic_name): variation=1
-    elif ("Up" in systematic_name): variation=1
-    elif ("up" in systematic_name): variation=1
-
-    if ("cross_section-" in systematic_name): variation=-1
-    elif ("luminosity-" in systematic_name): variation=-1
-    elif ("Down" in systematic_name): variation=-1
-    elif ("down" in systematic_name): variation=-1
-
-    return variation
-
-
-# def scaleTopMassSystematicErrors( error_down, error_up ):
-#     error_down_new, error_up_new = [], []
-#     for down,up in zip( error_down,error_up ):
-#         upMassDifference = measurement_config.topMasses[2] - measurement_config.topMasses[1]
-#         downMassDifference = measurement_config.topMasses[1] - measurement_config.topMasses[0]
-
-#         error_down_new.append( down * measurement_config.topMassUncertainty / downMassDifference )
-#         error_up_new.append( up * measurement_config.topMassUncertainty / upMassDifference )
-#     return error_down_new, error_up_new

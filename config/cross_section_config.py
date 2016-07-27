@@ -212,15 +212,52 @@ class XSectionConfig():
             # 'UnclusteredEn_down' : 'UnclusteredEnDown',
         }
 
+        self.list_of_systematics = {
+            # Theoretical Uncertainties (Rate Changing)
+            'V+Jets_cross_section'      : ['V+Jets_cross_section+', 'V+Jets_cross_section-'],
+            'QCD_cross_section'         : ['QCD_cross_section+', 'QCD_cross_section-'],
+            'SingleTop_cross_section'   : ['SingleTop_cross_section+', 'SingleTop_cross_section-'],
+            'luminosity'                : ['luminosity+', 'luminosity-'],
+            # QCD Shape
+            'QCD_shape'                 : ['QCD_shape', 'QCD_shape'],
+            # Generator Uncertainties
+            'TTJets_scale'              : ['TTJets_scaleup', 'TTJets_scaledown'],
+            'TTJets_mass'               : ['TTJets_massup', 'TTJets_massdown'],
+            'TTJets_hadronisation'      : ['TTJets_hadronisation', 'TTJets_hadronisation'],
+            'TTJets_NLOgenerator'       : ['TTJets_NLOgenerator', 'TTJets_NLOgenerator'],
+            # Event Reweighting
+            'PileUp'                    : ['PileUpSystematic', 'PileUpSystematic'],
+            'JES'                       : ['JES_up', 'JES_down'],
+            'JER'                       : ['JER_up', 'JER_down'],
+            'BJet'                      : ['BJet_up', 'BJet_down'],
+            'LightJet'                  : ['LightJet_up', 'LightJet_down'],
+            # Lepton Uncertainties (Id/Iso/Trig Eff)
+            'Electron'                  : ['Electron_up', 'Electron_down'],
+            'Muon'                      : ['Muon_up', 'Muon_down'],
+            # PDF Uncertainties
+            'PDF'                       : ['PDF', 'PDF'],
+            # MET Uncertainties
+            'ElectronEn'                : ['ElectronEnUp', 'ElectronEnDown'],
+            'MuonEn'                    : ['MuonEnUp', 'MuonEnDown'],
+            'TauEn'                     : ['TauEnUp', 'TauEnDown'],
+            'UnclusteredEn'             : ['UnclusteredEnUp', 'UnclusteredEnDown'],
+            # Top Reweighting Uncertainties
+            # 'Top_pt_reweight'           : ['Top_pt_reweight_up', 'Top_pt_reweight_down'],
+            # 'Top_eta_reweight'          : ['Top_eta_reweight_up', 'Top_eta_reweight_down'],
+        }
 
-# 'V+Jets_cross_section-', 'QCD_cross_section-', 'SingleTop_cross_section-', 'luminosity-'
-# 'V+Jets_cross_section+', 'QCD_cross_section+', 'SingleTop_cross_section+', 'luminosity+'
+        self.met_specific_systematics = [
+            'ElectronEnUp',
+            'ElectronEnDown',
+            'MuonEnUp',
+            'MuonEnDown',
+            'TauEnUp',
+            'TauEnDown',
+            'UnclusteredEnUp',
+            'UnclusteredEnDown',
+        ]
 
-# 'TTJets_scaleup', 'TTJets_massup',
-# 'TTJets_scaledown',  'TTJets_massdown'
 
-# 'JES_down', 'JER_down', 'ElectronEnDown', 'MuonEnDown', 'TauEnDown', 'UnclusteredEnDown', 'LightJet_down', 'BJet_down', 'Electron_down',  'Muon_down'
-# 'JES_up', 'JER_up', 'ElectronEnUp', 'MuonEnUp', 'TauEnUp', 'UnclusteredEnUp', 'LightJet_up', 'BJet_up',   'Electron_up', 'Muon_up' 
 
         self.met_systematics_suffixes = self.met_systematics.keys()
 

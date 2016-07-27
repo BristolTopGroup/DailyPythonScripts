@@ -17,6 +17,7 @@ This module produces several results for the three channels (electron, muon, com
 '''
 from optparse import OptionParser
 from config import XSectionConfig
+from config.variable_binning import bin_edges_vis
 from tools.systematic import *
 
 if __name__ == '__main__':
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
-    met_systematics_suffixes = measurement_config.met_systematics_suffixes
+    met_specific_systematics = measurement_config.met_specific_systematics
     met_type = translate_options[options.metType]
     variables_no_met = measurement_config.variables_no_met
     method = options.unfolding_method
@@ -58,48 +59,95 @@ if __name__ == '__main__':
     if not visiblePS:
         phase_space = 'FullPS'
 
-    path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'
+    path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}'
     path_to_JSON = path_to_JSON.format(
         path = options.path, 
         com = options.CoM,
         variable = variable,
         phase_space = phase_space,
         )
+    number_of_bins=len(bin_edges_vis[variable])-1
+    print("Number of bins in {var} is {bin}".format(var=variable, bin=number_of_bins))
 
     # List of options to pass to systematic functions
     opts={
-    'met_systematics_suffixes' : met_systematics_suffixes,
+    'met_specific_systematics' : met_specific_systematics,
     'met_type' : met_type,
     'variables_no_met' : variables_no_met,
     'symmetrise_errors' : symmetrise_errors,
     'path_to_JSON' : path_to_JSON,
     'method' : method,
     'variable' : variable,
+    'number_of_bins' : number_of_bins,
     }
 
-    # Create categories of systematics. e.g. hadronisation, pdf, other...
-    list_systematic_categories = get_systematic_categories(opts, measurement_config)
+    # Get list of all systematics
+    all_systematics = measurement_config.list_of_systematics
+    all_systematics = append_PDF_uncertainties(all_systematics)
 
-    # Print categories of systematics
-    print_systematic_categories(list_systematic_categories)
+    print(all_systematics)
 
-    # What channels are systematics to be done for
-    for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+    list_of_systematics = {}
+    list_of_systematics['all'] = all_systematics
+    # Get separated lists of systematics e.g. only hadronisation etc...
+    # TODO
 
+    # Print the systematics if required
+    # TODO
+
+    for channel in ['combinedBeforeUnfolding']:
+
+    # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+        print("New Channel ___ ", channel)
         # Add channel to list of options
         opts['channel'] = channel
 
-        # Read in the normalised measurements from 01 and 02
-        list_normalised_measurements = get_normalised_measurements(opts, list_systematic_categories)
+        # print(list_of_systematics)
+        systematic_normalised_uncertainty, unfolded_systematic_normalised_uncertainty = \
+            get_normalised_cross_sections(opts, list_of_systematics)
 
-        # Print the normalised measurements
-        # print_normalised_measurements(list_normalised_measurements)
 
-        # Get the upper and lower systematic variations for measured and unfolded
-        upper_lower_variation_measured, up_down_variation_unfolded = get_upper_lower_variations(opts, list_normalised_measurements)
 
-        # Get a list of the normalised measurements with their systematics
-        list_measurement_with_systematics = get_measurement_with_systematics(opts, upper_lower_variation_measured, up_down_variation_unfolded)
+        unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty)
+        # Some systematics are identical before unfolding.
+        x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(systematic_normalised_uncertainty)
 
-        # Write central values and systematics to file
-        write_normalised_measurements(opts, list_normalised_measurements, list_measurement_with_systematics, upper_lower_variation_measured, up_down_variation_unfolded)
+        full_measurement = get_measurement_with_total_systematic_uncertainty(opts, x_sec_with_symmetrised_systematics)
+        full_unfolded_measurement = get_measurement_with_total_systematic_uncertainty(opts, unfolded_x_sec_with_symmetrised_systematics)
+
+        for keys in list_of_systematics.keys():
+            write_normalised_xsection_measurement(opts, full_measurement[keys], full_unfolded_measurement[keys], summary = keys )
+
+
+
+
+
+    # # Create categories of systematics. e.g. hadronisation, pdf, other...
+    # list_systematic_categories = get_systematic_categories(opts, measurement_config)
+
+    # # Print categories of systematics
+    # print_systematic_categories(list_systematic_categories)
+
+    # # What channels are systematics to be done for
+    # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+
+
+
+    #     # Read in the normalised measurements from 01 and 02
+    #     list_normalised_measurements = get_normalised_measurements(opts, list_systematic_categories)
+
+    #     # Print the normalised measurements
+    #     # print_normalised_measurements(list_normalised_measurements)
+
+    #     # Get the upper and lower systematic variations for measured and unfolded
+    #     upper_lower_variation_measured, up_down_variation_unfolded = get_upper_lower_variations(opts, list_normalised_measurements)
+
+    #     # Get a list of the normalised measurements with their systematics
+    #     list_measurement_with_systematics = get_measurement_with_systematics(opts, upper_lower_variation_measured, up_down_variation_unfolded)
+
+    #     # Write central values and systematics to file
+    #     write_normalised_measurements(opts, list_normalised_measurements, list_measurement_with_systematics, upper_lower_variation_measured, up_down_variation_unfolded)
+
+
+    #     # get_correlation_matrix(opts, stuff_here=No idea yet)
+

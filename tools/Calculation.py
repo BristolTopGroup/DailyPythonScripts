@@ -101,62 +101,6 @@ def combine_complex_results(result1, result2):
             results.append( ( s.nominal_value, s.std_dev ) )
         combined_result[sample] = results
     return combined_result
-
-def calculate_lower_and_upper_PDFuncertainty(central_measurement, pdf_uncertainty_values={}):
-    '''
-    Calculates the appropriate lower and upper PDF uncertainty
-    @param central_measurement: measurement from central PDF weight
-    @param pdf_uncertainty_values: dictionary of measurements with different PDF weights; 
-                                    format {PDFWeights_%d: measurement}
-    '''
-    negative = []
-    positive = []
-    
-    # split PDF uncertainties into downwards (negative) and upwards (positive) components
-    for index in range(0, 100):
-        pdf_weight = 'PDFWeights_%d' % index
-        pdf_uncertainty = pdf_uncertainty_values[pdf_weight]
-        if index % 2 == 0:  # even == negative
-            negative.append(pdf_uncertainty)
-        else:
-            positive.append(pdf_uncertainty)
-            
-    pdf_max = numpy.sqrt(sum(max(x - central_measurement, y - central_measurement, 0) ** 2 for x, y in zip(negative, positive)))
-    pdf_min = numpy.sqrt(sum(max(central_measurement - x, central_measurement - y, 0) ** 2 for x, y in zip(negative, positive)))
-    
-    return pdf_min, pdf_max   
-
-def calculate_lower_and_upper_systematics(central_measurement, list_of_systematics, symmetrise_errors = False):
-    '''
-    More generic replacement for calculateTotalUncertainty. Calculates the total negative and positve systematics.
-    @param central_measurement: measurement from the central sample
-    @param list_of_systematics: list of systematic measurements 
-    @param symmetrise_errors: make the errors symmetric. Picks the largest of the two and returns it as both upper and lower error. Default is false.
-    '''
-    negative_error = 0
-    positive_error = 0
-    for variation, systematic in list_of_systematics.iteritems():
-        systematic_value, up_or_down = systematic[0], systematic[1]
-        deviation = abs(systematic_value) - abs(central_measurement)
-
-        if up_or_down == 1:
-            positive_error += deviation**2
-        elif up_or_down == -1
-            negative_error += deviation**2
-        elif up_or_down == 0:
-            if deviation > 0:
-                positive_error += deviation**2
-            else:
-                negative_error += deviation**2
-
-    negative_error = sqrt(negative_error)
-    positive_error = sqrt(positive_error)
-    
-    if symmetrise_errors:
-        negative_error = max(negative_error, positive_error)
-        positive_error = max(negative_error, positive_error)
-    
-    return negative_error, positive_error
     
 def combine_errors_in_quadrature(list_of_errors):
     list_of_errors_squared = [error**2 for error in list_of_errors]
