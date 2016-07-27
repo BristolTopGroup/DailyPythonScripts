@@ -83,11 +83,13 @@ if __name__ == '__main__':
 
     # Get list of all systematics
     all_systematics = measurement_config.list_of_systematics
+    # Add in the PDF weights
     all_systematics = append_PDF_uncertainties(all_systematics)
 
     print(all_systematics)
 
     list_of_systematics = {}
+    # Do you want to use different groups of systematics?
     list_of_systematics['all'] = all_systematics
     # Get separated lists of systematics e.g. only hadronisation etc...
     # TODO
@@ -95,26 +97,23 @@ if __name__ == '__main__':
     # Print the systematics if required
     # TODO
 
-    for channel in ['combinedBeforeUnfolding']:
-
-    # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
-        print("New Channel ___ ", channel)
+    for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+        print("New Channel : ", channel)
         # Add channel to list of options
         opts['channel'] = channel
 
-        # print(list_of_systematics)
-        systematic_normalised_uncertainty, unfolded_systematic_normalised_uncertainty = \
-            get_normalised_cross_sections(opts, list_of_systematics)
+        # Retreive the normalised cross sections, for all groups in list_of_systematics.
+        systematic_normalised_uncertainty, unfolded_systematic_normalised_uncertainty = get_normalised_cross_sections(opts, list_of_systematics)
 
-
-
-        unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty)
-        # Some systematics are identical before unfolding.
+        # Get and symmetrise the uncertainties
         x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(systematic_normalised_uncertainty)
+        unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty)
 
+        # Combine all systematic uncertainties for each of the groups of systematics
         full_measurement = get_measurement_with_total_systematic_uncertainty(opts, x_sec_with_symmetrised_systematics)
         full_unfolded_measurement = get_measurement_with_total_systematic_uncertainty(opts, unfolded_x_sec_with_symmetrised_systematics)
 
+        # Write central +- error to JSON. Group of systematics in question is included in outputfile name.
         for keys in list_of_systematics.keys():
             write_normalised_xsection_measurement(opts, full_measurement[keys], full_unfolded_measurement[keys], summary = keys )
 
