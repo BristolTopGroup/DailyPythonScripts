@@ -273,24 +273,23 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
                 # sign = measurement[2][bin_i]
             tmp_meas.append( [central[0], sqrt(sys_unc), sqrt(sys_unc)] )
         measurement_with_total_uncertainty[group_of_systematics] = tmp_meas
-        print(measurement_with_total_uncertainty)
     return measurement_with_total_uncertainty
 
                 # MAYBE do this with a entry by entry list using \t???
-# def print_normalised_measurements(all_normalised_measurements):
-#     '''
-#     Allows for printing of the normalised measurements for the cross section
-#     '''
-#     for syst_category, measurements in all_normalised_measurements.iteritems():
-#         print( "Type of systematics being looked at is '{syst_category}'".format(syst_category=syst_category) )
-#         for key, list_of_norm_xsec_meas in measurements.iteritems():
-#             print("\nThe {key} normalised cross section measurements is :\n  {list_of_norm_xsec_meas}\n ".format(
-#                 key=key, 
-#                 list_of_norm_xsec_meas=list_of_norm_xsec_meas)
-#             ) 
-#     return
 
-
+def print_dictionary(title, dictionary_to_print):
+    '''
+    Prints dictionaries in a nicer form
+    '''
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    print ()
+    print ('-'*100)
+    print (title)
+    print ('-'*100)
+    pp.pprint(dictionary_to_print)
+    print ()
+    return
 
 def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
     '''
@@ -309,7 +308,7 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
     Uses the symmetrised normalised cross sections uncertainties in the form:
     Group of Systematics : { List of Systematics in Group : [[central], [symmetrised uncertainty], [signed uncertainty]]}
     Covariance_ij = (Sign_i*Unc_i) * (Sign_j*Unc_j)
-    Variance_ii = Covariance_ij : Therefore can use same formula
+    Variance_ii = (Unc_i) * (Unc_i)
     Returns the matrix in the form [[Bin_i, Bin_j], Cov_ij]
     '''
     matrix = []
@@ -320,8 +319,10 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
             uncertainty_j = measurement[1][bin_j]
             sign_i = measurement[2][bin_i]
             sign_j = measurement[2][bin_j]
-
-            cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
+            if (bin_i == bin_j):
+                cov_ij = (uncertainty_i) * (uncertainty_j)
+            else:
+                cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
             bin_and_value = [[bin_i, bin_j], cov_ij]
             if not bin_i == bin_j:
                 bin_and_value.append([[bin_j, bin_i], cov_ij])
