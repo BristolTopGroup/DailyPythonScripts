@@ -293,28 +293,24 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
 
 
 def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
+    '''
+    Iterates through each group of systematics generating and plotting the covariance matrix of the systematic
+    '''
     number_of_bins=options['number_of_bins']
 
     for group_of_systematics, systematics_in_list in x_sec_with_symmetrised_systematics.iteritems():
         for systematic, measurement in systematics_in_list.iteritems():
             matrix = generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement)
             make_covariance_plot(options, systematic, matrix)
+    return
 
 def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement):
     '''
-    Gets the symmetrised normalised cross sections uncertainties in the form:
+    Uses the symmetrised normalised cross sections uncertainties in the form:
     Group of Systematics : { List of Systematics in Group : [[central], [symmetrised uncertainty], [signed uncertainty]]}
-        [central]                   = [[x sec, unc], [x sec, unc]...[x sec, unc]] For N Bins
-        [symmetrised uncertainty]   = [sym unc, sym unc...sym unc] For N Bins
-        [signed uncertainty]        = [sign, sign...sign] For N Bins
-
-        |   var     |
-        |   cov     |
-        |   cov     |
-        |   cov     |      
-
-
-
+    Covariance_ij = (Sign_i*Unc_i) * (Sign_j*Unc_j)
+    Variance_ii = Covariance_ij : Therefore can use same formula
+    Returns the matrix in the form [[Bin_i, Bin_j], Cov_ij]
     '''
     matrix = []
     for bin_i in xrange(number_of_bins):
@@ -333,6 +329,10 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
     return matrix
 
 def make_covariance_plot( options, systematic, matrix ):
+    '''
+    Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
+    Saves to *Include FinalOutFilePath here*
+    '''
     from config.variable_binning import bin_edges_vis
     from ROOT import TH2F, TCanvas, gRoot
     from array import array
@@ -343,10 +343,10 @@ def make_covariance_plot( options, systematic, matrix ):
 
     x_binning = array ( 'f' , bin_edges_vis[variable] )
     y_binning = array ( 'f', bin_edges_vis[variable] )
-    nXBins = len( x_binning ) - 1
-    nYBins = len( y_binning ) - 1
+    n_xbins = len( x_binning ) - 1
+    n_ybins = len( y_binning ) - 1
 
-    hist = TH2F('name', 'title', nXBins, x_binning, nYBins, y_binning )
+    hist = TH2F('name', 'title', n_xbins, x_binning, n_ybins, y_binning )
     set_bin_value = hist.SetBinContent
     for entry in matrix:
         bin_i = entry[0][0]
