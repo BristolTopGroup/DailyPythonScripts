@@ -109,6 +109,9 @@ if __name__ == '__main__':
         x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(systematic_normalised_uncertainty)
         unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty)
 
+        # Create covariance matrices
+        generate_covariance_matrices(opts, unfolded_x_sec_with_symmetrised_systematics)
+
         # Combine all systematic uncertainties for each of the groups of systematics
         full_measurement = get_measurement_with_total_systematic_uncertainty(opts, x_sec_with_symmetrised_systematics)
         full_unfolded_measurement = get_measurement_with_total_systematic_uncertainty(opts, unfolded_x_sec_with_symmetrised_systematics)

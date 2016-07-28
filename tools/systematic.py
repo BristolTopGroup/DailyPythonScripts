@@ -290,3 +290,74 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
 #             ) 
 #     return
 
+
+
+def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
+    number_of_bins=options['number_of_bins']
+
+    for group_of_systematics, systematics_in_list in x_sec_with_symmetrised_systematics.iteritems():
+        for systematic, measurement in systematics_in_list.iteritems():
+            matrix = generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement)
+            make_covariance_plot(options, systematic, matrix)
+
+def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement):
+    '''
+    Gets the symmetrised normalised cross sections uncertainties in the form:
+    Group of Systematics : { List of Systematics in Group : [[central], [symmetrised uncertainty], [signed uncertainty]]}
+        [central]                   = [[x sec, unc], [x sec, unc]...[x sec, unc]] For N Bins
+        [symmetrised uncertainty]   = [sym unc, sym unc...sym unc] For N Bins
+        [signed uncertainty]        = [sign, sign...sign] For N Bins
+
+        |   var     |
+        |   cov     |
+        |   cov     |
+        |   cov     |      
+
+
+
+    '''
+    matrix = []
+    for bin_i in xrange(number_of_bins):
+        for bin_j in xrange(number_of_bins):
+            if (bin_j < bin_i): continue
+            uncertainty_i = measurement[1][bin_i]
+            uncertainty_j = measurement[1][bin_j]
+            sign_i = measurement[2][bin_i]
+            sign_j = measurement[2][bin_j]
+
+            cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
+            bin_and_value = [[bin_i, bin_j], cov_ij]
+            if not bin_i == bin_j:
+                bin_and_value.append([[bin_j, bin_i], cov_ij])
+            matrix.append(bin_and_value)
+    return matrix
+
+def make_covariance_plot( options, systematic, matrix ):
+    from config.variable_binning import bin_edges_vis
+    from ROOT import TH2F, TCanvas, gRoot
+    from array import array
+    ROOT.gROOT.SetBatch(True)
+
+    variable = options['variable']
+    channel = options['channel']
+
+    x_binning = array ( 'f' , bin_edges_vis[variable] )
+    y_binning = array ( 'f', bin_edges_vis[variable] )
+    nXBins = len( x_binning ) - 1
+    nYBins = len( y_binning ) - 1
+
+    hist = TH2F('name', 'title', nXBins, x_binning, nYBins, y_binning )
+    set_bin_value = hist.SetBinContent
+    for entry in matrix:
+        bin_i = entry[0][0]
+        bin_j = entry[0][1]
+        cov_ij = entry[1]
+        set_bin_value( bin_i, bin_j, cov_ij )
+    # Easy access to .pngs 
+    canvas = TCanvas("canvas_name","canvas_title", 0, 0, 800, 600)
+    hist.SetTitle(systematic+" covariance matrix for "+variable+" in channel "+channel+" ; Bin_i; Bin_j")
+    hist.Draw("colz")
+    canvas.Update()
+    canvas.SaveAs(channel+'_'+variable+'_'+systematic+'_covariance_matrix.png')
+    canvas.Delete()
+
