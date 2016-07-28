@@ -19,6 +19,7 @@ from optparse import OptionParser
 from config import XSectionConfig
 from config.variable_binning import bin_edges_vis
 from tools.systematic import *
+from tools.file_utilities import make_folder_if_not_exists
 
 if __name__ == '__main__':
     '''
@@ -66,6 +67,12 @@ if __name__ == '__main__':
         variable = variable,
         phase_space = phase_space,
         )
+    covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{variable}/'
+    covariance_matrix_output_path = covariance_matrix_output_path.format(
+        variable = variable,
+        phase_space = phase_space,
+        )
+    make_folder_if_not_exists(covariance_matrix_output_path)
     number_of_bins=len(bin_edges_vis[variable])-1
 
     # List of options to pass to systematic functions
@@ -75,6 +82,7 @@ if __name__ == '__main__':
     'variables_no_met' : variables_no_met,
     'symmetrise_errors' : symmetrise_errors,
     'path_to_JSON' : path_to_JSON,
+    'covariance_matrix_output_path' : covariance_matrix_output_path,
     'method' : method,
     'variable' : variable,
     'number_of_bins' : number_of_bins,
@@ -108,17 +116,17 @@ if __name__ == '__main__':
         x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(systematic_normalised_uncertainty)
         unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty)
         # print_dictionary("Normalised cross sections of the systematics with symmetrised uncertainties", x_sec_with_symmetrised_systematics)
-        print_dictionary("Unfolded normalised cross sections of the systematics  with symmetrised uncertainties", unfolded_x_sec_with_symmetrised_systematics)
+        # print_dictionary("Unfolded normalised cross sections of the systematics  with symmetrised uncertainties", unfolded_x_sec_with_symmetrised_systematics)
 
         # Create covariance matrices
-        # generate_covariance_matrices(opts, x_sec_with_symmetrised_systematics)
-        # generate_covariance_matrices(opts, unfolded_x_sec_with_symmetrised_systematics)
+        generate_covariance_matrices(opts, x_sec_with_symmetrised_systematics)
+        generate_covariance_matrices(opts, unfolded_x_sec_with_symmetrised_systematics)
 
         # Combine all systematic uncertainties for each of the groups of systematics
         full_measurement = get_measurement_with_total_systematic_uncertainty(opts, x_sec_with_symmetrised_systematics)
         full_unfolded_measurement = get_measurement_with_total_systematic_uncertainty(opts, unfolded_x_sec_with_symmetrised_systematics)
         # print_dictionary("Measurement with total systematic error for each systematic group", full_measurement)
-        print_dictionary("Unfolded measurement with total systematic error for each systematic group", full_unfolded_measurement)
+        # print_dictionary("Unfolded measurement with total systematic error for each systematic group", full_unfolded_measurement)
 
         # Write central +- error to JSON. Group of systematics in question is included in outputfile name.
         for keys in list_of_systematics.keys():

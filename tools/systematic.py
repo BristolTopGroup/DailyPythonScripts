@@ -332,15 +332,16 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
 def make_covariance_plot( options, systematic, matrix ):
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
-    Saves to *Include FinalOutFilePath here*
+    Saves to plots/covariance_matrices/{PhaseSpace}/{Variable}/
     '''
     from config.variable_binning import bin_edges_vis
-    from ROOT import TH2F, TCanvas, gRoot
+    from ROOT import TH2F, TCanvas, gROOT
     from array import array
-    ROOT.gROOT.SetBatch(True)
+    gROOT.SetBatch(True)
 
     variable = options['variable']
     channel = options['channel']
+    covariance_matrix_output_path = options['covariance_matrix_output_path']
 
     x_binning = array ( 'f' , bin_edges_vis[variable] )
     y_binning = array ( 'f', bin_edges_vis[variable] )
@@ -359,6 +360,5 @@ def make_covariance_plot( options, systematic, matrix ):
     hist.SetTitle(systematic+" covariance matrix for "+variable+" in channel "+channel+" ; Bin_i; Bin_j")
     hist.Draw("colz")
     canvas.Update()
-    canvas.SaveAs(channel+'_'+variable+'_'+systematic+'_covariance_matrix.png')
-    canvas.Delete()
+    canvas.SaveAs(covariance_matrix_output_path+systematic+'_covariance_matrix.png')
 
