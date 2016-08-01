@@ -4,12 +4,10 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 from ROOT import gSystem, cout, TDecompSVD
-# import config.RooUnfold as unfoldCfg
+import config.unfold as unfoldCfg
 from tools.ROOT_utils import set_root_defaults
 set_root_defaults( set_batch = True, msg_ignore_level = 3001 )
 from tools.hist_utilities import hist_to_value_error_tuplelist, fix_overflow
-# gSystem.Load( unfoldCfg.library )
-# from ROOT import RooUnfoldResponse, RooUnfoldParms, RooUnfold, RooUnfoldBayes, RooUnfoldSvd
 from ROOT import TUnfoldDensity, TUnfold
 from ROOT import TH2D, TH1D, TGraph
 from rootpy import asrootpy
@@ -24,12 +22,12 @@ class Unfolding:
                  measured,
                  response,
                  fakes = None,
-                 method = 'RooUnfoldSvd',
-                 tau = -1,#unfoldCfg.SVD_tau_value,
-                 k_value = 0,#unfoldCfg.SVD_k_value,
-                 n_toy = 1000,#unfoldCfg.SVD_n_toy,
-                 Bayes_n_repeat = 4,#unfoldCfg.Bayes_n_repeat,
-                 error_treatment = 3,#unfoldCfg.error_treatment,
+                 method = 'TUnfold',
+                 tau = unfoldCfg.SVD_tau_value,
+                 k_value = unfoldCfg.SVD_k_value,
+                 n_toy = unfoldCfg.SVD_n_toy,
+                 Bayes_n_repeat = unfoldCfg.Bayes_n_repeat,
+                 error_treatment = unfoldCfg.error_treatment,
                  measured_truth_without_fakes = None,
                  verbose = 0 ):
         # if not method in unfoldCfg.availablemethods:
@@ -42,7 +40,6 @@ class Unfolding:
         self.data = data
         self.unfolded_data = None
         self.unfoldObject = None
-        self.unfoldResponse = None
         self.verbose = verbose
         self.tau = float(tau)
         self.k_value = int(k_value)
@@ -55,19 +52,7 @@ class Unfolding:
 
     def setup_unfolding ( self ):
         if not self.unfoldObject:
-            
-            if not self.unfoldResponse and not self.method == 'TUnfold':
-                self.unfoldResponse = self._makeUnfoldResponse()
-            
-            if self.method == 'RooUnfoldBayes':
-                self.unfoldObject = RooUnfoldBayes     ( self.unfoldResponse, self.data, self.Bayes_n_repeat )
-            elif self.method == 'RooUnfoldSvd':
-                if self.k_value > 0:
-                    self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.k_value, self.n_toy )
-                else:
-                    if self.tau >= 0:
-                        self.unfoldObject = RooUnfoldSvd( self.unfoldResponse, self.data, self.tau, self.n_toy )
-            elif self.method == 'TUnfold':
+            if self.method == 'TUnfold':
               self.unfoldObject = TUnfoldDensity( self.response, TUnfold.kHistMapOutputVert,
                                                   TUnfold.kRegModeCurvature,
                                                 )
@@ -87,16 +72,10 @@ class Unfolding:
         if self.method == 'TUnfold':
             self.unfoldObject.DoUnfold(self.tau)
             self.unfolded_data = asrootpy( self.unfoldObject.GetOutput('Unfolded') )
-        else:
-            self.unfoldObject.SetVerbose( self.verbose )
-            self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
+#         else:
+#             self.unfoldObject.SetVerbose( self.verbose )
+#             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
         return self.unfolded_data
-
-    def _makeUnfoldResponse( self ):
-        if self.fakes:
-            return RooUnfoldResponse ( self.measured, self.truth, self.fakes, self.response )
-        else:
-            return RooUnfoldResponse ( self.measured, self.truth, self.response )
 
     def getBestTau( self ):
         if self.method != 'TUnfold':

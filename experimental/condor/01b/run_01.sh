@@ -1,22 +1,27 @@
 #!/bin/bash
-scramv1 project CMSSW CMSSW_7_4_7_patch2
-cd CMSSW_7_4_7_patch2/src
-eval `scramv1 runtime -sh`
-tar -xf ../../dps.tar
+git_branch=master
+
+echo "Setting up DailyPythonScripts from tar file ..."
+echo "... getting ${git_branch} branch"
+>&2 echo "... getting ${git_branch} branch"
+time git clone https://github.com/BristolTopGroup/DailyPythonScripts.git
 cd DailyPythonScripts/
-cd external/
-rm -r vpython/
-cd ../
-git submodule init && git submodule update
-./setup.sh
-eval `scramv1 runtime -sh`
-. environment.sh
-python experimental/condor/01b/run01_forAllOptions.py -n $1
+git checkout ${git_branch}
+echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
+tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
+echo "... enforcing conda python environment"
+source bin/env.sh
+echo "DailyPythonScripts are set up"
+
+echo "Running payload"
+>&2 echo "Running payload"
+time python experimental/condor/run01_forAllOptions.py -n $1
+
 echo "Done"
 ls
 echo "Tarring"
 tar -cf output_$1.tar data
 ls
 echo "Moving"
-mv output_$1.tar ../../../
-ls ../../../
+mv output_$1.tar ${_CONDOR_JOB_IWD}/.
+ls ${_CONDOR_JOB_IWD}/

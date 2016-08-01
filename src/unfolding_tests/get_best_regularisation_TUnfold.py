@@ -245,12 +245,13 @@ def tau_from_scan( unfoldingObject, regularisation_settings ):
     bestTau = Graph(1)
     bestTau.SetPoint(1,t,x)
     bestTau.markercolor = 'red'
+    bestTau.SetMarkerSize(1.25)
     bestTau.Draw('*')
 
     # Write to file
     output_dir = regularisation_settings.output_folder
     make_folder_if_not_exists(output_dir)
-    canvas.SaveAs(output_dir + '/{0}.pdf'.format(variable) )
+    canvas.SaveAs(output_dir + '/{0}.png'.format(variable) )
 
     return unfoldingObject.GetTau()
 

@@ -4,9 +4,7 @@ Created on 31 Oct 2012
 @author: kreczko
 '''
 availablemethods = [
-                    'TUnfold',
-                    'RooUnfoldBayes',
-                    'RooUnfoldSvd',
+                    'TUnfold'
                     ]
 
 SVD_k_value = 5

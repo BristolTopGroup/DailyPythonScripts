@@ -4,48 +4,28 @@
 
 Python scripts for the daily tasks in particle physics (*Run 2*) - Daily Python Scripts (aka DPS)
 
-Quick installation recipe:
+If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
 ```
-# get the code from the repository
 git clone https://github.com/BristolTopGroup/DailyPythonScripts
 cd DailyPythonScripts
-
-# for Run 1 code, please checkout the run1 branch
-# git checkout run1
-
-# get submodules:
-git submodule init && git submodule update
-
-# setup run:
-source setup_conda.sh
-
-# setup environment (using virtualenv for python):
-source environment_conda.sh
-
-# make sure matplotlib is up to date (should return 1.3.1 or above):
+source bin/env.sh
+# make sure matplotlib is up to date (should return 1.5.1 or above):
 python -c 'import matplotlib; print matplotlib.__version__'
+# test ROOT and rootpy
+root -l -q
+time python -c "import ROOT; ROOT.TBrowser()"
+time python -c 'import rootpy'
+time python -c 'from ROOT import kTRUE; import rootpy'
 ```
 
-If working on soolin (or anywhere where dependencies like ROOT/latex/etc are not available), run it within CMSSW:
-
-```
-# install CMSSW and setup environment:
-export SCRAM_ARCH=slc6_amd64_gcc491
-scram p -n CMSSW_7_4_7_DPS_ CMSSW_7_4_7
-cd CMSSW_7_4_7_DPS/src/
-cmsenv
-# This version comes with ROOT 6.02/05
-
-# then install DailyPythonScripts according to the recipe above
-
-```
+Setting up conda environment on your own machine, please have a look under the `Conda` section.
 
 ## Dependencies
-[ROOT](http://root.cern.ch) &ge; 6.02
+[ROOT](http://root.cern.ch) &ge; 6.04
 
 [freetype](http://www.freetype.org)
 
-[matplotlib](http://matplotlib.org/) &ge; 1.3
+[matplotlib](http://matplotlib.org/) &ge; 1.5
 
 ## Disclaimer
 All plots/histograms provided by this package are based on either toy MC or simulated events from the CMS experiment.
@@ -57,8 +37,6 @@ config/* - files to save presets for available modules
 data/* - for input/output of ROOT & JSON files (will be created by some scripts)
 
 examples/* - generic examples for available modules
-
-external/* - external projects (virtualenv, RooUnfold, etc)
 
 plots/* - default output folder for plots (will be created by some scripts)
 
@@ -112,3 +90,37 @@ x_make_control_plots
 x_make_fit_variable_plots
 ```
 (script AN-14-071 runs all of these scripts automatically if you are confident everything will run smoothly(!))
+
+## Conda
+DailyPythonScripts relies on a (mini)conda environment to provide all necessary dependencies. This section describes how to set up this environment from scratch.
+As a first step, download and install conda (you can skip this step if you are using a shared conda install, e.g. on soolin):
+```bash
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+export CONDAINSTALL=<path to miniconda install> # e.g. /software/miniconda
+bash miniconda.sh -b -p $CONDAINSTALL # or a different location
+```
+
+Next let us create a new conda environment with some base packages:
+```bash
+export PATH="$CONDAINSTALL/bin:$PATH"
+export ENV_NAME=dps
+export CONDA_ENV_PATH=$CONDAINSTALL/envs/${ENV_NAME}
+conda config --add channels http://conda.anaconda.org/NLeSC
+conda config --set show_channel_urls yes
+conda update -y conda
+conda install -y psutil
+conda create -y -n ${ENV_NAME} python=2.7 root=6 root-numpy numpy matplotlib nose sphinx pytables rootpy
+```
+Then activate the environment and install the remaining dependencies
+```bash
+source activate $ENV_NAME
+# install dependencies that have no conda recipe
+pip install -U uncertainties tabulate
+```
+At this point you should have all necessary dependencies which you can try out with:
+```bash
+root -l -q
+time python -c "import ROOT; ROOT.TBrowser()"
+time python -c 'import rootpy'
+time python -c 'from ROOT import kTRUE; import rootpy'
+```

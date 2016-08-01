@@ -1,9 +1,0 @@
-[submodule "external/rootpy"]
-	path = external/rootpy
-	url = https://github.com/rootpy/rootpy.git
-[submodule "external/RooUnfold"]
-	path = external/RooUnfold
-	url = https://github.com/kreczko/RooUnfold.git
-[submodule "external/virtualenv"]
-	path = external/virtualenv
-	url = https://github.com/pypa/virtualenv.git

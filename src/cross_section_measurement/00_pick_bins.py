@@ -331,7 +331,9 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 resolution = get_bin_resolution( gen_vs_reco_histogram, current_bin_mid)
                 # print ("Max Resolution : ", resolution)
                 # print ("Bin Width : ", binWidth)
-                if (binWidth > 2*resolution) :
+                if( abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinLowEdge(bin_i)) > resolution and 
+                    abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinUpEdge(current_bin_start)) > resolution 
+                    ):
                     current_bin_end = bin_i
                     break
 
