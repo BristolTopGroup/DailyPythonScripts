@@ -29,18 +29,6 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
 
     print("Data written to : ", output_file)
 
-# def print_systematic_categories(all_uncertainties):
-#     '''
-#     Allows for the contents of each systematic category to be printed to the terminal
-#     '''
-#     for key, list_of_uncertainties in all_uncertainties.iteritems():
-#         print("The {key} uncertainty group contains :\n{list_of_uncertainties}\n".format(
-#             key=key, 
-#             list_of_uncertainties=list_of_uncertainties, 
-#             ) 
-#         )
-#     return
-
 def append_PDF_uncertainties(all_systematics):
     '''
     Replace 'PDF' entry in list of all systematics with actual PDF variations
@@ -56,7 +44,6 @@ def read_normalised_xsection_measurement(options, category):
     Returns the normalised measurement and normalised unfolded measurement for 
     the file associated with the variable under study
     '''
-    # print(options['channel'])
     variable=options['variable']
     variables_no_met=options['variables_no_met']
     met_specific_systematics=options['met_specific_systematics']
@@ -79,7 +66,7 @@ def read_normalised_xsection_measurement(options, category):
             category = category,
             method = method
         )
-    # print(filename) 
+
     normalised_xsection = read_data_from_JSON( filename )
     measurement = normalised_xsection['TTJet_measured']#should this be measured without fakes???
     measurement_unfolded = normalised_xsection['TTJet_unfolded']
@@ -156,16 +143,18 @@ def get_normalised_cross_sections(options, list_of_systematics):
                     [central_measurement, pdf_total_upper, pdf_total_lower]
                 unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics]['PDF_Combined'] = \
                     [central_measurement_unfolded, unf_pdf_total_upper, unf_pdf_total_lower]
+                del normalised_systematic_uncertainty_x_sections[group_of_systematics]['PDF']
+                del unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics]['PDF']
             else:
                 syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation)
                 normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(syst_unc_x_sec['upper'])
                 normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(syst_unc_x_sec['lower'])
                 unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(unf_syst_unc_x_sec['upper'])
                 unfolded_normalised_systematic_uncertainty_x_sections[group_of_systematics][systematic].append(unf_syst_unc_x_sec['lower'])
-    # print(normalised_systematic_uncertainty_x_sections)
+
     return normalised_systematic_uncertainty_x_sections, unfolded_normalised_systematic_uncertainty_x_sections
 
-def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values={}):
+def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values):
     '''
     Calculates the appropriate lower and upper PDF uncertainty
     @param central_measurement: measurement from central PDF weight
@@ -175,14 +164,16 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     number_of_bins = options['number_of_bins']
     pdf_min = []
     pdf_max = []
-    
+    # print_dictionary("Central",central_measurement)
+    # print_dictionary("PDF",pdf_uncertainty_values)
+
     # split PDF uncertainties into downwards (negative) and upwards (positive) components
     for bin_i in xrange(number_of_bins):
         negative = []
         positive = []
         central = central_measurement[bin_i][0]
         for index in range(0, 100):
-            pdf_weight = 'PDFWeights_%d' % index
+            pdf_weight = 'PDFWeights_{0}'.format(index)
             pdf_uncertainty = pdf_uncertainty_values[pdf_weight][bin_i]
             if index % 2 == 0:  # even == negative
                 negative.append(pdf_uncertainty)
@@ -205,8 +196,6 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs):
     normalised_x_sections_with_symmetrised_systematics = deepcopy(norm_syst_unc_x_secs)
     for group_of_systematics, systematics_in_list in norm_syst_unc_x_secs.iteritems():
         for systematic, variation in systematics_in_list.iteritems():
-            # Don't need 'PDF' now we have 'PDF_Combined'
-            if systematic == 'PDF': continue
             central_measurement = variation[0]
             upper_measurement = variation[1]
             lower_measurement = variation[2]
@@ -270,12 +259,9 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
             for systematic, measurement in systematics_in_list.iteritems():
                 central = measurement[0][bin_i] # Still [Value, Error]
                 sys_unc += measurement[1][bin_i]**2
-                # sign = measurement[2][bin_i]
             tmp_meas.append( [central[0], sqrt(sys_unc), sqrt(sys_unc)] )
         measurement_with_total_uncertainty[group_of_systematics] = tmp_meas
     return measurement_with_total_uncertainty
-
-                # MAYBE do this with a entry by entry list using \t???
 
 def print_dictionary(title, dictionary_to_print):
     '''
@@ -323,21 +309,24 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
                 cov_ij = (uncertainty_i) * (uncertainty_j)
             else:
                 cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
-            bin_and_value = [[bin_i, bin_j], cov_ij]
-            if not bin_i == bin_j:
-                bin_and_value.append([[bin_j, bin_i], cov_ij])
+            # Bins when plotting Histogram start from 1 not 0
+            bin_and_value = [[bin_i+1, bin_j+1], cov_ij]
             matrix.append(bin_and_value)
+            if not bin_i == bin_j:
+                bin_and_value = ([[bin_j+1, bin_i+1], cov_ij])
+                matrix.append(bin_and_value)
     return matrix
 
 def make_covariance_plot( options, systematic, matrix ):
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
-    Saves to plots/covariance_matrices/{PhaseSpace}/{Variable}/
+    Saves to plots/covariance_matrices/{PhaseSpace}/{Channel}/{Variable}/
     '''
     from config.variable_binning import bin_edges_vis
-    from ROOT import TH2F, TCanvas, gROOT
+    from ROOT import TH2F, TCanvas, TPad, gROOT, gStyle
     from array import array
     gROOT.SetBatch(True)
+    gStyle.SetOptStat(0)
 
     variable = options['variable']
     channel = options['channel']
@@ -361,4 +350,3 @@ def make_covariance_plot( options, systematic, matrix ):
     hist.Draw("colz")
     canvas.Update()
     canvas.SaveAs(covariance_matrix_output_path+systematic+'_covariance_matrix.png')
-
