@@ -67,12 +67,7 @@ if __name__ == '__main__':
         variable = variable,
         phase_space = phase_space,
         )
-    covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{variable}/'
-    covariance_matrix_output_path = covariance_matrix_output_path.format(
-        variable = variable,
-        phase_space = phase_space,
-        )
-    make_folder_if_not_exists(covariance_matrix_output_path)
+
     number_of_bins=len(bin_edges_vis[variable])-1
 
     # List of options to pass to systematic functions
@@ -82,7 +77,6 @@ if __name__ == '__main__':
     'variables_no_met' : variables_no_met,
     'symmetrise_errors' : symmetrise_errors,
     'path_to_JSON' : path_to_JSON,
-    'covariance_matrix_output_path' : covariance_matrix_output_path,
     'method' : method,
     'variable' : variable,
     'number_of_bins' : number_of_bins,
@@ -104,8 +98,19 @@ if __name__ == '__main__':
 
     for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
         print("Channel in use is {0} : ".format(channel))
-        # Add channel to list of options
+
+        # Output folder of covariance matrices
+        covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{channel}/{variable}/'
+        covariance_matrix_output_path = covariance_matrix_output_path.format(
+            variable = variable,
+            channel = channel,
+            phase_space = phase_space,
+            )
+        make_folder_if_not_exists(covariance_matrix_output_path)
+
+        # Add channel specific options to list of options
         opts['channel'] = channel
+        opts['covariance_matrix_output_path'] = covariance_matrix_output_path
 
         # Retreive the normalised cross sections, for all groups in list_of_systematics.
         systematic_normalised_uncertainty, unfolded_systematic_normalised_uncertainty = get_normalised_cross_sections(opts, list_of_systematics)
