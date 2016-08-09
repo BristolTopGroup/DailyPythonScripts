@@ -1,5 +1,6 @@
 from __future__ import division, print_function
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
+from config import XSectionConfig
 from copy import deepcopy
 from math import sqrt
 import numpy as np
@@ -186,7 +187,7 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
 
     return pdf_min, pdf_max  
 
-def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs):
+def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
     '''
     Gets the symmetrised normalised cross sections uncertainties in the form:
     Group of Systematics : { List of Systematics in Group : [[central], [symmetrised uncertainty], [signed uncertainty]]}
@@ -200,13 +201,16 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs):
             central_measurement = variation[0]
             upper_measurement = variation[1]
             lower_measurement = variation[2]
-            symmetrised_uncertainties, signed_uncertainties = get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement)
+
+            isTopMassSystematic = True if systematic == 'TTJets_mass' else False
+
+            symmetrised_uncertainties, signed_uncertainties = get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic )
 
             normalised_x_sections_with_symmetrised_systematics[group_of_systematics][systematic] = \
                 [central_measurement, symmetrised_uncertainties, signed_uncertainties] 
     return normalised_x_sections_with_symmetrised_systematics           
 
-def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement):
+def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic=False ):
     '''
     Returns the symmetric error in each bin for a specific systematic and also the sign of the systematic.
     Sign is used for calculating the covariance matrices. Returns of the form:
@@ -225,6 +229,10 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
 
         upper_uncertainty = abs(central - upper)
         lower_uncertainty = abs(central - lower)
+
+        if isTopMassSystematic:
+            upper_uncertainty, lower_uncertainty = scaleTopMassSystematic( upper_uncertainty, lower_uncertainty, options['topMasses'], options['topMassUncertainty'] )
+
         symmetrised_uncertainty = max(upper_uncertainty, lower_uncertainty)
         #  Getting the sign of the uncertainty
         if u == l:
@@ -235,6 +243,15 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
         symm_uncerts.append(symmetrised_uncertainty)
         sign_uncerts.append(sign)
     return symm_uncerts, sign_uncerts
+
+def scaleTopMassSystematic( upper_uncertainty, lower_uncertainty, topMasses, topMassUncertainty ):
+    lowMassDifference = topMasses[1] - topMasses[0]
+    upMassDifference = topMasses[2] - topMasses[1]
+
+    upper_uncertainty *= topMassUncertainty / upMassDifference
+    lower_uncertainty *= topMassUncertainty / lowMassDifference
+
+    return upper_uncertainty, lower_uncertainty
 
 def get_sign(central, upper, lower, upper_variation, lower_variation):
     '''

@@ -55,6 +55,8 @@ if __name__ == '__main__':
     method = options.unfolding_method
     symmetrise_errors = options.symmetrise_errors
     variable = options.variable
+    topMasses = measurement_config.topMasses
+    topMassUncertainty = measurement_config.topMassUncertainty
     visiblePS = options.visiblePS
     phase_space = 'VisiblePS'
     if not visiblePS:
@@ -80,6 +82,8 @@ if __name__ == '__main__':
     'method' : method,
     'variable' : variable,
     'number_of_bins' : number_of_bins,
+    'topMasses' : topMasses,
+    'topMassUncertainty' : topMassUncertainty
     }
 
     # Get list of all systematics
@@ -118,8 +122,8 @@ if __name__ == '__main__':
         # print_dictionary("Unfolded normalised cross sections of the systematics in use", unfolded_systematic_normalised_uncertainty)
 
         # Get and symmetrise the uncertainties
-        x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(systematic_normalised_uncertainty)
-        unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty)
+        x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(systematic_normalised_uncertainty, opts)
+        unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(unfolded_systematic_normalised_uncertainty, opts)
         # print_dictionary("Normalised cross sections of the systematics with symmetrised uncertainties", x_sec_with_symmetrised_systematics)
         # print_dictionary("Unfolded normalised cross sections of the systematics  with symmetrised uncertainties", unfolded_x_sec_with_symmetrised_systematics)
 
