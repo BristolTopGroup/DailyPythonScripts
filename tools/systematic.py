@@ -2,6 +2,7 @@ from __future__ import division, print_function
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from copy import deepcopy
 from math import sqrt
+import numpy as np
 
 def write_normalised_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
     '''
@@ -226,7 +227,11 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
         lower_uncertainty = abs(central - lower)
         symmetrised_uncertainty = max(upper_uncertainty, lower_uncertainty)
         #  Getting the sign of the uncertainty
-        sign = get_sign(central, upper, lower, upper_uncertainty, lower_uncertainty)
+        if u == l:
+            sign = np.sign( upper - central )
+        else:
+            sign = np.sign( upper - lower )
+
         symm_uncerts.append(symmetrised_uncertainty)
         sign_uncerts.append(sign)
     return symm_uncerts, sign_uncerts
