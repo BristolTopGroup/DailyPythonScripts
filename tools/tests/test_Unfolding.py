@@ -17,7 +17,7 @@ class Test( unittest.TestCase ):
         # load histograms
         self.input_file = File('tests/data/unfolding_merged_asymmetric.root')
         self.k_value = 3
-        self.unfold_method = 'RooUnfoldSvd'
+        self.unfold_method = 'TUnfold'
         self.met_type = 'patType1CorrectedPFMet'
         self.variables = ['MET', 'WPT', 'MT' , 'ST', 'HT']
         self.channels = ['electron', 'muon', 'combined']
@@ -44,7 +44,7 @@ class Test( unittest.TestCase ):
                                                   h_response,
                                                   tau=100,
                                                   k_value= -1,
-                                                  method='RooUnfoldSvd')
+                                                  method='TUnfold')
 
                 self.dict[channel][variable] = {'h_truth' : h_truth,
                                                 'h_measured' : h_measured,
