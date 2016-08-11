@@ -64,6 +64,6 @@ PATH=$CONDAINSTALL/bin:$PATH; export PATH
 export ENV_NAME=dps-new
 export CONDA_ENV_PATH=$CONDAINSTALL/envs/${ENV_NAME}
 source $CONDAINSTALL/bin/activate ${ENV_NAME}
-
+export PYTHONPATH=$PYTHONPATH:`pwd`
 unset old_dpsbase
 unset envscript

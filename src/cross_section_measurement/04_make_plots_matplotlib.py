@@ -443,6 +443,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
             if linestyle != None:
                 hist.linestyle = linestyle
+
             line, h = rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
 
             if dashes[key] != None:
@@ -556,6 +557,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 ratio.Divide( hist_data ) #divide by data
                 line, h = rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
                 if dashes[key] != None:
+                    line.set_dashes(dashes[key])
                     h.set_dashes(dashes[key])
 
         stat_lower = hist_data.Clone()
@@ -667,6 +669,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 ratio.Divide( central_mc ) #divide by data
                 line, h = rplt.hist( ratio, axes = ax2, label = 'do_not_show' )
                 if dashes[key] != None:
+                    line.set_dashes(dashes[key])
                     h.set_dashes(dashes[key])
 
         if variable == 'MET':
