@@ -307,8 +307,9 @@ def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
 
     for group_of_systematics, systematics_in_list in x_sec_with_symmetrised_systematics.iteritems():
         for systematic, measurement in systematics_in_list.iteritems():
-            matrix = generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement)
-            make_covariance_plot(options, systematic, matrix)
+            covariance_matrix, correlation_matrix = generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement)
+            make_covariance_plot(options, systematic, covariance_matrix)
+            make_covariance_plot(options, systematic, correlation_matrix, label='Correlation')
     return
 
 def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic, measurement):
@@ -319,7 +320,8 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
     Variance_ii = (Unc_i) * (Unc_i)
     Returns the matrix in the form [[Bin_i, Bin_j], Cov_ij]
     '''
-    matrix = []
+    covariance_matrix = []
+    correlation_matrix = []
     for bin_i in xrange(number_of_bins):
         for bin_j in xrange(number_of_bins):
             if (bin_j < bin_i): continue
@@ -327,19 +329,21 @@ def generate_covariance_matrix(number_of_bins, group_of_systematics, systematic,
             uncertainty_j = measurement[1][bin_j]
             sign_i = measurement[2][bin_i]
             sign_j = measurement[2][bin_j]
-            if (bin_i == bin_j):
-                cov_ij = (uncertainty_i) * (uncertainty_j)
-            else:
-                cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
+            cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
+            cor_ij = ( sign_i * sign_j )
             # Bins when plotting Histogram start from 1 not 0
-            bin_and_value = [[bin_i+1, bin_j+1], cov_ij]
-            matrix.append(bin_and_value)
+            bin_and_value_covariance = [[bin_i+1, bin_j+1], cov_ij]
+            covariance_matrix.append(bin_and_value_covariance)
+            bin_and_value_correlation = [[bin_i+1, bin_j+1], cor_ij]
+            correlation_matrix.append(bin_and_value_correlation)
             if not bin_i == bin_j:
                 bin_and_value = ([[bin_j+1, bin_i+1], cov_ij])
-                matrix.append(bin_and_value)
-    return matrix
+                covariance_matrix.append(bin_and_value)
+                bin_and_value_correlation = [[bin_j+1, bin_i+1], cor_ij]
+                correlation_matrix.append(bin_and_value_correlation)
+    return covariance_matrix, correlation_matrix
 
-def make_covariance_plot( options, systematic, matrix ):
+def make_covariance_plot( options, systematic, matrix, label='Covariance' ):
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
     Saves to plots/covariance_matrices/{PhaseSpace}/{Channel}/{Variable}/
@@ -368,7 +372,7 @@ def make_covariance_plot( options, systematic, matrix ):
         set_bin_value( bin_i, bin_j, cov_ij )
     # Easy access to .pngs 
     canvas = TCanvas("canvas_name","canvas_title", 0, 0, 800, 600)
-    hist.SetTitle(systematic+" covariance matrix for "+variable+" in channel "+channel+" ; Bin_i; Bin_j")
-    hist.Draw("colz")
+    hist.SetTitle(systematic+" "+label+" matrix for "+variable+" in channel "+channel+" ; Bin_i; Bin_j")
+    hist.Draw("colz text")
     canvas.Update()
-    canvas.SaveAs(covariance_matrix_output_path+systematic+'_covariance_matrix.png')
+    canvas.SaveAs(covariance_matrix_output_path+systematic+'_'+label+'_matrix.png')
