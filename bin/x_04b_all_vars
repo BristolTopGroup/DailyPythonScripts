@@ -6,7 +6,7 @@ N_JOBS=5
 
 i=0
 echo "Visible phase space"
-for var in MET HT ST WPT MT; do
+for var in MET HT ST WPT; do
 	echo "Plotting diff. x-section for distribution: $var"
 	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 7 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04b_${var}_plot_7TeV.log & # -a  <--add this option for additional plots
 	let i+=1

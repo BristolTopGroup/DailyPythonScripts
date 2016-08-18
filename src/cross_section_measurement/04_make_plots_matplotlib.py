@@ -10,9 +10,10 @@ from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import value_error_tuplelist_to_hist, spread_x,\
 value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
+from tools.plotting import adjust_ratio_ticks
 from math import sqrt
 # rootpy & matplotlib
-from ROOT import kRed, kGreen, kMagenta, kBlue, kBlack
+from ROOT import kRed, kGreen, kMagenta, kBlue, kBlack, kCyan, kOrange
 from tools.ROOT_utils import set_root_defaults
 import matplotlib as mpl
 from tools.plotting import get_best_max_y
@@ -64,11 +65,16 @@ def read_xsection_measurement_results( category, channel ):
         # true distributions
         h_normalised_xsection_MADGRAPH = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH'], bin_edges[variable] )
         h_normalised_xsection_MADGRAPH_ptreweight = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MADGRAPH_ptreweight'], bin_edges[variable] )
-        h_normalised_xsection_POWHEG_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_PYTHIA'], bin_edges[variable] )
-        h_normalised_xsection_POWHEG_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['POWHEG_HERWIG'], bin_edges[variable] )
+        h_normalised_xsection_POWHEG_V2_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powheg_v2_pythia'], bin_edges[variable] )
+        h_normalised_xsection_POWHEG_V2_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powheg_v2_herwig'], bin_edges[variable] )
         h_normalised_xsection_MCATNLO = None
+        h_normalised_xsection_POWHEG_V1_HERWIG = None
+        h_normalised_xsection_POWHEG_V1_PYTHIA = None
         if measurement_config.centre_of_mass_energy == 8:
             h_normalised_xsection_MCATNLO = value_error_tuplelist_to_hist( normalised_xsection_unfolded['MCATNLO'], bin_edges[variable] )
+            h_normalised_xsection_POWHEG_V1_HERWIG = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powheg_v1_herwig'], bin_edges[variable] )
+            h_normalised_xsection_POWHEG_V1_PYTHIA = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powheg_v1_pythia'], bin_edges[variable] )
+
         h_normalised_xsection_mathchingup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingup'], bin_edges[variable] )
         h_normalised_xsection_mathchingdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['matchingdown'], bin_edges[variable] )
         h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], bin_edges[variable] )
@@ -76,10 +82,14 @@ def read_xsection_measurement_results( category, channel ):
         
         histograms_normalised_xsection_different_generators.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
                                                                 'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
-                                                                'POWHEG_PYTHIA':h_normalised_xsection_POWHEG_PYTHIA,
-                                                                'POWHEG_HERWIG':h_normalised_xsection_POWHEG_HERWIG} )
+                                                                'powheg_v2_pythia':h_normalised_xsection_POWHEG_V2_PYTHIA,
+                                                                'powheg_v2_herwig':h_normalised_xsection_POWHEG_V2_HERWIG,
+                                                                } )
         if measurement_config.centre_of_mass_energy == 8:
             histograms_normalised_xsection_different_generators.update( {'MCATNLO':h_normalised_xsection_MCATNLO} )
+            histograms_normalised_xsection_different_generators.update( {'powheg_v1_herwig':h_normalised_xsection_POWHEG_V1_HERWIG} )
+            histograms_normalised_xsection_different_generators.update( {'powheg_v1_pythia':h_normalised_xsection_POWHEG_V1_PYTHIA} )
+
         
         histograms_normalised_xsection_systematics_shifts.update( {'MADGRAPH':h_normalised_xsection_MADGRAPH,
                                                                   'MADGRAPH_ptreweight':h_normalised_xsection_MADGRAPH_ptreweight,
@@ -299,8 +309,11 @@ def get_cms_labels( channel ):
         lepton = 'e + jets'
     elif channel == 'muon':
         lepton = '$\mu$ + jets'
+        lepton = r'\boldmath$\mu$ + jets'
     else:
-        lepton = 'e, $\mu$ + jets combined'
+        # lepton = 'e, $\mu$ + jets combined'
+         lepton = r'e, \boldmath$\mu$ + jets combined'
+
 #     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
     channel_label = lepton
     template = '%.1f fb$^{-1}$ (%d TeV)'
@@ -364,8 +377,8 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
 
     axes.minorticks_on()
-    
-    plt.ylabel( r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} \left[\mathrm{GeV}^{-1}\\right]$', CMS.y_axis_title )
+
+    plt.ylabel( r'$\displaystyle\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '} (\mathrm{GeV}^{-1})$', CMS.y_axis_title )
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
 
@@ -388,7 +401,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
     # now draw data points with only statistical error bars with caps
     if not draw_background_subtraction:
-        rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 15, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )    
+        rplt.errorbar( hist_data, axes = axes, label = 'do_not_show', xerr = None, capsize = 8, capthick = 3, elinewidth = 2, zorder = len( histograms ) + 2 )    
     elif draw_background_subtraction:
         data_histograms_only_stat_error_to_plot = [hist_data, hist_data_background_subtraction]
         graphs = spread_x(data_histograms_only_stat_error_to_plot, bin_edges[variable])
@@ -411,37 +424,56 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     if show_before_unfolding:
         rplt.errorbar( hist_measured, axes = axes, label = 'data (before unfolding)', xerr = None, zorder = len( histograms ) )
     
+    dashes = {}
     for key, hist in sorted( histograms.iteritems() ):
+        zorder = sorted( histograms, reverse = False ).index( key )
+        if key == 'MADGRAPH' and zorder != len(histograms) - 3:
+            zorder = len(histograms) - 3
+        elif key != 'MADGRAPH' and not 'unfolded' in key:
+            while zorder >= len(histograms) - 3:
+                zorder = zorder - 1 
+
         if not 'unfolded' in key and not 'measured' in key:
             hist.linewidth = 4
+            linestyle = None
             # setting colours
-            if 'POWHEG_PYTHIA' in key or 'matchingdown' in key:
-                hist.linestyle = 'longdashdot'
+            if 'powheg_v2_pythia' in key or 'matchingdown' in key:
+                dashes[key] = [25,5,5,5,5,5,5,5]
+                hist.SetLineColor( kCyan + 2 )
+            elif 'powheg_v1_pythia' in key:
+                dashes[key] = [10,5,5,10,5,5]
                 hist.SetLineColor( kBlue )
-            elif 'POWHEG_HERWIG' in key or 'scaledown' in key:
-                hist.linestyle = 'dashed'
+            elif key == 'powheg_v1_herwig'  or 'scaledown' in key:
+                dashes[key] = [5,5]
                 hist.SetLineColor( kGreen )
             elif 'MADGRAPH_ptreweight' in key:
-                hist.linestyle = 'dashed'
-                hist.SetLineColor( kBlack )
+                dashes[key] = [20,5]
+                hist.SetLineColor( kRed + 3 )
             elif 'MADGRAPH' in key:
-                hist.linestyle = 'solid'
+                linestyle = 'solid'
+                dashes[key] = None
                 hist.SetLineColor( kRed + 1 )
-            elif 'matchingup' in key:
-                hist.linestyle = 'verylongdashdot'
-                hist.linecolor = 'orange'
+            elif 'matchingup' in key or 'powheg_v2_herwig' in key:
+                dashes[key] = [25,5,5,5,25,5,5,5]
+                hist.SetLineColor( kMagenta + 1 )
             elif 'MCATNLO'  in key or 'scaleup' in key:
-                hist.linestyle = 'dotted'
-                hist.SetLineColor( kMagenta + 3 )
-            rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = sorted( histograms, reverse = True ).index( key ) )
-            
+                dashes[key] = [5,5,10,5]
+                hist.SetLineColor( kOrange + 5 )
+                # hist.linecolor = 'orange'
+
+            if linestyle != None:
+                hist.linestyle = linestyle
+            line, h = rplt.hist( hist, axes = axes, label = measurements_latex[key], zorder = zorder )
+            if dashes[key] != None:
+                line.set_dashes(dashes[key])
+                h.set_dashes(dashes[key])
     handles, labels = axes.get_legend_handles_labels()
     # making data first in the list
     data_label_index = labels.index( 'data' )
     data_handle = handles[data_label_index]
     labels.remove( 'data' )
     handles.remove( data_handle )
-    labels.insert( 0, 'unfolded data' )
+    labels.insert( 0, 'Unfolded data' )
     handles.insert( 0, data_handle )
     
     new_handles, new_labels = [], []
@@ -450,10 +482,12 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             new_handles.append( handle )
             new_labels.append( label )
     
-    legend_location = (0.98, 0.88)
+    legend_location = (0.95, 0.88)
     if variable == 'MT':
         legend_location = (0.9, 0.6) # 0.98, 0.88
         CMS.legend_properties['size'] = 27
+    if variable == 'WPT' and measurement_config.centre_of_mass_energy == 8:
+        legend_location = (0.97, 0.9) # 0.98, 0.88
 #     elif variable == 'ST':
 #         legend_location = (0.95, 0.88)
     plt.legend( new_handles, new_labels, numpoints = 1, prop = CMS.legend_properties, frameon = False, bbox_to_anchor=legend_location,
@@ -463,10 +497,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     plt.title( label,loc='right', **CMS.title )
     # CMS text
     # note: fontweight/weight does not change anything as we use Latex text!!!
-    plt.text(0.05, 0.98, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
+    plt.text(0.05, 0.965, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='left')
     # channel text     plt.text(0.95, 0.98
-    axes.text(0.95, 0.98, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=42,
+    axes.text(0.95, 0.965, r"%s" %channel_label, transform=axes.transAxes, fontsize=42,
         verticalalignment='top',horizontalalignment='right')
 
     if show_ratio:
@@ -480,10 +514,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
         ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
         ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 
-        plt.xlabel( '$%s$ [GeV]' % variables_latex[variable], CMS.x_axis_title )
+        plt.xlabel( '$%s$ (GeV)' % variables_latex[variable], CMS.x_axis_title )
+        ax1.xaxis.labelpad = 20
         plt.tick_params( **CMS.axis_label_major )
         plt.tick_params( **CMS.axis_label_minor ) 
-        plt.ylabel( '$\\frac{\\textrm{pred.}}{\\textrm{data}}$', CMS.y_axis_title )
+        plt.ylabel( '$\\displaystyle\\frac{\\mathrm{pred.}}{\\mathrm{data}}$', CMS.y_axis_title )
         ax1.yaxis.set_label_coords(-0.115, 0.8)
         #draw a horizontal line at y=1 for data
         plt.axhline(y = 1, color = 'black', linewidth = 2)
@@ -492,7 +527,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             if not 'unfolded' in key and not 'measured' in key:
                 ratio = hist.Clone()
                 ratio.Divide( hist_data ) #divide by data
-                rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
+                line, h = rplt.hist( ratio, axes = ax1, label = 'do_not_show' )
+                if dashes[key] != None:
+                    line.set_dashes(dashes[key])
+                    h.set_dashes(dashes[key])
 
         stat_lower = hist_data.Clone()
         stat_upper = hist_data.Clone()
@@ -510,36 +548,59 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
                 syst_upper.SetBinContent( bin_i, 1 + syst_errors[bin_i-1][2]/syst_errors[bin_i-1][0] )
         if category == 'central':
             rplt.fill_between( syst_lower, syst_upper, ax1,
-                               color = 'yellow', alpha = 0.5 )
+                               color = 'gold' )
 
-        rplt.fill_between( stat_upper, stat_lower, ax1, color = '0.75',
-                           alpha = 0.5 )
+        rplt.fill_between( stat_upper, stat_lower, ax1, color = '0.6' )
         # legend for ratio plot
-        p_stat = mpatches.Patch(facecolor='0.75', label='Stat.',alpha = 0.5, edgecolor='black' )
-        p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', alpha = 0.5, edgecolor='black' )
-        l1 = ax1.legend(handles = [p_stat], loc = 'upper left',
-                     frameon = False, prop = {'size':26})
-        
-        ax1.legend(handles = [p_stat_and_syst], loc = 'lower left',
-                     frameon = False, prop = {'size':26})
-        ax1.add_artist(l1)
-        
+        p_stat = mpatches.Patch(facecolor='0.6', label='Stat.', edgecolor='black' )
+        p_stat_and_syst = mpatches.Patch(facecolor='gold', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
+
+        ratioLegendLocation = 'best'
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
-#             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            # ax1.yaxis.set_major_locator( MultipleLocator( 0.3 ) )
+            # ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            if measurement_config.centre_of_mass_energy == 7:
+                ratioLegendLocation = 'upper left'
+            elif measurement_config.centre_of_mass_energy == 8:
+                ratioLegendLocation = 'upper left'
+
         if variable == 'MT':
             ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
-        elif variable == 'HT' or variable == 'ST':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            # ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            # ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'ST':
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            # ax1.yaxis.set_major_locator( MultipleLocator( 0.3 ) )
+            # ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            if measurement_config.centre_of_mass_energy == 7:
+                ratioLegendLocation = 'lower center'
+            elif measurement_config.centre_of_mass_energy == 8:
+                ratioLegendLocation = 'lower center'
+        elif variable == 'HT':
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            # ax1.yaxis.set_major_locator( MultipleLocator( 0.3 ) )
+            # ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            if measurement_config.centre_of_mass_energy == 7:
+                ratioLegendLocation = 'lower center'
+            elif measurement_config.centre_of_mass_energy == 8:
+                ratioLegendLocation = 'lower center'
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.75, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            # ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            # ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            if measurement_config.centre_of_mass_energy == 7:
+                ratioLegendLocation = 'upper left'
+            elif measurement_config.centre_of_mass_energy == 8:
+                ratioLegendLocation = 'upper left'
+        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3, y_limits = ax1.get_ylim() )
+
+        l1 = ax1.legend(handles = [p_stat, p_stat_and_syst], loc = ratioLegendLocation,
+                     frameon = False, prop = {'size':26}, ncol = 2)
+        ax1.add_artist(l1)
+
+    if variable == 'WPT' and measurement_config.centre_of_mass_energy == 8:
+        axes.set_ylim( axes.get_ylim()[0], axes.get_ylim()[1] * 1.12 )
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -709,7 +770,8 @@ if __name__ == '__main__':
     all_measurements.extend( met_uncertainties )
     all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
-    for channel in ['electron', 'muon', 'combined']:
+    # for channel in ['electron', 'muon', 'combined']:
+    for channel in ['combined']:
         for category in all_measurements:
             if not category == 'central' and not options.draw_systematics:
                 continue
@@ -726,14 +788,14 @@ if __name__ == '__main__':
                 if met_type == 'PFMETJetEnDown':
                     met_type = 'patPFMetJetEnDown'
             
-            if not channel == 'combined' and options.additional_plots:
-                #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
-                #in the unfolding process with BLT unfolding files.
-                if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:
-                    continue
-                fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
-                make_template_plots( fit_templates, category, channel )
-                plot_fit_results( fit_results, category, channel )
+            # if not channel == 'combined' and options.additional_plots:
+            #     #Don't make additional plots for e.g. generator systematics, mass systematics, k value systematics and pdf systematics because they are now done \
+            #     #in the unfolding process with BLT unfolding files.
+            #     if category in ttbar_generator_systematics or category in ttbar_mass_systematics or category in kValue_systematics or category in pdf_uncertainties:
+            #         continue
+            #     fit_templates, fit_results = read_fit_templates_and_results_as_histograms( category, channel )
+            #     make_template_plots( fit_templates, category, channel )
+            #     plot_fit_results( fit_results, category, channel )
 
             # change back to original MET type
             met_type = translate_options[options.metType]
@@ -741,7 +803,6 @@ if __name__ == '__main__':
                 met_type = 'patMETsPFlow'
             
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
-    
             make_plots( histograms_normalised_xsection_different_generators, category, output_folder, 'normalised_xsection_' + channel + '_different_generators' )
             make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, 'normalised_xsection_' + channel + '_systematics_shifts' )
 

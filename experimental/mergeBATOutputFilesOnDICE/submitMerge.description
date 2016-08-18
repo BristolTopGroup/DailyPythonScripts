@@ -3,7 +3,7 @@ Universe = vanilla
 Output = mergeBAToutput.job.$(cluster).$(process).out
 Error = mergeBAToutput.job.$(cluster).$(process).err
 Log = mergeBAToutput.job.$(cluster).$(process).log
-arguments = $(process) 8
+arguments = $(process) 7
 
 transfer_input_files = dps.tar
 should_transfer_files = YES
@@ -15,4 +15,4 @@ request_memory=2000
 # use the ENV that is provided
 getenv = true
 
-queue 2
+queue 46

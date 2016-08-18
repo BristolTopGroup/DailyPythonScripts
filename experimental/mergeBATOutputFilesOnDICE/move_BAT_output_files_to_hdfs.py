@@ -67,9 +67,9 @@ for category in config.categories_and_prefixes.keys():
 		make_folder_if_not_exists( path_to_AN_folder + "/" + category )
 		
 		#check if folder is empty and exit if not
-		if len(os.listdir( path_to_AN_folder + category )) != 0:
-			print "Folder " + path_to_AN_folder + "/" + category + " on hdfs is not empty.  Exiting because histogram files with same names will be overwritten."
-			sys.exit()
+		# if len(os.listdir( path_to_AN_folder + category )) != 0:
+		# 	print "Folder " + path_to_AN_folder + "/" + category + " on hdfs is not empty.  Exiting because histogram files with same names will be overwritten."
+		# 	sys.exit()
 
 		print "running command: ", command
 		p = subprocess.Popen(command, shell=True)

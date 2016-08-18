@@ -6,12 +6,17 @@ import os
 # rootpy
 from rootpy.io import File
 from rootpy.plotting import Hist2D
+from rootpy.matrix import Matrix
+from rootpy import asrootpy
+import root_numpy as rnp
+import numpy as np
+from ROOT import TH2F
 # DailyPythonScripts
 import config.RooUnfold as unfoldCfg
 from config.variable_binning import bin_widths, bin_edges
 from config import XSectionConfig
 from tools.Calculation import calculate_xsection, calculate_normalised_xsection, \
-combine_complex_results
+combine_complex_results, calculate_covariance_for_normalised_xsection
 from tools.hist_utilities import hist_to_value_error_tuplelist, \
 value_error_tuplelist_to_hist
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple
@@ -30,9 +35,38 @@ def unfold_results( results, category, channel, k_value, h_truth, h_measured, h_
         unfoldCfg.Hreco = 0
     else:
         unfoldCfg.Hreco = options.Hreco
-        
+
     h_unfolded_data = unfolding.unfold( h_data )
-    
+
+    # unfolding.unfoldObject.GetCov()
+
+    covariance_matrix = None
+    if category == 'central':
+      covariance_matrix = asrootpy( unfolding.unfoldObject.Ereco(options.Hreco) ).to_numpy()
+      print covariance_matrix
+
+      corr = np.array(np.zeros((covariance_matrix.shape[0], covariance_matrix.shape[1]) ))
+
+      for i in range(0,covariance_matrix.shape[0]):
+        for j in range(0,covariance_matrix.shape[1]):
+          corr[i,j] = covariance_matrix[i,j] / np.sqrt( covariance_matrix[i,i] * covariance_matrix[j,j] )
+      print 'Correlation'
+      print corr
+      # for i_row in range(0,covariance_matrix.shape[0]):
+        # for i_col in range(0,covariance_matrix.shape[0]):
+        #   print i_row,i_col
+        #   print covariance_matrix[i_row,i_col]
+        #   # print h_unfolded_data.GetBinContent(i_row+1),h_unfolded_data.GetBinContent(i_col+1)
+        #   print h_unfolded_data.GetBinError(i_row+1)*h_unfolded_data.GetBinError(i_col+1)
+
+      # print list( h_unfolded_data.y() )
+      # unfolding.unfoldObject.ErecoV(options.Hreco).Draw()
+      # raw_input()
+      # cov_matrix = 
+      # cov_matrix.Draw('COLZ text')
+      # print cov_matrix
+      # raw_input('...')
+
     if options.write_unfolding_objects:
         # export the D and SV distributions
         SVD_path = path_to_JSON + '/unfolding_objects/' + channel + '/kv_' + str( k_value ) + '/'
@@ -73,7 +107,7 @@ def unfold_results( results, category, channel, k_value, h_truth, h_measured, h_
             unfoldingObjectFile.Close()
     
     del unfolding
-    return hist_to_value_error_tuplelist( h_unfolded_data )
+    return hist_to_value_error_tuplelist( h_unfolded_data ), covariance_matrix
 
 def data_covariance_matrix( data ):
     values = list( data )
@@ -85,10 +119,10 @@ def data_covariance_matrix( data ):
     return cov_matrix
 
 def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
-    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_ptreweight, files_for_pdfs
+    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_v2_pythia, file_for_powheg_v2_herwig, file_for_ptreweight, files_for_pdfs
     global centre_of_mass, luminosity, ttbar_xsection, load_fakes, method
     if centre_of_mass == 8:
-        global file_for_mcatnlo
+        global file_for_mcatnlo, file_for_powheg_v1_herwig, file_for_powheg_v1_pythia
     global file_for_matchingdown, file_for_matchingup, file_for_scaledown, file_for_scaleup
     global file_for_massdown, file_for_massup
     global ttbar_generator_systematics, ttbar_theory_systematics, pdf_uncertainties
@@ -101,8 +135,10 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                              ttbar_theory_systematic_prefix + 'scaleup':file_for_scaleup,
                              ttbar_theory_systematic_prefix + 'massdown':file_for_massdown,
                              ttbar_theory_systematic_prefix + 'massup':file_for_massup,
-                             ttbar_theory_systematic_prefix + 'powheg_pythia':file_for_powheg_pythia,
-                             ttbar_theory_systematic_prefix + 'powheg_herwig':file_for_powheg_herwig,
+                             ttbar_theory_systematic_prefix + 'powheg_v1_pythia':file_for_powheg_v1_pythia,
+                             ttbar_theory_systematic_prefix + 'powheg_v1_herwig':file_for_powheg_v1_herwig,
+                             ttbar_theory_systematic_prefix + 'powheg_v2_pythia':file_for_powheg_v2_pythia,
+                             ttbar_theory_systematic_prefix + 'powheg_v2_herwig':file_for_powheg_v2_herwig,
                              ttbar_theory_systematic_prefix + 'ptreweight':file_for_ptreweight,
                              }
     
@@ -148,7 +184,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                                               load_fakes = load_fakes
                                                                               )
 
-    h_truth_POWHEG_PYTHIA, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_pythia,
+    h_truth_powheg_v2_pythia, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_v2_pythia,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -157,7 +193,7 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
                                                 )
-    h_truth_POWHEG_HERWIG, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_herwig,
+    h_truth_powheg_v2_herwig, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_v2_herwig,
                                                 variable = variable,
                                                 channel = channel,
                                                 met_type = met_type,
@@ -167,6 +203,8 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                 load_fakes = load_fakes
                                                 )
     h_truth_MCATNLO = None
+    h_truth_powheg_v1_herwig = None
+    h_truth_powheg_v1_pythia = None
     if centre_of_mass == 8:
         h_truth_MCATNLO, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_mcatnlo,
                                                 variable = variable,
@@ -177,6 +215,26 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
                                                 )
+        h_truth_powheg_v1_herwig, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_v1_herwig,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )
+
+        h_truth_powheg_v1_pythia, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_v1_pythia,
+                                                variable = variable,
+                                                channel = channel,
+                                                met_type = met_type,
+                                                centre_of_mass = centre_of_mass,
+                                                ttbar_xsection = ttbar_xsection,
+                                                luminosity = luminosity,
+                                                load_fakes = load_fakes
+                                                )
+
     h_truth_matchingdown, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_matchingdown,
                                                 variable = variable,
                                                 channel = channel,
@@ -223,30 +281,34 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                                                 luminosity = luminosity,
                                                 load_fakes = load_fakes
                                                 )
-
+    print 'Overflow in madgraph :',h_truth.GetBinContent(h_truth.GetNbinsX()),h_truth.GetBinContent(h_truth.GetNbinsX() + 2)
     MADGRAPH_results = hist_to_value_error_tuplelist( h_truth )
     MADGRAPH_ptreweight_results = hist_to_value_error_tuplelist( h_truth_ptreweight )
-    POWHEG_PYTHIA_results = hist_to_value_error_tuplelist( h_truth_POWHEG_PYTHIA )
-    POWHEG_HERWIG_results = hist_to_value_error_tuplelist( h_truth_POWHEG_HERWIG )
+    powheg_v2_pythia_results = hist_to_value_error_tuplelist( h_truth_powheg_v2_pythia )
+    powheg_v2_herwig_results = hist_to_value_error_tuplelist( h_truth_powheg_v2_herwig )
     MCATNLO_results = None
+    powheg_v1_herwig_results = None
+    powheg_v1_pythia_results = None
     if centre_of_mass == 8:
         MCATNLO_results = hist_to_value_error_tuplelist( h_truth_MCATNLO )
-    
+        powheg_v1_herwig_results = hist_to_value_error_tuplelist( h_truth_powheg_v1_herwig )
+        powheg_v1_pythia_results = hist_to_value_error_tuplelist( h_truth_powheg_v1_pythia )
+
     matchingdown_results = hist_to_value_error_tuplelist( h_truth_matchingdown )
     matchingup_results = hist_to_value_error_tuplelist( h_truth_matchingup )
     scaledown_results = hist_to_value_error_tuplelist( h_truth_scaledown )
     scaleup_results = hist_to_value_error_tuplelist( h_truth_scaleup )
 
-    TTJet_fit_results_unfolded = unfold_results( TTJet_fit_results,
-                                                category,
-                                                channel,
-                                                k_value,
-                                                h_truth,
-                                                h_measured,
-                                                h_response,
-                                                h_fakes,
-                                                method
-                                                )
+    TTJet_fit_results_unfolded, covariance_matrix = unfold_results( TTJet_fit_results,
+                                                                    category,
+                                                                    channel,
+                                                                    k_value,
+                                                                    h_truth,
+                                                                    h_measured,
+                                                                    h_response,
+                                                                    h_fakes,
+                                                                    method
+                                                                    )
         
     normalisation_unfolded = {
                           'TTJet_measured' : TTJet_fit_results,
@@ -254,18 +316,23 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, k_value ):
                           'MADGRAPH': MADGRAPH_results,
                           'MADGRAPH_ptreweight': MADGRAPH_ptreweight_results,
                           # other generators
-                          'POWHEG_PYTHIA': POWHEG_PYTHIA_results,
-                          'POWHEG_HERWIG': POWHEG_HERWIG_results,
+                          'powheg_v2_pythia': powheg_v2_pythia_results,
+                          'powheg_v2_herwig': powheg_v2_herwig_results,
                           # systematics
                           'matchingdown': matchingdown_results,
                           'matchingup': matchingup_results,
                           'scaledown': scaledown_results,
                           'scaleup': scaleup_results
                           }
+
     if centre_of_mass == 8:
         normalisation_unfolded['MCATNLO'] = MCATNLO_results
+        normalisation_unfolded['powheg_v1_herwig'] = powheg_v1_herwig_results
+        normalisation_unfolded['powheg_v1_pythia'] = powheg_v1_pythia_results
 
-    return normalisation_unfolded
+    return normalisation_unfolded, covariance_matrix
+
+
     
 def calculate_xsections( normalisation, category, channel, k_value = None ):
     global variable, met_type, path_to_JSON
@@ -277,11 +344,16 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
     TTJet_xsection_unfolded = calculate_xsection( normalisation['TTJet_unfolded'], luminosity, branching_ratio )  # L in pb1
     MADGRAPH_xsection = calculate_xsection( normalisation['MADGRAPH'], luminosity, branching_ratio )  # L in pb1
     MADGRAPH_ptreweight_xsection = calculate_xsection( normalisation['MADGRAPH_ptreweight'], luminosity, branching_ratio )  # L in pb1
-    POWHEG_PYTHIA_xsection = calculate_xsection( normalisation['POWHEG_PYTHIA'], luminosity, branching_ratio )  # L in pb1
-    POWHEG_HERWIG_xsection = calculate_xsection( normalisation['POWHEG_HERWIG'], luminosity, branching_ratio )  # L in pb1
+    powheg_v2_pythia_xsection = calculate_xsection( normalisation['powheg_v2_pythia'], luminosity, branching_ratio )  # L in pb1
+    powheg_v2_herwig_xsection = calculate_xsection( normalisation['powheg_v2_herwig'], luminosity, branching_ratio )  # L in pb1
     MCATNLO_xsection = None
+    powheg_v1_herwig_xsection = None
+    powheg_v1_pythia_xsection = None
     if centre_of_mass == 8:
         MCATNLO_xsection = calculate_xsection( normalisation['MCATNLO'], luminosity, branching_ratio )  # L in pb1
+        powheg_v1_herwig_xsection = calculate_xsection( normalisation['powheg_v1_herwig'], luminosity, branching_ratio )  # L in pb1
+        powheg_v1_pythia_xsection = calculate_xsection( normalisation['powheg_v1_pythia'], luminosity, branching_ratio )  # L in pb1
+
     matchingdown_xsection = calculate_xsection( normalisation['matchingdown'], luminosity, branching_ratio )  # L in pb1
     matchingup_xsection = calculate_xsection( normalisation['matchingup'], luminosity, branching_ratio )  # L in pb1
     scaledown_xsection = calculate_xsection( normalisation['scaledown'], luminosity, branching_ratio )  # L in pb1
@@ -291,8 +363,8 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
                      'TTJet_unfolded' : TTJet_xsection_unfolded,
                      'MADGRAPH': MADGRAPH_xsection,
                      'MADGRAPH_ptreweight': MADGRAPH_ptreweight_xsection,
-                     'POWHEG_PYTHIA': POWHEG_PYTHIA_xsection,
-                     'POWHEG_HERWIG': POWHEG_HERWIG_xsection,
+                     'powheg_v2_pythia': powheg_v2_pythia_xsection,
+                     'powheg_v2_herwig': powheg_v2_herwig_xsection,
                      # systematics
                      'matchingdown': matchingdown_xsection,
                      'matchingup': matchingup_xsection,
@@ -301,7 +373,9 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
                      }
     if centre_of_mass == 8:
         xsection_unfolded['MCATNLO'] =  MCATNLO_xsection
-        
+        xsection_unfolded['powheg_v1_herwig'] =  powheg_v1_herwig_xsection
+        xsection_unfolded['powheg_v1_pythia'] =  powheg_v1_pythia_xsection
+
     if k_value:
         filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/xsection_%s.txt' % ( channel, k_value, category, met_type )
     elif not channel == 'combined':
@@ -311,17 +385,22 @@ def calculate_xsections( normalisation, category, channel, k_value = None ):
 
     write_data_to_JSON( xsection_unfolded, filename )
     
-def calculate_normalised_xsections( normalisation, category, channel, k_value = None, normalise_to_one = False ):
+def calculate_normalised_xsections( normalisation, category, channel, k_value = None, normalise_to_one = False, debug=False ):
     global variable, met_type, path_to_JSON
     TTJet_normalised_xsection = calculate_normalised_xsection( normalisation['TTJet_measured'], bin_widths[variable], normalise_to_one )
-    TTJet_normalised_xsection_unfolded = calculate_normalised_xsection( normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one )
+    TTJet_normalised_xsection_unfolded = calculate_normalised_xsection( normalisation['TTJet_unfolded'], bin_widths[variable], normalise_to_one, debug )
     MADGRAPH_normalised_xsection = calculate_normalised_xsection( normalisation['MADGRAPH'], bin_widths[variable], normalise_to_one )
     MADGRAPH_ptreweight_normalised_xsection = calculate_normalised_xsection( normalisation['MADGRAPH_ptreweight'], bin_widths[variable], normalise_to_one )
-    POWHEG_PYTHIA_normalised_xsection = calculate_normalised_xsection( normalisation['POWHEG_PYTHIA'], bin_widths[variable], normalise_to_one )
-    POWHEG_HERWIG_normalised_xsection = calculate_normalised_xsection( normalisation['POWHEG_HERWIG'], bin_widths[variable], normalise_to_one )
+    powheg_v2_pythia_normalised_xsection = calculate_normalised_xsection( normalisation['powheg_v2_pythia'], bin_widths[variable], normalise_to_one )
+    powheg_v2_herwig_normalised_xsection = calculate_normalised_xsection( normalisation['powheg_v2_herwig'], bin_widths[variable], normalise_to_one )
     MCATNLO_normalised_xsection = None
+    powheg_v1_herwig_normalised_xsection = None
+    powheg_v1_pythia_normalised_xsection = None
     if centre_of_mass == 8:
         MCATNLO_normalised_xsection = calculate_normalised_xsection( normalisation['MCATNLO'], bin_widths[variable], normalise_to_one )
+        powheg_v1_herwig_normalised_xsection = calculate_normalised_xsection( normalisation['powheg_v1_herwig'], bin_widths[variable], normalise_to_one )
+        powheg_v1_pythia_normalised_xsection = calculate_normalised_xsection( normalisation['powheg_v1_pythia'], bin_widths[variable], normalise_to_one )
+
     matchingdown_normalised_xsection = calculate_normalised_xsection( normalisation['matchingdown'], bin_widths[variable], normalise_to_one )
     matchingup_normalised_xsection = calculate_normalised_xsection( normalisation['matchingup'], bin_widths[variable], normalise_to_one )
     scaledown_normalised_xsection = calculate_normalised_xsection( normalisation['scaledown'], bin_widths[variable], normalise_to_one )
@@ -331,8 +410,8 @@ def calculate_normalised_xsections( normalisation, category, channel, k_value = 
                        'TTJet_unfolded' : TTJet_normalised_xsection_unfolded,
                        'MADGRAPH': MADGRAPH_normalised_xsection,
                        'MADGRAPH_ptreweight': MADGRAPH_ptreweight_normalised_xsection,
-                       'POWHEG_PYTHIA': POWHEG_PYTHIA_normalised_xsection,
-                       'POWHEG_HERWIG': POWHEG_HERWIG_normalised_xsection,
+                       'powheg_v2_pythia': powheg_v2_pythia_normalised_xsection,
+                       'powheg_v2_herwig': powheg_v2_herwig_normalised_xsection,
                        # systematics
                        'matchingdown': matchingdown_normalised_xsection,
                        'matchingup': matchingup_normalised_xsection,
@@ -341,18 +420,19 @@ def calculate_normalised_xsections( normalisation, category, channel, k_value = 
                        }
     if centre_of_mass == 8:
         normalised_xsection['MCATNLO'] = MCATNLO_normalised_xsection
+        normalised_xsection['powheg_v1_herwig'] = powheg_v1_herwig_normalised_xsection
+        normalised_xsection['powheg_v1_pythia'] = powheg_v1_pythia_normalised_xsection
     
     if not channel == 'combined':
         filename = path_to_JSON + '/xsection_measurement_results/%s/kv%d/%s/normalised_xsection_%s.txt' % ( channel, k_value, category, met_type )        
     else:
         filename = path_to_JSON + '/xsection_measurement_results/%s/%s/normalised_xsection_%s.txt' % ( channel, category, met_type )
-    
     if normalise_to_one:
         filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
     write_data_to_JSON( normalised_xsection, filename )
 
 if __name__ == '__main__':
-    set_root_defaults( msg_ignore_level = 3001 )
+    set_root_defaults( set_batch=False, msg_ignore_level = 3001 )
     # setup
     parser = OptionParser()
     parser.add_option( "-p", "--path", dest = "path", default = 'data/',
@@ -398,11 +478,15 @@ if __name__ == '__main__':
     path_to_files = measurement_config.path_to_files
     
     file_for_unfolding = File( measurement_config.unfolding_madgraph, 'read' )
-    file_for_powheg_pythia = File( measurement_config.unfolding_powheg_pythia, 'read' )
-    file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
+    file_for_powheg_v2_pythia = File( measurement_config.unfolding_powheg_v2_pythia, 'read' )
+    file_for_powheg_v2_herwig = File( measurement_config.unfolding_powheg_v2_herwig, 'read' )
     file_for_mcatnlo = None
+    file_for_powheg_v1_herwig = None
+    file_for_powheg_v1_pythia = None
     if centre_of_mass == 8:
         file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
+        file_for_powheg_v1_herwig = File( measurement_config.unfolding_powheg_v1_herwig, 'read' )
+        file_for_powheg_v1_pythia  = File( measurement_config.unfolding_powheg_v1_pythia, 'read' )
     file_for_ptreweight = File ( measurement_config.unfolding_ptreweight, 'read' )
     files_for_pdfs = { 'PDFWeights_%d' % index : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 1, 45 ) }
         
@@ -434,7 +518,9 @@ if __name__ == '__main__':
 
     # ttbar theory systematics, including pt reweighting and hadronisation systematic
     ttbar_theory_systematics = [ ttbar_theory_systematic_prefix + 'ptreweight' ]
-    ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig'] )
+    ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_v2_pythia', ttbar_theory_systematic_prefix + 'powheg_v2_herwig'] )
+    if centre_of_mass == 8:
+        ttbar_theory_systematics.extend( [ttbar_theory_systematic_prefix + 'powheg_v1_pythia', ttbar_theory_systematic_prefix + 'powheg_v1_herwig'] )
     categories.extend( ttbar_theory_systematics )
 
     # Add mass systematics
@@ -529,11 +615,16 @@ if __name__ == '__main__':
         filename = ''
 
         # get unfolded normalisation
-        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', k_value_electron )
-        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', k_value_muon )
+        unfolded_normalisation_electron, covariance_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', k_value_electron )
+        unfolded_normalisation_muon, covariance_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', k_value_muon )
+        covariance_combined = None
         if combine_before_unfolding:
-            unfolded_normalisation_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
+            unfolded_normalisation_combined, covariance_combined = get_unfolded_normalisation( TTJet_fit_results_combined, category, 'combined', k_value_combined )
         else:
+            if category == 'central':
+              covariance_combined = covariance_electron 
+              covariance_combined += covariance_muon
+              # covariance_combined = asrootpy( covariance_combined )
             unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
 
         filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s.txt' % ( k_value_electron_central, category, met_type )
@@ -542,6 +633,9 @@ if __name__ == '__main__':
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s.txt' % ( category, met_type )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
+
+        
+
         
 #         if measurement_config.include_higgs:
 #             # now the same for the Higgs
@@ -555,23 +649,55 @@ if __name__ == '__main__':
 #             else:
 #                 unfolded_normalisation_combined_higgs = combine_complex_results( unfolded_normalisation_electron_higgs, unfolded_normalisation_muon_higgs )
 #     
-#             filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_electron_central, category, met_type )
-#             write_data_to_JSON( unfolded_normalisation_electron_higgs, filename )
-#             filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_muon_central, category, met_type )
-#             write_data_to_JSON( unfolded_normalisation_muon_higgs, filename )
-#             filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s_Higgs.txt' % ( category, met_type )
-#             write_data_to_JSON( unfolded_normalisation_combined_higgs, filename )
+            # filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_electron_central, category, met_type )
+            # write_data_to_JSON( unfolded_normalisation_electron_higgs, filename )
+            # filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/normalisation_%s_Higgs.txt' % ( k_value_muon_central, category, met_type )
+            # write_data_to_JSON( unfolded_normalisation_muon_higgs, filename )
+            # filename = path_to_JSON + '/xsection_measurement_results/combined/%s/normalisation_%s_Higgs.txt' % ( category, met_type )
+            # write_data_to_JSON( unfolded_normalisation_combined_higgs, filename )
 
         # measure xsection
         calculate_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central )
         calculate_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central )
         calculate_xsections( unfolded_normalisation_combined, category, 'combined' )
-        
+
         calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined' )
+        calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', debug=True )
         
         normalise_to_one = True
         calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron', k_value_electron_central, normalise_to_one )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon', k_value_muon_central, normalise_to_one )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, 'combined', normalise_to_one )
+
+        if category == 'central':
+          normalised_xsection_covariance_electron = calculate_covariance_for_normalised_xsection( covariance_electron, unfolded_normalisation_electron['TTJet_unfolded'], bin_widths[variable] )
+          normalised_xsection_covariance_muon = calculate_covariance_for_normalised_xsection( covariance_muon, unfolded_normalisation_muon['TTJet_unfolded'], bin_widths[variable] )
+          normalised_xsection_covariance_combined = calculate_covariance_for_normalised_xsection( covariance_combined, unfolded_normalisation_combined['TTJet_unfolded'], bin_widths[variable] )
+
+          # Write covariance matrices to file
+          filename = path_to_JSON + '/xsection_measurement_results/electron/kv%d/%s/covariance.txt' % ( k_value_electron_central, category )
+          np.savetxt( filename, normalised_xsection_covariance_electron, delimiter = ',' )
+
+          # # cov_file = File( filename, 'recreate' )
+          # # covariance_electron.Write()
+          # # normalised_xsection_covariance_electron.(filename,',')
+          # # cov_file.Close()
+
+          filename = path_to_JSON + '/xsection_measurement_results/muon/kv%d/%s/covariance.txt' % ( k_value_muon_central, category )
+          np.savetxt( filename, normalised_xsection_covariance_muon, delimiter = ',' )
+
+          # # cov_file = File( filename, 'recreate' )
+          # # covariance_muon.Write()
+          # # normalised_xsection_covariance_muon.Write()
+          # # cov_file.Close()
+
+          filename = path_to_JSON + '/xsection_measurement_results/combined/%s/covariance.txt' % ( category )
+          np.savetxt( filename, normalised_xsection_covariance_combined, delimiter = ',' )
+          for i in range(0,normalised_xsection_covariance_combined.shape[0]):
+            print np.sqrt( normalised_xsection_covariance_combined[i,i] )
+
+          # cov_file = File( filename, 'recreate' )
+          # covariance_combined.Write()
+          # normalised_xsection_covariance_combined.Write()
+          # cov_file.Close()

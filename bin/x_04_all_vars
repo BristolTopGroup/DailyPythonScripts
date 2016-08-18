@@ -3,6 +3,9 @@ echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
 mkdir -p plots
 fit_var="absolute_eta,M3,angle_bl"
+# fit_var="absolute_eta"
+# fit_var="M3"
+# fit_var="angle_bl"
 nice_fit_var=`echo $fit_var | sed 's/,/_/g'`
 N_JOBS=5
 
@@ -11,7 +14,7 @@ echo "Using the fit variable(s): $fit_var"
 i=0
 for var in MET HT ST MT WPT; do
 	echo "Plotting diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 7 -p data/$nice_fit_var -o plots/fit &> logs/04_${var}_plot_7TeV_${nice_fit_var}.log & # -a -s <--add -a option for additional plots, -s option to include the final results from background subtraction as well as from fitting
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 7 -p data/$nice_fit_var -o plots/fit/ &> logs/04_${var}_plot_7TeV_${nice_fit_var}.log & # -a -s <--add -a option for additional plots, -s option to include the final results from background subtraction as well as from fitting
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -19,7 +22,7 @@ for var in MET HT ST MT WPT; do
     	wait;
 	fi
 	
-	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 8 -p data/$nice_fit_var -o plots/fit &> logs/04_${var}_plot_8TeV_${nice_fit_var}.log & # -a -s <--add -a option for additional plots, -s option to include the final results from background subtraction as well as from fitting
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 8 -p data/$nice_fit_var -o plots/fit/ &> logs/04_${var}_plot_8TeV_${nice_fit_var}.log & # -a -s <--add -a option for additional plots, -s option to include the final results from background subtraction as well as from fitting
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

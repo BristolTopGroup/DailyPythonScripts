@@ -32,7 +32,8 @@ if options.com != 7 and options.com != 8:
 
 # first set up lists of jobs to be run
 
-sample_to_BLT_filepath_dictionary_7TeV = {"central":"TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/crab_TTJets_central_7TeV_madgraph_BLTUnfold_NoSkim",
+sample_to_BLT_filepath_dictionary_7TeV = {
+                                "central":"TTJets_MSDecays_central_TuneZ2_7TeV-madgraph-tauola/crab_TTJets_central_7TeV_madgraph_BLTUnfold_NoSkim",
                                 "scaleup": "TTJets_MSDecays_scaleup_TuneZ2star_7TeV-madgraph-tauola/crab_TTJets_scaleup_7TeV_madgraph_BLTUnfold_NoSkim",
                                 "scaledown": "TTJets_MSDecays_scaledown_TuneZ2star_7TeV-madgraph-tauola/crab_TTJets_scaledown_7TeV_madgraph_BLTUnfold_NoSkim",
                                 "matchingup": "TTJets_MSDecays_matchingup_7TeV-madgraph-tauola/crab_TTJets_matchingup_7TeV_madgraph_BLTUnfold_NoSkim",
@@ -43,16 +44,17 @@ sample_to_BLT_filepath_dictionary_7TeV = {"central":"TTJets_MSDecays_central_Tun
                                  "powhegherwig": "TT_weights_CT10_AUET2_7TeV-powheg-herwig/crab_TT_CT10_AUET2_7TeV_powheg_herwig_BLTUnfold_NoSkim_2"
                                 }
 
-sample_to_BLT_filepath_dictionary_8TeV = {"central":"TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_central_8TeV_madgraph_BLTUnfold_NoSkim",
-                                "scaleup": "TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_scaleup_8TeV_madgraph_BLTUnfold_NoSkim",
-                                "scaledown": "TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_scaledown_8TeV_madgraph_BLTUnfold_NoSkim",
-                                "matchingup": "TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_matchingup_8TeV_madgraph_BLTUnfold_NoSkim",
-                                "matchingdown": "TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_matchingdown_8TeV_madgraph_BLTUnfold_NoSkim",
+sample_to_BLT_filepath_dictionary_8TeV = {
+                                # "central":"TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_central_8TeV_madgraph_BLTUnfold_NoSkim",
+                                # "scaleup": "TTJets_scaleup_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_scaleup_8TeV_madgraph_BLTUnfold_NoSkim",
+                                # "scaledown": "TTJets_scaledown_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_scaledown_8TeV_madgraph_BLTUnfold_NoSkim",
+                                # "matchingup": "TTJets_matchingup_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_matchingup_8TeV_madgraph_BLTUnfold_NoSkim",
+                                # "matchingdown": "TTJets_matchingdown_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_matchingdown_8TeV_madgraph_BLTUnfold_NoSkim",
                                 "mass_173_5":"TTJets_MSDecays_mass173_5_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_mass_173_5_8TeV_madgraph_BLTUnfold_NoSkim",
                                 "mass_169_5": "TTJets_MSDecays_mass169_5_TuneZ2star_8TeV-madgraph-tauola/crab_TTJets_mass_169_5_8TeV_madgraph_BLTUnfold_NoSkim",
-                                "powhegpythia": "TT_CT10_TuneZ2star_8TeV-powheg-tauola/crab_TT_CT10_8TeV_powheg_tauola_BLTUnfold_NoSkim",
-                                "powhegherwig": "TT_CT10_AUET2_8TeV-powheg-herwig/crab_TT_CT10_AUET2_8TeV_powheg_herwig_BLTUnfold_NoSkim",
-                                "mcatnlo": "TT_8TeV-mcatnlo/crab_TT_8TeV_mcatnlo_BLTUnfold_NoSkim"
+                                # "powhegpythia": "TT_CT10_TuneZ2star_8TeV-powheg-tauola/crab_TT_CT10_8TeV_powheg_tauola_BLTUnfold_NoSkim",
+                                # "powhegherwig": "TT_CT10_AUET2_8TeV-powheg-herwig/crab_TT_CT10_AUET2_8TeV_powheg_herwig_BLTUnfold_NoSkim",
+                                # "mcatnlo": "TT_8TeV-mcatnlo/crab_TT_8TeV_mcatnlo_BLTUnfold_NoSkim"
                                 }
 
 if options.com == 7:
@@ -90,9 +92,10 @@ output_file = job[0]
 
 # get current working directory
 current_working_directory = os.getcwd()
-#make_folder_if_not_exists(current_working_directory + "/mergeBLTUnfold/")
+# make_folder_if_not_exists(current_working_directory + "/mergeBLTUnfold/")
 
 # if the output file doesn't already exist, merge!
+print current_working_directory
 #if not os.path.exists( current_working_directory + "/mergeBLTUnfold/" + output_file):
 if not os.path.exists( current_working_directory + "/" + output_file):
     merge_ROOT_files(input_files, output_file, compression = 7, waitToFinish=True)
@@ -103,17 +106,18 @@ else:
 # HAVE NOT CHECKED IF THE FOLLOWING COMMENTED CODE WORKS.
 # Now move output file to hdfs
 # Check if file already exists on hdfs
-# if os.path.exists( output_file_hdfs ):
-#   print "Output file on hdfs already exists.  Removing and replacing with new version."
-#   command = 'hadoop fs -rm -skipTrash ' + output_file_hdfs.split('/hdfs')[-1]
-#   p = subprocess.Popen(command, shell=True)
-#   p.wait()
+output_file_hdfs = '/hdfs/TopQuarkGroup/mc/7TeV/v11/NoSkimUnfolding/BLT/temp/' + output_file
+if os.path.exists( output_file_hdfs ):
+  print "Output file on hdfs already exists.  Removing and replacing with new version."
+  command = 'hadoop fs -rm -skipTrash ' + output_file_hdfs.split('/hdfs')[-1]
+  p = subprocess.Popen(command, shell=True)
+  p.wait()
 
-# print '\nStarting rsync'
-# output_log_file = output_file.replace(".root", ".log")
-# command = 'rsync --verbose  --progress --stats --compress --recursive --times --update %s %s >> %s' % (output_file,output_file_hdfs,output_log_file)
-# print command
-# p = subprocess.Popen(command, shell=True)
-# p.wait()
+print '\nStarting rsync'
+output_log_file = output_file.replace(".root", ".log")
+command = 'rsync --verbose  --progress --stats --compress --recursive --times --update %s %s >> %s' % (output_file,output_file_hdfs,output_log_file)
+print command
+p = subprocess.Popen(command, shell=True)
+p.wait()
 
 print 'ALL DONE!'

@@ -17,13 +17,13 @@ git submodule init && git submodule update
 ./setup.sh
 eval `scramv1 runtime -sh`
 . environment.sh
-rm -r bltUnfoldAsymm
-mkdir bltUnfoldAsymm
+rm -r unfolding
+mkdir unfolding
 time python experimental/BLTUnfold/createAsymmetricBinningUnfoldingFiles/runJobsCrab.py -j $1
 
 echo "bltUnfoldAsymm folder contents:"
-ls bltUnfoldAsymm
-tar -cf bltUnfoldAsymm.$2.$1.tar bltUnfoldAsymm
+ls unfolding
+tar -cf bltUnfoldAsymm.$2.$1.tar unfolding
 mv bltUnfoldAsymm.$2.$1.tar ../../../
 echo "DailyPythonScripts folder contents:"
 ls

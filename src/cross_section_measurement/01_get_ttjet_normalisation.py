@@ -98,14 +98,19 @@ class TTJetNormalisation:
         if self.measurement.__class__ == tools.measurement.Systematic:
             self.measurement.scale_histograms()
         histograms = self.measurement.histograms
+
         for sample, hist in histograms.items():
             bin_edges = variable_bin_edges[self.variable]
             histograms[sample] = rebin_asymmetric(hist, bin_edges)
 
         for sample, hist in histograms.items():
             # TODO: this should be a list of bin-contents
+            # self.initial_normalisation[
+            #     sample] = hist_to_value_error_tuplelist(fix_overflow(hist))
             self.initial_normalisation[
-                sample] = hist_to_value_error_tuplelist(fix_overflow(hist))
+                sample] = hist_to_value_error_tuplelist(hist)
+            nBins = hist.GetNbinsX()
+
             if self.method == self.BACKGROUND_SUBTRACTION and sample != 'TTJet':
                 self.normalisation[sample] = self.initial_normalisation[sample]
 
@@ -218,6 +223,7 @@ def main():
         }
         measurement_files = glob.glob(input_template.format(**inputs))
         for f in measurement_files:
+            print (f)
             measurement = tools.measurement.Measurement.fromJSON(f)
             # for each measurement
             norm = TTJetNormalisation(

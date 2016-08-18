@@ -1,11 +1,11 @@
 #!/bin/bash
 echo "This will take a while ... grab a coffee/tea/water/cocktail"
 mkdir -p logs
-N_JOBS=5
+N_JOBS=4
 
 
 i=0
-for var in MET HT ST WPT MT; do
+for var in MET HT ST WPT; do
 	echo "Fitting distribution: $var"
 	nohup time python src/cross_section_measurement/01_get_ttjet_normalisation.py -v $var -c 7 -i config/measurements/background_subtraction &> logs/01b_${var}_bgs_7TeV.log &
 	let i+=1

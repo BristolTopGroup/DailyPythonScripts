@@ -10,7 +10,6 @@ import subprocess
 import os
 from distutils.spawn import find_executable
 
-
 def setup_matplotlib():
     '''
         Seup matplotlib with all the latex fancyness we have
@@ -18,6 +17,7 @@ def setup_matplotlib():
     rc( 'font', **CMS.font )
     rc( 'text', usetex = True )
     rcParams['text.latex.preamble'] = compile_package_list()
+    rcParams['mathtext.default'] = 'regular'
     
 def compile_package_list():
     '''

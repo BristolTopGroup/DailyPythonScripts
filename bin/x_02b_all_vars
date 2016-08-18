@@ -5,9 +5,9 @@ N_JOBS=5
 
 i=0
 
-for var in MET HT ST WPT MT; do
+for var in MET HT ST WPT; do
 	echo "Unfolding distribution: $var"
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 7 -p data/normalisation/background_subtraction/ &> logs/02b_${var}_unfold_7TeV.log &
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 7 -p data/normalisation/background_subtraction/ --test  &> logs/02b_${var}_unfold_7TeV.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -16,7 +16,7 @@ for var in MET HT ST WPT MT; do
 	fi
 
 
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 8 -p data/normalisation/background_subtraction/ &> logs/02b_${var}_unfold_8TeV.log &
+	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 8 -p data/normalisation/background_subtraction/ --test &> logs/02b_${var}_unfold_8TeV.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

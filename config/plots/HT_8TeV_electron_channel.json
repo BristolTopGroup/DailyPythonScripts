@@ -1,0 +1,49 @@
+{
+    "command": "compare-files", 
+    "files": [
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/SingleElectron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/QCD_Electron_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/VJets_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/SingleTop_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/8TeV/central/TTJet_19584pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    ],
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/HT_2orMoreBtags"
+    ],
+    "labels": [
+        "Data",
+        "QCD",
+        "W/Z + jets",
+        "single-top",
+        "$t\\bar{t}$"
+    ], 
+    "output_folder": "plots/8TeV", 
+    "output_format": ["png"], 
+    "plot_type": "data_mc_comparison", 
+    "ratio_y_limits": [
+        [
+            0.8,
+            1.3
+        ]
+    ],
+    "title": [
+        "$H_T$ at $\\sqrt{s}$ = 8 TeV, e+jets"
+    ],
+    "x_axis_title": [
+        "$H_T [GeV]$"
+    ],
+    "x_limits": [
+        [
+            120,
+            1000
+        ]
+    ],
+    "rebin" : [
+        [120.0, 185.0, 215.0, 247.0, 283.0, 323.0, 365.0, 409.0, 458.0, 512.0, 570.0, 629.0, 691.0, 769.0, 1000.0]  
+    ],
+    "y_axis_title": [
+        "events"
+    ],
+    "colours": ["black", "yellow", "green", "magenta", "red"],
+    "mc_error": [0.15]
+}

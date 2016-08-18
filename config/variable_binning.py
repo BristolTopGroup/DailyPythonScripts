@@ -2,7 +2,7 @@ fit_variable_bin_edges = {
                           'absolute_eta' : [round( i * 0.2, 2 ) for i in range ( int( 3 / 0.2 ) + 1 )],
                           'M3' : [i * 25 for i in range ( int( 1000 / 25 ) + 1 )],
                           'M_bl' : [i * 10 for i in range ( int( 1000 / 20 ) + 1 )],
-                          'angle_bl' : [round( i * 0.2, 2 ) for i in range ( int( 4 / 0.2 ) + 1 )],
+                          'angle_bl' : [round( i * 0.2, 2 ) for i in range ( int( 3.2 / 0.2 ) + 1 )],
                           }
 bin_edges = {
              'MET':[0.0, 27.0, 52.0, 87.0, 130.0, 172.0, 300.0],
@@ -31,9 +31,9 @@ for variable in bin_edges.keys():
         upper_edge = bin_edges[variable][i + 1]
         bin_widths[variable].append( upper_edge - lower_edge )
         bin_name = '%d-%d' % ( int( lower_edge ), int( upper_edge ) )
-        bin_name_latex = '%d--%d~\GeV' % ( int( lower_edge ), int( upper_edge ) )
-        if ( i + 1 ) == number_of_edges - 1:
-            bin_name = '%d-inf' % int( lower_edge )
-            bin_name_latex = '$\\geq %d$~\GeV' % int( lower_edge )
+        bin_name_latex = '%d--%d' % ( int( lower_edge ), int( upper_edge ) )
+        # if ( i + 1 ) == number_of_edges - 1:
+        #     bin_name = '%d-inf' % int( lower_edge )
+        #     bin_name_latex = '$\\geq %d$' % int( lower_edge )
         variable_bins_ROOT[variable].append( bin_name )
         variable_bins_latex[bin_name] = bin_name_latex

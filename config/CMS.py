@@ -15,7 +15,7 @@ x_axis_title = {
               }
 
 y_axis_title = {
-              'fontsize':50,
+              'fontsize':40,
               'position' : (0., 1.),
               'verticalalignment': 'bottom',
               'horizontalalignment': 'right'
@@ -43,7 +43,7 @@ axis_label_minor = {
               'pad': 12
               }
 
-legend_properties = {'size':35}
+legend_properties = {'size':33}
 
 figsize = (16,16)
 dpi = 400

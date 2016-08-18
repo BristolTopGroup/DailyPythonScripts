@@ -125,6 +125,7 @@ if __name__ == '__main__':
     initial_values_electron = {}
     initial_values_muon = {}
     for fit_variable in fit_variables:
+
         path = path_to_JSON + fit_variable + '/' + str( come ) + 'TeV/'
         fit_results_electron[fit_variable] = read_normalisation( path,
                                                 variable,
@@ -149,16 +150,16 @@ if __name__ == '__main__':
                                              'muon',
                                              met_type )
     
-    if not 'closure' in path_to_JSON:
-        fit_results_electron['before'] =  read_normalisation( 'data_single_var_fit/8TeV/',
-                                                variable,
-                                                category,
-                                                'electron',
-                                                 met_type )
-        fit_results_muon['before'] = read_normalisation( 'data_single_var_fit/8TeV/',
-                                                variable,
-                                                category,
-                                                'muon',
-                                                 met_type )
+    # if not 'closure' in path_to_JSON:
+    #     fit_results_electron['before'] =  read_normalisation( 'data_single_var_fit/8TeV/',
+    #                                             variable,
+    #                                             category,
+    #                                             'electron',
+    #                                              met_type )
+    #     fit_results_muon['before'] = read_normalisation( 'data_single_var_fit/8TeV/',
+    #                                             variable,
+    #                                             category,
+    #                                             'muon',
+    #                                              met_type )
     plot_fit_results( fit_results_electron, initial_values_electron, 'electron' )
     plot_fit_results( fit_results_muon, initial_values_muon, 'muon' )

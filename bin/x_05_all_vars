@@ -19,13 +19,13 @@ for var in MET HT ST MT WPT; do
     	wait;
 	fi
 	
-	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 8 -p data/$nice_fit_var -a -o tables/fit &> logs/05_${var}_table_8TeV_${nice_fit_var}.log &
-	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
+	# nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 8 -p data/$nice_fit_var -a -o tables/fit &> logs/05_${var}_table_8TeV_${nice_fit_var}.log &
+	# let i+=1
+	# if (( $i % N_JOBS == 0 ))
+	# then
+	# 	echo "Waiting on the above to finish."
+ #    	wait;
+	# fi
 done
 
 wait;

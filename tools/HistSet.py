@@ -69,7 +69,7 @@ class HistSet():
                                        colours = colours,
                                        histogram_properties = histogram_properties,
                                        fill_area = fill_area,
-                                       make_ratio = True,
+                                       make_ratio = False,
                                        alpha = alpha,
                                        save_folder = output_folder,
                                        save_as = output_format,

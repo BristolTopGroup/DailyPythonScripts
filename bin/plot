@@ -84,6 +84,8 @@ from tools.ROOT_utils import set_root_defaults
 from tools.file_utilities import write_data_to_JSON, read_data_from_JSON
 from tools.HistSet import HistSet
 from copy import deepcopy
+from tools.ROOT_utils import get_histogram_from_file
+from math import sqrt
 
 supported_commands = ['compare-files', 'compare-hists']
 
@@ -95,7 +97,7 @@ plot_options = {}
 global_options = ['files', 'file-aliases', 'histograms', 'labels', 'plot_type', 'output_folder',
                   'output_format', 'command', 'data_index', 'normalise',
                   'show_ratio', 'show_stat_errors_on_mc', 'colours', 'name_prefix',
-                  'fill_area', 'alpha']
+                  'fill_area', 'alpha', 'subtractFiles']
 
 def main():
     options, input_values_sets, json_input_files = parse_options()
@@ -173,7 +175,63 @@ def _exit_( msg ):
 def prepare_inputs( input_values ):
     input_values = check_and_fix_inputs( input_values )
     global files, histograms, global_options
+
+    subtractFiles = []
+    if input_values.has_key('subtractFiles'):
+       subtractFiles =  input_values['subtractFiles']
+
     sets = group_by_command( input_values['command'] )
+
+    for s in sets:
+        print s.histograms
+        # subtractFiles_sets = getBackgroundHists( subtractFiles, )
+
+    # if input_values['command'] == 'compare-hists' and len( input_values['subtractFiles'] ) > 0:
+
+    #     subtract_background( input_values['subtractFiles'] )
+    if len( subtractFiles ) > 0:
+        hist_sets = []
+        i = 0
+
+        for h in input_values['histograms']:
+            print h
+            # name = h.replace( '/', '_' )
+            # name = name.replace( ' ', '' )
+
+            uncDict = {'VJets' : 0.3,
+                        'TTJet' : 0.06,
+                        'SingleTop' : 0.3 }
+
+            for f in subtractFiles:
+                hist = get_histogram_from_file( histogram_path = h,
+                                               input_file = f )
+                print f
+                print hist
+                unc = 0
+                if 'VJets' in f or 'SingleTop' in f:
+                    unc = 0.3
+                elif 'TTJet' in f:
+                    unc = 0.3
+
+                for bin in range(1,hist.GetNbinsX()):
+                    binContent = hist.GetBinContent(bin)
+                    binError = hist.GetBinError(bin)
+                    newError = sqrt( binError ** 2 + ( binContent * unc ) ** 2 )
+                    # print 'Errors :',binError,newError
+                    hist.SetBinError( bin, newError )
+
+                sets[0].histograms[i] -= hist
+            i += 1
+            # hist_sets.append( HistSet( h, hist_inputs = hist_set, output_hist_labels = labels ) )
+
+
+    # print hist_sets
+    # print 'Looping sets'
+    # for s in sets:
+    #     for h in s.histograms:
+    #         print s.inputs            
+        # print s.histograms
+
     if input_values.has_key('name_prefix'):
         for s in sets:
             s.name = input_values['name_prefix'] + s.name
@@ -234,6 +292,7 @@ def group_by_file():
         [{name:{f:h}, ...] where f = file and h = histogram path. The name is taken from the file name
     '''
     global files, file_aliases, histograms, labels
+
     hist_sets = []
     for f,name in zip(files, file_aliases):
         hist_set = []

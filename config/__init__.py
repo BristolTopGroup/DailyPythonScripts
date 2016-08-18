@@ -42,8 +42,9 @@ class XSectionConfig():
                   'unfolding_matching_up', 'unfolding_matching_up_raw',
                   'unfolding_mass_down', 'unfolding_mass_up',
                   'unfolding_mcatnlo', 'unfolding_mcatnlo_raw',
-                  'unfolding_powheg_pythia', 'unfolding_powheg_pythia_raw',
-                  'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
+                  'unfolding_powheg_v2_pythia', 'unfolding_powheg_v2_pythia_raw',
+                  'unfolding_powheg_v1_herwig', 'unfolding_powheg_v1_herwig_raw',
+                  'unfolding_powheg_v2_herwig', 'unfolding_powheg_v2_herwig_raw',
                   'unfolding_scale_down', 'unfolding_scale_down_raw',
                   'unfolding_scale_up', 'unfolding_scale_up_raw',
                   'unfolding_ptreweight', 'unfolding_ptreweight_raw',
@@ -193,7 +194,12 @@ class XSectionConfig():
                          }
         self.generator_systematics = [ 'matchingup', 'matchingdown', 'scaleup', 'scaledown' ]
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
-        self.topMasses = [169.5, 172.5, 173.5]
+
+        if self.centre_of_mass_energy == 7:
+          self.topMasses = [166.5, 172.5, 178.5]
+        elif self.centre_of_mass_energy == 8:
+          self.topMasses = [169.5, 172.5, 173.5]
+        
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = { systematic: path_to_files + 'central/VJets-%s_%dpb_PFElectron_PFMuon_PF2PATJets_PFMET.root' % ( systematic, self.luminosity ) for systematic in self.generator_systematics}
@@ -217,8 +223,10 @@ class XSectionConfig():
                                     }
 
         self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
-        self.unfolding_powheg_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg.root' % self.centre_of_mass_energy
-        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegherwig.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v1_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV1pythia.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v2_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV2pythia.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v1_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV1herwig.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v2_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV2herwig.root' % self.centre_of_mass_energy
         self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_mcatnlo.root' % self.centre_of_mass_energy
         self.unfolding_ptreweight_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_withTopPtReweighting.root' % self.centre_of_mass_energy
 
@@ -228,8 +236,10 @@ class XSectionConfig():
         self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
 
         self.unfolding_madgraph = self.unfolding_madgraph_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_powheg_pythia = self.unfolding_powheg_pythia_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v1_pythia = self.unfolding_powheg_v1_pythia_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v2_pythia = self.unfolding_powheg_v2_pythia_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v1_herwig = self.unfolding_powheg_v1_herwig_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v2_herwig = self.unfolding_powheg_v2_herwig_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mcatnlo = self.unfolding_mcatnlo_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_ptreweight = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting.root' % self.centre_of_mass_energy
 
@@ -239,6 +249,11 @@ class XSectionConfig():
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
+
+        if self.centre_of_mass_energy == 7:
+          self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_massdown_8To7_asymmetric.root'
+          self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_8TeV_massup_8To7_asymmetric.root'
+
 
         self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 1, 46 )}
 
@@ -269,6 +284,23 @@ class XSectionConfig():
 
         self.luminosity_scale = self.new_luminosity / self.luminosity
         
+        self.typical_systematics_order = [
+              'typical_systematics_theoretical',
+              'typical_systematics_hadronisation',
+              'typical_systematics_PDF',
+              'typical_systematics_top_mass',
+              'typical_systematics_pt_reweight',
+              'typical_systematics_electron',
+              'typical_systematics_muon',
+              'typical_systematics_btagging',
+              'typical_systematics_JES',
+              'typical_systematics_JER',
+              'typical_systematics_MET',
+              'typical_systematics_PU',
+              'typical_systematics_background_other',
+              'typical_systematics_QCD_shape',
+        ]
+
         self.typical_systematics = {
                                       "typical_systematics_electron": ['Electron_down',
                                                           'Electron_up'],
@@ -419,11 +451,15 @@ class XSectionConfig():
                                     'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
-                      'absolute_eta_angle_bl',
-                      'absolute_eta_M3',
-                      'absolute_eta_M_bl',
-                      'absolute_eta_M_bl_angle_bl',
+fit_var_inputs = [
+                  'absolute_eta', 'M3', 
+# 'M_bl', 
+                  'angle_bl',
+                      # 'absolute_eta_angle_bl',
+                      # 'absolute_eta_M3',
+                      # 'absolute_eta_M_bl',
+                      # 'absolute_eta_M_bl_angle_bl',
                       'absolute_eta_M3_angle_bl',
-                      'absolute_eta_M_bl_M3',
-                      'absolute_eta_M_bl_M3_angle_bl' ]
+                      # 'absolute_eta_M_bl_M3',
+                      # 'absolute_eta_M_bl_M3_angle_bl'
+                       ]

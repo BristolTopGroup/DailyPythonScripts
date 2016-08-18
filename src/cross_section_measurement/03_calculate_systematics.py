@@ -20,16 +20,34 @@ from copy import deepcopy
 from config import XSectionConfig
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
 from tools.Calculation import calculate_lower_and_upper_PDFuncertainty, \
-calculate_lower_and_upper_systematics, combine_errors_in_quadrature
-
+calculate_lower_and_upper_systematics, combine_errors_in_quadrature, \
+calculate_lower_and_upper_systematics_properly, calculate_covariance_of_systematics_03, calculate_covariance_of_systematics_properly
+import numpy as np
+from decimal import *
 def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties_list, k_values
     filename = ''
-    
+    path_to_use = path_to_JSON
+    k_value_to_use = k_values[channel]
+    # Use 8 TeV samples for hadronisation systematic
+    if 'powheg_v1_pythia' in category or 'powheg_v1_herwig' in category:
+        if '7TeV' in path_to_JSON:
+            path_to_use = path_to_JSON.replace('7TeV','8TeV')
+            config8TeV = XSectionConfig( 8 )
+            if channel == 'electron':
+                k_value_to_use = config8TeV.k_values_electron[variable]
+            elif channel == 'muon':
+                k_value_to_use = config8TeV.k_values_muon[variable]
+
     if category in met_uncertainties_list and variable == 'HT':
-        filename = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_use + '/' + channel + '/kv' + str( k_value_to_use ) + '/central/normalised_xsection_' + met_type + '.txt' 
     else:
-        filename = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_use + '/' + channel + '/kv' + str( k_value_to_use ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+    
+    # if category in met_uncertainties_list and variable == 'HT':
+    #     filename = path_to_use + '/' + channel + '/kv' + str( k_value_to_use ) + '/central/xsection_' + met_type + '.txt' 
+    # else:
+    #     filename = path_to_use + '/' + channel + '/kv' + str( k_value_to_use ) + '/' + category + '/xsection_' + met_type + '.txt' 
     
     if channel == 'combined':
         filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
@@ -66,62 +84,223 @@ def read_normalised_xsection_systematics( list_of_systematics, channel ):
         
     return systematics, systematics_unfolded
 
-def summarise_systematics( list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, mass_systematic = False, kValueSystematic = False ):
+def summarise_systematics( list_of_central_measurements, dictionary_of_systematics, pdf_calculation = False, hadronisation_systematic = False, mass_systematic = False, kValueSystematic = False , oneway = False, debug = False ):
     global symmetrise_errors
     # number of bins
     number_of_bins = len( list_of_central_measurements )
     down_errors = [0] * number_of_bins
     up_errors = [0] * number_of_bins
+    errors_for_covariance = [{}] * number_of_bins
+    mass_systematic_signs = []
+
+    # if debug:
+    #     print 'Central:',list_of_central_measurements
 
     for bin_i in range( number_of_bins ):
         central_value = list_of_central_measurements[bin_i][0]  # 0 = value, 1 = error
         error_down, error_up = 0, 0
+        e_cov = {}
         
         if pdf_calculation:
             pdf_uncertainty_values = {systematic:measurement[bin_i][0] for systematic, measurement in dictionary_of_systematics.iteritems()}
-            error_down, error_up = calculate_lower_and_upper_PDFuncertainty( central_value, pdf_uncertainty_values )
+            error_down, error_up, dict_of_unc = calculate_lower_and_upper_PDFuncertainty( central_value, pdf_uncertainty_values )
+
+            # sign = 1
+            # if max(error_down, error_up) == error_down:
+            #     sign = -1
+            # newsign = np.sign( error_up - error_down )
+
+            # print sign,newsign,error_up, error_down
+
             if symmetrise_errors:
                 error_down = max( error_down, error_up )
                 error_up = max( error_down, error_up )
+            # e_cov = {'PDF' : max( error_down, error_up ) * sign }
+            e_cov = dict_of_unc
+            if debug:
+                print dict_of_unc
+                print e_cov
+                raw_input('...')
         elif hadronisation_systematic:
             # always symmetric: absolute value of the difference between powheg_herwig and powheg_pythia
-            powheg_herwig = dictionary_of_systematics['TTJets_powheg_herwig'][bin_i][0]
-            powheg_pythia = dictionary_of_systematics['TTJets_powheg_pythia'][bin_i][0]
+            powheg_herwig = dictionary_of_systematics['TTJets_powheg_v1_herwig'][bin_i][0]
+            powheg_pythia = dictionary_of_systematics['TTJets_powheg_v1_pythia'][bin_i][0]
             difference = powheg_herwig - powheg_pythia
             mean = (powheg_herwig + powheg_pythia)/2.0
+            sign = np.sign(difference)
+            # print central_value,powheg_herwig, powheg_pythia,difference,mean,sign
+            # print np.sign( central_value - powheg_herwig), np.sign( central_value - powheg_pythia), sign, difference/mean*100
             difference = abs(difference)
             # now scale the error to the central value
             relative_error = difference/mean
             error_down = relative_error * central_value
             error_up = error_down
+            e_cov = { 'hadronisation' : error_up * sign }
         elif mass_systematic:
-            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
-            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, False )
+            list_of_systematics = {systematicName : systematic[bin_i][0] for systematicName, systematic in dictionary_of_systematics.iteritems()}
+            error_down, error_up, e_cov = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors=False, mass = True, debug = True )
+            if debug:
+                print 'Before scale :',error_down, error_up, e_cov
+
+
+
             # Scale errors calculated using very different top masses
-            error_down, error_up = scaleTopMassSystematicErrors( [error_down], [error_up] )
+            error_down, error_up, e_cov = scaleTopMassSystematicErrors( [error_down], [error_up], e_cov )
             error_down = error_down[0]
             error_up = error_up[0]
+
+            sign = 1
+            if e_cov['TTJets_massup'] > 0:
+                if e_cov['TTJets_massup'] > e_cov['TTJets_massdown'] : sign = 1
+                else : sign = -1
+            elif e_cov['TTJets_massup'] < 0:
+                if e_cov['TTJets_massup'] > e_cov['TTJets_massdown'] : sign = 1
+                else : sign = -1
+
+            if debug:
+                print 'After scale :',error_down, error_up, e_cov
+
+            # if debug:
+            #     print error_down, error_up, e_cov
+            mass_systematic_signs.append(sign)
+            # print 'MASS'
+            # print error_down, error_up,e_cov
+            # e_cov = { 'TTJets_massdown' : error_down }
+            # e_cov = { 'TTJets_massup' : error_up }
+            # e_cov = { 'TTJets_massdown' : error_down, 'TTJets_massup' : error_up}
         elif kValueSystematic:
-            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
-            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, True )
+            list_of_systematics = {systematicName : systematic[bin_i][0] for systematicName, systematic in dictionary_of_systematics.iteritems()}
+            error_down, error_up, e_cov = calculate_lower_and_upper_systematics( central_value, list_of_systematics, True )
         else:
-            list_of_systematics = [systematic[bin_i][0] for systematic in dictionary_of_systematics.values()]
-            error_down, error_up = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors )
+            list_of_systematics = {systematicName : systematic[bin_i][0] for systematicName, systematic in dictionary_of_systematics.iteritems()}
+            error_down, error_up, e_cov = calculate_lower_and_upper_systematics( central_value, list_of_systematics, symmetrise_errors, debug=debug )
+            if debug:
+                print 'After calculate_lower...'
+                sys_in_this_bin = {systematicName : systematic[bin_i] for systematicName, systematic in dictionary_of_systematics.iteritems()}
+                print list_of_central_measurements[bin_i]
+                print sys_in_this_bin
+                print error_down, error_up
+                # print e_cov
+            # print 'DOING A PROPER JOB'
+            # dictionary_of_systematics_for_this_bin = { category : systematic[bin_i][0] for category, systematic in dictionary_of_systematics.iteritems()}
+            # error_down, error_up = calculate_lower_and_upper_systematics_properly( central_value, dictionary_of_systematics_for_this_bin )
 
         down_errors[bin_i] = error_down
         up_errors[bin_i] = error_up
-    
-    return down_errors, up_errors
 
-def scaleTopMassSystematicErrors( error_down, error_up ):
+        errors_for_covariance[bin_i] = e_cov
+    if debug:
+        print 'Calculating covariance'
+        print 'Errors'
+        print down_errors
+        print up_errors
+        print errors_for_covariance
+    # print errors_for_covariance
+
+    covariance_matrix = calculate_covariance_of_systematics_03(errors_for_covariance, list_of_central_measurements, mass_systematic, hadronisation_systematic, pdf_calculation, oneway, debug = debug )
+
+    if mass_systematic:
+        if debug:
+            print 'Original'
+            print np.sign( covariance_matrix )
+
+        for i_row in range(0, covariance_matrix.shape[0]):
+            for i_col in range(0, covariance_matrix.shape[1]):
+                cov = covariance_matrix[i_row,i_col]
+                sign = mass_systematic_signs[i_row] * mass_systematic_signs[i_col]
+                if np.sign(cov) != sign:
+                    covariance_matrix[i_row,i_col] *= -1.0
+        # print mass_systematic_signs
+        if debug:
+            print 'New'
+            print np.sign( covariance_matrix )
+
+            for i_row in range(0, covariance_matrix.shape[0]):
+                print np.sqrt( covariance_matrix[i_row, i_row] ) / list_of_central_measurements[bin_i][0]
+
+    # proper_cov = calculate_covariance_of_systematics_properly( dictionary_of_systematics, list_of_central_measurements )
+
+    # cov = proper_cov
+    # if hadronisation_systematic or mass_systematic or pdf_calculation:
+    #     cov = covariance_matrix
+
+    # if debug:
+    #     print 'Covariance'
+    #     print covariance_matrix
+        # print 'Proper covariance'
+        # print proper_cov
+
+    # print 'Errors from covariance'
+    # for i in range(0,number_of_bins):
+    #     print np.sqrt( covariance_matrix[i,i] )
+
+    return down_errors, up_errors, covariance_matrix
+    # return down_errors, up_errors, cov
+
+def scaleTopMassSystematicErrors( error_down, error_up, e_cov=None, debug = False ):
     error_down_new, error_up_new = [], []
-    for down,up in zip( error_down,error_up ):
+
+    # print error_down
+    # print error_up
+    for down,up in zip( error_down,error_up ):  
         upMassDifference = measurement_config.topMasses[2] - measurement_config.topMasses[1]
         downMassDifference = measurement_config.topMasses[1] - measurement_config.topMasses[0]
 
         error_down_new.append( down * measurement_config.topMassUncertainty / downMassDifference )
         error_up_new.append( up * measurement_config.topMassUncertainty / upMassDifference )
-    return error_down_new, error_up_new
+
+        if e_cov != None:
+
+
+            print down, up, e_cov, upMassDifference, downMassDifference, measurement_config.topMassUncertainty
+
+            if np.sign( e_cov['TTJets_massdown'] ) == np.sign( e_cov['TTJets_massup'] ):
+                print 'Signs are the same'
+                sign = np.sign( e_cov['TTJets_massdown'] )
+                down_new = down * measurement_config.topMassUncertainty / downMassDifference
+                up_new = up * measurement_config.topMassUncertainty / upMassDifference
+
+                new_error = down_new
+                if down_new == 0:
+                    new_error = up_new
+
+                if abs( e_cov['TTJets_massdown'] ) > abs( e_cov['TTJets_massup'] ):
+                    e_cov['TTJets_massdown'] = new_error * sign
+                    e_cov['TTJets_massup'] = 0
+                else :
+                    e_cov['TTJets_massup'] = new_error * sign
+                    e_cov['TTJets_massdown'] = 0
+                # e_cov['TTJets_massdown'] = 1.0 * e_cov['TTJets_massdown'] * measurement_config.topMassUncertainty / downMassDifference
+                # e_cov['TTJets_massup'] = 1.0 * e_cov['TTJets_massup'] * measurement_config.topMassUncertainty / upMassDifference
+            else:
+
+                if abs( down ) == abs( e_cov['TTJets_massdown'] ):
+                    e_cov['TTJets_massdown'] = down * np.sign( e_cov['TTJets_massdown'] ) * measurement_config.topMassUncertainty / downMassDifference
+                elif abs( down ) == abs( e_cov['TTJets_massup'] ):
+                    print 'Down is up :',down, measurement_config.topMassUncertainty, upMassDifference
+                    e_cov['TTJets_massup'] = down * np.sign( e_cov['TTJets_massup'] ) * measurement_config.topMassUncertainty / downMassDifference
+
+                if abs( up ) == abs( e_cov['TTJets_massup'] ):
+                    e_cov['TTJets_massup'] = up * np.sign ( e_cov['TTJets_massup'] ) * measurement_config.topMassUncertainty / upMassDifference
+                elif abs( up ) == abs( e_cov['TTJets_massdown'] ):
+                    e_cov['TTJets_massdown'] = up * np.sign ( e_cov['TTJets_massdown'] ) * measurement_config.topMassUncertainty / upMassDifference
+
+            print e_cov
+            # print 'Scaled :', down,up, e_cov
+
+            # down_sign = np.sign(e_cov['TTJets_massdown'])
+            # up_sign = np.sign(e_cov['TTJets_massup'])
+
+            # print e_cov
+            # print 'Down scale :',measurement_config.topMassUncertainty / downMassDifference, down_sign, down
+            # print 'Up scale :',measurement_config.topMassUncertainty / upMassDifference, up_sign, up
+            # e_cov['TTJets_massdown'] = down_sign * down * measurement_config.topMassUncertainty / downMassDifference
+            # e_cov['TTJets_massup'] = up_sign * up * measurement_config.topMassUncertainty / upMassDifference
+            # print e_cov
+
+
+    if e_cov != None: return error_down_new, error_up_new, e_cov
+    else: return error_down_new, error_up_new
 
 def get_measurement_with_lower_and_upper_errors( list_of_central_measurements, lists_of_lower_systematic_errors, lists_of_upper_systematic_errors ):
     '''
@@ -134,19 +313,27 @@ def get_measurement_with_lower_and_upper_errors( list_of_central_measurements, l
     n_entries = len( list_of_central_measurements )
     complete_measurement = [( 0, 0, 0 )] * n_entries
     
+    print 'In table (?)'
+    # print lists_of_lower_systematic_errors
+    # print lists_of_upper_systematic_errors
     for index in range( n_entries ):
         central_value, central_error = list_of_central_measurements[index]  # 0 = value, 1 = error
         lower_errors = [error[index] for error in lists_of_lower_systematic_errors]
         upper_errors = [error[index] for error in lists_of_upper_systematic_errors]
-        # add central error to the list
-        lower_errors.append( central_error )
-        upper_errors.append( central_error )
+
+        # # add central error to the list
+        # lower_errors.append( central_error )
+        # upper_errors.append( central_error )
+
         # calculate total errors
         total_lower_error = combine_errors_in_quadrature( lower_errors )
         total_upper_error = combine_errors_in_quadrature( upper_errors )
         if symmetrise_errors:
             total_lower_error = max( total_lower_error, total_upper_error )
             total_upper_error = max( total_lower_error, total_upper_error )
+
+        print total_lower_error / central_value * 100
+
         complete_measurement[index] = ( central_value, total_lower_error, total_upper_error )
     
     return complete_measurement
@@ -199,7 +386,7 @@ if __name__ == "__main__":
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = options.path + '/' + str( options.CoM ) + 'TeV/' + variable + '/xsection_measurement_results/'
     symmetrise_errors = options.symmetrise_errors
-    
+
     # set up lists for systematics
     ttbar_generator_systematics_list = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
     vjets_generator_systematics_list = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
@@ -212,7 +399,7 @@ if __name__ == "__main__":
 
     # ttbar theory systematics: ptreweighting, hadronisation systematic (powheg_pythia - powheg_herwig)
     ttbar_ptreweight_systematic_list = [ttbar_theory_systematic_prefix + 'ptreweight']
-    ttbar_hadronisation_systematic_list = [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig']
+    ttbar_hadronisation_systematic_list = [ttbar_theory_systematic_prefix + 'powheg_v1_pythia', ttbar_theory_systematic_prefix + 'powheg_v1_herwig']
 
     # 45 PDF uncertainties
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
@@ -232,11 +419,15 @@ if __name__ == "__main__":
     other_uncertainties_list.append( 'QCD_shape' )
     other_uncertainties_list.extend( rate_changing_systematics_list )
 
-    for channel in ['electron', 'muon', 'combined']:
-#         print "channel = ", channel
+    # for channel in ['electron', 'muon', 'combined']:
+    for channel in ['combined']:
         # read central measurement
         central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement( 'central', channel )
         
+        nBins = len(central_measurement)
+        systematic_covariance = np.array( np.zeros((nBins,nBins )) )
+        systematic_correlation = np.array( np.zeros((nBins,nBins )) )
+
         # read groups of systematics
         ttbar_generator_systematics, ttbar_generator_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_generator_systematics_list, channel = channel )
         ttbar_ptreweight_systematic, ttbar_ptreweight_systematic_unfolded = read_normalised_xsection_systematics( list_of_systematics = ttbar_ptreweight_systematic_list, channel = channel )
@@ -250,32 +441,97 @@ if __name__ == "__main__":
         other_systematics, other_systematics_unfolded = read_normalised_xsection_systematics( list_of_systematics = other_uncertainties_list, channel = channel )
         # get the minimal and maximal deviation for each group of systematics
         # ttbar generator systematics (factorisation scale and matching threshold)
-        ttbar_generator_min, ttbar_generator_max = summarise_systematics( central_measurement, ttbar_generator_systematics )
-        ttbar_generator_min_unfolded, ttbar_generator_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_generator_systematics_unfolded )
+        ttbar_generator_min, ttbar_generator_max, covariance = summarise_systematics( central_measurement, ttbar_generator_systematics )
+        ttbar_generator_min_unfolded, ttbar_generator_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, ttbar_generator_systematics_unfolded)
+        systematic_covariance += covariance
+
+
+
+        # for i in range(0,nBins):
+        #     for j in range(0,nBins):
+        #         # systematic_covariance[i,j] = Decimal( systematic_covariance[i,j] ).quantize(Decimal('0.00000000000001'))
+        #         systematic_correlation[i,j] = covariance[i,j] / np.sqrt(covariance[i,i] * covariance[j,j])
+        # print systematic_correlation
+        # print covariance
+        # raw_input('...')
+
         # ttbar theory systematics (pt reweighting and hadronisation)
-        ttbar_ptreweight_min, ttbar_ptreweight_max = summarise_systematics( central_measurement, ttbar_ptreweight_systematic )
-        ttbar_ptreweight_min_unfolded, ttbar_ptreweight_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_ptreweight_systematic_unfolded )
-        ttbar_hadronisation_min, ttbar_hadronisation_max = summarise_systematics( central_measurement, ttbar_hadronisation_systematic, hadronisation_systematic = True )
-        ttbar_hadronisation_min_unfolded, ttbar_hadronisation_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_hadronisation_systematic_unfolded, hadronisation_systematic = True )
+        ttbar_ptreweight_min, ttbar_ptreweight_max, covariance = summarise_systematics( central_measurement, ttbar_ptreweight_systematic )
+        ttbar_ptreweight_min_unfolded, ttbar_ptreweight_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, ttbar_ptreweight_systematic_unfolded, oneway = True )
+        systematic_covariance += covariance
+
+        # for i in range(0,nBins):
+        #     for j in range(0,nBins):
+        #         # systematic_covariance[i,j] = Decimal( systematic_covariance[i,j] ).quantize(Decimal('0.00000000000001'))
+        #         systematic_correlation[i,j] = covariance[i,j] / np.sqrt(covariance[i,i] * covariance[j,j])
+        # print systematic_correlation
+        # print covariance
+        # raw_input('...')
+
+        ttbar_hadronisation_min, ttbar_hadronisation_max, covariance = summarise_systematics( central_measurement, ttbar_hadronisation_systematic, hadronisation_systematic = True )
+        ttbar_hadronisation_min_unfolded, ttbar_hadronisation_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, ttbar_hadronisation_systematic_unfolded, hadronisation_systematic = True )
+        systematic_covariance += covariance
+
+
         # Top mass systematic
-        ttbar_mass_min, ttbar_mass_max = summarise_systematics( central_measurement, ttbar_mass_systematic, mass_systematic = True )
-        ttbar_mass_min_unfolded, ttbar_mass_max_unfolded = summarise_systematics( central_measurement_unfolded, ttbar_mass_systematic_unfolded, mass_systematic = True )
+        ttbar_mass_min, ttbar_mass_max, covariance = summarise_systematics( central_measurement, ttbar_mass_systematic, mass_systematic = True )
+        ttbar_mass_min_unfolded, ttbar_mass_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, ttbar_mass_systematic_unfolded, mass_systematic = True )
+        systematic_covariance += covariance
+
         # k Value systematic
-        kValue_min, kValue_max = summarise_systematics( central_measurement, kValue_systematic, kValueSystematic = True)
-        kValue_min_unfolded, kValue_max_unfolded = summarise_systematics( central_measurement_unfolded, kValue_systematic_unfolded, kValueSystematic = True)
+        kValue_min, kValue_max, covariance = summarise_systematics( central_measurement, kValue_systematic, kValueSystematic = True)
+        kValue_min_unfolded, kValue_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, kValue_systematic_unfolded, kValueSystematic = True)
         # Take up variation as the down variation also.
         kValue_systematic['kValue_down'] = kValue_systematic['kValue_up']
         kValue_systematic_unfolded['kValue_down'] = kValue_systematic_unfolded['kValue_up']
         # 45 PDFs
-        pdf_min, pdf_max = summarise_systematics( central_measurement, pdf_systematics, pdf_calculation = True )
-        pdf_min_unfolded, pdf_max_unfolded = summarise_systematics( central_measurement_unfolded, pdf_systematics_unfolded, pdf_calculation = True )
+        pdf_min, pdf_max, covariance = summarise_systematics( central_measurement, pdf_systematics, pdf_calculation = True )
+        pdf_min_unfolded, pdf_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, pdf_systematics_unfolded, pdf_calculation = True )
+        systematic_covariance += covariance
+
+
 
         # MET
-        met_min, met_max = summarise_systematics( central_measurement, met_systematics )
-        met_min_unfolded, met_max_unfolded = summarise_systematics( central_measurement_unfolded, met_systematics_unfolded )
+        met_min, met_max, covariance = summarise_systematics( central_measurement, met_systematics )
+        met_min_unfolded, met_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, met_systematics_unfolded )
+        if variable != 'HT':
+            systematic_covariance += covariance
+
+
+
         # other
-        other_min, other_max = summarise_systematics( central_measurement, other_systematics )
-        other_min_unfolded, other_max_unfolded = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
+        other_min, other_max, covariance = summarise_systematics( central_measurement, other_systematics )
+        print 'OTHER SYSTEMATICS'
+        other_min_unfolded, other_max_unfolded, covariance = summarise_systematics( central_measurement_unfolded, other_systematics_unfolded )
+        systematic_covariance += covariance
+
+
+
+        # for i in range(0,nBins):
+        #     for j in range(0,nBins):
+        #         # systematic_covariance[i,j] = Decimal( systematic_covariance[i,j] ).quantize(Decimal('0.00000000000001'))
+        #         systematic_correlation[i,j] = covariance[i,j] / np.sqrt(covariance[i,i] * covariance[j,j])
+        # print systematic_correlation
+        # print covariance
+
+        # raw_input('...')
+
+        print 'DONE'
+        filename = path_to_JSON + '/combined/central/covariance_systematic.txt'
+        np.savetxt( filename, systematic_covariance, delimiter = ',' )
+        print channel
+        # # print systematic_covariance
+        for i in range(0,nBins):
+            print np.sqrt(systematic_covariance[i,i]) / central_measurement_unfolded[i][0] * 100
+        for i in range(0,nBins):
+            for j in range(0,nBins):
+                # systematic_covariance[i,j] = Decimal( systematic_covariance[i,j] ).quantize(Decimal('0.00000000000001'))
+                systematic_correlation[i,j] = systematic_covariance[i,j] / np.sqrt(systematic_covariance[i,i] * systematic_covariance[j,j])
+
+        # print 'covariance'
+        # print systematic_covariance
+        # print 'Correlation'
+        # print systematic_correlation
         # get the central measurement with fit, unfolding and systematic errors combined
         central_measurement_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement,
                                                                                                 [ttbar_generator_min, ttbar_ptreweight_min,
@@ -308,16 +564,26 @@ if __name__ == "__main__":
                                                                                                  pdf_max, met_max, other_max] )
 
         central_measurement_unfolded_with_systematics = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
-                                                                                                [ttbar_generator_min_unfolded, ttbar_ptreweight_min_unfolded,
+                                                                                                [
+                                                                                                ttbar_generator_min_unfolded,
+                                                                                                ttbar_ptreweight_min_unfolded,
                                                                                                 ttbar_hadronisation_min_unfolded,
                                                                                                 ttbar_mass_min_unfolded,
-#                                                                                                 kValue_min_unfolded,
-                                                                                                pdf_min_unfolded, met_min_unfolded, other_min_unfolded],
-                                                                                                [ttbar_generator_max_unfolded, ttbar_ptreweight_max_unfolded,
+# # # #                                                                                                 kValue_min_unfolded,
+                                                                                                pdf_min_unfolded, 
+                                                                                                met_min_unfolded,
+                                                                                                other_min_unfolded
+                                                                                                ],
+                                                                                                [
+                                                                                                ttbar_generator_max_unfolded,
+                                                                                                ttbar_ptreweight_max_unfolded,
                                                                                                 ttbar_hadronisation_max_unfolded,
                                                                                                 ttbar_mass_max_unfolded,
-#                                                                                                 kValue_max_unfolded,
-                                                                                                pdf_max_unfolded, met_max_unfolded, other_max_unfolded] )
+# # # #                                                                                                 kValue_max_unfolded,
+                                                                                                pdf_max_unfolded, 
+                                                                                                met_max_unfolded,
+                                                                                                other_max_unfolded
+                                                                                                ] )
         central_measurement_unfolded_with_systematics_but_without_ttbar_theory = get_measurement_with_lower_and_upper_errors( central_measurement_unfolded,
                                                                                                 [pdf_min_unfolded, met_min_unfolded, other_min_unfolded,
                                                                                                 ttbar_mass_min_unfolded,

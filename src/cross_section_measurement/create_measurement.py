@@ -128,13 +128,13 @@ def create_measurement(com, category, variable, channel):
             'Ref selection', config.electron_control_region)
         if category == 'QCD_shape':
             qcd_template = qcd_template.replace(
-                'Ref selection', config.electron_control_region_systematic)
+                config.electron_control_region, config.electron_control_region_systematic)
     else:
         qcd_template = qcd_template.replace(
             'Ref selection', config.muon_control_region)
         if category == 'QCD_shape':
             qcd_template = qcd_template.replace(
-                'Ref selection', config.muon_control_region_systematic)
+                config.muon_control_region, config.muon_control_region_systematic)
 
     m_qcd.addSample('TTJet', config.ttbar_category_templates[
                     template_category], qcd_template, False)

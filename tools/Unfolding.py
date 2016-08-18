@@ -261,9 +261,9 @@ def get_unfold_histogram_tuple(
         h_measured.Scale( lumiweight )
         h_response.Scale( lumiweight )
     
-    h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
-    if load_fakes:
-        h_fakes = fix_overflow( h_fakes )
+    # h_truth, h_measured, h_response = [ fix_overflow( hist ) for hist in [h_truth, h_measured, h_response] ]
+    # if load_fakes:
+    #     h_fakes = fix_overflow( h_fakes )
     
     return h_truth, h_measured, h_response, h_fakes
 

@@ -56,13 +56,20 @@ print path_to_AN_folder_hdfs
 # Make list of all samples to be merged
 allJobs = []
 for category in config.categories_and_prefixes.keys():
+    # if category != 'central' : 
+    #   continue
     for sample, input_samples in sample_summations.iteritems():
         # Only consider these samples
-        if not sample in ['WJets', 'DYJets', 'VJets-matchingup',
-                          'VJets-matchingdown', 'VJets-scaleup',
-                          'VJets-scaledown','QCD_Electron', 
-                          'QCD_Muon', 'VJets',
-                          'SingleTop']: #
+        if not sample in [
+        'WJets',
+                          'DYJets', 
+                          # 'VJets-matchingup',
+                          # 'VJets-matchingdown', 'VJets-scaleup',
+                          # 'VJets-scaledown','QCD_Electron', 
+                          'QCD_Muon',
+                          'VJets',
+                          'SingleTop'
+                          ]: #
             continue
         # Only consider these samples for central
         if sample in ['WJets', 'DYJets', 'VJets-matchingup',
@@ -100,6 +107,8 @@ output_file_hdfs = config.general_category_templates[category] % sample
 output_file = output_file_hdfs.replace("/hdfs/TopQuarkGroup/results/histogramfiles", current_working_directory)
 input_files = [config.general_category_templates[category] % input_sample for input_sample in input_samples]
 
+print input_files
+print output_file
 if not os.path.exists( output_file ):
     merge_ROOT_files( input_files, output_file, compression = 7, waitToFinish=True )
     print "merging ", sample
@@ -116,6 +125,7 @@ if os.path.exists( output_file_hdfs ):
 
 print '\nStarting rsync'
 output_log_file = output_file.replace(".root", ".log")
+p = subprocess.Popen('touch %s' % output_log_file, shell=True)
 command = 'rsync --verbose  --progress --stats --compress --recursive --times --update %s %s >> %s' % (output_file,output_file_hdfs,output_log_file)
 print command
 p = subprocess.Popen(command, shell=True)

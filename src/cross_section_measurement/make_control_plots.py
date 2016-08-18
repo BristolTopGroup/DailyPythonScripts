@@ -9,6 +9,8 @@ make_control_region_comparison
 from tools.hist_utilities import prepare_histograms, clean_control_region
 from tools.ROOT_utils import get_histograms_from_files, set_root_defaults
 from tools.latex import setup_matplotlib
+from math import sqrt
+# from numpy import sqrt
 # latex, font, etc
 setup_matplotlib()
 
@@ -41,6 +43,22 @@ def get_normalisation_error( normalisation ):
         total_normalisation += number[0]
         total_error += number[1]
     return total_error / total_normalisation
+
+def get_total_error_on_mc( h_ttjet, h_others, ttbar_uncertainty ):
+    totalError2 = []
+    for bin in range(1,h_ttjet.GetNbinsX() ):
+        statError = h_ttjet.GetBinError( bin )
+        normError = h_ttjet.GetBinContent( bin ) * ttbar_uncertainty
+        ttjetError2 = statError ** 2 + normError ** 2
+        totalError2.append( ttjetError2 )
+
+    for h in h_others:
+        for bin in range(1,h.GetNbinsX() ):
+            statError = h.GetBinError( bin )
+            totalError2[ bin - 1 ] += statError ** 2
+
+    totalError = [ sqrt(i) for i in totalError2 ]
+    return totalError
 
 def compare_shapes( channel, x_axis_title, y_axis_title,
               control_region_1, control_region_2,
@@ -105,12 +123,11 @@ def make_plot( channel, x_axis_title, y_axis_title,
               legend_location = ( 0.98, 0.78 ), cms_logo_location = 'right',
               log_y = False,
               legend_color = False,
-              ratio_y_limits = [0.3, 1.7],
+              ratio_y_limits = [0.9, 1.1],
               normalise = False,
               ):
     global output_folder, measurement_config, category, normalise_to_fit
     global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
-
     qcd_data_region = ''
     title = title_template % ( measurement_config.new_luminosity / 1000., measurement_config.centre_of_mass_energy )
     normalisation = None
@@ -189,8 +206,28 @@ def make_plot( channel, x_axis_title, y_axis_title,
                           signal_region_hists['V+Jets'],
                           signal_region_hists['SingleTop'],
                           signal_region_hists['TTJet']]
-    histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
-    histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    histogram_lables = ['Data', 'QCD', 'W/Z+Jets', 'Single t', samples_latex['TTJet']]
+    # histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
+    # histogram_colors = ['black', 390, 413, 616, 633]
+    histogram_colors = ['black', 390, 414, 606, 633]
+
+    totalErrorList = get_total_error_on_mc( signal_region_hists['TTJet'],
+                                            [ signal_region_hists['V+Jets'], signal_region_hists['SingleTop'], qcd_from_data ],
+                                            mc_uncertainty )
+
+    # print signal_region_hists['data'].Integral()
+    # print signal_region_hists['TTJet'].Integral()
+    # print signal_region_hists['SingleTop'].Integral()
+    # print signal_region_hists['V+Jets'].Integral()
+    # print qcd_from_data.Integral()
+
+    # sumMC = signal_region_hists['TTJet'].Integral() + signal_region_hists['SingleTop'].Integral() + signal_region_hists['V+Jets'].Integral() + qcd_from_data.Integral()
+    # print 'Total MC :',sumMC
+    # print 'Percents'
+    # print 'TTJet :',signal_region_hists['TTJet'].Integral() / sumMC * 100
+    # print 'Single Top :',signal_region_hists['SingleTop'].Integral() / sumMC * 100
+    # print 'V+Jets :',signal_region_hists['V+Jets'].Integral() / sumMC * 100
+    # print 'QCD :',qcd_from_data.Integral() / sumMC * 100
 
     histogram_properties = Histogram_properties()
     histogram_properties.name = name_prefix + b_tag_bin
@@ -205,10 +242,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     histogram_properties.xerr = None
     # workaround for rootpy issue #638
     histogram_properties.emptybins = True
-    if b_tag_bin:
-        histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin]
-    else:
-        histogram_properties.additional_text = channel_latex[channel]
+    histogram_properties.additional_text = channel_latex[channel]
     histogram_properties.legend_location = legend_location
     histogram_properties.cms_logo_location = cms_logo_location
     histogram_properties.preliminary = preliminary
@@ -219,15 +253,16 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
     if normalise_to_fit:
         histogram_properties.mc_error = get_normalisation_error( normalisation )
-        histogram_properties.mc_errors_label = 'fit uncertainty'
+        histogram_properties.mc_errors_label = 'Fit uncertainty'
     else:
-        histogram_properties.mc_error = mc_uncertainty
+        # histogram_properties.mc_error = mc_uncertainty
+        histogram_properties.mc_error = totalErrorList
         histogram_properties.mc_errors_label = 'MC unc.'
 
-    make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
-                                 histogram_properties, save_folder = output_folder,
-                                 show_ratio = False, normalise = normalise,
-                                 )
+    # make_data_mc_comparison_plot( histograms_to_draw, histogram_lables, histogram_colors,
+    #                              histogram_properties, save_folder = output_folder,
+    #                              show_ratio = False, normalise = normalise,
+    #                              )
     histogram_properties.name += '_with_ratio'
     loc = histogram_properties.legend_location
     # adjust legend location as it is relative to canvas!
@@ -274,8 +309,11 @@ if __name__ == '__main__':
     # this is shown as \ttbar (or MC) uncertainty on the plots
     # in fact, it takes the uncertainty on the whole MC stack
     # although unimportant, this needs revision
-    mc_uncertainty = 0.10
-    
+    # mc_uncertainty = 0.10
+    mc_uncertainty = 0.0643 # 8 TeV
+    # mc_uncertainty = 0.0683 # 7 TeV
+    # mc_uncertainty = 0
+
     histogram_files = {
             'TTJet': measurement_config.ttbar_category_templates[category],
             'V+Jets': measurement_config.VJets_category_templates[category],
@@ -303,37 +341,37 @@ if __name__ == '__main__':
     preliminary = False
     
     b_tag_bin = '2orMoreBtags'
-    norm_variable = 'MET'
+    norm_variable = 'HT'
     # comment out plots you don't want
     include_plots = [
-                        'eta',
-                        'pT',
+                        # 'eta',
+                        # 'pT',
                         'MET',
-                        'MET log',
-                        'MET phi',
+                        # # 'MET log',
+                        # # 'MET phi',
                         'HT',
                         'ST',
                         'WPT',
-                        'MT',
-                        'M3',
-                        'angle_bl',
-                        'bjet invariant mass',
-                        'b-tag multiplicity',
-                        'b-tag multiplicity reweighted',
-                        'jet multiplicity',
-                        'n vertex',
-                        'n vertex reweighted',
+                        # # 'MT',
+                        # 'M3',
+                        # 'angle_bl',
+                        # 'bjet invariant mass',
+                        # 'b-tag multiplicity',
+                        # 'b-tag multiplicity reweighted',
+                        # 'jet multiplicity',
+                        # 'n vertex',
+                        # 'n vertex reweighted',
                         ]
     additional_qcd_plots = [
-                            'eta in MET bins',
-                            'eta in HT bins',
-                            'eta in ST bins',
-                            'eta in MT bins',
-                            'eta in WPT bins',
-                            'QCD PFReliso non-iso',
-                            'QCD PFReliso',
-                            'QCD eta',
-                            'QCD eta shapes',
+                            # 'eta in MET bins',
+                            # 'eta in HT bins',
+                            # 'eta in ST bins',
+                            # 'eta in MT bins',
+                            # 'eta in WPT bins',
+                            # 'QCD PFReliso non-iso',
+                            # 'QCD PFReliso',
+                            # 'QCD eta',
+                            # 'QCD eta shapes',
                             ]
     if make_additional_QCD_plots:
         include_plots.extend( additional_qcd_plots )
@@ -341,13 +379,14 @@ if __name__ == '__main__':
     # lepton |eta|
     ###################################################
     if 'eta' in include_plots:
+        print '------> eta'
         make_plot( 'electron',
                   x_axis_title = '$\left|\eta(\mathrm{e})\\right|$',
                   y_axis_title = 'Events/(0.1)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Electron/electron_AbsEta_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'electron_AbsEta_',
-                  x_limits = [0, 2.6],
+                  x_limits = [0, 2.5],
                   rebin = 10,
                   legend_location = ( 0.98, 0.78 ),
                   cms_logo_location = 'right',
@@ -358,7 +397,7 @@ if __name__ == '__main__':
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Muon/muon_AbsEta_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'muon_AbsEta_',
-                  x_limits = [0, 2.6],
+                  x_limits = [0, 2.5],
                   rebin = 10,
                   legend_location = ( 0.98, 0.78 ),
                   cms_logo_location = 'right',
@@ -368,7 +407,7 @@ if __name__ == '__main__':
     ###################################################
     if 'pT' in include_plots:
         make_plot( 'electron',
-                  x_axis_title = '$p_\mathrm{T}(\mathrm{e})$ [GeV]',
+                  x_axis_title = '$p_\mathrm{T}(\mathrm{e})$ (GeV)',
                   y_axis_title = 'Events/(10 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Electron/electron_pT_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
@@ -379,7 +418,7 @@ if __name__ == '__main__':
                   cms_logo_location = 'right',
                   )
         make_plot( 'muon',
-                  x_axis_title = '$p_\mathrm{T}(\mu)$ [GeV]',
+                  x_axis_title = '$p_\mathrm{T}(\mu)$ (GeV)',
                   y_axis_title = 'Events/(10 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Muon/muon_pT_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
@@ -393,34 +432,38 @@ if __name__ == '__main__':
     # MET
     ###################################################
     if 'MET' in include_plots:
+        print '------> MET'
+
         make_plot( 'electron',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                  y_axis_title = 'Events/(5 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['MET'],
+                  y_axis_title = 'Events/(10 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'EPlusJets_patType1CorrectedPFMet_',
                   x_limits = [0, 200],
-                  rebin = 1,
-                  legend_location = ( 0.98, 0.78 ),
-                  cms_logo_location = 'right',
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 2,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
         make_plot( 'muon',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                  y_axis_title = 'Events/(5 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['MET'],
+                  y_axis_title = 'Events/(10 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_patType1CorrectedPFMet_',
                   x_limits = [0, 200],
-                  rebin = 1,
-                  legend_location = ( 0.98, 0.78 ),
-                  cms_logo_location = 'right',
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 2,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
     ###################################################
     # MET log
     ###################################################
     if 'MET log' in include_plots:
         make_plot( 'electron',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['MET'],
                   y_axis_title = 'Events/(20 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
@@ -432,7 +475,7 @@ if __name__ == '__main__':
                   log_y = True,
                   )
         make_plot( 'muon',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['MET'],
                   y_axis_title = 'Events/(20 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/MET_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
@@ -476,81 +519,90 @@ if __name__ == '__main__':
     ###################################################
     norm_variable = 'HT'
     if 'HT' in include_plots:
+        print '------> HT'
         make_plot( 'electron',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                  y_axis_title = 'Events/(20 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['HT'],
+                  y_axis_title = 'Events/(40 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/HT_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'EPlusJets_HT_',
-                  x_limits = [100, 1000],
-                  rebin = 4,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
+                  x_limits = [120, 1000],
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 8,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
         make_plot( 'muon',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                  y_axis_title = 'Events/(20 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['HT'],
+                  y_axis_title = 'Events/(40 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/HT_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_HT_',
-                  x_limits = [100, 1000],
-                  rebin = 4,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
+                  x_limits = [120, 1000],
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 8,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
     ###################################################
     # ST
     ###################################################
     norm_variable = 'ST'
     if 'ST' in include_plots:
+        print '------> ST'
         make_plot( 'electron',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                  y_axis_title = 'Events/(20 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['ST'],
+                  y_axis_title = 'Events/(40 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'EPlusJets_patType1CorrectedPFMet_ST_',
                   x_limits = [150, 1200],
-                  rebin = 4,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 8,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
         make_plot( 'muon',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                  y_axis_title = 'Events/(20 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['ST'],
+                  y_axis_title = 'Events/(40 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/ST_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_patType1CorrectedPFMet_ST_',
                   x_limits = [150, 1200],
-                  rebin = 4,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 8,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
     ###################################################
     # WPT
     ###################################################
     norm_variable = 'WPT'
     if 'WPT' in include_plots:
+        print '------> WPT'
         make_plot( 'electron',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                  y_axis_title = 'Events/(10 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['WPT'],
+                  y_axis_title = 'Events/(20 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'EPlusJets_patType1CorrectedPFMet_WPT_',
-                  x_limits = [0, 500],
-                  rebin = 10,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
+                  x_limits = [0, 400],
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 20,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
         make_plot( 'muon',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                  y_axis_title = 'Events/(10 GeV)',
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['WPT'],
+                  y_axis_title = 'Events/(20 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/WPT_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_patType1CorrectedPFMet_WPT_',
-                  x_limits = [0, 500],
-                  rebin = 10,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
+                  x_limits = [0, 400],
+                  ratio_y_limits = [0.7, 1.3],
+                  rebin = 20,
+                  legend_location = ( 0.89, 0.78 ),
+                  cms_logo_location = 'left',
                   )
     ###################################################
     # MT
@@ -558,7 +610,7 @@ if __name__ == '__main__':
     norm_variable = 'MT'
     if 'MT' in include_plots:
         make_plot( 'electron',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['MT'],
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['MT'],
                   y_axis_title = 'Events/(5 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
@@ -569,7 +621,7 @@ if __name__ == '__main__':
                   cms_logo_location = 'right',
                   )
         make_plot( 'muon',
-                  x_axis_title = '$%s$ [GeV]' % variables_latex['MT'],
+                  x_axis_title = '$%s$ (GeV)' % variables_latex['MT'],
                   y_axis_title = 'Events/(5 GeV)',
                   signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/MET/patType1CorrectedPFMet/Transverse_Mass_' + b_tag_bin,
                   qcd_data_region_btag = '0btag',
@@ -583,7 +635,7 @@ if __name__ == '__main__':
     ###################################################
     # M3 
     ###################################################  
-    norm_variable = 'MT'
+    norm_variable = 'HT'
     if 'M3' in include_plots:
         # M3 histograms are not plotted in the histogram output files from analysis software
         # so sum the M3 histograms from the BAT output histogram file and sum over all bins
@@ -591,27 +643,29 @@ if __name__ == '__main__':
         tmp = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/M3_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
         make_plot( 'electron',
-                  x_axis_title = '$M3$ [GeV]',
+                  x_axis_title = fit_variables_latex['M3'] + '(GeV)',
                   y_axis_title = 'Events/(20 GeV)',
                   signal_region = regions,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'EPlusJets_M3_',
                   x_limits = [0, 1000],
+                  ratio_y_limits = [0.8, 1.2],
                   rebin = 4,
-                  legend_location = ( 0.95, 0.78 ),
+                  legend_location = ( 0.94, 0.78 ),
                   cms_logo_location = 'right',
                   )
         tmp = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/M3_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
         make_plot( 'muon',
-                  x_axis_title = '$M3$ [GeV]',
+                  x_axis_title = fit_variables_latex['M3'] + '(GeV)',
                   y_axis_title = 'Events/(20 GeV)',
                   signal_region = regions,
                   qcd_data_region_btag = '0btag',
                   name_prefix = 'MuPlusJets_M3_',
                   x_limits = [0, 1000],
+                  ratio_y_limits = [0.8, 1.2],
                   rebin = 4,
-                  legend_location = ( 0.95, 0.78 ),
+                  legend_location = ( 0.94, 0.78 ),
                   cms_logo_location = 'right',
                   )
     ###################################################
@@ -624,12 +678,12 @@ if __name__ == '__main__':
         tmp = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/angle_bl_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
         make_plot( 'electron',
-                  x_axis_title = fit_variables_latex['angle_bl'],
+                  x_axis_title = fit_variables_latex['angle_bl'] + ' [radians]',
                   y_axis_title = 'Events/(0.2)',
                   signal_region = regions,
                   qcd_data_region_btag = '1btag',
                   name_prefix = 'EPlusJets_angle_bl_',
-                  x_limits = [0, 4],
+                  x_limits = [0, 3.2],
                   rebin = 2,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
@@ -637,12 +691,12 @@ if __name__ == '__main__':
         tmp = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/Binned_MT_Analysis/MT_with_patType1CorrectedPFMet_bin_%s/angle_bl_' + b_tag_bin
         regions = [tmp % bin_i for bin_i in variable_bins_ROOT['MT']]
         make_plot( 'muon',
-                  x_axis_title = fit_variables_latex['angle_bl'],
+                  x_axis_title = fit_variables_latex['angle_bl'] + ' [radians]',
                   y_axis_title = 'Events/(0.2)',
                   signal_region = regions,
                   qcd_data_region_btag = '1btag',
                   name_prefix = 'MuPlusJets_angle_bl_',
-                  x_limits = [0, 4],
+                  x_limits = [0, 3.2],
                   rebin = 2,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
@@ -689,7 +743,7 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '',
                   use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_N_BJets',
-                  x_limits = [1.5, 7.5],
+                  x_limits = [-0.5, 7.5],
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
@@ -702,7 +756,7 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '',
                   use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_N_BJets',
-                  x_limits = [1.5, 7.5],
+                  x_limits = [-0.5, 7.5],
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
@@ -717,7 +771,7 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '',
                   use_qcd_data_region = False,
                   name_prefix = 'EPlusJets_N_BJets_reweighted',
-                  x_limits = [1.5, 7.5],
+                  x_limits = [-0.5, 7.5],
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
@@ -730,68 +784,68 @@ if __name__ == '__main__':
                   qcd_data_region_btag = '',
                   use_qcd_data_region = False,
                   name_prefix = 'MuPlusJets_N_BJets_reweighted',
-                  x_limits = [1.5, 7.5],
+                  x_limits = [-0.5, 7.5],
                   rebin = 1,
                   legend_location = ( 0.95, 0.78 ),
                   cms_logo_location = 'right',
                   log_y = False,
                   )
-    if 'b-tag multiplicity' in include_plots:
-        b_tag_bin = ''
-        make_plot( 'electron',
-                  x_axis_title = 'B-tag multiplicity',
-                  y_axis_title = 'Events',
-                  signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets',
-                  qcd_data_region_btag = '',
-                  use_qcd_data_region = False,
-                  name_prefix = 'EPlusJets_N_BJets_logy',
-                  x_limits = [1.5, 7.5],
-                  rebin = 1,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
-                  log_y = True,
-                  )
-        make_plot( 'muon',
-                  x_axis_title = 'B-tag multiplicity',
-                  y_axis_title = 'Events',
-                  signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
-                  qcd_data_region_btag = '',
-                  use_qcd_data_region = False,
-                  name_prefix = 'MuPlusJets_N_BJets_logy',
-                  x_limits = [1.5, 7.5],
-                  rebin = 1,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
-                  log_y = True,
-                  )
-    if 'b-tag multiplicity reweighted' in include_plots:
-        b_tag_bin = ''
-        make_plot( 'electron',
-                  x_axis_title = 'B-tag multiplicity',
-                  y_axis_title = 'Events',
-                  signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets_reweighted',
-                  qcd_data_region_btag = '',
-                  use_qcd_data_region = False,
-                  name_prefix = 'EPlusJets_N_BJets_logy_reweighted',
-                  x_limits = [1.5, 7.5],
-                  rebin = 1,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
-                  log_y = True,
-                  )
-        make_plot( 'muon',
-                  x_axis_title = 'B-tag multiplicity',
-                  y_axis_title = 'Events',
-                  signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
-                  qcd_data_region_btag = '',
-                  use_qcd_data_region = False,
-                  name_prefix = 'MuPlusJets_N_BJets_logy_reweighted',
-                  x_limits = [1.5, 7.5],
-                  rebin = 1,
-                  legend_location = ( 0.95, 0.78 ),
-                  cms_logo_location = 'right',
-                  log_y = True,
-                  )        
+    # if 'b-tag multiplicity' in include_plots:
+    #     b_tag_bin = ''
+    #     make_plot( 'electron',
+    #               x_axis_title = 'B-tag multiplicity',
+    #               y_axis_title = 'Events',
+    #               signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets',
+    #               qcd_data_region_btag = '',
+    #               use_qcd_data_region = False,
+    #               name_prefix = 'EPlusJets_N_BJets_logy',
+    #               x_limits = [1.5, 7.5],
+    #               rebin = 1,
+    #               legend_location = ( 0.95, 0.78 ),
+    #               cms_logo_location = 'right',
+    #               log_y = True,
+    #               )
+    #     make_plot( 'muon',
+    #               x_axis_title = 'B-tag multiplicity',
+    #               y_axis_title = 'Events',
+    #               signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
+    #               qcd_data_region_btag = '',
+    #               use_qcd_data_region = False,
+    #               name_prefix = 'MuPlusJets_N_BJets_logy',
+    #               x_limits = [1.5, 7.5],
+    #               rebin = 1,
+    #               legend_location = ( 0.95, 0.78 ),
+    #               cms_logo_location = 'right',
+    #               log_y = True,
+    #               )
+    # if 'b-tag multiplicity reweighted' in include_plots:
+    #     b_tag_bin = ''
+    #     make_plot( 'electron',
+    #               x_axis_title = 'B-tag multiplicity',
+    #               y_axis_title = 'Events',
+    #               signal_region = 'TTbar_plus_X_analysis/EPlusJets/Ref selection/N_BJets_reweighted',
+    #               qcd_data_region_btag = '',
+    #               use_qcd_data_region = False,
+    #               name_prefix = 'EPlusJets_N_BJets_logy_reweighted',
+    #               x_limits = [1.5, 7.5],
+    #               rebin = 1,
+    #               legend_location = ( 0.95, 0.78 ),
+    #               cms_logo_location = 'right',
+    #               log_y = True,
+    #               )
+    #     make_plot( 'muon',
+    #               x_axis_title = 'B-tag multiplicity',
+    #               y_axis_title = 'Events',
+    #               signal_region = 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/N_BJets',
+    #               qcd_data_region_btag = '',
+    #               use_qcd_data_region = False,
+    #               name_prefix = 'MuPlusJets_N_BJets_logy_reweighted',
+    #               x_limits = [1.5, 7.5],
+    #               rebin = 1,
+    #               legend_location = ( 0.95, 0.78 ),
+    #               cms_logo_location = 'right',
+    #               log_y = True,
+    #               )        
     ###################################################
     # jet multiplicity
     ###################################################
@@ -1204,6 +1258,7 @@ if __name__ == '__main__':
     # QCD lepton |eta|
     ###################################################
     if 'QCD eta' in include_plots:
+        print '----> QCD eta'
         b_tag_bin = '0btag'
         make_plot( 'electron',
                   x_axis_title = '$\left|\eta(\mathrm{e})\\right|$',

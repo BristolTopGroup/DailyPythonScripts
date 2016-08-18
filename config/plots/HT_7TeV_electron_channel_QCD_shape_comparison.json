@@ -1,0 +1,51 @@
+{
+    "command": "compare-hists", 
+    "files": [
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_8th_draft/7TeV/central/ElectronHad_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+    ],
+    "histograms": [
+        "TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/HT_0btag",
+        "TTbar_plus_X_analysis/EPlusJets/QCD non iso e+jets/MET/HT_0btag",
+        "TTbar_plus_X_analysis/EPlusJets/QCDConversions/MET/HT_2btags"
+    ],
+    "labels": [
+        "Conversion 0 btag",
+        "Non Iso 0 btag",
+        "Conversion 2 btags"
+    ], 
+    "output_folder": "plots/QCD_shape_e", 
+    "output_format": ["pdf"], 
+    "name_prefix": "compare_QCD_btag_regions_in_HT_electron_channel_",
+    "plot_type": "shape_comparison", 
+    "ratio_y_limits": [
+        [0.95, 1.05]
+    ], 
+    "title": [
+        "Comparison of $H_T$ \\\\(QCD control regions: 0,1 and 2 btags) $\\sqrt{s}$ = 8 TeV"
+    ], 
+    "x_axis_title": [
+         "$H_T$ [GeV]"
+    ], 
+    "x_limits": [
+        [120, 1000]
+    ], 
+    "y_axis_title": [
+        "normalised to unit area"
+    ], 
+    "y_limits": [
+        [0, 0.25]
+    ],
+    "rebin" : [
+    	[120.0, 185.0, 215.0, 247.0, 283.0, 323.0, 365.0, 409.0, 458.0, 512.0, 570.0, 629.0, 691.0, 769.0, 1000.0]	
+    ],
+    "colours": ["green", "blue", "red"],
+    "normalise":1,
+    "fill_area":false,
+
+    "subtractFiles" : [
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/central/VJets_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/central/SingleTop_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root",
+        "/hdfs/TopQuarkGroup/results/histogramfiles/AN-14-071_6th_draft/7TeV/central/TTJet_5050pb_PFElectron_PFMuon_PF2PATJets_PFMET.root"
+        ]
+
+}
