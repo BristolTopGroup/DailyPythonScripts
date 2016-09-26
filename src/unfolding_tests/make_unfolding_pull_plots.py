@@ -247,14 +247,14 @@ def plot_fit_results(fit_results, centre_of_mass, channel, variable, k_value,
     histogram_properties.x_axis_title = latex_labels.variables_latex[variable]
     histogram_properties.legend_location = (0.98, 0.48)
     value = get_value_title(k_value, tau_value)
-    title = 'pull distribution mean \& sigma for {0}'.format(value)
+    title = 'pull distribution mean \& sigma for {0}'.format(tau_value)
     histogram_properties.title = title
     histogram_properties.y_limits = [-2, 2]
     histogram_properties.xerr = True
 
     compare_measurements(
         models={
-            'mean $|\mu|$':make_line_hist(bin_edges,mean_abs_pull),
+            # 'mean $|\mu|$':make_line_hist(bin_edges,mean_abs_pull),
             'ideal $\mu$': make_line_hist(bin_edges, 0),
             'ideal $\sigma$': make_line_hist(bin_edges, 1),
         },
@@ -353,12 +353,12 @@ def plot_pull(pulls, centre_of_mass, channel, variable, k_value, tau_value,
 
     fr = None
     if bin_index is None:
-        fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value,
+        fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, tau_value,
                          tau_value, output_folder,
                          output_formats, stats=stats,
                          name='pull_from_files_all_bins')
     else:
-        fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value,
+        fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, tau_value,
                          tau_value, output_folder,
                          output_formats, stats=stats,
                          name='pull_from_files_bin_%d' % (bin_index))
@@ -377,7 +377,7 @@ def plot_pull_from_list(hist_data, hist_min_x, hist_max_x, hist_n_bins):
     plot_h_pull(h_pull, stats=stats, name='pull_from_list')
 
 
-def plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value, tau_value,
+def plot_h_pull(h_pull, centre_of_mass, channel, variable, tau_value, k_value,
                 output_folder, output_formats, stats=19596500, name='pull_test'):
     h_pull.Fit('gaus', 'WWSQ')
     fit_pull = h_pull.GetFunction('gaus')
@@ -407,13 +407,13 @@ def plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value, tau_value,
 
     channel_label = latex_labels.channel_latex[channel]
     var_label = latex_labels.variables_latex[variable]
-    title_template = 'Pull distribution for unfolding of {variable}\n'
-    title_template += '$\sqrt{{s}}$ = {com} TeV, {channel}, {value}'
+    title_template = 'Pull distribution for {variable}\n'
+    title_template += '$\sqrt{{s}}$ = {com} TeV, {channel}, tau = {value}'
     title = title_template.format(
         variable=var_label,
         com=centre_of_mass,
         channel=channel_label,
-        value=get_value_title(k_value, tau_value)
+        value=tau_value
     )
     plt.title(title, CMS.title)
 

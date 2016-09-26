@@ -221,6 +221,9 @@ def make_data_mc_comparison_plot( histograms = [],
     axes=None
     if show_ratio:
         ratio = data.Clone( 'ratio' )
+        sumHists = sum( stack.GetHists() )
+        for bin_i in range(1,sumHists.GetNbinsX()):
+            sumHists.SetBinError(bin_i,0)
         ratio.Divide( sum( stack.GetHists() ) )
         ratio.SetMarkerSize( 3 )
         gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] ) 
@@ -294,6 +297,7 @@ def make_data_mc_comparison_plot( histograms = [],
         axes.set_ylim( ymin = y_limits[0], ymax = y_limits[-1] )
     else:
         y_max = get_best_max_y(histograms_, x_limits=x_limits) * histogram_properties.y_max_scale
+        print ("Chosen limits : ",0,y_max)
         axes.set_ylim( ymin = 0, ymax = y_max )
     if histogram_properties.set_log_y:
         if not len( y_limits ) == 2:  # if not user set y-limits, set default

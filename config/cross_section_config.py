@@ -5,7 +5,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
-    luminosities = {13:2172}
+    luminosities = {13:12835}
 
     parameters = [
         'SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
@@ -94,8 +94,8 @@ class XSectionConfig():
     def __fill_defaults__( self ):
         self.met_type = 'patType1CorrectedPFMet'
 
-        self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/25ns/'
-        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/25ns/'
+        self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/2016/'
+        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/2016/'
 
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
@@ -159,6 +159,7 @@ class XSectionConfig():
         self.data_file_electron = path_to_files + 'data_electron_tree.root'
 
         self.data_file_muon_trees = path_to_files + 'data_muon_tree.root'
+        # self.data_file_muon_trees = '/storage/ec6821/AnalysisTools/CMSSW_8_0_17/src/tree_SingleMuon_15930pb_PFElectron_PFMuon_PF2PATJets_MET_201.root'
         self.data_file_electron_trees = path_to_files + 'data_electron_tree.root'
 
         self.muon_QCD_file = path_to_files + 'QCD_data_mu.root'
@@ -406,8 +407,11 @@ class XSectionConfig():
         self.unfolding_matching_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingdown.root' % self.centre_of_mass_energy
         self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
 
-        self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '_scaleDown', '_asymmetric_scaleDown' )
-        self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '_scaleUp', '_asymmetric_scaleUp' )
+        self.unfolding_scale_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaSDown.root' % self.centre_of_mass_energy
+        self.unfolding_scale_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaSUp.root' % self.centre_of_mass_energy
+
+        # self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '_scaleDown', '_asymmetric_scaleDown' )
+        # self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '_scaleUp', '_asymmetric_scaleUp' )
         self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
 
@@ -434,10 +438,11 @@ class XSectionConfig():
         self.unfolding_UnclusteredEn_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_UnclusteredEnDown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_UnclusteredEn_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_UnclusteredEnUp_asymmetric.root' % self.centre_of_mass_energy
 
-        self.unfolding_PUSystematic = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pileupSystematic_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_PUSystematic_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pileupUp_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_PUSystematic_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pileupDown_asymmetric.root' % self.centre_of_mass_energy
 
 
-        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_generatorWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 9, 109 )}
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 0, 100 )}
 
         self.tree_path_templates = {
             'electron' : 'TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables',
@@ -535,7 +540,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 2172. 
+        self.new_luminosity = 12835
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used

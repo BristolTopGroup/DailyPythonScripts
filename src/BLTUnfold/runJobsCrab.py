@@ -3,8 +3,8 @@ from optparse import OptionParser
 import os
 
 jobs = [
-        # # # 13 TeV
-        # '--centreOfMassEnergy 13 -f',
+        # # 13 TeV
+        '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
         '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
@@ -15,16 +15,26 @@ jobs = [
         '--centreOfMassEnergy 13 -s powhegherwigpp',
         '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
-        # # # PS scale samples
-        # # '--centreOfMassEnergy 13 -s scaleup',
-        # # '--centreOfMassEnergy 13 -s scaledown',
-        # # ME scale weights
-        '--centreOfMassEnergy 13 --generatorWeight 4',
-        '--centreOfMassEnergy 13 --generatorWeight 8',
+        # # PS scale samples
+        # '--centreOfMassEnergy 13 -s scaleup',
+        # '--centreOfMassEnergy 13 -s scaledown',
 
+        # ME scale weights
+        '--centreOfMassEnergy 13 --muFmuRWeight 1',
+        '--centreOfMassEnergy 13 --muFmuRWeight 2',
+        '--centreOfMassEnergy 13 --muFmuRWeight 3',
+        '--centreOfMassEnergy 13 --muFmuRWeight 4',
+        '--centreOfMassEnergy 13 --muFmuRWeight 6',
+        '--centreOfMassEnergy 13 --muFmuRWeight 8',
+
+        '--centreOfMassEnergy 13 --alphaSWeight 0',
+        '--centreOfMassEnergy 13 --alphaSWeight 1',
+
+        # # Top mass
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
 
+        # # Experimental systematics
         '--centreOfMassEnergy 13 -s jesup',
         '--centreOfMassEnergy 13 -s jesdown',
 
@@ -40,7 +50,8 @@ jobs = [
         '--centreOfMassEnergy 13 -s lightjetup',
         '--centreOfMassEnergy 13 -s lightjetdown',
 
-        '--centreOfMassEnergy 13 -s pileupSystematic',
+        '--centreOfMassEnergy 13 -s pileupUp',
+        '--centreOfMassEnergy 13 -s pileupDown',
 
         '--centreOfMassEnergy 13 -s ElectronEnUp',
         '--centreOfMassEnergy 13 -s ElectronEnDown' ,
@@ -53,14 +64,14 @@ jobs = [
         ]
 # #  Add pdf variations to list of jobs
 nPDFPerJob = 1
-minPDF = 9
-maxPDF = 109
+minPDF = 0
+maxPDF = 99
 variation = minPDF
-while variation < maxPDF :
+while variation <= maxPDF :
     nForThisJob = nPDFPerJob
     if variation + nPDFPerJob > maxPDF:
         nForThisJob = maxPDF - variation
-    jobs.append('--centreOfMassEnergy 13 --generatorWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
+    jobs.append('--centreOfMassEnergy 13 --pdfWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
     variation += nPDFPerJob
     pass
 
