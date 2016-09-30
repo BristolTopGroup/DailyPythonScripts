@@ -91,16 +91,11 @@ if __name__ == '__main__':
     # Add in the PDF weights
     all_systematics = append_PDF_uncertainties(all_systematics)
 
-    list_of_systematics = {}
-    # Do you want to use different groups of systematics?
-    list_of_systematics['all'] = all_systematics
-    # Get separated lists of systematics e.g. only hadronisation etc...
-    # TODO
-
-    # Print the systematics if required
-    print_dictionary("List of the systematics in use", list_of_systematics)
+    list_of_systematics = all_systematics
+    # If you want different lists of systematics can just do some manipulation here
 
     for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
+    # for channel in ['muon']:
         print("Channel in use is {0} : ".format(channel))
 
         # Output folder of covariance matrices
@@ -132,12 +127,13 @@ if __name__ == '__main__':
         generate_covariance_matrices(opts, unfolded_x_sec_with_symmetrised_systematics)
 
         # Combine all systematic uncertainties for each of the groups of systematics
+        # Currently returns (Value, SysUp, SysDown) - Need to include stat?
         full_measurement = get_measurement_with_total_systematic_uncertainty(opts, x_sec_with_symmetrised_systematics)
         full_unfolded_measurement = get_measurement_with_total_systematic_uncertainty(opts, unfolded_x_sec_with_symmetrised_systematics)
         # print_dictionary("Measurement with total systematic error for each systematic group", full_measurement)
         # print_dictionary("Unfolded measurement with total systematic error for each systematic group", full_unfolded_measurement)
 
         # Write central +- error to JSON. Group of systematics in question is included in outputfile name.
-        for keys in list_of_systematics.keys():
-            write_normalised_xsection_measurement(opts, full_measurement[keys], full_unfolded_measurement[keys], summary = keys )
+        # Summary if you want to specify specific list. e.g. GeneratorOnly etc
+        write_normalised_xsection_measurement(opts, full_measurement, full_unfolded_measurement, summary = '' )
 

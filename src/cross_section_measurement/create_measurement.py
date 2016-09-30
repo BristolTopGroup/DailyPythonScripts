@@ -40,8 +40,7 @@ def main():
     categories = ['QCD_shape']
     categories.extend(measurement_config.categories_and_prefixes.keys())
     categories.extend(measurement_config.rate_changing_systematics_names)
-    categories.extend([measurement_config.vjets_theory_systematic_prefix +
-                       systematic for systematic in measurement_config.generator_systematics if not ('mass' in systematic or 'hadronisation' in systematic or 'NLO' in systematic)])
+    categories.extend([measurement_config.vjets_theory_systematic_prefix + scale for scale in ['scaleup', 'scaledown']])
 
     for variable in measurement_config.variables:
         for category in categories:
@@ -74,7 +73,6 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         return
 
     m = None
-
     if category == 'central':
         m = tools.measurement.Measurement(category)
     else:
@@ -448,12 +446,24 @@ def create_input(config, sample, variable, category, channel, template,
         weight_branches.append('1')
     else:
         weight_branches.append('EventWeight')
-        if category != 'PileUpSystematic':
+
+        if 'PileUp' not in category:
             weight_branches.append('PUWeight')
+        elif category == 'PileUp_up':
+            weight_branches.append('PUWeight_up')
+        elif category == 'PileUp_down':
+            weight_branches.append('PUWeight_down')
+        else:
+            weight_branches.append('1')
+
         if category == 'BJet_down':
             weight_branches.append('BJetDownWeight')
         elif category == 'BJet_up':
             weight_branches.append('BJetUpWeight')
+        elif category == 'LightJet_down':
+            weight_branches.append('LightJetDownWeight')
+        elif category == 'LightJet_up':
+            weight_branches.append('LightJetUpWeight')
         else:
             weight_branches.append('BJetWeight')
 
