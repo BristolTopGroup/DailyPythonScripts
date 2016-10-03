@@ -19,11 +19,8 @@ usage:
     # for 13 TeV in the visible phase space :
     python src/unfolding_tests/getBestTau.py config/unfolding/VisiblePS/*.json -n 100 --refold_plots
     -n = number of tau points
-    --refold_plots = output some comparison plots for every tau
+    --refold_plots = output some comparison plots for every tau (suggest few tau)
 '''
-
-
-
 # imports
 from __future__ import division
 from math import log10, pow
@@ -137,8 +134,6 @@ class TauFinding(object):
 
 def main():
     args, input_values_sets, json_input_files = parse_options()
-    # RUN_TEST = args.run_measured_as_data
-    # RUN_PLOT = args.run_refold_plots
 
     results = {}
     clear_old_df('tables/taufinding/')
@@ -164,6 +159,9 @@ def main():
         # Write to file
         df_chi2 = chi2_to_df(pd_chi2, pd_taus, regularisation_settings) 
 
+    # No point in trying to find best tau if it is given as 0...
+    if args.run_measured_as_data: return
+
     # Have the dataframes now - albeit read to a file
     # Read in each one corresponding to their channel
     # Find the best tau and pront to screen
@@ -178,6 +176,7 @@ def main():
         best_taus = interpolate_tau(0.3, df_chi2)
         chi2_to_plots(df_chi2, regularisation_settings, channel)
         print_results_to_screen(best_taus, channel)
+    return
 
 
 def parse_options():
@@ -262,7 +261,7 @@ def get_chi2s_of_tau_range( regularisation_settings, args ):
         # if test:
         regularisation_settings.h_refolded = h_refolded_data
         if args.run_refold_plots:
-            plot_unfold_vs_refold(regularisation_settings, tau)
+            plot_unfold_vs_refold(args, regularisation_settings, tau)
 
         data = np.array( [val for (val, err) in hist_to_value_error_tuplelist(h_data)] )
         ref = np.array( [val for (val, err) in hist_to_value_error_tuplelist(h_refolded_data)] )
@@ -397,7 +396,7 @@ def interpolate_tau(cutoff, df_chi2):
     return best_tau
 
 
-def plot_unfold_vs_refold(regularisation_settings, tau):
+def plot_unfold_vs_refold(args, regularisation_settings, tau):
     '''
     Plot the differences between the unfolded and refolded distributions
 
@@ -410,6 +409,9 @@ def plot_unfold_vs_refold(regularisation_settings, tau):
     channel = regularisation_settings.channel
     plot_outpath = regularisation_settings.outpath.replace('tables/', 'plots/')+variable+'/'
     make_folder_if_not_exists(plot_outpath)
+    outfile = plot_outpath+channel+'_unfold_refold_test_tau_'+tau+'.pdf'
+    if args.run_measured_as_data:
+        outfile = plot_outpath+channel+'_run_measured_as_data_tau_'+tau+'.pdf'
 
     c = TCanvas('c1','c1',600,400)
     c.SetFillColor(2);
@@ -431,7 +433,7 @@ def plot_unfold_vs_refold(regularisation_settings, tau):
     h_ratio = regularisation_settings.h_data.Clone()
     h_ratio.Divide(regularisation_settings.h_refolded)
     h_ratio.Draw()
-    c.SaveAs(plot_outpath+channel+'_unfold_refold_test_tau_'+tau+'.pdf')
+    c.SaveAs(outfile)
     c.Delete()
     return
 
