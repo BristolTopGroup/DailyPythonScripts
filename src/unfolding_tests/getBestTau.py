@@ -1,24 +1,25 @@
 '''
 Created on 20 Sep 2016
 
-@author: burns
-
+@author: Burns
 
 run src/unfolding_tests/makeConfig.py first
 
 This script creates, for each variable:
- - global correlation as function of log tau
- - optimal tau value
+ - 1-P(Chi2|NDF) between data and refolded data for various tau 
+ - Plots for data vs refolded data for each particular tau
+ - Optimal tau value
 
- 
 What it needs:
  - the response matrix file
  - the data to be unfolded
    
 usage:
-    python get_best_regularisation.py config.json
+    python getBestTau.py config.json
     # for 13 TeV in the visible phase space :
-    python src/unfolding_tests/get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/*.json
+    python src/unfolding_tests/getBestTau.py config/unfolding/VisiblePS/*.json -n 100 --refold_plots
+    -n = number of tau points
+    --refold_plots = output some comparison plots for every tau
 '''
 
 
@@ -26,25 +27,19 @@ usage:
 # imports
 from __future__ import division
 from math import log10, pow
-from optparse import OptionParser
 from argparse import ArgumentParser
 
 # rootpy
+from rootpy import asrootpy
 from rootpy.io import File, root_open
-from rootpy.plotting import Graph, Canvas
-from rootpy.matrix import Matrix
 # DailyPythonScripts
 from tools.ROOT_utils import set_root_defaults, get_histogram_from_file
 from config import XSectionConfig
 from tools.plotting import Histogram_properties
-# from matplotlib import rc
 from config import CMS
 from config.latex_labels import variables_latex
-from ROOT import TGraph, TSpline3, TUnfoldDensity, TUnfold, TDecompSVD, TMatrixD, TCanvas, TPad, TMath, gROOT
+from ROOT import TUnfoldDensity, TUnfold, TCanvas, TPad, TMath, gROOT
 
-
-
-from rootpy import asrootpy
 from config.variable_binning import reco_bin_edges_vis
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
