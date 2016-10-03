@@ -84,7 +84,7 @@ class TauFinding(object):
         self.data = input_values['data']
 
         self.taus_to_test = []
-        self.outpath = 'tau/'
+        self.outpath = 'tables/taufinding/'
 
         self.__set_unfolding_histograms__()
         
@@ -146,7 +146,7 @@ def main():
     # RUN_PLOT = args.run_refold_plots
 
     results = {}
-    clear_old_df('tau/')
+    clear_old_df('tables/taufinding/')
 
     for input_values, json_file in zip( input_values_sets, json_input_files ):
         print '\nProcessing', json_file
@@ -179,6 +179,7 @@ def main():
         if df_chi2 is None: continue
         print '\n', df_chi2, '\n'
 
+        # cutoff to be changed to 0.001 when able to
         best_taus = interpolate_tau(0.3, df_chi2)
         chi2_to_plots(df_chi2, regularisation_settings)
         print_results_to_screen(best_taus, channel)
@@ -292,20 +293,15 @@ def chi2_to_df(chi2, taus, regularisation_settings):
     df_new = pd.DataFrame(chi2)
     df_tau = pd.DataFrame(taus)
 
-    # add taus to new df
-    df_new = pd.concat([df_new, df_tau], axis=1)
-
     # better output path
     make_folder_if_not_exists(outpath)
     tblName = os.path.join(outpath,'tbl_{}_tauscan.txt'.format(channel))
     df_existing = get_df_from_file(tblName)
 
-    # remove tau from existing df. (Only want one)
-    if df_existing is not None and 'tau' in df_existing.columns:
-        del df_existing['tau']
-
-    # add columns already existing to new df
-    df_new = pd.concat([df_new, df_existing], axis=1)
+    if df_existing is not None:
+        df_new = pd.concat([df_new, df_existing], axis=1)
+        if 'tau' not in df_existing.columns:
+            df_new = pd.concat([df_new, df_tau], axis=1)
 
     # overwrite old df with new one
     with open(tblName,'w') as f:
@@ -326,8 +322,7 @@ def get_df_from_file(p):
         with open(p,'r') as f:
             df = pd.read_table(f, delim_whitespace=True)
     else:
-        print "Cannot find path."
-        return df
+        print "Cannot find path : ", p
     return df
 
 def chi2_to_plots(df_chi2, regularisation_settings):
@@ -335,9 +330,9 @@ def chi2_to_plots(df_chi2, regularisation_settings):
     Plot chi2 figures
     '''
     # variable = regularisation_settings.variable
+    plot_outpath = regularisation_settings.outpath.replace('tables/', 'plots/')
     channel = regularisation_settings.channel
-    outpath = regularisation_settings.outpath+'plots/'
-    make_folder_if_not_exists(outpath)
+    make_folder_if_not_exists(plot_outpath)
 
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(1, 1, 1)
@@ -357,7 +352,7 @@ def chi2_to_plots(df_chi2, regularisation_settings):
     ax1.set_xlabel('Regularisation Parameter \ensuremath{\\tau}')
     ax1.set_ylabel('\ensuremath{1-P(\\chi^{2}|NDF)}')
 
-    pltName = os.path.join(outpath,'{channel}_all_tauscan.pdf'.format(channel = channel))
+    pltName = os.path.join(plot_outpath,'{channel}_all_tauscan.pdf'.format(channel = channel))
     plt.show()
     plt.savefig(pltName) 
 
@@ -383,7 +378,6 @@ def interpolate_tau(cutoff, df_chi2):
     best_tau = {}
     for variable in df_chi2.columns:
         if variable == 'tau': continue
-        if variable == 'lepton_pt': continue
 
         i=0
         for chisq in df_chi2[variable]:
@@ -392,13 +386,19 @@ def interpolate_tau(cutoff, df_chi2):
                 continue
             else:
                 break
-        chisq_lo = df_chi2[variable][i]
-        chisq_hi = df_chi2[variable][i-1]
-        ratio = (cutoff - chisq_lo) / (chisq_hi - chisq_lo)
-        tau_lo = df_chi2['tau'][i]
-        tau_hi = df_chi2['tau'][i-1]
-        tau = tau_lo + ratio*(tau_hi - tau_lo)
-        best_tau[variable] = tau
+        if chisq > cutoff:
+            print( "All chisq are bigger than the required cut")
+            print(variable)
+            # last i becomes out of range
+            best_tau[variable] = df_chi2['tau'][i-1]
+        else:
+            chisq_lo = df_chi2[variable][i+1]
+            chisq_hi = df_chi2[variable][i]
+            ratio = (cutoff - chisq_lo) / (chisq_hi - chisq_lo)
+            tau_lo = df_chi2['tau'][i+1]
+            tau_hi = df_chi2['tau'][i]
+            tau = tau_lo + ratio*(tau_hi - tau_lo)
+            best_tau[variable] = tau
     return best_tau
 
 
@@ -413,8 +413,8 @@ def plot_unfold_vs_refold(regularisation_settings, tau):
     # measured = hist_to_value_error_tuplelist(regularisation_settings.h_measured)
     variable = regularisation_settings.variable
     channel = regularisation_settings.channel
-    outpath = regularisation_settings.outpath+'plots/'+variable+'/'
-    make_folder_if_not_exists(outpath)
+    plot_outpath = regularisation_settings.outpath.replace('tables/', 'plots/')+variable+'/'
+    make_folder_if_not_exists(plot_outpath)
 
     c = TCanvas('c1','c1',600,400)
     c.SetFillColor(2);
@@ -436,8 +436,7 @@ def plot_unfold_vs_refold(regularisation_settings, tau):
     h_ratio = regularisation_settings.h_data.Clone()
     h_ratio.Divide(regularisation_settings.h_refolded)
     h_ratio.Draw()
-    c.SaveAs('tau/plots/'+variable+'/variable'+'_'+channel+'_unfold_refold_test_tau_'+tau+'.pdf')
-
+    c.SaveAs(plot_outpath+channel+'_unfold_refold_test_tau_'+tau+'.pdf')
     c.Delete()
     return
 
@@ -446,7 +445,7 @@ def print_results_to_screen(best_taus, channel):
         Print the results to the screen
         Can copy straight into config
     '''
-
+    print( best_taus)
     print "\nCHANNEL : ", channel
     for variable, tau in best_taus.iteritems():
         print '"{0}" : {1},'.format(variable, tau)
