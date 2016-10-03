@@ -174,11 +174,10 @@ def main():
     # Find the best tau and pront to screen
     # Maybe find way to include in previous loop (would requires three dataframes instantiations)
     for channel in ['electron', 'muon', 'combined']:
-        print channel
         path = regularisation_settings.outpath+'tbl_'+channel+'_tauscan.txt'
         df_chi2 = get_df_from_file(path)
         if df_chi2 is None: continue
-        print '\n', df_chi2, '\n'
+        print '\n', "1 - P(Chi2|NDF)", '\n', df_chi2, '\n'
 
         # cutoff to be changed to 0.001 when able to
         best_taus = interpolate_tau(0.3, df_chi2)
@@ -276,7 +275,7 @@ def get_chi2s_of_tau_range( regularisation_settings, args ):
         chi2 = unfolding.getUnfoldRefoldChi2()
         prob = TMath.Prob( chi2, regularisation_settings.ndf ) #bins-1?
         chi2_ndf.append(1-prob)
-        print( tau, chi2, prob, 1-prob )
+        # print( tau, chi2, prob, 1-prob )
 
     # Create pandas dictionary
     d_chi2 = {variable : pd.Series( chi2_ndf )}
@@ -331,7 +330,7 @@ def chi2_to_plots(df_chi2, regularisation_settings, channel):
     Plot chi2 figures
     '''
     # variable = regularisation_settings.variable
-    plot_outpath = regularisation_settings.outpath.replace('tables/', 'plots/')
+    plot_outpath = regularisation_settings.outpath.replace('tables/', 'plots/') + 'tauscan/'
     make_folder_if_not_exists(plot_outpath)
 
     fig1 = plt.figure()

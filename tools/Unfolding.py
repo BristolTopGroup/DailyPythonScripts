@@ -146,15 +146,10 @@ class Unfolding:
             # At the moment for some reason in electron lepton pt the first bin is empty...
             # Need to figure out why. Until then using this.
             if (sigma == 0): continue
-
+            # Is this correct?
             diff = pow(mu-x,2) / pow(sigma, 2)
             chi2 += diff
-
-
-
-
         return chi2
-
 
     def pull(self):
         result = [9999999]
