@@ -48,7 +48,10 @@ from config import XSectionConfig
 from optparse import OptionParser
 from config.variable_binning import bin_edges_full, minimum_bin_width
 from tools.file_utilities import write_data_to_JSON
-from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray
+from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray, TColor, TLegend
+
+import tools.resolution as rs
+
 def main():
     '''
     Step 1: Get the 2D histogram for every sample (channel and/or centre of mass energy)
@@ -86,65 +89,70 @@ def main():
             variableToUse = 'abs_%s' % variable
         histogram_information = get_histograms( variableToUse, options )
 
-        if variable == 'HT':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=100. )
-        elif variable == 'ST':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=123. )
-        elif variable == 'MET':
-            best_binning, histogram_information = get_best_binning( histogram_information , 0.5, 0.5, n_min, minimum_bin_width[variable] )
-        elif variable == 'NJets':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=3.5 )
-        elif variable == 'lepton_pt':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], x_min=23. )
-        elif variable == 'abs_lepton_eta':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
-        else:
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable] )
 
-        if 'Rap' in variable:
-            for b in list(best_binning):
-                if b != 0.0:
-                    best_binning.append(-1.0*b)
-            best_binning.sort()
+        rs.generate_resolution_plots(histogram_information, variable)
 
-        # Make last bin smaller if huge
-        # Won't change final results
-        if len(best_binning) >= 4:
-            lastBinWidth = best_binning[-1] - best_binning[-2]
-            penultimateBinWidth = best_binning[-2] - best_binning[-3]
-            if lastBinWidth / penultimateBinWidth > 5:
-                newLastBinWidth = penultimateBinWidth * 5
-                best_binning[-1] = best_binning[-2] + newLastBinWidth
 
-        if variable == 'abs_lepton_eta':
-            best_binning = [ round(i,2) for i in best_binning ]
-        elif variable != 'NJets' :
-            best_binning = [ round(i) for i in best_binning ]
 
-        bin_choices[variable] = best_binning
+    #     if variable == 'HT':
+    #         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=100. )
+    #     elif variable == 'ST':
+    #         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=123. )
+    #     elif variable == 'MET':
+    #         best_binning, histogram_information = get_best_binning( histogram_information , 0.5, 0.5, n_min, minimum_bin_width[variable] )
+    #     elif variable == 'NJets':
+    #         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=3.5 )
+    #     elif variable == 'lepton_pt':
+    #         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], x_min=23. )
+    #     elif variable == 'abs_lepton_eta':
+    #         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
+    #     else:
+    #         best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable] )
 
-        print('The best binning for', variable, 'is:')
-        print('bin edges =', best_binning)
-        print('N_bins    =', len( best_binning ) - 1)
-        print('The corresponding purities and stabilities are:')
-        for info in histogram_information:
-            # print_latex_table(info, variable, best_binning)
-            outputInfo = {}
-            outputInfo['p_i'] = info['p_i']
-            outputInfo['s_i'] = info['s_i']
-            outputInfo['N'] = info['N']
-            outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_FullPS.txt' % ( variable, info['channel'] )
-            if options.visiblePhaseSpace:
-                outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
-            write_data_to_JSON( outputInfo, outputJsonFile )
-        for key in outputInfo:
-            print (key,outputInfo[key])
-        print('-' * 120)
-    print('=' * 120)
-    print('For config/variable_binning.py')
-    print('=' * 120)
-    for variable in bin_choices:
-        print('\''+variable+'\' : '+str(bin_choices[variable])+',')
+    #     if 'Rap' in variable:
+    #         for b in list(best_binning):
+    #             if b != 0.0:
+    #                 best_binning.append(-1.0*b)
+    #         best_binning.sort()
+
+    #     # Make last bin smaller if huge
+    #     # Won't change final results
+    #     if len(best_binning) >= 4:
+    #         lastBinWidth = best_binning[-1] - best_binning[-2]
+    #         penultimateBinWidth = best_binning[-2] - best_binning[-3]
+    #         if lastBinWidth / penultimateBinWidth > 5:
+    #             newLastBinWidth = penultimateBinWidth * 5
+    #             best_binning[-1] = best_binning[-2] + newLastBinWidth
+
+    #     if variable == 'abs_lepton_eta':
+    #         best_binning = [ round(i,2) for i in best_binning ]
+    #     elif variable != 'NJets' :
+    #         best_binning = [ round(i) for i in best_binning ]
+
+    #     bin_choices[variable] = best_binning
+
+    #     print('The best binning for', variable, 'is:')
+    #     print('bin edges =', best_binning)
+    #     print('N_bins    =', len( best_binning ) - 1)
+    #     print('The corresponding purities and stabilities are:')
+    #     for info in histogram_information:
+    #         # print_latex_table(info, variable, best_binning)
+    #         outputInfo = {}
+    #         outputInfo['p_i'] = info['p_i']
+    #         outputInfo['s_i'] = info['s_i']
+    #         outputInfo['N'] = info['N']
+    #         outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_FullPS.txt' % ( variable, info['channel'] )
+    #         if options.visiblePhaseSpace:
+    #             outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
+    #         write_data_to_JSON( outputInfo, outputJsonFile )
+    #     for key in outputInfo:
+    #         print (key,outputInfo[key])
+    #     print('-' * 120)
+    # print('=' * 120)
+    # print('For config/variable_binning.py')
+    # print('=' * 120)
+    # for variable in bin_choices:
+    #     print('\''+variable+'\' : '+str(bin_choices[variable])+',')
 
 def get_histograms( variable, options ):
     config = XSectionConfig( 13 )
@@ -198,6 +206,8 @@ def get_histograms( variable, options ):
 
     return histogram_information
 
+
+
 def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
@@ -219,7 +229,8 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
         current_bin_end = current_bin_start
     
     while current_bin_end < n_bins:
-        current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
+        # bin_End, p, s, N_reco, res_Reco, Bin
+        current_bin_end, _, _, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
         if not bin_edges:
             # if empty
             bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
@@ -248,37 +259,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
         info['N'] = n_events
         
     return bin_edges, histogram_information
-
-def get_bin_resolution( fine_binned_response , bin_middle ):
-    gen_resolution = 0
-    reco_resolution = 0
-
-    reco_array = TObjArray()
-    gen_array = TObjArray()
-
-    # produces 4 TH1D histograms
-    # 0 : constant
-    # 1 : mean
-    # 2 : sigma
-    # 3 : chi-squared of it
-    gen_slices = fine_binned_response.FitSlicesY(0, bin_middle, bin_middle, 1, "Q", gen_array)
-    # for hist in gen_array:
-    #     print (type(hist))
-    # print("Gen Sigma : ", gen_array[2].GetBinContent(bin_middle))
-    # print("Gen Mean : ", gen_array[1].GetBinContent(bin_middle))
-    # print("Gen Constant : ", gen_array[0].GetBinContent(bin_middle))
-    gen_resolution = gen_array[2].GetBinContent(bin_middle)
-
-    reco_slices = fine_binned_response.FitSlicesX(0, bin_middle, bin_middle, 1, "Q", reco_array) 
-    # for hist in reco_array:
-    #     print (type(hist))
-    # print("Reco Sigma : ", reco_array[2].GetBinContent(bin_middle))
-    # print("Reco Mean : ", reco_array[1].GetBinContent(bin_middle))
-    # print("Reco Constant : ", reco_array[0].GetBinContent(bin_middle))
-    reco_resolution = reco_array[2].GetBinContent(bin_middle)
-
-    resolution = max(gen_resolution, reco_resolution)
-    return resolution
 
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width ): 
     current_bin_start = bin_start
@@ -319,23 +299,23 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
             # find the bin range that matches
             # print('New bin : ',current_bin_start,current_bin_end,p,s
 
-            if p >= p_min and s >= s_min and n_reco >= n_min:
-                # Now that purity and stability are statisfied... What about the resolution?
-                # Find slices of X and Y between bin edges and fit them with a Gaussian. 
-                # The StdDev of Gaussian = Resolution.
-                # If Resolution < Bin width then we are all good
+            # if p >= p_min and s >= s_min and n_reco >= n_min:
+            #     # Now that purity and stability are statisfied... What about the resolution?
+            #     # Find slices of X and Y between bin edges and fit them with a Gaussian. 
+            #     # The StdDev of Gaussian = Resolution.
+            #     # If Resolution < Bin width then we are all good
 
-                # Choose the middle fine bin of the total bin width as the resolution
-                current_bin_mid = int((bin_start+current_bin_end)/2)
+            #     # Choose the middle fine bin of the total bin width as the resolution
+            #     current_bin_mid = int((bin_start+current_bin_end)/2)
 
-                resolution = get_bin_resolution( gen_vs_reco_histogram, current_bin_mid)
-                # print ("Max Resolution : ", resolution)
-                # print ("Bin Width : ", binWidth)
-                if( abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinLowEdge(bin_i)) > resolution and 
-                    abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinUpEdge(current_bin_start)) > resolution 
-                    ):
-                    current_bin_end = bin_i
-                    break
+            #     resolution = get_bin_resolution( gen_vs_reco_histogram, current_bin_mid)
+            #     # print ("Max Resolution : ", resolution)
+            #     # print ("Bin Width : ", binWidth)
+            #     if( abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinLowEdge(bin_i)) > resolution and 
+            #         abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinUpEdge(current_bin_start)) > resolution 
+            #         ):
+            #         current_bin_end = bin_i
+            #         break
 
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
