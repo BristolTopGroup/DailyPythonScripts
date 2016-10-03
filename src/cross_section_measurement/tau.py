@@ -174,6 +174,7 @@ def main():
     # Find the best tau and pront to screen
     # Maybe find way to include in previous loop (would requires three dataframes instantiations)
     for channel in ['electron', 'muon', 'combined']:
+        print channel
         path = regularisation_settings.outpath+'tbl_'+channel+'_tauscan.txt'
         df_chi2 = get_df_from_file(path)
         if df_chi2 is None: continue
@@ -181,7 +182,7 @@ def main():
 
         # cutoff to be changed to 0.001 when able to
         best_taus = interpolate_tau(0.3, df_chi2)
-        chi2_to_plots(df_chi2, regularisation_settings)
+        chi2_to_plots(df_chi2, regularisation_settings, channel)
         print_results_to_screen(best_taus, channel)
 
 
@@ -325,13 +326,12 @@ def get_df_from_file(p):
         print "Cannot find path : ", p
     return df
 
-def chi2_to_plots(df_chi2, regularisation_settings):
+def chi2_to_plots(df_chi2, regularisation_settings, channel):
     '''
     Plot chi2 figures
     '''
     # variable = regularisation_settings.variable
     plot_outpath = regularisation_settings.outpath.replace('tables/', 'plots/')
-    channel = regularisation_settings.channel
     make_folder_if_not_exists(plot_outpath)
 
     fig1 = plt.figure()
@@ -355,6 +355,7 @@ def chi2_to_plots(df_chi2, regularisation_settings):
     pltName = os.path.join(plot_outpath,'{channel}_all_tauscan.pdf'.format(channel = channel))
     plt.show()
     plt.savefig(pltName) 
+    print "Written plots to {plot_outpath}{channel}_all_tauscan.pdf".format(plot_outpath = plot_outpath, channel = channel)
 
     return
 
@@ -362,6 +363,7 @@ def interpolate_tau(cutoff, df_chi2):
     '''
     Interpolate to get best tau from tau scan
     1e-8 < tau < 1
+    n    <  i  < 0
 
     chisq_lo    chisq cutoff        chisq_hi
     |------------|-------------------------|
@@ -387,8 +389,7 @@ def interpolate_tau(cutoff, df_chi2):
             else:
                 break
         if chisq > cutoff:
-            print( "All chisq are bigger than the required cut")
-            print(variable)
+            print "{var} exceeds required cut".format(var=variable)
             # last i becomes out of range
             best_tau[variable] = df_chi2['tau'][i-1]
         else:
@@ -445,7 +446,6 @@ def print_results_to_screen(best_taus, channel):
         Print the results to the screen
         Can copy straight into config
     '''
-    print( best_taus)
     print "\nCHANNEL : ", channel
     for variable, tau in best_taus.iteritems():
         print '"{0}" : {1},'.format(variable, tau)
