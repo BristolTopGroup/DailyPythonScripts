@@ -143,7 +143,7 @@ def main():
         # Initialise the TauFinding class
         regularisation_settings = TauFinding( input_values )
         # Set additional elemtents
-        regularisation_settings.taus_to_test = get_tau_list(args.n_tau_scan_points)
+        regularisation_settings.taus_to_test = get_tau_list(args.n_ticks_in_log)
         if args.run_measured_as_data:
             regularisation_settings.taus_to_test = [0]
             regularisation_settings.h_data = regularisation_settings.h_measured
@@ -195,9 +195,9 @@ def parse_options():
         dest = "run_refold_plots",
         action = "store_true", 
         help = "For debugging - output unfolded vs refolded for each tau" ) 
-    parser.add_argument( "-n", "--n_taus", 
-        dest = "n_tau_scan_points",
-        default = 25,
+    parser.add_argument( "-n", "--n_ticks_in_log", 
+        dest = "n_ticks_in_log",
+        default = 10,
         type = int,
         help = "How many taus in the range do you want" ) 
 
@@ -224,12 +224,14 @@ def clear_old_df(path):
             os.remove(os.path.join(root, name))
     return
 
-def get_tau_list(n_tau):
+def get_tau_list(logSpacing, logMin = log10(pow(10,-8)), logMax = log10(1)):
     '''
     Large scanning range from unity to 10^-8. Split into equal points based on log system 
     given the number of tau points to scan over.
     '''
-    tau_test_range = [pow(10, -8*i/n_tau) for i in range(0, n_tau)]
+    taus = []
+    r = int(logMax - logMin)
+    tau_test_range = [10**(logMax - i/float(logSpacing)) for i in range(r*logSpacing)]
     return tau_test_range
 
 def get_chi2s_of_tau_range( regularisation_settings, args ):
