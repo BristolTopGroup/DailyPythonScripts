@@ -10,6 +10,8 @@ import glob
 from rootpy.io import File
 from rootpy.io import root_open
 import subprocess
+import warnings
+import functools
 
 def make_folder_if_not_exists(folder):
     if not os.path.exists(folder):
@@ -107,8 +109,19 @@ def merge_ROOT_files(file_list, output_file, compression = 7, waitToFinish=False
         print 'Waiting to finish merging...'
         p.wait()
 
+def deprecated(func):
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emmitted
+    when the function is used."""
 
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.simplefilter('always', DeprecationWarning) #turn off filter 
+        warnings.warn("Call to deprecated function {}.".format(func.__name__), category=DeprecationWarning, stacklevel=2)
+        warnings.simplefilter('default', DeprecationWarning) #reset filter
+        return func(*args, **kwargs)
 
+    return new_func
 
 def get_process_from_file(file_in_path):
     file_name = file_in_path.split('/')[-1]

@@ -1,5 +1,5 @@
 from __future__ import division, print_function
-from tools.file_utilities import read_data_from_JSON, write_data_to_JSON
+from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, deprecated
 from tools.Calculation import combine_errors_in_quadrature
 from config import XSectionConfig
 from copy import deepcopy
