@@ -68,7 +68,7 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
         h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
         h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
-        h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnloHerwig'], edges )
+        # h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnloHerwig'], edges )
 
         h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
         h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
@@ -80,7 +80,7 @@ def read_xsection_measurement_results( category, channel ):
                                                                      'amcatnloPythia8':h_normalised_xsection_amcatnlo,
                                                                      'madgraphMLM':h_normalised_xsection_madgraphMLM,
                                                                      'powhegHerwig':h_normalised_xsection_powhegHerwigpp,
-                                                                     'amcatnloHerwig':h_normalised_xsection_amcatnloHerwigpp,
+                                                                     # 'amcatnloHerwig':h_normalised_xsection_amcatnloHerwigpp,
                                                                 })
 
         histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
@@ -434,9 +434,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
             elif 'amcatnloPythia8' in key or 'massup' in key:
                 hist.SetLineColor( 807 )
                 dashes[key] = [20,5]
-            elif 'amcatnloHerwig' in key:
-                hist.SetLineColor( 734 )
-                dashes[key] = [15,5]
+            # elif 'amcatnloHerwig' in key:
+            #     hist.SetLineColor( 734 )
+            #     dashes[key] = [15,5]
             elif 'MCATNLO' in key or 'scaleup' in key:
                 hist.SetLineColor( 619 )
                 dashes[key] = [5,5,10,5]
@@ -831,7 +831,7 @@ if __name__ == '__main__':
     parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
                       help = "Unfolding method: TUnfold (default), RooUnfoldSvd, TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
 
-    output_formats = ['png', 'pdf']
+    output_formats = ['pdf']
     ( options, args ) = parser.parse_args()
     if options.debug:
         log.setLevel(log.DEBUG)
