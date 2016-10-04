@@ -41,7 +41,7 @@ from config.variable_binning import reco_bin_edges_vis
 from tools.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
-from config.latex_labels import variables_latex
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
