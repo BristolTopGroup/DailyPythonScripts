@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, deprecated
 from tools.Calculation import combine_errors_in_quadrature
+from tools.pandas_utilities import dict_to_df, list_to_series, df_to_file
 from config import XSectionConfig
 from copy import deepcopy
 from math import sqrt
@@ -19,11 +20,10 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
 
     output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_with_errors.txt'
     output_file = output_file.format(
-                    path_to_JSON = path_to_JSON,
-                    channel = channel,
-                    method = method,
-                    )
-    
+        path_to_JSON = path_to_JSON,
+        channel = channel,
+        method = method,
+    )
     if not summary == '':
         output_file = output_file.replace( 'with_errors', summary + '_errors' )
     
@@ -32,7 +32,32 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     write_data_to_JSON( output, output_file )
 
     print("Data written to : ", output_file)
+    return
 
+def write_systematic_xsection_measurement(options, systematic, summary = '' ):
+    '''
+    Write systematics to a df.
+    '''
+    path_to_JSON=options['path_to_JSON']
+    method=options['method']
+    channel=options['channel']
+
+    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_only_systematics.txt'
+    output_file = output_file.format(
+        path_to_JSON = path_to_JSON,
+        channel = channel,
+        method = method,
+    )
+    if not summary == '':
+        output_file = output_file.replace( 'only', summary )
+    
+    del systematic['central']
+    # Strip signs from dictionary and create dict of Series
+    syst_wout_sign = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
+    s = dict_to_df(syst_wout_sign)
+    # print( s )
+    df_to_file(output_file, s)
+    return
 
 def append_PDF_uncertainties(all_systematics):
     '''
