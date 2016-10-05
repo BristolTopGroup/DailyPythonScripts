@@ -1,6 +1,6 @@
 # from __future__ import division  # the result of the division will be always a float
 from argparse import ArgumentParser
-import pandas_utilities as pu
+import tools.pandas_utilities as pu
 
 from config.latex_labels import variables_latex, variables_NonLatex
 from config.variable_binning import bin_edges_vis, bin_edges_full
@@ -31,9 +31,13 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	ax_syst.set_xlim( x_limits )
 	ax_syst.set_ylim( y_limits )
 	error_hists = {}
+	stat_hist = None
 
 	for syst, vals in systematic_uncertainties.iteritems():
-		error_hists[syst] = values_and_errors_to_hist( vals, [], bin_edges )
+		if syst == 'statistical':
+			stat_hist = values_and_errors_to_hist( vals, [], bin_edges )
+		else:
+			error_hists[syst] = values_and_errors_to_hist( vals, [], bin_edges )
 
 	plt.tick_params( **CMS.axis_label_major )
 	plt.tick_params( **CMS.axis_label_minor )
@@ -41,12 +45,17 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'gold', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink' ]
 	for source, colour in zip (error_hists.keys(), colours):
 		hist = error_hists[source]
-		hist.linewidth = 1
+		hist.linewidth = 4
 		hist.color = colour
 		rplt.hist( hist, stacked=False, axes = ax_syst, label = source )
+
+	stat_hist.linewidth = 4
+	stat_hist.color = 'black'
+	stat_hist.linestyle = 'dashed'
+	rplt.hist( stat_hist, stacked=False, axes = ax_syst, label = 'stat.' )
+
 	leg = plt.legend(loc=1,prop={'size':30},ncol=2)
 	leg.draw_frame(False)	
-
 
 	x_title = variables_NonLatex[variable]
 	if variable in ['HT', 'MET', 'WPT', 'ST', 'lepton_pt']:
@@ -63,17 +72,6 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	fig_syst.savefig(file_template)
 	print "Written plots to {f}".format(f = file_template)
 	return
-
-	# NEED TO ADD IN STATISTICAL UNCERTAINTY
-
- #    statisticalErrorHists = values_and_errors_to_hist( errorHists['statistical'], [], bins )
- #    for source, hist in symmetricErrorHists.iteritems():
- #        symmetricErrorHists[source] = values_and_errors_to_hist( hist, [], bins )
-
- #    statisticalErrorHists.linewidth = 4
- #    statisticalErrorHists.color = 'black'
- #    statisticalErrorHists.linestyle = 'dashed'
- #    rplt.hist( statisticalErrorHists, stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'stat.' )
 
 if __name__ == '__main__':
 	parser = ArgumentParser(__doc__)
@@ -127,11 +125,11 @@ if __name__ == '__main__':
 	method = args.unfolding_method
 	variable = args.variable
 	output_folder = args.output_folder
-	visiblePS = args.visiblePS
+	ps_vis = args.visiblePS
 	
 	phase_space = 'FullPS'
 	bin_edges = bin_edges_full[variable]
-	if visiblePS:
+	if ps_vis:
 		phase_space = 'VisiblePS'
 		bin_edges = bin_edges_vis[variable]
 	measurement_config = XSectionConfig(com)
