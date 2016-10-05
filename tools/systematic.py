@@ -7,7 +7,6 @@ from copy import deepcopy
 from math import sqrt
 import numpy as np
 
-
 def write_normalised_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
     '''
     Writes the list of normalised measurements and normalised unfolded measurements of the form: 
@@ -257,36 +256,20 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     Of the form:
         [Uncertainty] for N bins
 
+    pdf_uncertainty_values = [ [[var_1],[vals_1]], [[var_2][vals_2]] ...]
     '''
     number_of_bins = options['number_of_bins']
-    pdf_min = []
-    pdf_max = []
+    pdf_sym = []
 
-    # split PDF uncertainties into downwards (negative) and upwards (positive) components
     for bin_i in xrange(number_of_bins):
-        negative = []
-        positive = []
         central = central_measurement[bin_i][0]
+
+        # now to calculate the RMS (sigma) for all PDF variations
+        rms = 0
         for pdf_variation in pdf_uncertainty_values:
-            # Get PDF weight index from its name
-            index = int(pdf_variation[0].rsplit('_', 1)[1])
-            pdf_uncertainty = pdf_variation[1][bin_i]
-            if index % 2 == 0:  # even == negative
-                negative.append(pdf_uncertainty)
-            else:
-                positive.append(pdf_uncertainty)
-
-        # now to calculate the RMS (sigma)
-        rms_up, rms_down = 0, 0
-        for n,p in zip(negative, positive):
-            rms_up += (p-central)**2
-            rms_down += (n-central)**2   
-        pdf_max.append( sqrt( rms_up / (len(positive)-1) ))
-        pdf_min.append( sqrt( rms_down / (len(negative)-1) ))
-
-        pdf_sym = max(pdf_min, pdf_max)
-
-    # return pdf_min, pdf_max  
+            variation = pdf_variation[1][bin_i]
+            rms += (variation-central)**2
+        pdf_sym.append( sqrt( rms / (len(pdf_uncertainty_values)-1) ))
     return pdf_sym  
 
 
