@@ -321,7 +321,8 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
                 pdf_sym, 
                 [0]*len(central_measurement),
             ]  
-
+        elif systematic == 'central':
+            normalised_x_sections_with_symmetrised_systematics['central'] = central_measurement
         else:
             upper_measurement = variation[0]
             lower_measurement = variation[1]
@@ -336,7 +337,6 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
                 isTopMassSystematic,
             )
 
-            normalised_x_sections_with_symmetrised_systematics['central'] = norm_syst_unc_x_secs['central']
             normalised_x_sections_with_symmetrised_systematics[systematic] = [
                 symmetrised_uncertainties, 
                 signed_uncertainties,
@@ -379,7 +379,7 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
     sign_uncerts = []
 
     for c, u, l in zip(central_measurement, upper_measurement, lower_measurement):
-        central = c[0] # Getting the measurement, not the error [xsec, unc]
+        central = c[0] # Getting the measurement, not the stat unc [xsec, unc]
         upper = u
         lower = l
 
