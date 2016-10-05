@@ -51,10 +51,15 @@ def write_systematic_xsection_measurement(options, systematic, summary = '' ):
     if not summary == '':
         output_file = output_file.replace( 'only', summary )
     
+    stats = [stat for value, stat in systematic['central']]
     del systematic['central']
+
     # Strip signs from dictionary and create dict of Series
-    syst_wout_sign = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
-    s = dict_to_df(syst_wout_sign)
+    all_uncertainties = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
+    # Add the statistical uncertainties
+    all_uncertainties['statistical'] = list_to_series( stats )
+
+    s = dict_to_df(all_uncertainties)
     # print( s )
     df_to_file(output_file, s)
     return
