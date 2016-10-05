@@ -177,7 +177,7 @@ def get_normalised_cross_sections(options, list_of_systematics):
 
     central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement(options, 'central')
     normalised_systematic_uncertainty_x_sections['central'] = central_measurement
-    unfolded_normalised_systematic_uncertainty_x_sections['central'] = central_measurement
+    unfolded_normalised_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
 
     for systematic, variation in list_of_systematics.iteritems():
         if (systematic == 'PDF'):
@@ -201,7 +201,6 @@ def get_normalised_cross_sections(options, list_of_systematics):
                 unf_env_lower,
                 unf_env_upper,
             ]
-        # elif (systematic == 'TTJets_alphaS'): continue
         else :
             syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation)
             normalised_systematic_uncertainty_x_sections[systematic] = [
