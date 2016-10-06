@@ -6,7 +6,7 @@ from config.latex_labels import variables_latex, variables_NonLatex
 from config.variable_binning import bin_edges_vis, bin_edges_full
 from config import XSectionConfig
 from tools.file_utilities import make_folder_if_not_exists
-from tools.hist_utilities import values_and_errors_to_hist
+from tools.hist_utilities import values_and_errors_to_hist, hist_to_value_error_tuplelist
 
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -28,14 +28,17 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	ax_syst.minorticks_on()
 	ax_syst.xaxis.labelpad = 12
 	ax_syst.yaxis.labelpad = 12
-	ax_syst.set_xlim( x_limits )
-	ax_syst.set_ylim( y_limits )
+
 	error_hists = {}
 	stat_hist = None
 
 	for syst, vals in systematic_uncertainties.iteritems():
 		if syst == 'statistical':
 			stat_hist = values_and_errors_to_hist( vals, [], bin_edges )
+		elif syst == 'systematic':
+			full_syst_hist = values_and_errors_to_hist( vals, [], bin_edges )
+		elif syst == 'central':
+			central_hist = values_and_errors_to_hist( vals, [], bin_edges )
 		else:
 			error_hists[syst] = values_and_errors_to_hist( vals, [], bin_edges )
 
@@ -54,6 +57,10 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	stat_hist.linestyle = 'dashed'
 	rplt.hist( stat_hist, stacked=False, axes = ax_syst, label = 'stat.' )
 
+	full_syst_hist.linewidth = 4
+	full_syst_hist.color = 'black'
+	rplt.hist( full_syst_hist, stacked=False, axes = ax_syst, label = 'tot syst.' )
+
 	leg = plt.legend(loc=1,prop={'size':30},ncol=2)
 	leg.draw_frame(False)	
 
@@ -61,6 +68,8 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	if variable in ['HT', 'MET', 'WPT', 'ST', 'lepton_pt']:
 		x_title += ' [GeV]'
 
+	ax_syst.set_xlim( x_limits )
+	ax_syst.set_ylim( y_limits )
 	plt.xlabel( x_title, CMS.x_axis_title )
 	plt.ylabel( 'Relative Uncertainty', CMS.y_axis_title)
 	plt.tight_layout()
@@ -137,7 +146,7 @@ if __name__ == '__main__':
 
 	for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:  
 
-		input_file = '{basepath}/{com}TeV/{var}/{ps}/central/normalised_xsection_{channel}_{method}_only_systematics.txt'.format(
+		input_file = '{basepath}/{com}TeV/{var}/{ps}/central/normalised_xsection_{channel}_{method}_summary_relative.txt'.format(
 			basepath = 	path,
 			com = 	com,
 			var = variable,
