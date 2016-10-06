@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, deprecated
 from tools.Calculation import combine_errors_in_quadrature
-from tools.pandas_utilities import dict_to_df, list_to_series, df_to_file
+from tools.pandas_utilities import dict_to_df, list_to_series, df_to_file, divide_by_series
 from config import XSectionConfig
 from copy import deepcopy
 from math import sqrt
@@ -41,7 +41,7 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     method=options['method']
     channel=options['channel']
 
-    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_only_systematics.txt'
+    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_summary_absolute.txt'
     output_file = output_file.format(
         path_to_JSON = path_to_JSON,
         channel = channel,
@@ -59,12 +59,24 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     all_uncertainties = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
     # Add the statistical uncertainties
     all_uncertainties['statistical'] = list_to_series( stats )
+    # Add the central measurement
     all_uncertainties['central'] = list_to_series( central )
+    # Add the total systematic
     all_uncertainties['systematic'] = list_to_series( syst_total )
+    # Output to absolute file
+    d_abs = dict_to_df(all_uncertainties)
+    df_to_file(output_file, d_abs)
 
-    s = dict_to_df(all_uncertainties)
-    # print( s )
-    df_to_file(output_file, s)
+    # Create Relative Paths
+    output_file = output_file.replace('absolute', 'relative')
+    for uncertainty, vals in all_uncertainties.iteritems():
+        if uncertainty == 'central': continue
+        # Just divide the abs uncertainty by the central value
+        all_uncertainties[uncertainty] = divide_by_series(vals, all_uncertainties['central'])
+    all_uncertainties['central'] = divide_by_series(all_uncertainties['central'], all_uncertainties['central'])
+
+    d_rel = dict_to_df(all_uncertainties)
+    df_to_file(output_file, d_rel)
     return
 
 def append_PDF_uncertainties(all_systematics):
@@ -425,7 +437,7 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
 
     TODO Should we output something like [central] [stat_unc] [syst_unc] instead?
 
-    '''q
+    '''
     number_of_bins = options['number_of_bins']
     measurement_with_total_uncertainty = []
     for bin_i in range( 0, number_of_bins ):
