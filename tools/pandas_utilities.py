@@ -58,3 +58,10 @@ def append_to_df(df, df_new):
 				del df[cols]
 	df = pd.concat([df, df_new], axis=1)
 	return df
+
+def divide_by_series(s1, s2):
+	'''
+	Divide one series by another
+	'''
+	s = s1.div(s2)
+	return s
