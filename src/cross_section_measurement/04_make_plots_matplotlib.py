@@ -70,8 +70,8 @@ def read_xsection_measurement_results( category, channel ):
         h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
         # h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnloHerwig'], edges )
 
-        h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
-        h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
+        # h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
+        # h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
         h_normalised_xsection_massup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
         h_normalised_xsection_massdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
 
@@ -84,8 +84,8 @@ def read_xsection_measurement_results( category, channel ):
                                                                 })
 
         histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
-                                                                  'scaledown': h_normalised_xsection_scaledown,
-                                                                  'scaleup': h_normalised_xsection_scaleup,
+                                                                  # 'scaledown': h_normalised_xsection_scaledown,
+                                                                  # 'scaleup': h_normalised_xsection_scaleup,
                                                                   'massdown': h_normalised_xsection_massdown,
                                                                   'massup': h_normalised_xsection_massup
                                                                   })
