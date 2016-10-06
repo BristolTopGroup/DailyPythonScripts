@@ -33,7 +33,7 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     print("Data written to : ", output_file)
     return
 
-def write_systematic_xsection_measurement(options, systematic, summary = '' ):
+def write_systematic_xsection_measurement(options, systematic, total_syst, summary = '' ):
     '''
     Write systematics to a df.
     '''
@@ -51,12 +51,16 @@ def write_systematic_xsection_measurement(options, systematic, summary = '' ):
         output_file = output_file.replace( 'only', summary )
     
     stats = [stat for value, stat in systematic['central']]
+    central = [value for value, stat in systematic['central']]
+    syst_total = [syst1 for value, syst1, syst2 in total_syst]
     del systematic['central']
 
     # Strip signs from dictionary and create dict of Series
     all_uncertainties = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
     # Add the statistical uncertainties
     all_uncertainties['statistical'] = list_to_series( stats )
+    all_uncertainties['central'] = list_to_series( central )
+    all_uncertainties['systematic'] = list_to_series( syst_total )
 
     s = dict_to_df(all_uncertainties)
     # print( s )
@@ -421,11 +425,11 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
 
     TODO Should we output something like [central] [stat_unc] [syst_unc] instead?
 
-    '''
+    '''q
     number_of_bins = options['number_of_bins']
-    sys_unc = 0
     measurement_with_total_uncertainty = []
     for bin_i in range( 0, number_of_bins ):
+        sys_unc = 0
         central = x_sec_with_symmetrised_systematics['central'][bin_i] # Still [Value, Error]
         for systematic, measurement in x_sec_with_symmetrised_systematics.iteritems():
             if (systematic == 'central'): continue
