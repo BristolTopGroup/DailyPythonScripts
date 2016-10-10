@@ -141,6 +141,7 @@ def main():
             outputInfo['p_i'] = info['p_i']
             outputInfo['s_i'] = info['s_i']
             outputInfo['N'] = info['N']
+            outputInfo['res'] = info['res']
             outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_FullPS.txt' % ( variable, info['channel'] )
             if options.visiblePhaseSpace:
                 outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
@@ -216,6 +217,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
     '''
     histograms = [info['hist'] for info in histogram_information]
     bin_edges = []
+    resolutions = []
     purities = {}
     stabilities = {}
     
@@ -230,7 +232,8 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
     
     while current_bin_end < n_bins:
         # bin_End, p, s, N_reco
-        current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
+        current_bin_end, _, _, _, r = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
+        resolutions.append(r)
         if not bin_edges:
             # if empty
             bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
@@ -257,7 +260,8 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
         info['p_i'] = purities
         info['s_i'] = stabilities
         info['N'] = n_events
-        
+        info['res'] = resolutions
+
     return bin_edges, histogram_information
 
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width ): 
@@ -309,21 +313,22 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 # The StdDev of Gaussian = Resolution.
                 # If Resolution < Bin width then we are all good
 
+                # NJets is not great at the moment for fitting guassians 
+                if (var=='NJets'):
+                    current_bin_end = bin_i
+                    break
+
                 # Choose the middle fine bin of the total bin width as the resolution
                 res = rs.get_merged_bin_resolution('plots/resolutionStudies/resolution.root', var, x_low, x_high)
-
+                res = round( res, 3 )
                 if ( x_high - x_mid > res and x_mid - x_low > res ):
                     current_bin_end = bin_i
                     break
-                # NJets is not great at the moment for fitting guassians 
-                elif (var=='NJets'):
-                    current_bin_end = bin_i
-                    break
+
 
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
-
-    return current_bin_end, p, s, n_reco
+    return current_bin_end, p, s, n_reco, res
 
 def print_console(info, old_purities, old_stabilities, print_old = False):
     print('CoM =', info['CoM'], 'channel =', info['channel'])
