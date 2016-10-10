@@ -6,6 +6,9 @@ from tools.file_utilities import make_folder_if_not_exists
     
 
 def get_bin_resolution( fine_binned_response , bin_number ):
+    '''
+    Return the resolution for the reco and gen distributions for each variable in each fine bin
+    '''
     gen_resolution = 0
     reco_resolution = 0
 
@@ -40,7 +43,7 @@ def get_bin_resolution( fine_binned_response , bin_number ):
 
 def get_merged_bin_resolution(res_file, var, low_bin, high_bin):
     '''
-    Return median value of resolutions in fine bins of the merged bin. Is median good?or Mean?
+    Return mean value of resolutions in fine bins of the merged bin.
     '''
 
     bin_contents = []
@@ -56,6 +59,9 @@ def get_merged_bin_resolution(res_file, var, low_bin, high_bin):
 
     for bin_i in range(low_bin_n, high_bin_n+1):
         bin_content = res_hist.GetBinContent(bin_i)
+        # resolution couldnt be reconstructed (High GeV with low stats)
+        # remove these from list of resolutions
+        if bin_content == 0 : continue
         bin_contents.append(bin_content)
 
     # print(bin_contents)
@@ -64,6 +70,10 @@ def get_merged_bin_resolution(res_file, var, low_bin, high_bin):
 
 
 def generate_resolution_plots(histogram_information, var):
+    '''
+    Save the reconstructed resolution to root file
+    Plot rexonstructed vs generated resolution
+    '''
 
     histograms = [info['hist'] for info in histogram_information]
     first_hist = histograms[0]
