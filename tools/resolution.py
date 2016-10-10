@@ -38,7 +38,7 @@ def get_bin_resolution( fine_binned_response , bin_number ):
     return reco_resolution, gen_resolution
 
 
-def get_merged_bin_resolution(low_bin, high_bin, res_file):
+def get_merged_bin_resolution(res_file, var, low_bin, high_bin):
     '''
     Return median value of resolutions in fine bins of the merged bin. Is median good?or Mean?
     '''
@@ -46,26 +46,25 @@ def get_merged_bin_resolution(low_bin, high_bin, res_file):
     bin_contents = []
 
     f = File( res_file )
-    res_hist = f.Get( res_filepath ).Clone()
+    res_hist = f.Get( 'res_r_'+var ).Clone()
     # change scope from file to memory
     res_hist.SetDirectory( 0 )
     f.close()
 
-    low_bin_n = res_hist.GetXAxis().FindBin(low_bin)
-    high_bin_n = res_hist.GetXAxis().FindBin(high_bin)
+    low_bin_n = res_hist.GetXaxis().FindBin(low_bin)
+    high_bin_n = res_hist.GetXaxis().FindBin(high_bin)
 
-    for bin_i in range(low_bin_n, high_bin_n):
+    for bin_i in range(low_bin_n, high_bin_n+1):
         bin_content = res_hist.GetBinContent(bin_i)
         bin_contents.append(bin_content)
 
+    # print(bin_contents)
     res = np.mean(bin_contents)
-    print( res)
     return res
 
 
 def generate_resolution_plots(histogram_information, var):
 
-    print('hi')
     histograms = [info['hist'] for info in histogram_information]
     first_hist = histograms[0]
     rebin_hist = first_hist.Rebin2D( 10, 10, "rebinned" ) # Make a coarser fine bin - mor stats for fit and saves compute time
