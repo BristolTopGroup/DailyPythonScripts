@@ -48,7 +48,10 @@ from config import XSectionConfig
 from optparse import OptionParser
 from config.variable_binning import bin_edges_full, minimum_bin_width
 from tools.file_utilities import write_data_to_JSON
-from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray
+from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray, TColor, TLegend
+
+import tools.resolution as rs
+
 def main():
     '''
     Step 1: Get the 2D histogram for every sample (channel and/or centre of mass energy)
@@ -62,6 +65,8 @@ def main():
                       help = "Consider visible phase space or not" )
     parser.add_option( '-c', dest = "combined", action = "store_true",
                       help = "Combine channels" )
+    parser.add_option( '-r', dest = "redo_resolution", action = "store_true",
+                      help = "Recalculate the resolution plots" )
     ( options, _ ) = parser.parse_args()
 
     measurement_config = XSectionConfig(13)
@@ -85,6 +90,9 @@ def main():
         if 'Rap' in variable:
             variableToUse = 'abs_%s' % variable
         histogram_information = get_histograms( variableToUse, options )
+
+        if options.redo_resolution:
+            rs.generate_resolution_plots(histogram_information, variable)
 
         if variable == 'HT':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=100. )
@@ -133,6 +141,7 @@ def main():
             outputInfo['p_i'] = info['p_i']
             outputInfo['s_i'] = info['s_i']
             outputInfo['N'] = info['N']
+            outputInfo['res'] = info['res']
             outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_FullPS.txt' % ( variable, info['channel'] )
             if options.visiblePhaseSpace:
                 outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
@@ -198,6 +207,8 @@ def get_histograms( variable, options ):
 
     return histogram_information
 
+
+
 def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
@@ -206,6 +217,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
     '''
     histograms = [info['hist'] for info in histogram_information]
     bin_edges = []
+    resolutions = []
     purities = {}
     stabilities = {}
     
@@ -219,7 +231,9 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
         current_bin_end = current_bin_start
     
     while current_bin_end < n_bins:
-        current_bin_end, _, _, _ = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
+        # bin_End, p, s, N_reco
+        current_bin_end, _, _, _, r = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
+        resolutions.append(r)
         if not bin_edges:
             # if empty
             bin_edges.append( first_hist.GetXaxis().GetBinLowEdge( current_bin_start + 1 ) )
@@ -246,39 +260,9 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
         info['p_i'] = purities
         info['s_i'] = stabilities
         info['N'] = n_events
-        
+        info['res'] = resolutions
+
     return bin_edges, histogram_information
-
-def get_bin_resolution( fine_binned_response , bin_middle ):
-    gen_resolution = 0
-    reco_resolution = 0
-
-    reco_array = TObjArray()
-    gen_array = TObjArray()
-
-    # produces 4 TH1D histograms
-    # 0 : constant
-    # 1 : mean
-    # 2 : sigma
-    # 3 : chi-squared of it
-    gen_slices = fine_binned_response.FitSlicesY(0, bin_middle, bin_middle, 1, "Q", gen_array)
-    # for hist in gen_array:
-    #     print (type(hist))
-    # print("Gen Sigma : ", gen_array[2].GetBinContent(bin_middle))
-    # print("Gen Mean : ", gen_array[1].GetBinContent(bin_middle))
-    # print("Gen Constant : ", gen_array[0].GetBinContent(bin_middle))
-    gen_resolution = gen_array[2].GetBinContent(bin_middle)
-
-    reco_slices = fine_binned_response.FitSlicesX(0, bin_middle, bin_middle, 1, "Q", reco_array) 
-    # for hist in reco_array:
-    #     print (type(hist))
-    # print("Reco Sigma : ", reco_array[2].GetBinContent(bin_middle))
-    # print("Reco Mean : ", reco_array[1].GetBinContent(bin_middle))
-    # print("Reco Constant : ", reco_array[0].GetBinContent(bin_middle))
-    reco_resolution = reco_array[2].GetBinContent(bin_middle)
-
-    resolution = max(gen_resolution, reco_resolution)
-    return resolution
 
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width ): 
     current_bin_start = bin_start
@@ -292,7 +276,11 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
 
         # keep the start bin the same but roll the end bin
         for bin_i in range ( current_bin_end, len( reco_i ) + 1 ):
-            binWidth = reco.GetXaxis().GetBinLowEdge(bin_i) - reco.GetXaxis().GetBinUpEdge(current_bin_start)
+            x_high = reco.GetXaxis().GetBinLowEdge(bin_i)
+            x_mid = reco.GetXaxis().GetBinCenter(int( (current_bin_start+current_bin_end)/2 ) )
+            x_low = reco.GetXaxis().GetBinUpEdge(current_bin_start)
+            binWidth = x_high - x_low
+
             if binWidth < min_width:
                 current_bin_end = bin_i
                 continue
@@ -325,22 +313,22 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 # The StdDev of Gaussian = Resolution.
                 # If Resolution < Bin width then we are all good
 
-                # Choose the middle fine bin of the total bin width as the resolution
-                current_bin_mid = int((bin_start+current_bin_end)/2)
-
-                resolution = get_bin_resolution( gen_vs_reco_histogram, current_bin_mid)
-                # print ("Max Resolution : ", resolution)
-                # print ("Bin Width : ", binWidth)
-                if( abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinLowEdge(bin_i)) > resolution and 
-                    abs(reco.GetXaxis().GetBinCenter(current_bin_mid) - reco.GetXaxis().GetBinUpEdge(current_bin_start)) > resolution 
-                    ):
+                # NJets is not great at the moment for fitting guassians 
+                if (var=='NJets'):
                     current_bin_end = bin_i
                     break
 
+                # Choose the middle fine bin of the total bin width as the resolution
+                res = rs.get_merged_bin_resolution('plots/resolutionStudies/resolution.root', var, x_low, x_high)
+                res = round( res, 3 )
+                if ( x_high - x_mid > res and x_mid - x_low > res ):
+                    current_bin_end = bin_i
+                    break
+
+
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
-
-    return current_bin_end, p, s, n_reco
+    return current_bin_end, p, s, n_reco, res
 
 def print_console(info, old_purities, old_stabilities, print_old = False):
     print('CoM =', info['CoM'], 'channel =', info['channel'])
