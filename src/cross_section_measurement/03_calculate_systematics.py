@@ -136,4 +136,5 @@ if __name__ == '__main__':
         # Write central +- error to JSON. Group of systematics in question is included in outputfile name.
         # Summary if you want to specify specific list. e.g. GeneratorOnly etc
         write_normalised_xsection_measurement(opts, full_measurement, full_unfolded_measurement, summary = '' )
+        write_systematic_xsection_measurement(opts, unfolded_x_sec_with_symmetrised_systematics, full_unfolded_measurement, summary = '' )
 

@@ -1,11 +1,11 @@
 from __future__ import division, print_function
 from tools.file_utilities import read_data_from_JSON, write_data_to_JSON, deprecated
 from tools.Calculation import combine_errors_in_quadrature
+from tools.pandas_utilities import dict_to_df, list_to_series, df_to_file, divide_by_series
 from config import XSectionConfig
 from copy import deepcopy
 from math import sqrt
 import numpy as np
-
 
 def write_normalised_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
     '''
@@ -19,11 +19,10 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
 
     output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_with_errors.txt'
     output_file = output_file.format(
-                    path_to_JSON = path_to_JSON,
-                    channel = channel,
-                    method = method,
-                    )
-    
+        path_to_JSON = path_to_JSON,
+        channel = channel,
+        method = method,
+    )
     if not summary == '':
         output_file = output_file.replace( 'with_errors', summary + '_errors' )
     
@@ -32,7 +31,53 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     write_data_to_JSON( output, output_file )
 
     print("Data written to : ", output_file)
+    return
 
+def write_systematic_xsection_measurement(options, systematic, total_syst, summary = '' ):
+    '''
+    Write systematics to a df.
+    '''
+    path_to_JSON=options['path_to_JSON']
+    method=options['method']
+    channel=options['channel']
+
+    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_summary_absolute.txt'
+    output_file = output_file.format(
+        path_to_JSON = path_to_JSON,
+        channel = channel,
+        method = method,
+    )
+    if not summary == '':
+        output_file = output_file.replace( 'only', summary )
+    
+    stats = [stat for value, stat in systematic['central']]
+    central = [value for value, stat in systematic['central']]
+    syst_total = [syst1 for value, syst1, syst2 in total_syst]
+    del systematic['central']
+
+    # Strip signs from dictionary and create dict of Series
+    all_uncertainties = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
+    # Add the statistical uncertainties
+    all_uncertainties['statistical'] = list_to_series( stats )
+    # Add the central measurement
+    all_uncertainties['central'] = list_to_series( central )
+    # Add the total systematic
+    all_uncertainties['systematic'] = list_to_series( syst_total )
+    # Output to absolute file
+    d_abs = dict_to_df(all_uncertainties)
+    df_to_file(output_file, d_abs)
+
+    # Create Relative Paths
+    output_file = output_file.replace('absolute', 'relative')
+    for uncertainty, vals in all_uncertainties.iteritems():
+        if uncertainty == 'central': continue
+        # Just divide the abs uncertainty by the central value
+        all_uncertainties[uncertainty] = divide_by_series(vals, all_uncertainties['central'])
+    all_uncertainties['central'] = divide_by_series(all_uncertainties['central'], all_uncertainties['central'])
+
+    d_rel = dict_to_df(all_uncertainties)
+    df_to_file(output_file, d_rel)
+    return
 
 def append_PDF_uncertainties(all_systematics):
     '''
@@ -147,7 +192,7 @@ def get_normalised_cross_sections(options, list_of_systematics):
 
     central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement(options, 'central')
     normalised_systematic_uncertainty_x_sections['central'] = central_measurement
-    unfolded_normalised_systematic_uncertainty_x_sections['central'] = central_measurement
+    unfolded_normalised_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
 
     for systematic, variation in list_of_systematics.iteritems():
         if (systematic == 'PDF'):
@@ -171,7 +216,6 @@ def get_normalised_cross_sections(options, list_of_systematics):
                 unf_env_lower,
                 unf_env_upper,
             ]
-        # elif (systematic == 'TTJets_alphaS'): continue
         else :
             syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation)
             normalised_systematic_uncertainty_x_sections[systematic] = [
@@ -228,36 +272,20 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     Of the form:
         [Uncertainty] for N bins
 
+    pdf_uncertainty_values = [ [[var_1],[vals_1]], [[var_2][vals_2]] ...]
     '''
     number_of_bins = options['number_of_bins']
-    pdf_min = []
-    pdf_max = []
+    pdf_sym = []
 
-    # split PDF uncertainties into downwards (negative) and upwards (positive) components
     for bin_i in xrange(number_of_bins):
-        negative = []
-        positive = []
         central = central_measurement[bin_i][0]
+
+        # now to calculate the RMS (sigma) for all PDF variations
+        rms = 0
         for pdf_variation in pdf_uncertainty_values:
-            # Get PDF weight index from its name
-            index = int(pdf_variation[0].rsplit('_', 1)[1])
-            pdf_uncertainty = pdf_variation[1][bin_i]
-            if index % 2 == 0:  # even == negative
-                negative.append(pdf_uncertainty)
-            else:
-                positive.append(pdf_uncertainty)
-
-        # now to calculate the RMS (sigma)
-        rms_up, rms_down = 0, 0
-        for n,p in zip(negative, positive):
-            rms_up += (p-central)**2
-            rms_down += (n-central)**2   
-        pdf_max.append( sqrt( rms_up / (len(positive)-1) ))
-        pdf_min.append( sqrt( rms_down / (len(negative)-1) ))
-
-        pdf_sym = max(pdf_min, pdf_max)
-
-    # return pdf_min, pdf_max  
+            variation = pdf_variation[1][bin_i]
+            rms += (variation-central)**2
+        pdf_sym.append( sqrt( rms / (len(pdf_uncertainty_values)-1) ))
     return pdf_sym  
 
 
@@ -291,7 +319,8 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
                 pdf_sym, 
                 [0]*len(central_measurement),
             ]  
-
+        elif systematic == 'central':
+            normalised_x_sections_with_symmetrised_systematics['central'] = central_measurement
         else:
             upper_measurement = variation[0]
             lower_measurement = variation[1]
@@ -306,7 +335,6 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
                 isTopMassSystematic,
             )
 
-            normalised_x_sections_with_symmetrised_systematics['central'] = norm_syst_unc_x_secs['central']
             normalised_x_sections_with_symmetrised_systematics[systematic] = [
                 symmetrised_uncertainties, 
                 signed_uncertainties,
@@ -349,7 +377,7 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
     sign_uncerts = []
 
     for c, u, l in zip(central_measurement, upper_measurement, lower_measurement):
-        central = c[0] # Getting the measurement, not the error [xsec, unc]
+        central = c[0] # Getting the measurement, not the stat unc [xsec, unc]
         upper = u
         lower = l
 
@@ -411,9 +439,9 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
 
     '''
     number_of_bins = options['number_of_bins']
-    sys_unc = 0
     measurement_with_total_uncertainty = []
     for bin_i in range( 0, number_of_bins ):
+        sys_unc = 0
         central = x_sec_with_symmetrised_systematics['central'][bin_i] # Still [Value, Error]
         for systematic, measurement in x_sec_with_symmetrised_systematics.iteritems():
             if (systematic == 'central'): continue
