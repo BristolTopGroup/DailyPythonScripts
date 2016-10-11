@@ -1,0 +1,8 @@
+rootpy
+root-numpy
+numpy
+matplotlib
+nose
+sphinx
+pytables
+uncertainties

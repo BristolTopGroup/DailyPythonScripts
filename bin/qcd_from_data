@@ -48,9 +48,10 @@ Uses the data_file to extract the templates, removes other samples
 from ROOT import gROOT
 gcd = gROOT.cd
 from optparse import OptionParser
-from tools.file_utilities import write_data_to_JSON, read_data_from_JSON
-from tools.ROOT_utililities import root_mkdir, find_btag, get_histogram_dictionary
-from tools.hist_utilities import clean_control_region
+from dps.utils.file_utilities import read_data_from_JSON
+# @BROKEN
+from dps.utils.ROOT_utililities import root_mkdir, find_btag, get_histogram_dictionary
+from dps.utils.hist_utilities import clean_control_region
 from rootpy.io import root_open
 
 def main():

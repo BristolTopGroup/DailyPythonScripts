@@ -1,24 +1,27 @@
 from rootpy.tree import Tree
+from rootpy.io import File
 from random import gauss
 from rootpy.plotting.hist import Hist, Hist2D
 import numpy as np
 
 
-def create_test_tree():
-    tree = Tree("test")
-    tree.create_branches(
-        {'x': 'F',
-         'y': 'F',
-         'z': 'F',
-         'i': 'I'})
-    for i in xrange(10000):
-        tree.x = gauss(.5, 1.)
-        tree.y = gauss(.3, 2.)
-        tree.z = gauss(13., 42.)
-        tree.i = i
-        tree.fill()
-    return tree
-
+def create_test_tree(filename='test.root'):
+    with File.open (filename, 'recreate') as f:
+        tree = Tree("test")
+        tree.create_branches(
+            {'x': 'F',
+             'y': 'F',
+             'z': 'F',
+             'i': 'I',
+             'EventWeight': "F"})
+        for i in xrange(10000):
+            tree.x = gauss(.5, 1.)
+            tree.y = gauss(.3, 2.)
+            tree.z = gauss(13., 42.)
+            tree.i = i
+            tree.EventWeight = 1.
+            tree.fill()
+        f.write()
 
 def create_test_hist():
     h = Hist(100, -10, 10)

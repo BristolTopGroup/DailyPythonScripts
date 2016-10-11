@@ -4,9 +4,9 @@
 # This is needed to speed up the unfolding process, as the difference
 # in read speed between fine-binned and asymmetric is a factor of 200!
 # TODO: create the combined histograms as well.
-from src.cross_section_measurement.lib import convert_unfolding_histograms
-from config import XSectionConfig
-from tools.Timer import Timer
+from dps.analysis.xsection.lib import convert_unfolding_histograms
+from dps.config.xsection import XSectionConfig
+from dps.utils.Timer import Timer
 from multiprocessing import Pool
 
 config_7TeV = XSectionConfig(7)

@@ -1,0 +1,5 @@
+include bin/*
+include *.py
+include requirements/*.txt
+include CONTRIBUTING.md
+include README.md

@@ -4,12 +4,10 @@
 '''
 from __future__ import print_function
 from optparse import OptionParser
-from config import XSectionConfig
-from condor import job
-from condor.jobtypes.unfolding_pull_job_new import UnfoldingPullJob
+from dps.config.xsection import XSectionConfig
+from dps.condor import job
+from dps.condor.jobtypes.unfolding_pull_job_new import UnfoldingPullJob
 from math import log10
-import os
-import sys
 
 def get_tau_values(min, max, spacing):
     taus = []

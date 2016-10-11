@@ -5,7 +5,7 @@ from prettytable import PrettyTable
 
 from rootpy.io import root_open
 
-from tools.NTuple import FileInfo
+from dps.utils.NTuple import FileInfo
 
 def main():
     options, args = get_parameters()

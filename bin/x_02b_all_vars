@@ -18,7 +18,7 @@ i=0
 echo "Visible phase space"
 for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Unfolding distribution: $var"
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/02_${var}_Vis_unfold_13TeV.log &
+	nohup time python dps/analysis/xsection/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/normalisation/background_subtraction/ &> logs/02_${var}_Vis_unfold_13TeV.log &
 	let i+=1
 	shallIwait $i $N_JOBS
 done

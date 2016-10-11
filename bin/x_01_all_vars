@@ -10,7 +10,7 @@ echo "Using the fit variable(s): $fit_var"
 i=0
 for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
 	echo "Fitting distribution: $var"
-	nohup time python src/cross_section_measurement/01_get_fit_results.py -V -v $var --fit-variables $fit_var &> logs/01_${var}_fit_13TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/01_get_fit_results.py -V -v $var --fit-variables $fit_var &> logs/01_${var}_fit_13TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

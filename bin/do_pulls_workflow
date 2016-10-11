@@ -46,7 +46,7 @@ echo "Doing unfolding pulls for: $var"
 			echo "Producing pull data for $var variable, $c channel, kv=$k, sqrt(s) = $energy TeV"
 			for j in 1 2 3 4 5 6 7 8 9; do
 				echo "Doing part $j out of 9"
-				nohup time python src/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_${energy}TeV.root -n 35 ${options[$j-1]} -c $c -s $energy &> logs/pull_${var}_kv${k}_${c}_${j}_${energy}TeV.log &
+				nohup time python dps/analysis/unfolding_tests/create_unfolding_pull_data.py -v $var -k $k -f data/toy_mc/toy_mc_${var}_N_300_${energy}TeV.root -n 35 ${options[$j-1]} -c $c -s $energy &> logs/pull_${var}_kv${k}_${c}_${j}_${energy}TeV.log &
 				let i+=1
 				if (( $i % N_JOBS == 0 ))
 				then
@@ -54,7 +54,7 @@ echo "Doing unfolding pulls for: $var"
     				wait;
 				fi
 			done
-			nohup time python src/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/7TeV/$var/35_input_toy_mc/k_value_$k -c $c -v $var -k $k -s $energy &> logs/pull_${var}_kv${k}_${c}_plots_${energy}TeV.log &
+			nohup time python dps/analysis/unfolding_tests/make_unfolding_pull_plots.py -i data/pull_data/7TeV/$var/35_input_toy_mc/k_value_$k -c $c -v $var -k $k -s $energy &> logs/pull_${var}_kv${k}_${c}_plots_${energy}TeV.log &
 			wait;
 		done
 	done

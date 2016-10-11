@@ -29,7 +29,7 @@ echo "Visible phase space ..."
 i=0
 for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
 	echo "Tabulating diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/05_make_tables.py -v $var -c 13 -p $input_folder -o $output_folder -a --visiblePS &> logs/05_${var}_table_13TeV_vis.log &
+	nohup time python dps/analysis/xsection/05_make_tables.py -v $var -c 13 -p $input_folder -o $output_folder -a --visiblePS &> logs/05_${var}_table_13TeV_vis.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

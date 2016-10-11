@@ -11,7 +11,7 @@ echo "Using the fit variable(s): $fit_var"
 i=0
 for var in MET HT ST WPT MT; do
 	echo "Plotting fit correlations for distribution: $var"
-	nohup time python src/cross_section_measurement/98_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/98_fit_cross_checks.py -v $var -e 7 --fit-variables $fit_var &> logs/98_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
 	let i+=1
 		if (( $i % N_JOBS == 0 ))
 	then
@@ -19,7 +19,7 @@ for var in MET HT ST WPT MT; do
     	wait;
 	fi
 	
-	nohup time python src/cross_section_measurement/98_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/98_fit_cross_checks.py -v $var -e 8 --fit-variables $fit_var &> logs/98_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -35,9 +35,9 @@ echo "98_fit_cross_checks all done!"
 #i=0
 #for var in MET HT ST WPT MT; do
 #	echo "Doing 98b cross checks for distribution: $var"
-#	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 7 &> logs/98b_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+#	nohup time python dps/analysis/xsection/98b_fit_cross_checks.py -v $var -e 7 &> logs/98b_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
 #	let i+=1
-#	nohup time python src/cross_section_measurement/98b_fit_cross_checks.py -v $var -e 8 &> logs/98b_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+#	nohup time python dps/analysis/xsection/98b_fit_cross_checks.py -v $var -e 8 &> logs/98b_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
 #	let i+=1
 #	if (( $i % N_JOBS == 0 ))
 #	then
@@ -51,9 +51,9 @@ echo "98_fit_cross_checks all done!"
 #i=0
 #for var in MET HT ST WPT MT; do
 #	echo "Doing 98c cross checks for distribution: $var"
-#	nohup time python src/cross_section_measurement/98c_fit_cross_checks.py -v $var -e 7 &> logs/98c_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
+#	nohup time python dps/analysis/xsection/98c_fit_cross_checks.py -v $var -e 7 &> logs/98c_${var}_fit_cross_checks_7TeV_${nice_fit_var}.log &
 #	let i+=1
-#	nohup time python src/cross_section_measurement/98c_fit_cross_checks.py -v $var -e 8 &> logs/98c_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
+#	nohup time python dps/analysis/xsection/98c_fit_cross_checks.py -v $var -e 8 &> logs/98c_${var}_fit_cross_checks_8TeV_${nice_fit_var}.log &
 #	let i+=1
 #	if (( $i % N_JOBS == 0 ))
 #	then

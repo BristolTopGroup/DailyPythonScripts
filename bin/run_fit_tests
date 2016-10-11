@@ -5,11 +5,11 @@ for fitComb in absolute_eta M_bl M3 angle_bl absolute_eta,M_bl absolute_eta,M3 a
 	for var in MET HT ST WPT MT; do
 		nicevar=`echo $var | sed 's/,/_/g'`
 		echo "Doing variable set: $fitComb, $nicevar"
-		nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test  &> logs/fit_closure_test_$nicevar.log &
-		nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='qcd_only'  &> logs/fit_closure_test_${nicevar}_qcd.log &
-		nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='vjets_only'  &> logs/fit_closure_test_${nicevar}_vjets.log &
-		nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='ttbar_only'  &> logs/fit_closure_test_${nicevar}_ttbar.log &
-		nohup time python src/cross_section_measurement/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='singletop_only'  &> logs/fit_closure_test_${nicevar}_singletop.log &
+		nohup time python dps/analysis/xsection/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test  &> logs/fit_closure_test_$nicevar.log &
+		nohup time python dps/analysis/xsection/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='qcd_only'  &> logs/fit_closure_test_${nicevar}_qcd.log &
+		nohup time python dps/analysis/xsection/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='vjets_only'  &> logs/fit_closure_test_${nicevar}_vjets.log &
+		nohup time python dps/analysis/xsection/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='ttbar_only'  &> logs/fit_closure_test_${nicevar}_ttbar.log &
+		nohup time python dps/analysis/xsection/01_get_fit_results.py --fit-variables $fitComb -v $var --no_combined_signal --closure_test --closure_test_type='singletop_only'  &> logs/fit_closure_test_${nicevar}_singletop.log &
 		wait;
 	done
 done

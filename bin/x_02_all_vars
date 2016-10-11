@@ -10,7 +10,7 @@ echo "Using the fit variable(s): $fit_var"
 i=0
 for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
 	echo "Unfolding distribution: $var"
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py -v $var -c 13 -p data/$nice_fit_var &> logs/02_${var}_unfold_13TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/02_unfold_and_measure.py -v $var -c 13 -p data/$nice_fit_var &> logs/02_${var}_unfold_13TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -22,7 +22,7 @@ done
 echo "Visible phase space"
 for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
 	echo "Unfolding distribution: $var"
-	nohup time python src/cross_section_measurement/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/$nice_fit_var &> logs/02_${var}_unfold_13TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/02_unfold_and_measure.py --visiblePS -v $var -c 13 -p data/$nice_fit_var &> logs/02_${var}_unfold_13TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

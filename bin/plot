@@ -80,9 +80,9 @@ Example JSON config structure:
 from optparse import OptionParser
 import sys
 from os.path import exists
-from tools.ROOT_utils import set_root_defaults
-from tools.file_utilities import write_data_to_JSON, read_data_from_JSON
-from tools.HistSet import HistSet
+from dps.utils.ROOT_utils import set_root_defaults
+from dps.utils.file_utilities import write_data_to_JSON, read_data_from_JSON
+from dps.utils.HistSet import HistSet
 from copy import deepcopy
 
 supported_commands = ['compare-files', 'compare-hists']

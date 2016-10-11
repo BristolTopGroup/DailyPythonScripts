@@ -10,7 +10,7 @@ echo "Using the fit variable(s): $fit_var"
 i=0
 for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
 	echo "Calculating diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/03_calculate_systematics.py -s -v $var -c 13 -p data/$nice_fit_var &> logs/03_${var}_calculate_13TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/03_calculate_systematics.py -s -v $var -c 13 -p data/$nice_fit_var &> logs/03_${var}_calculate_13TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -22,7 +22,7 @@ done
 echo "Visible phase space"
 for var in MET HT ST WPT MT lepTopPt lepTopRap hadTopPt hadTopRap ttbarPt ttbarM ttbarRap; do
 	echo "Calculating diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/03_calculate_systematics.py --visiblePS  -s -v $var -c 13 -p data/$nice_fit_var &> logs/03_${var}_calculate_13TeV_${nice_fit_var}.log &
+	nohup time python dps/analysis/xsection/03_calculate_systematics.py --visiblePS  -s -v $var -c 13 -p data/$nice_fit_var &> logs/03_${var}_calculate_13TeV_${nice_fit_var}.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

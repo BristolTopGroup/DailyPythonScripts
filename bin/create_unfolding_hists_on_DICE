@@ -4,9 +4,9 @@
 '''
 from __future__ import print_function
 from optparse import OptionParser
-from config import XSectionConfig
-from condor import job
-from condor.jobtypes.produce_unfolding_hists_job import ProduceUnfoldingHistsJob
+from dps.config.xsection import XSectionConfig
+from dps.condor import job
+from dps.condor.jobtypes.produce_unfolding_hists_job import ProduceUnfoldingHistsJob
 import os
 import sys
 

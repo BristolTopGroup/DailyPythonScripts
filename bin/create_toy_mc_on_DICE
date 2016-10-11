@@ -4,8 +4,8 @@
 '''
 from __future__ import print_function
 from optparse import OptionParser
-from condor import job
-from condor.jobtypes.create_toy_mc_from_tree_job import CreateToyMCFromTreeJob
+from dps.condor import job
+from dps.condor.jobtypes.create_toy_mc_from_tree_job import CreateToyMCFromTreeJob
 
 
 def main():

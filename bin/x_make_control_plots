@@ -8,8 +8,8 @@ N_JOBS=6
 
 i=0
 echo "Making control plots"
-nohup time python src/cross_section_measurement/make_control_plots.py -c 7 &> logs/make_control_plots_7TeV.log &
-nohup time python src/cross_section_measurement/make_control_plots.py -c 7 -n &> logs/make_control_plots_normalised_to_fit_7TeV.log &
+nohup time python dps/analysis/xsection/make_control_plots.py -c 7 &> logs/make_control_plots_7TeV.log &
+nohup time python dps/analysis/xsection/make_control_plots.py -c 7 -n &> logs/make_control_plots_normalised_to_fit_7TeV.log &
 let i+=1
 	if (( $i % N_JOBS == 0 ))
 then
@@ -17,8 +17,8 @@ then
    	wait;
 fi
 
-nohup time python src/cross_section_measurement/make_control_plots.py -c 8 &> logs/make_control_plots_8TeV.log &
-nohup time python src/cross_section_measurement/make_control_plots.py -c 8 -n &> logs/make_control_plots_normalised_to_fit_8TeV.log &
+nohup time python dps/analysis/xsection/make_control_plots.py -c 8 &> logs/make_control_plots_8TeV.log &
+nohup time python dps/analysis/xsection/make_control_plots.py -c 8 -n &> logs/make_control_plots_normalised_to_fit_8TeV.log &
 let i+=1
 	if (( $i % N_JOBS == 0 ))
 then

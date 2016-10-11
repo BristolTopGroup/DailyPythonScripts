@@ -3,10 +3,10 @@ echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
 for CoM in 7 8; do
 	echo "Doing centre of mass energy: $CoM TeV"
-	nohup time python src/unfolding_tests/k_value_determination.py -c $CoM &> logs/k_value_determination_${CoM}TeV.log &
-	nohup time python src/unfolding_tests/k_value_optimisation_plots.py -c $CoM &> logs/k_value_optmisation_${CoM}TeV.log &
-	nohup time python src/unfolding_tests/compare_unfolding_parameters.py -c $CoM -t closure &> logs/compare_unfolding_closure_${CoM}TeV.log &
-	nohup time python src/unfolding_tests/compare_unfolding_parameters.py -c $CoM -t data &> logs/compare_unfolding_data_${CoM}TeV.log &
+	nohup time python dps/analysis/unfolding_tests/k_value_determination.py -c $CoM &> logs/k_value_determination_${CoM}TeV.log &
+	nohup time python dps/analysis/unfolding_tests/k_value_optimisation_plots.py -c $CoM &> logs/k_value_optmisation_${CoM}TeV.log &
+	nohup time python dps/analysis/unfolding_tests/compare_unfolding_parameters.py -c $CoM -t closure &> logs/compare_unfolding_closure_${CoM}TeV.log &
+	nohup time python dps/analysis/unfolding_tests/compare_unfolding_parameters.py -c $CoM -t data &> logs/compare_unfolding_data_${CoM}TeV.log &
 	wait;
 done
 

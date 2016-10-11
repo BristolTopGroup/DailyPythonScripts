@@ -2,15 +2,15 @@
 echo "Run this only after run_fit_tests"
 echo "This will take a while ... grab a coffee/tea/water."
 mkdir -p logs
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/closure_test/ -o 'plots/fitchecks/closure_test' &> logs/plot_fit_checks_closure_test.log &
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/no_merging/closure_test/ -o 'plots/fitchecks/no_merging/closure_test' &> logs/plot_fit_checks_closure_test_no_merging.log &
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/no_constraints/closure_test/ -o 'plots/fitchecks/no_constraints/closure_test' &> logs/plot_fit_checks_closure_test_no_constraints.log & 
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/no_constraints_no_merging/closure_test/ -o 'plots/fitchecks/no_constraints_no_merging/closure_test' &> logs/plot_fit_checks_closure_test_NCNM.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/closure_test/ -o 'plots/fitchecks/closure_test' &> logs/plot_fit_checks_closure_test.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/no_merging/closure_test/ -o 'plots/fitchecks/no_merging/closure_test' &> logs/plot_fit_checks_closure_test_no_merging.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/no_constraints/closure_test/ -o 'plots/fitchecks/no_constraints/closure_test' &> logs/plot_fit_checks_closure_test_no_constraints.log & 
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/no_constraints_no_merging/closure_test/ -o 'plots/fitchecks/no_constraints_no_merging/closure_test' &> logs/plot_fit_checks_closure_test_NCNM.log &
 wait
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/ -o 'plots/fitchecks/' &> logs/plot_fit_checks.log &
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/no_merging/ -o 'plots/fitchecks/no_merging/' &> logs/plot_fit_checks_no_merging.log &
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/no_constraints/ -o 'plots/fitchecks/no_constraints/' &> logs/plot_fit_checks_no_constraints.log &
-nohup python src/cross_section_measurement/98b_fit_cross_checks.py -p data/no_constraints_no_merging/ -o 'plots/fitchecks/no_constraints_no_merging/' &> logs/plot_fit_checks_NCNM.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/ -o 'plots/fitchecks/' &> logs/plot_fit_checks.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/no_merging/ -o 'plots/fitchecks/no_merging/' &> logs/plot_fit_checks_no_merging.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/no_constraints/ -o 'plots/fitchecks/no_constraints/' &> logs/plot_fit_checks_no_constraints.log &
+nohup python dps/analysis/xsection/98b_fit_cross_checks.py -p data/no_constraints_no_merging/ -o 'plots/fitchecks/no_constraints_no_merging/' &> logs/plot_fit_checks_NCNM.log &
 wait
 DATE=`date +%d.%m.%Y_%H.%M.%S`
 tar -czf fit_check_plots_$DATE.tar.gz plots/fitchecks
