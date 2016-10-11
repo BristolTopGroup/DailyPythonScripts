@@ -1,16 +1,16 @@
 # from __future__ import division  # the result of the division will be always a float
 from argparse import ArgumentParser
-import tools.pandas_utilities as pu
+import dps.utils.pandas_utilities as pu
 
-from config.latex_labels import variables_latex, variables_NonLatex
-from config.variable_binning import bin_edges_vis, bin_edges_full
-from config import XSectionConfig
-from tools.file_utilities import make_folder_if_not_exists
-from tools.hist_utilities import values_and_errors_to_hist, hist_to_value_error_tuplelist
+from dps.config.latex_labels import variables_latex, variables_NonLatex
+from dps.config.variable_binning import bin_edges_vis, bin_edges_full
+from dps.config.xsection import XSectionConfig
+from dps.utils.file_utilities import make_folder_if_not_exists
+from dps.utils.hist_utilities import values_and_errors_to_hist, hist_to_value_error_tuplelist
 
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
-from config import CMS
+from dps.config import CMS
 
 # dynamic matplotlib settings
 from matplotlib import rc

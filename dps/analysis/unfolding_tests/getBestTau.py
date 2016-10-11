@@ -30,17 +30,17 @@ from argparse import ArgumentParser
 from rootpy import asrootpy
 from rootpy.io import File, root_open
 # DailyPythonScripts
-from tools.ROOT_utils import set_root_defaults, get_histogram_from_file
-from config import XSectionConfig
-from tools.plotting import Histogram_properties
-from config import CMS
-from config.latex_labels import variables_latex
+from dps.utils.ROOT_utils import set_root_defaults, get_histogram_from_file
+from dps.config.xsection import XSectionConfig
+from dps.utils.plotting import Histogram_properties
+from dps.config import CMS
+from dps.config.latex_labels import variables_latex
 from ROOT import TUnfoldDensity, TUnfold, TCanvas, TPad, TMath, gROOT
 
-from config.variable_binning import reco_bin_edges_vis
-from tools.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
-from tools.file_utilities import read_data_from_JSON, make_folder_if_not_exists
-from tools.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
+from dps.config.variable_binning import reco_bin_edges_vis
+from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
+from dps.utils.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from dps.utils.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 
 import pandas as pd
 import numpy as np

@@ -1,8 +1,7 @@
 import numpy as np
 from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray, TColor, TLegend, TAxis, TFile, TObject
-from rootpy import asrootpy
 from rootpy.io import File
-from tools.file_utilities import make_folder_if_not_exists
+from dps.utils.file_utilities import make_folder_if_not_exists
     
 
 def get_bin_resolution( fine_binned_response , bin_number ):
