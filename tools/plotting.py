@@ -16,7 +16,7 @@ from matplotlib.patches import Rectangle
 from copy import deepcopy
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import MultipleLocator, FixedLocator
-from itertools import cycle
+from itertools import cycle, combinations
 from tools.latex import setup_matplotlib
 
 setup_matplotlib()
@@ -38,6 +38,7 @@ class Histogram_properties:
     ratio_y_limits = [0.7, 1.3] #[min, max]
     rebin = 1
     additional_text = ''
+    additional_location = ()
     preliminary = False
     cms_logo_location = 'left' # left|right
     ratio_y_title = 'I am the ratio'
@@ -47,7 +48,7 @@ class Histogram_properties:
     #If True (the default) then plot bins with zero content otherwise only
     #    show bins with nonzero content.
     emptybins = False
-    
+    formats = ['pdf']
     
     def __init__( self, dictionary = {} ):
         for name, value in dictionary.iteritems():
@@ -78,6 +79,85 @@ class PlotConfig:
     
     def __init__( self, config_file, **kwargs ):
         self.config_file = config_file
+
+class Plot(object):
+    '''
+        A class to define a plot
+    '''
+    delegate_attr = attribute_names=['name', 'title', 'formats']
+    def __init__(self, histograms, properties, **kwargs):
+        self.__draw_method = 'errorbar'
+        self.__properties = properties
+        self._path = properties.path
+        self.__histograms = histograms
+        if self._path != '' and not self._path.endswith('/'):
+            self._path += '/'
+        self.__errorbands = []
+        if kwargs.has_key('errorbands'):
+            self.__errorbands = kwargs.pop('errorbands')
+
+    def add_error_band(self, errorband):
+        self.__errorbands.append(errorband)
+
+    @property
+    def errorbands(self):
+        return self.__errorbands
+
+    @property
+    def properties(self):
+        return self.__properties
+
+    def save(self):
+        make_folder_if_not_exists(self._path)
+        for f in self.__properties.formats:
+            file_name = '{path}{name}.{format}'
+            file_name = file_name.format(
+                            path = self._path,
+                            name = self.__properties.name,
+                            format = f,
+                            )
+            plt.savefig(file_name)
+
+    def cleanup(self):
+        # clear current figure and axes
+        plt.clf()
+        plt.cla()
+        plt.close()
+
+    def __enter__(self):
+        self.cleanup()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.cleanup()
+
+    @property
+    def draw_method(self):
+        return self.__draw_method
+
+    @draw_method.setter
+    def draw_method(self, method):
+        if method in rplt.__dict__.keys():
+            self.__draw_method = method
+        else:
+            raise ValueError('Invalid draw method')
+
+    @property
+    def histograms(self):
+        return self.__histograms
+
+    @property
+    def show_ratios(self):
+        return self.__properties.has_ratio and len(self.__histograms) > 1
+
+    @property
+    def fix_to_zero(self):
+        return self.__properties.fix_to_zero
+
+#     def __getattr__(self, name):
+#         print name
+#         if name in Plot.delegate_attr:
+#             return getattr(self.__properties, name)
 
 def make_data_mc_comparison_plot( histograms = [],
                                  histogram_lables = [],
@@ -195,6 +275,7 @@ def make_data_mc_comparison_plot( histograms = [],
     else:
         y_max = get_best_max_y(histograms_, x_limits=x_limits) * histogram_properties.y_max_scale
         axes.set_ylim( ymin = 0, ymax = y_max )
+        y_limits = [0, y_max]
     if histogram_properties.set_log_y:
         if not len( y_limits ) == 2:  # if not user set y-limits, set default
             axes.set_ylim( ymin = 1e-1 )
@@ -222,7 +303,7 @@ def make_data_mc_comparison_plot( histograms = [],
                       ymax = histogram_properties.ratio_y_limits[1] )
 
         # dynamic tick placement
-        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3)
+        adjust_ratio_ticks(ax1.yaxis, n_ticks = 3, y_limits = histogram_properties.y_limits)
 
     if CMS.tight_layout:
         plt.tight_layout()
@@ -578,6 +659,7 @@ def set_labels( plt, histogram_properties, show_x_label = True,
     if show_x_label:
         plt.xlabel( histogram_properties.x_axis_title, CMS.x_axis_title )
     plt.ylabel( histogram_properties.y_axis_title, CMS.y_axis_title )
+
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
     if show_title:
@@ -585,6 +667,8 @@ def set_labels( plt, histogram_properties, show_x_label = True,
         
     if not axes:
         return
+    axes.xaxis.labelpad = 20
+
     # CMS text
     # note: fontweight/weight does not change anything as we use Latex text!!!
     logo_location = (0.05, 0.98)
@@ -595,6 +679,8 @@ def set_labels( plt, histogram_properties, show_x_label = True,
         logo_location = (0.95, 0.98)
         prelim_location = (0.95, 0.92)
         additional_location = (0.95, 0.86)
+    if histogram_properties.additional_location:
+        additional_location = histogram_properties.additional_location 
         
     plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", 
              transform=axes.transAxes, fontsize=42,
@@ -605,8 +691,8 @@ def set_labels( plt, histogram_properties, show_x_label = True,
                  verticalalignment='top',horizontalalignment=loc)
     # channel text
     axes.text(additional_location[0], additional_location[1], 
-              r"\emph{%s}" %histogram_properties.additional_text, 
-              transform=axes.transAxes, fontsize=40, verticalalignment='top',
+              r"%s" %histogram_properties.additional_text, 
+              transform=axes.transAxes, fontsize=42, verticalalignment='top',
               horizontalalignment='right')
     
 def adjust_axis_limits( axes, histogram_properties, histograms = [] ):
@@ -659,16 +745,103 @@ def check_save_folder(save_folder):
     
     return save_folder
 
-def adjust_ratio_ticks( axis, n_ticks = 3 ):
+def adjust_ratio_ticks( axis, n_ticks = 3, y_limits = None ):
     # dynamic tick placement
     ticks = axis.get_ticklocs()
     tick_min, tick_max = ticks[0], ticks[-1]
+    # Check if these are outside of the y_limits.  Use those instead if so.
+    if y_limits != None:
+        if tick_min < y_limits[0] and tick_max > y_limits[-1]:
+            tick_min = y_limits[0]
+            tick_max = y_limits[-1]
+
     # limit to 3 ticks
     tick_distance = abs( tick_max - tick_min ) / ( n_ticks + 1 )
     includes_one = tick_max > 1 and tick_min < 1
     if includes_one:
-        axis.set_major_locator( FixedLocator( [tick_min + tick_distance/2, 1, tick_max - tick_distance/2] ) )
+        axis.set_major_locator( FixedLocator( [round(tick_min + tick_distance/2,1), 1, round(tick_max - tick_distance/2,1)] ) )
     else:
         axis.set_major_locator( MultipleLocator( tick_distance ) )
         axis.set_minor_locator( MultipleLocator( tick_distance / 2 ) )
 
+def compare_histograms(plot):
+    histograms = plot.histograms
+    properties = plot.properties
+    # the cycling needs to be better
+    colors = ['green', 'red', 'blue', 'magenta']
+    colorcycler = cycle( colors )
+    markers = [20, 23, 22, 33, 21, 29]
+    markercycler = cycle( markers )
+
+    plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    axes = plt.axes()
+    if plot.show_ratios:
+        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
+        axes = plt.subplot( gs[0] )
+    plot_function = rplt.__dict__[plot.draw_method]
+    for label, histogram in histograms.items():
+        histogram.markersize = 2
+        histogram.markerstyle = next( markercycler )
+        histogram.color = next( colorcycler )
+        plot_function( histogram, axes = axes, label = label,
+                       emptybins = properties.emptybins,
+                       yerr = True,
+                       xerr = properties.xerr, elinewidth = 2 )
+
+    set_labels( plt, properties, show_x_label = not plot.show_ratios, axes = axes )
+    errorbands = plot.errorbands
+    handles, labels = axes.get_legend_handles_labels()
+    for band in errorbands:
+        band.draw(axes)
+        p1 = Rectangle( ( 0, 0 ), 1, 1, fc = "0.75", alpha = 0.5, hatch = '/' ,
+                        label = band.name)
+        handles.append( p1 )
+        labels.append( band.name )
+    adjust_axis_limits( axes, properties, histograms.values() )
+
+    # or sort legend by labels
+    import operator
+    hl = sorted(zip(handles, labels),
+            key=operator.itemgetter(1))
+    handles2, labels2 = zip(*hl)
+    l1 = axes.legend(
+        handles2, labels2, numpoints = 1,
+        frameon = properties.legend_color,
+        bbox_to_anchor = properties.legend_location,
+        bbox_transform=plt.gcf().transFigure,
+        prop = CMS.legend_properties,
+        ncol = properties.legend_columns,
+        )
+    l1.set_zorder(102)
+
+    ratios = {}
+    if plot.show_ratios:
+        for (l1, l2) in combinations(histograms.keys(), 2):
+            label = '{0}/{1}'.format(l1, l2)
+            h = histograms[l1].clone()
+            h.Divide(histograms[l2])
+            h.SetName(label)
+            ratios[label] = h
+        plt.setp( axes.get_xticklabels(), visible = False )
+        axes_ratio = plt.subplot( gs[1] )
+        axes_ratio.set_ylim(properties.ratio_y_limits[0],properties.ratio_y_limits[-1])
+        axes_ratio.minorticks_on()
+        axes_ratio.grid( True, 'major', linewidth = 1)
+        axes_ratio.axhline(y=1, linewidth = 1, linestyle = 'dashed', color = 'black')
+        set_labels( plt, properties, show_x_label = True, show_title = False )
+        plt.ylabel('ratio')
+        axes_ratio.yaxis.set_label_coords(-0.115, 0.8)
+        for label, ratio in ratios.items():
+            plot_function( ratio, xerr = properties.xerr,
+                   emptybins = properties.emptybins,
+                   axes = axes_ratio, elinewidth = 2 )
+
+        adjust_ratio_ticks(axes_ratio.yaxis, n_ticks = 3, y_limits = properties.ratio_y_limits )
+        axes_ratio.set_ylim(properties.ratio_y_limits[0],properties.ratio_y_limits[-1])
+        # adjust_axis_limits( axes_ratio, properties, ratios.values() )
+        axes_ratio.set_xlim(properties.x_limits[0], properties.x_limits[-1])
+    if CMS.tight_layout:
+        plt.tight_layout()
+
+    plot.save()
+    plt.close()

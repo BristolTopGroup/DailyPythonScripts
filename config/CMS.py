@@ -22,7 +22,7 @@ y_axis_title = {
               }
 
 y_axis_title_small = {
-              'fontsize':40,
+              'fontsize':42,
               'position' : (0, 1.),
               'verticalalignment': 'bottom',
               'horizontalalignment': 'right'
@@ -30,14 +30,14 @@ y_axis_title_small = {
 
 axis_label_major = {
               'which':'major',
-              'labelsize':41,
+              'labelsize':42,
               'length':20,
               'width': 1,
               'pad': 12
               }
 axis_label_minor = {
               'which':'minor',
-              'labelsize':41,
+              'labelsize':42,
               'length':10,
               'width': 1,
               'pad': 12

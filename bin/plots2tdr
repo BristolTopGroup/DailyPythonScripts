@@ -17,15 +17,15 @@ plot_map_common = {}
 plot_map_paper = {
             # <src relative to DPS plots folder> : <dst relative to TDR plots folder>,
             # results 8 TeV
-            '7TeV/MET/central/normalised_xsection_combined_*.pdf': '7TeV/MET/',
-            '7TeV/HT/central/normalised_xsection_combined_*.pdf': '7TeV/HT/',
-            '7TeV/ST/central/normalised_xsection_combined_*.pdf': '7TeV/ST/',
-            '7TeV/WPT/central/normalised_xsection_combined_*.pdf': '7TeV/WPT/',
+            'fit/7TeV/MET/central/normalised_xsection_combined_*.pdf': '7TeV/MET/',
+            'fit/7TeV/HT/central/normalised_xsection_combined_*.pdf': '7TeV/HT/',
+            'fit/7TeV/ST/central/normalised_xsection_combined_*.pdf': '7TeV/ST/',
+            'fit/7TeV/WPT/central/normalised_xsection_combined_*.pdf': '7TeV/WPT/',
             # results 8 TeV
-            '8TeV/MET/central/normalised_xsection_combined_*.pdf': '8TeV/MET/',
-            '8TeV/HT/central/normalised_xsection_combined_*.pdf': '8TeV/HT/',
-            '8TeV/ST/central/normalised_xsection_combined_*.pdf': '8TeV/ST/',
-            '8TeV/WPT/central/normalised_xsection_combined_*.pdf': '8TeV/WPT/',
+            'fit/8TeV/MET/central/normalised_xsection_combined_*.pdf': '8TeV/MET/',
+            'fit/8TeV/HT/central/normalised_xsection_combined_*.pdf': '8TeV/HT/',
+            'fit/8TeV/ST/central/normalised_xsection_combined_*.pdf': '8TeV/ST/',
+            'fit/8TeV/WPT/central/normalised_xsection_combined_*.pdf': '8TeV/WPT/',
             # control plots 8 TeV
             'control_plots/after_fit/8TeV/*_HT_2orMoreBtags_with_ratio.pdf': 'control/',
             'control_plots/after_fit/8TeV/*_patType1CorrectedPFMet_2orMoreBtags_with_ratio.pdf': 'control/',

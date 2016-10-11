@@ -140,12 +140,12 @@ if __name__ == '__main__':
     category = options.category
     met_type = translate_options[options.metType]
 
-    CMS.title['fontsize'] = 40
+    CMS.title['fontsize'] = 42
     CMS.x_axis_title['fontsize'] = 50
     CMS.y_axis_title['fontsize'] = 50
-    CMS.axis_label_major['labelsize'] = 40
-    CMS.axis_label_minor['labelsize'] = 40
-    CMS.legend_properties['size'] = 40
+    CMS.axis_label_major['labelsize'] = 42
+    CMS.axis_label_minor['labelsize'] = 42
+    CMS.legend_properties['size'] = 42
     
     histogram_files = {
             'electron' : measurement_config.data_file_electron,

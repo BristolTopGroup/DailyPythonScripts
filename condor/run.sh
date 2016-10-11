@@ -1,6 +1,6 @@
 #!/bin/bash
 cmssw_version=CMSSW_7_4_7
-git_branch=master
+git_branch=run1
 echo "Setting up ${cmssw_version} ..."
 echo "... sourcing CMS default environment from CVMFS"
 source /cvmfs/cms.cern.ch/cmsset_default.sh
@@ -22,7 +22,7 @@ time git submodule init && git submodule update
 echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
 tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
 echo "... running setup routine"
->&2 "... running setup routine"
+>&2 echo "... running setup routine"
 time source setup_with_conda.sh
 echo "... enforcing conda python environment"
 # this is safe, as the dangerous part is only executed on soolin

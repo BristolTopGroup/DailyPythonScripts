@@ -2,7 +2,7 @@ fit_variable_bin_edges = {
                           'absolute_eta' : [round( i * 0.2, 2 ) for i in range ( int( 3 / 0.2 ) + 1 )],
                           'M3' : [i * 25 for i in range ( int( 1000 / 25 ) + 1 )],
                           'M_bl' : [i * 10 for i in range ( int( 1000 / 20 ) + 1 )],
-                          'angle_bl' : [round( i * 0.2, 2 ) for i in range ( int( 4 / 0.2 ) + 1 )],
+                          'angle_bl' : [round( i * 0.2, 2 ) for i in range ( int( 3.2 / 0.2 ) + 1 )],
                           }
 bin_edges = {
              'MET':[0.0, 27.0, 52.0, 87.0, 130.0, 172.0, 300.0],

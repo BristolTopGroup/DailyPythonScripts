@@ -81,8 +81,10 @@ fileNames = {
                     'scaledown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_scaledown_8TeV.root',
                     'matchingup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingup_8TeV.root',
                     'matchingdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_matchingdown_8TeV.root',
-                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegpythia_8TeV.root',
+                    'powheg' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_8TeV_powheg_v1_pythia.root',
+                    'powhegV2pythia' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_8TeV_powheg_v2_pythia.root',
                     'powhegherwig' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_8TeV.root',
+                    'powhegherwig_new' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_powhegherwig_NEW_8TeV.root',
                     'mcatnlo' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mcatnlo_8TeV.root',
                    'massdown' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_169_5_8TeV.root',
                    'massup' : '/hdfs/TopQuarkGroup/mc/8TeV/v11/NoSkimUnfolding/BLT/unfolding_TTJets_mass_173_5_8TeV.root',
@@ -218,7 +220,24 @@ def main():
                 truth = Hist( bin_edges[variable], name='truth')
                 measured = Hist( bin_edges[variable], name='measured')
                 fake = Hist( bin_edges[variable], name='fake')
+
+                h_nJets = Hist([-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5], name='nJets')
                 
+                h_nJetsG20 = Hist([-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5], name='nJetsG20')
+                h_nJetsG30 = Hist([-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5], name='nJetsG30')
+                h_htG20 = Hist([i*20 for i in range(5,26)], name='htG20')
+                h_htG30 = Hist([i*20 for i in range(5,26)], name='htG30')
+
+                jetPt = Hist([i*2.5 for i in range(8,20)], name='jetPt')
+
+                jetPt1 = Hist([i*5 for i in range(3,40)], name='jetPt1')
+                jetPt2 = Hist([i*5 for i in range(3,40)], name='jetPt2')
+                jetPt3 = Hist([i*5 for i in range(3,40)], name='jetPt3')
+                jetPt4 = Hist([i*5 for i in range(3,40)], name='jetPt4')
+                jetPt5 = Hist([i*5 for i in range(3,40)], name='jetPt5')
+                jetPt6 = Hist([i*5 for i in range(3,40)], name='jetPt6')
+                jetPt7 = Hist([i*5 for i in range(3,40)], name='jetPt7')
+
                 # 2D histograms
                 response = Hist2D( bin_edges[variable], bin_edges[variable], name='response')
                 response_without_fakes = Hist2D( bin_edges[variable], bin_edges[variable], name='response_without_fakes')
@@ -244,6 +263,10 @@ def main():
                     tree.Draw(genVariable,genWeight+'*'+genSelection,hist=truth)
                     tree.Draw(recoVariable,offlineWeight+'*'+offlineSelection,hist=measured)
                     tree.Draw(recoVariable,offlineWeight+'*'+fakeSelection,hist=fake)
+                    tree.Draw("@(unfolding.jetPt).size()",genWeight+'*'+genSelection,hist=nJets)
+                    tree.Draw('unfolding.jetPt',genWeight+'*'+genSelection,hist=jetPt)
+                    tree.Draw('unfolding.recoNJets',offlineSelection+'&&'+genSelection,hist=h_nJets)
+
                     # 2D
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'*'+offlineSelection,hist=response)
                     tree.Draw(recoVariable+':'+genVariable,offlineWeight+'* ('+offlineSelection+'&&'+genSelection +')',hist=response_without_fakes)
@@ -252,11 +275,85 @@ def main():
                     if options.extraHists:
                         tree.Draw( 'unfolding.puWeight','unfolding.OfflineSelection',hist=puOffline)
                         pass
-                
+
+
+                # tree.SetBranchStatus('*',0)
+                # tree.SetBranchStatus('unfolding.jetPt',1)
+                # tree.SetBranchStatus('unfolding.GenSelection',1)
+                # tree.SetBranchStatus('unfolding.OfflineSelection',1)
+                # print tree.GetEntries()
+                # nEvents = 0
+                # for event in tree:
+                #     nEvents += 1
+                #     genSelection = event.__getattr__('unfolding.GenSelection')
+                #     offlineSelection = event.__getattr__('unfolding.OfflineSelection')
+
+                #     if genSelection == 1 and offlineSelection == 1 :
+                #         jets = event.__getattr__('unfolding.jetPt')
+                #         nJetsG20 = 0
+                #         nJetsG30 = 0
+                #         htG20 = 0
+                #         htG30 = 0
+
+                #         if len(jets) > 0 :
+                #             jetPt1.Fill(jets[0])
+                            
+                #             if len(jets) > 1:
+                #                 jetPt2.Fill(jets[1])
+                                
+                #                 if len(jets) > 2:
+                #                     jetPt3.Fill(jets[2])
+                                    
+                #                     if len(jets) > 3:
+                #                         jetPt4.Fill(jets[3])
+                                        
+                #                         if len(jets) > 4:
+                #                             jetPt5.Fill(jets[4])
+                                            
+                #                             if len(jets) > 5:
+                #                                 jetPt6.Fill(jets[5])
+                                                
+                #                                 if len(jets) > 6:
+                #                                     jetPt7.Fill(jets[6])
+                #         for jetPt in jets:
+                #             if jetPt >= 20:
+                #                 nJetsG20 += 1
+                #                 htG20 += jetPt
+                #                 if jetPt >= 30:
+                #                     nJetsG30 += 1
+                #                     htG30 += jetPt
+                #         h_nJetsG20.Fill(nJetsG20)
+                #         h_nJetsG30.Fill(nJetsG30)
+                #         h_htG20.Fill(htG20)
+                #         h_htG30.Fill(htG30)
+                #     if nEvents > 100000 : break
                 # Output histgorams to file
                 outputDir.cd()
+                # truth.Scale(1/truth.Integral())
                 truth.Write()
                 measured.Write()
+
+                # h_nJetsG20.Scale(1/h_nJetsG20.Integral())
+                # h_nJetsG30.Scale(1/h_nJetsG30.Integral())
+                # h_htG20.Scale(1/h_htG20.Integral())
+                # h_htG30.Scale(1/h_htG30.Integral())
+
+                h_nJets.Write()
+                h_nJetsG20.Write()
+                h_nJetsG30.Write()
+                h_htG20.Write()
+                h_htG30.Write()
+
+                jetPt1.Write()
+                jetPt2.Write()
+                jetPt3.Write()
+                jetPt4.Write()
+                jetPt5.Write()
+                jetPt6.Write()
+                jetPt7.Write()
+
+                # jetPt.Scale( 1/jetPt.Integral() )
+                # jetPt.Write()
                 fake.Write()
                 response.Write()
                 response_without_fakes.Write()

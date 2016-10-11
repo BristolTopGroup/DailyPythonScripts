@@ -27,7 +27,7 @@ class Unfolding:
                  k_value = unfoldCfg.SVD_k_value,
                  n_toy = unfoldCfg.SVD_n_toy,
                  Bayes_n_repeat = unfoldCfg.Bayes_n_repeat,
-                 Hreco = unfoldCfg.Hreco,
+                 error_treatment = unfoldCfg.error_treatment,
                  measured_truth_without_fakes = None,
                  verbose = 0 ):
         if not method in unfoldCfg.availablemethods:
@@ -46,7 +46,7 @@ class Unfolding:
         self.k_value = int(k_value)
         self.n_toy = n_toy
         self.Bayes_n_repeat = Bayes_n_repeat
-        self.Hreco = Hreco
+        self.error_treatment = error_treatment
         self.measured_truth_without_fakes = measured_truth_without_fakes
     
     def setup_unfolding ( self, data ):
@@ -100,7 +100,7 @@ class Unfolding:
     def test_regularisation ( self, data, k_max ):
         self.setup_unfolding( data )
         if self.method == 'RooUnfoldSvd':
-            findingK = RooUnfoldParms( self.unfoldObject, self.Hreco, self.truth )
+            findingK = RooUnfoldParms( self.unfoldObject, self.error_treatment, self.truth )
             findingK.SetMinParm( 1 )
             findingK.SetMaxParm( k_max )
             findingK.SetStepSizeParm( 1 )
@@ -124,7 +124,7 @@ class Unfolding:
         else:
             # remove unfold reports (faster)
             self.unfoldObject.SetVerbose( self.verbose )
-            self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.Hreco ) )
+            self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
         return self.unfolded_data
     
     def closureTest( self ):

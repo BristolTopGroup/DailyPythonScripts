@@ -28,7 +28,7 @@ muon_fit_variables.append( 'muon_absolute_eta' )
 fit_variable_properties = {
                        'M3': {'min':0, 'max':1000, 'rebin':5, 'x-title': 'M3 [GeV]', 'y-title': 'Events/25 GeV'},
                        'M_bl': {'min':0, 'max':400, 'rebin':2, 'x-title': 'M(b,l) [GeV]', 'y-title': 'Events/10 GeV'},
-                       'angle_bl': {'min':0, 'max':3.5, 'rebin':2, 'x-title': 'angle(b,l)', 'y-title': 'Events/(0.2)'},
+                       'angle_bl': {'min':0, 'max':3.5, 'rebin':2, 'x-title': r'$\alpha$ [radians]', 'y-title': 'Events/(0.2)'},
                        'electron_absolute_eta': {'min':0, 'max':2.6, 'rebin':2, 'x-title': '$\left|\eta(e)\\right|$', 'y-title': 'Events/(0.2)'},
                        'muon_absolute_eta': {'min':0, 'max':2.6, 'rebin':2, 'x-title': '$\left|\eta(\mu)\\right|$', 'y-title': 'Events/(0.2)'},
                        }
@@ -146,7 +146,7 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     histogram_properties.y_axis_title = fit_variable_properties[fit_variable]['y-title']
     histogram_properties.x_limits = [fit_variable_properties[fit_variable]['min'], fit_variable_properties[fit_variable]['max']]
     histogram_properties.y_max_scale = 2
-
+ 
     histogram_lables = ['data', 'QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']]
     histogram_colors = ['black', 'yellow', 'green', 'magenta', 'red']
 #     qcd_from_data = histograms_['data'][qcd_fit_variable_distribution].Clone()
@@ -156,14 +156,14 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
                                'SingleTop':histograms_['SingleTop'][qcd_fit_variable_distribution],
                                'TTJet':histograms_['TTJet'][qcd_fit_variable_distribution]}
     qcd_from_data = clean_control_region( histograms_for_cleaning, subtract = ['TTJet', 'V+Jets', 'SingleTop'] )
-    
-    
+     
+     
     histograms_to_draw = [histograms_['data'][qcd_fit_variable_distribution],
                           histograms_['QCD'][qcd_fit_variable_distribution],
                           histograms_['V+Jets'][qcd_fit_variable_distribution],
                           histograms_['SingleTop'][qcd_fit_variable_distribution],
                           histograms_['TTJet'][qcd_fit_variable_distribution]]
-    
+      
     histogram_properties.title = title
     histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin_ctl]
     if channel == 'electron':
@@ -201,12 +201,12 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     n_qcd_fit_variable_distribution = qcd_from_data.Integral()
     if not n_qcd_fit_variable_distribution == 0:
         qcd_from_data.Scale( 1.0 / n_qcd_fit_variable_distribution * n_qcd_predicted_mc )
-    
+     
     histograms_to_draw = [histograms_['data'][fit_variable_distribution], qcd_from_data,
                           histograms_['V+Jets'][fit_variable_distribution],
                           histograms_['SingleTop'][fit_variable_distribution],
                           histograms_['TTJet'][fit_variable_distribution]]
-    
+     
     histogram_properties.additional_text = channel_latex[channel] + ', ' + b_tag_bins_latex[b_tag_bin]
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_' + b_tag_bin
     make_data_mc_comparison_plot( histograms_to_draw,
@@ -225,16 +225,22 @@ def plot_fit_variable( histograms, fit_variable, variable, bin_range,
     histogram_properties.name = variable + '_' + bin_range + '_' + fit_variable + '_' + b_tag_bin + '_templates'
     histogram_properties.y_max_scale = 2
     # change histogram order for better visibility
-    histograms_to_draw = [histograms_['TTJet'][fit_variable_distribution] + histograms_['SingleTop'][fit_variable_distribution],
+    histograms_to_draw = [#histograms_['TTJet'][fit_variable_distribution] + histograms_['SingleTop'][fit_variable_distribution],
                           histograms_['TTJet'][fit_variable_distribution],
                           histograms_['SingleTop'][fit_variable_distribution],
                           histograms_['V+Jets'][fit_variable_distribution],
                           qcd_from_data]
-    histogram_lables = ['QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet'], samples_latex['TTJet'] + ' + ' + 'Single-Top']
+    histogram_lables = ['QCD', 'V+Jets', 'Single-Top', samples_latex['TTJet']] #, samples_latex['TTJet'] + ' + ' + 'Single-Top']
     histogram_lables.reverse()
     # change QCD color to orange for better visibility
-    histogram_colors = ['orange', 'green', 'magenta', 'red', 'black']
+    histogram_colors = ['orange', 'green', 'magenta', 'red'] #, 'black']
     histogram_colors.reverse()
+    #move legend for lepton eta template plots
+    if fit_variable == 'electron_absolute_eta' or fit_variable == 'muon_absolute_eta':
+        histogram_properties.legend_location = (0.45, 0.33)   
+        histogram_properties.additional_location = (0.42, 0.29)
+    else:
+        histogram_properties.legend_location = (0.97, 0.80)
     # plot template
     make_shape_comparison_plot( shapes = histograms_to_draw,
                                 names = histogram_lables,

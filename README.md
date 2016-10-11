@@ -16,11 +16,11 @@ cd DailyPythonScripts
 # get submodules:
 git submodule init && git submodule update
 
-# setup run:
-./setup.sh
+# setup environment (using virtualenv for python):
+./setup_with_conda.sh
 
 # setup environment (using virtualenv for python):
-source environment.sh
+source environment_conda.sh
 
 # make sure matplotlib is up to date (should return 1.3.1 or above):
 python -c 'import matplotlib; print matplotlib.__version__'
@@ -101,13 +101,23 @@ number of jobs: enter the number of merging jobs for the centre of mass energy i
 - ```cd``` up to the folder containing DailyPythonScripts and ```tar --exclude='external/vpython' --exclude='any other large/unnecessary folders in DailyPythonScripts' -cf dps.tar DailyPythonScripts``` (tar file should be approximately 100MB in size)
 - Merge the required BAT output files (e.g. SingleTop, QCD etc.) using ```condor_submit DailyPythonScripts/experimental/mergeBATOutputFilesOnDICE/submitMerge.description```
 
+### Prepare config files for background subtraction
+```python src/cross_section_measurement/create_measurement.py -c 8```
+```python src/cross_section_measurement/create_measurement.py -c 7```
+This puts config files in config/measurements/background_subtraction/ for use by the x_0Nb_all_vars scripts.
+
 ### Run final measurement scripts in bin/:
 ```
 x_01_all_vars
+x_01b_all_vars
 x_02_all_vars
+x_02b_all_vars
 x_03_all_vars
+x_03b_all_vars
 x_04_all_vars
+x_04b_all_vars
 x_05_all_vars
+x_05b_all_vars
 x_98_all_vars
 x_99_QCD_cross_checks
 x_make_binning_plots

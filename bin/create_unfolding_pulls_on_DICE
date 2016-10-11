@@ -76,8 +76,8 @@ def main():
             )
             pull_jobs.append(pull_job)
 
-    # Since we are analysing 300 x 300 = 90000 samples and one 10x10 sample
-    # takes around 7 seconds it will take 1.75h in a single job.
+    # Since, in testing, one 10x10 sample took around 7 seconds
+    # and here we are analysing 300 x 300 = 90000 samples, it will take 1.75h in a single job.
     # For very fast (~1 min) processing we want at least 100 jobs.
     n_jobs_to_run = 100  # this is per pull_job
     n_jobs_to_split = 100

@@ -151,7 +151,6 @@ def get_k_value(k_value, config, channel, variable):
     if k_values.has_key(variable):
         k_value = k_values[variable]
 
-
 def get_tau_value(tau_value, config, channel, variable):
     if tau_value >= 0:
         return tau_value
@@ -259,10 +258,10 @@ def plot_pull(pulls, centre_of_mass, channel, variable, k_value, tau_value,
         filling(pull)
         stats += 1
 
-#    printstats
+#    print stats
 #    h_list = hist_to_value_error_tuplelist(h_pull)
-#    printh_list
-#    printlen(hist_data), min(hist_data), max(hist_data)
+#    print h_list
+#    print len(hist_data), min(hist_data), max(hist_data)
     fr = None
     if bin_index is None:
         fr = plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value,
@@ -342,7 +341,7 @@ def plot_h_pull(h_pull, centre_of_mass, channel, variable, k_value, tau_value,
     axes.text(0.6, 0.8, text,
               verticalalignment='bottom', horizontalalignment='left',
               transform=axes.transAxes,
-              color='black', fontsize=40, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
+              color='black', fontsize=42, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
     plt.tight_layout()
 
     for save in output_formats:

@@ -37,7 +37,7 @@ def draw_regularisation_histograms( h_truth, h_measured, h_response, h_fakes = N
                            h_fakes,
                            method = method,
                            k_value = k_max,
-                           Hreco = 2,
+                           error_treatment = 3,
                            verbose = 1 )
     
     RMSerror, MeanResiduals, RMSresiduals, Chi2 = unfolding.test_regularisation ( h_data, k_max )

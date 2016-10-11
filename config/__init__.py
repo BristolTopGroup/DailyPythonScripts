@@ -42,8 +42,9 @@ class XSectionConfig():
                   'unfolding_matching_up', 'unfolding_matching_up_raw',
                   'unfolding_mass_down', 'unfolding_mass_up',
                   'unfolding_mcatnlo', 'unfolding_mcatnlo_raw',
-                  'unfolding_powheg_pythia', 'unfolding_powheg_pythia_raw',
-                  'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
+                  'unfolding_powheg_v2_pythia', 'unfolding_powheg_v2_pythia_raw',
+                  'unfolding_powheg_v1_herwig', 'unfolding_powheg_v1_herwig_raw',
+                  'unfolding_powheg_v2_herwig', 'unfolding_powheg_v2_herwig_raw',
                   'unfolding_scale_down', 'unfolding_scale_down_raw',
                   'unfolding_scale_up', 'unfolding_scale_up_raw',
                   'unfolding_ptreweight', 'unfolding_ptreweight_raw',
@@ -217,8 +218,10 @@ class XSectionConfig():
                                     }
 
         self.unfolding_madgraph_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
-        self.unfolding_powheg_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powheg.root' % self.centre_of_mass_energy
-        self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegherwig.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v1_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV1pythia.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v2_pythia_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV2pythia.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v1_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV1herwig.root' % self.centre_of_mass_energy
+        self.unfolding_powheg_v2_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegV2herwig.root' % self.centre_of_mass_energy
         self.unfolding_mcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_mcatnlo.root' % self.centre_of_mass_energy
         self.unfolding_ptreweight_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_withTopPtReweighting.root' % self.centre_of_mass_energy
 
@@ -228,8 +231,10 @@ class XSectionConfig():
         self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
 
         self.unfolding_madgraph = self.unfolding_madgraph_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_powheg_pythia = self.unfolding_powheg_pythia_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v1_pythia = self.unfolding_powheg_v1_pythia_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v2_pythia = self.unfolding_powheg_v2_pythia_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v1_herwig = self.unfolding_powheg_v1_herwig_raw.replace( '.root', '_asymmetric.root' )
+        self.unfolding_powheg_v2_herwig = self.unfolding_powheg_v2_herwig_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_mcatnlo = self.unfolding_mcatnlo_raw.replace( '.root', '_asymmetric.root' )
         self.unfolding_ptreweight = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting.root' % self.centre_of_mass_energy
 
@@ -358,6 +363,12 @@ class XSectionConfig():
                    'WPT' : 0
                    }
 
+        self.tau_values_electron = {
+        }
+
+        self.tau_values_muon = {
+        }
+
         self.categories_and_prefixes['PU_down'] = '_PU_64600mb'
         self.categories_and_prefixes['PU_up'] = '_PU_71400mb'
 
@@ -409,6 +420,12 @@ class XSectionConfig():
                    'WPT' : 0
                    }
 
+        self.tau_values_electron = {
+        }
+
+        self.tau_values_muon = {
+        }
+
         self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
         self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
 
@@ -419,11 +436,15 @@ class XSectionConfig():
                                     'JES_down': path_to_files + 'JES_down/SingleElectron' + middle + self.categories_and_prefixes['JES_down'] + '.root'
                                     }
 
-fit_var_inputs = ['absolute_eta', 'M3', 'M_bl', 'angle_bl',
-                      'absolute_eta_angle_bl',
-                      'absolute_eta_M3',
-                      'absolute_eta_M_bl',
-                      'absolute_eta_M_bl_angle_bl',
+fit_var_inputs = [
+                  'absolute_eta', 'M3', 
+# 'M_bl', 
+                  'angle_bl',
+                      # 'absolute_eta_angle_bl',
+                      # 'absolute_eta_M3',
+                      # 'absolute_eta_M_bl',
+                      # 'absolute_eta_M_bl_angle_bl',
                       'absolute_eta_M3_angle_bl',
-                      'absolute_eta_M_bl_M3',
-                      'absolute_eta_M_bl_M3_angle_bl' ]
+                      # 'absolute_eta_M_bl_M3',
+                      # 'absolute_eta_M_bl_M3_angle_bl'
+                       ]

@@ -396,6 +396,12 @@ def copy_style(copy_from, copy_to):
     # legend
     copy_to.legendstyle  = copy_from.legendstyle
     
+def make_line_hist(bin_edges, y_value):
+    l = Hist(bin_edges, type = 'D')
+    for i in range(1, len(bin_edges)):
+        l.SetBinContent(i, y_value)
+    return l
+
 if __name__ == '__main__':
     value_error_tuplelist = [( 0.006480446927374301, 0.0004647547547401945 ),
                              ( 0.012830288388947605, 0.0010071677178938234 ),

@@ -69,12 +69,12 @@ if __name__ == '__main__':
     met_type = measurement_config.translate_options[options.metType]
     make_additional_QCD_plots = options.additional_QCD_plots
 
-    CMS.title['fontsize'] = 40
+    CMS.title['fontsize'] = 42
     CMS.x_axis_title['fontsize'] = 50
     CMS.y_axis_title['fontsize'] = 50
-    CMS.axis_label_major['labelsize'] = 40
-    CMS.axis_label_minor['labelsize'] = 40
-    CMS.legend_properties['size'] = 40
+    CMS.axis_label_major['labelsize'] = 42
+    CMS.axis_label_minor['labelsize'] = 42
+    CMS.legend_properties['size'] = 42
     
     from config.latex_labels import b_tag_bins_latex, samples_latex
     

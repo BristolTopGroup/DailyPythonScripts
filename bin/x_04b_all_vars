@@ -8,7 +8,7 @@ i=0
 echo "Visible phase space"
 for var in MET HT ST WPT MT; do
 	echo "Plotting diff. x-section for distribution: $var"
-	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 7 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04b_${var}_plot_7TeV.log & # -a  <--add this option for additional plots
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 7 -p data/normalisation/background_subtraction/ -o plots/results/background_subtraction &> logs/04b_${var}_plot_7TeV.log & # -a  <--add this option for additional plots
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
@@ -16,7 +16,7 @@ for var in MET HT ST WPT MT; do
     	wait;
 	fi
 
-	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 8 -p data/normalisation/background_subtraction/ -o plots/background_subtraction &> logs/04b_${var}_plot_8TeV.log & # -a  <--add this option for additional plots
+	nohup time python src/cross_section_measurement/04_make_plots_matplotlib.py -v $var -c 8 -p data/normalisation/background_subtraction/ -o plots/results/background_subtraction &> logs/04b_${var}_plot_8TeV.log & # -a  <--add this option for additional plots
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then

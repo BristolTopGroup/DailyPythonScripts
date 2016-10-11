@@ -125,6 +125,7 @@ if __name__ == '__main__':
     initial_values_electron = {}
     initial_values_muon = {}
     for fit_variable in fit_variables:
+
         path = path_to_JSON + fit_variable + '/' + str( come ) + 'TeV/'
         fit_results_electron[fit_variable] = read_normalisation( path,
                                                 variable,

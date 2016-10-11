@@ -437,7 +437,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
                     if values_for_typical_systematics_table.has_key(source):
                         values_for_typical_systematics_table[source].append(value)
                     else:
-                        values_for_typical_systematics_table[source] = [typical_systematics_latex[systematic_group] + ' (\%)', value]
+                        values_for_typical_systematics_table[source] = [typical_systematics_latex[systematic_group], value]
     
     rows_for_typical_systematics_table = {}
     
@@ -491,11 +491,11 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
     printout += '\\begin{table}[htbp]\n'
     printout += '\\centering\n'
     printout += '\\caption{Typical systematic uncertainties in percent (median values) for the normalised \\ttbar\n'
-    printout += '\\differential cross section measurement at \ensuremath{\roots=%d\TeV} '
+    printout += 'differential cross section measurement at \ensuremath{\\roots=%d\TeV}' % (measurement_config.centre_of_mass_energy)
     if channel == 'combined':
-        printout += '(combination of electron and muon channels). '
+        printout += ' (combination of electron and muon channels).\n'
     else:
-        printout += '(%s channel).' % channel
+        printout += ' (%s channel).\n' % channel
     printout += 'Typical values of the total systematic uncertainty are also shown.}\n'
     
     printout += '\\label{tab:typical_systematics_%dTeV_%s}\n' % (measurement_config.centre_of_mass_energy, channel)
@@ -538,7 +538,7 @@ def print_typical_systematics_table(central_values, errors, channel, toFile = Tr
                 for line_number, line in enumerate (lines):
                     if line.startswith("Uncertainty source"):
                         lines[line_number] = lines[line_number].strip() + " & " + variables_latex[variable] + "\n"
-                    elif variable == "HT" and line.startswith("$E_{T}^{miss}$ uncertainties"):
+                    elif variable == "HT" and line.startswith("$E_{\mathrm{T}}^{\mathrm{miss}}$ uncertainties"):
                         lines[line_number] = lines[line_number].strip() + " & - \n"
                     else:
                         for table_entry in enumerate(typical_systematics_latex):

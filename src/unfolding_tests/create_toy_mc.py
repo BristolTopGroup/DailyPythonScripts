@@ -35,8 +35,8 @@ def main():
 #                       help="set the variable to analyse (MET, HT, ST, MT, WPT)")
     parser.add_option("-m", "--metType", dest="metType", default='type1',
                       help="set MET type for analysis of MET, ST or MT")
-    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13,
-                      help="set the centre of mass energy for analysis. Default = 13 [TeV]", type=int)
+    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=8,
+                      help="set the centre of mass energy for analysis. Default = 8 [TeV]", type=int)
     parser.add_option('-V', '--verbose', dest="verbose", action="store_true",
                       help="Print the event number, reco and gen variable value")
 

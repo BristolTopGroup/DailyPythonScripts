@@ -25,11 +25,22 @@ calculate_lower_and_upper_systematics, combine_errors_in_quadrature
 def read_normalised_xsection_measurement( category, channel ):
     global path_to_JSON, met_type, met_uncertainties_list, k_values
     filename = ''
-    
+    path_to_use = path_to_JSON
+    k_value_to_use = k_values[channel]
+    # Use 8 TeV samples for hadronisation systematic
+    if 'powheg_v1_pythia' in category or 'powheg_v1_herwig' in category:
+        if '7TeV' in path_to_JSON:
+            path_to_use = path_to_JSON.replace('7TeV','8TeV')
+            config8TeV = XSectionConfig( 8 )
+            if channel == 'electron':
+                k_value_to_use = config8TeV.k_values_electron[variable]
+            elif channel == 'muon':
+                k_value_to_use = config8TeV.k_values_muon[variable]
+
     if category in met_uncertainties_list and variable == 'HT':
-        filename = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/central/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_use + '/' + channel + '/kv' + str( k_value_to_use ) + '/central/normalised_xsection_' + met_type + '.txt' 
     else:
-        filename = path_to_JSON + '/' + channel + '/kv' + str( k_values[channel] ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
+        filename = path_to_use + '/' + channel + '/kv' + str( k_value_to_use ) + '/' + category + '/normalised_xsection_' + met_type + '.txt' 
     
     if channel == 'combined':
         filename = filename.replace( 'kv' + str( k_values[channel] ), '' )
@@ -85,8 +96,8 @@ def summarise_systematics( list_of_central_measurements, dictionary_of_systemati
                 error_up = max( error_down, error_up )
         elif hadronisation_systematic:
             # always symmetric: absolute value of the difference between powheg_herwig and powheg_pythia
-            powheg_herwig = dictionary_of_systematics['TTJets_powheg_herwig'][bin_i][0]
-            powheg_pythia = dictionary_of_systematics['TTJets_powheg_pythia'][bin_i][0]
+            powheg_herwig = dictionary_of_systematics['TTJets_powheg_v1_herwig'][bin_i][0]
+            powheg_pythia = dictionary_of_systematics['TTJets_powheg_v1_pythia'][bin_i][0]
             difference = powheg_herwig - powheg_pythia
             mean = (powheg_herwig + powheg_pythia)/2.0
             difference = abs(difference)
@@ -212,7 +223,7 @@ if __name__ == "__main__":
 
     # ttbar theory systematics: ptreweighting, hadronisation systematic (powheg_pythia - powheg_herwig)
     ttbar_ptreweight_systematic_list = [ttbar_theory_systematic_prefix + 'ptreweight']
-    ttbar_hadronisation_systematic_list = [ttbar_theory_systematic_prefix + 'powheg_pythia', ttbar_theory_systematic_prefix + 'powheg_herwig']
+    ttbar_hadronisation_systematic_list = [ttbar_theory_systematic_prefix + 'powheg_v1_pythia', ttbar_theory_systematic_prefix + 'powheg_v1_herwig']
 
     # 45 PDF uncertainties
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
