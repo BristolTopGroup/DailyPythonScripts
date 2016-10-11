@@ -3,6 +3,7 @@ Created on 31 Oct 2012
 
 @author: kreczko
 '''
+from __future__ import division
 from ROOT import gSystem, cout, TDecompSVD
 from tools.ROOT_utils import set_root_defaults
 set_root_defaults(set_batch=True, msg_ignore_level=3001)
@@ -23,7 +24,6 @@ class Unfolding:
                  fakes=None,
                  method='TUnfold',
                  tau=-1,  # unfoldCfg.SVD_tau_value,
-                 k_value=0,  # unfoldCfg.SVD_k_value,
                  n_toy=1000,  # unfoldCfg.SVD_n_toy,
                  Bayes_n_repeat=4,  # unfoldCfg.Bayes_n_repeat,
                  error_treatment=3,  # unfoldCfg.error_treatment,
@@ -38,10 +38,10 @@ class Unfolding:
         self.response = response
         self.data = data
         self.unfolded_data = None
+        self.refolded_data = None
         self.unfoldObject = None
         self.verbose = verbose
         self.tau = float(tau)
-        self.k_value = int(k_value)
         self.n_toy = n_toy
         self.Bayes_n_repeat = Bayes_n_repeat
         self.error_treatment = error_treatment
@@ -77,6 +77,18 @@ class Unfolding:
 #             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
         return self.unfolded_data
 
+    def refold(self):
+        '''
+        Refold the unfolded data
+        '''
+        # Data has to be folded first before refolding
+        if self.unfolded_data is not None:
+            self.refolded_data = asrootpy(
+                self.unfoldObject.GetFoldedOutput('Refolded'))
+        else:
+            print("Data has not been unfolded. You cannot refold something that hasn't been first unfolded")
+        return self.refolded_data
+
     def getBestTau(self):
         if self.method != 'TUnfold':
             raise ValueError('Can only choose best tau here for TUnfold')
@@ -103,6 +115,40 @@ class Unfolding:
             value = sum(values)
             error = sqrt(sum(errorsSquared))
             chi2 = value, error
+        return chi2
+
+
+    def getUnfoldRefoldChi2(self):
+        '''
+        Calculate the chi sq between the refolded data and the measured data
+                                  2
+                    (Model - Meas)
+        Chi2 = SUM ----------------
+                                  2
+                    (Model Uncert)
+        '''
+        chi2 = 0
+        diff = 0
+        meas, model, model_unc = [], [], []
+
+        if self.data is not None and self.refolded_data is not None:
+
+            # We are measuring the refolded data and comparing to the data
+            meas = [entry[0] for entry in hist_to_value_error_tuplelist(self.refolded_data)]
+            # Data is the true distribution (In this case classified as our exact model)
+            model = [entry[0] for entry in hist_to_value_error_tuplelist(self.data)]
+            model_unc = [entry[1] for entry in hist_to_value_error_tuplelist(self.data)]
+        else:
+            print("There is no refolded data or measured data to be found")
+
+        for x, mu, sigma in zip (meas, model, model_unc):
+
+            # At the moment for some reason in electron lepton pt the first bin is empty...
+            # Need to figure out why. Until then using this.
+            if (sigma == 0): continue
+            # Is this correct?
+            diff = pow(mu-x,2) / pow(sigma, 2)
+            chi2 += diff
         return chi2
 
     def pull(self):

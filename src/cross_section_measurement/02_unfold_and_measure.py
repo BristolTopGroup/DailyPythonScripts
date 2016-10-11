@@ -64,10 +64,19 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
     global use_ptreweight
 
     files_for_systematics = {
-                             ttbar_theory_systematic_prefix + 'scaledown'       :  file_for_scaledown,
-                             ttbar_theory_systematic_prefix + 'scaleup'         :  file_for_scaleup,
-                             ttbar_theory_systematic_prefix + 'massdown'        :  file_for_massdown,
-                             ttbar_theory_systematic_prefix + 'massup'          :  file_for_massup,
+                             ttbar_theory_systematic_prefix + 'scaledown'       	:  file_for_scaledown,
+                             ttbar_theory_systematic_prefix + 'scaleup'         	:  file_for_scaleup,
+                             ttbar_theory_systematic_prefix + 'massdown'        	:  file_for_massdown,
+                             ttbar_theory_systematic_prefix + 'massup'          	:  file_for_massup,
+                             
+                             ttbar_theory_systematic_prefix + 'factorisationdown'	:  file_for_factorisationdown,
+                             ttbar_theory_systematic_prefix + 'factorisationup'   	:  file_for_factorisationup,
+                             ttbar_theory_systematic_prefix + 'renormalisationdown'	:  file_for_renormalisationdown,
+                             ttbar_theory_systematic_prefix + 'renormalisationup'  	:  file_for_renormalisationup,
+                             ttbar_theory_systematic_prefix + 'combineddown'     	:  file_for_combineddown,
+                             ttbar_theory_systematic_prefix + 'combinedup'          :  file_for_combinedup,
+                             ttbar_theory_systematic_prefix + 'alphaSdown'			:  file_for_alphaSdown,
+                             ttbar_theory_systematic_prefix + 'alphaSup'   			:  file_for_alphaSup,
 
                              'JES_down'        :  file_for_jesdown,
                              'JES_up'        :  file_for_jesup,
@@ -75,11 +84,11 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
                              'JER_down'        :  file_for_jerdown,
                              'JER_up'        :  file_for_jerup,
 
-                             'BJet_up'        :  file_for_bjetdown,
-                             'BJet_down'        :  file_for_bjetup,
+                             'BJet_up'        :  file_for_bjetup,
+                             'BJet_down'        :  file_for_bjetdown,
 
-                             'LightJet_up'        :  file_for_lightjetdown,
-                             'LightJet_down'        :  file_for_lightjetup,
+                             'LightJet_up'        :  file_for_lightjetup,
+                             'LightJet_down'        :  file_for_lightjetdown,
 
                              ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_powheg_herwig,
                              ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
@@ -450,6 +459,15 @@ if __name__ == '__main__':
     file_for_scaleup = File( measurement_config.unfolding_scale_up, 'read' )
     ###    # file_for_matchingdown = File( measurement_config.unfolding_matching_down, 'read' )
     ###    # file_for_matchingup = File( measurement_config.unfolding_matching_up, 'read' )
+   	###
+    file_for_renormalisationdown = File( measurement_config.unfolding_renormalisation_down, 'read' )
+    file_for_renormalisationup = File( measurement_config.unfolding_renormalisation_up, 'read' )    
+    file_for_factorisationdown = File( measurement_config.unfolding_factorisation_down, 'read' )
+    file_for_factorisationup = File( measurement_config.unfolding_factorisation_up, 'read' )
+    file_for_combineddown = File( measurement_config.unfolding_combined_down, 'read' )
+    file_for_combinedup = File( measurement_config.unfolding_combined_up, 'read' )
+    file_for_alphaSdown = File( measurement_config.unfolding_alphaS_down, 'read' )
+    file_for_alphaSup = File( measurement_config.unfolding_alphaS_up, 'read' )
     ###
     file_for_massdown = File( measurement_config.unfolding_mass_down, 'read' )
     file_for_massup = File( measurement_config.unfolding_mass_up, 'read' )

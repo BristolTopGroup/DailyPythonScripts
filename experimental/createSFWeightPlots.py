@@ -1,10 +1,8 @@
-
 import ROOT 
 from ROOT import gROOT, TFile, TH1F, TCanvas
 import math
 
 import os
-import glob
 ROOT.gROOT.SetBatch(True)
 
 if __name__ == '__main__':

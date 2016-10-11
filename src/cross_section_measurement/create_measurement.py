@@ -49,9 +49,9 @@ def main():
                     continue
                 elif channel == 'muon' and (category == 'Electron_down' or category == 'Electron_up'):
                     continue
-                create_measurement(
-                    centre_of_mass_energy, category, variable, channel,
-                    phase_space='FullPS', norm_method='background_subtraction')
+                # create_measurement(
+                #     centre_of_mass_energy, category, variable, channel,
+                #     phase_space='FullPS', norm_method='background_subtraction')
                 # and the visible phase space
                 create_measurement(
                     centre_of_mass_energy, category, variable, channel,
@@ -244,32 +244,17 @@ def create_measurement(com, category, variable, channel, phase_space, norm_metho
         m_vjets = tools.measurement.Measurement(category)
         m_vjets.setVariable(variable)
         m_vjets.setCentreOfMassEnergy(com)
-        if com == 7:  # special case for 7 TeV where we use 8 TeV shapes
-            config8 = XSectionConfig(8)
-            m_vjets.addSample(
-                'V+Jets',
-                False,
-                input=create_input(
-                    config, 'V+Jets', variable, v_template_category,
-                    channel,
-                    variable_template,
-                    config8.generator_systematic_vjets_templates[
-                        v_template_category],
-                    phase_space=phase_space, measurement=m,
-                )
-            )
-        else:
-            m_vjets.addSample(
-                'V+Jets',
-                False,
-                input=create_input(
-                    config, 'V+Jets', variable, v_template_category,
-                    channel,
-                    variable_template,
-                    config.generator_systematic_vjets_templates[
-                        v_template_category]),
-                phase_space=phase_space, measurement=m,
-            )
+        m_vjets.addSample(
+            'V+Jets',
+            False,
+            input=create_input(
+                config, 'V+Jets', variable, v_template_category,
+                channel,
+                variable_template,
+                config.generator_systematic_vjets_templates[
+                    v_template_category]),
+            phase_space=phase_space, measurement=m,
+        )
         m.addShapeForSample('V+Jets', m_vjets, False)
 
     inputs['channel'] = channel

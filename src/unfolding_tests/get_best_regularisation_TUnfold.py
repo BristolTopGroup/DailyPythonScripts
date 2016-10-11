@@ -103,7 +103,7 @@ class RegularisationSettings(object):
         self.h_response = asrootpy ( r )
         self.h_measured = asrootpy ( m )
         self.h_fakes = asrootpy ( f )
-        
+
         data_file = self.data['file']
         if data_file.endswith('.root'):
             self.h_data = get_histogram_from_file(self.data['histogram'], self.data['file'])

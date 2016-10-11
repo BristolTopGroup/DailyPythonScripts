@@ -8,6 +8,7 @@ time git clone https://github.com/BristolTopGroup/DailyPythonScripts.git
 cd DailyPythonScripts/
 git checkout ${git_branch}
 echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
+# Unpacking the DPS tar
 tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
 echo "... enforcing conda python environment"
 source bin/env.sh

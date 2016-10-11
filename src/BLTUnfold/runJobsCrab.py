@@ -13,7 +13,7 @@ jobs = [
         '--centreOfMassEnergy 13 -s amcatnlo',
         '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s powhegherwigpp',
-        '--centreOfMassEnergy 13 -s amcatnloherwigpp',
+        # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
         # # PS scale samples
         # '--centreOfMassEnergy 13 -s scaleup',
