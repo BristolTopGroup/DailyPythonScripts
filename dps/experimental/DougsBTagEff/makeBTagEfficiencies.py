@@ -6,6 +6,7 @@ from array import array
 import math
 import os
 from optparse import OptionParser
+from dps.utils.file_utilities import make_folder_if_not_exists
 
 ROOT.gROOT.SetBatch(True)
 if __name__ == '__main__':
@@ -82,7 +83,6 @@ if __name__ == '__main__':
 			Mu_inputTree = "TTbar_plus_X_analysis/MuPlusJets/Ref selection NoBSelection/BTagEfficiencies/Jets"
 			Mu_Chain = TChain(Mu_inputTree)
 			Mu_Chain.Add(input_file)
-
 			Chain = {
 			0 : E_Chain,
 			1 : Mu_Chain,
@@ -98,6 +98,7 @@ if __name__ == '__main__':
 					n=n+1
 					if options.test :  
 						if n == 10000 : break
+						# if n == 10 : break
 					NJets = event.__getattr__("NJets")
 					pt = event.__getattr__("pt")
 					eta = event.__getattr__("eta")
@@ -111,10 +112,13 @@ if __name__ == '__main__':
 					puWeight = event.__getattr__("PUWeight")
 					if key == 0 : leptonWeight = event.__getattr__("ElectronEfficiencyCorrection")
 					else : leptonWeight = event.__getattr__("MuonEfficiencyCorrection")
-					
+
+
+
 					weight = eventWeight * puWeight * leptonWeight
+
 					
-					if (NJets == 0): continue;
+					if (NJets <= 0): continue;
 
 					for JetIndex in range (0,int(NJets)):
 						if (pt[JetIndex] < 30): continue;
@@ -183,7 +187,7 @@ if __name__ == '__main__':
 
 	if options.make_plots:
 		f = TFile("BTagEfficiency.root", "OPEN")
-		
+		make_folder_if_not_exists('plots/')
 		for key in range (0, len(input_files)):
 			generator = input_files[key][1]
 
