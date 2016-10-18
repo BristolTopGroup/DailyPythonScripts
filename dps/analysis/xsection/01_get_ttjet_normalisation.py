@@ -239,16 +239,6 @@ def main():
         n1.combine(n2)
         n1.save(output_path)
 
-def get_category_from_file(json_file):
-    filename = json_file.split('/')[-1]
-    # remove type string
-    category = filename.replace('_shape_systematic', '')
-    category = category.replace('_rate_systematic', '')
-    # remove file ending
-    category = category.replace('.json', '')
-
-    return category
-
 if __name__ == '__main__':
     set_root_defaults()
 
@@ -261,9 +251,7 @@ if __name__ == '__main__':
 
     measurement_config = XSectionConfig(options.CoM)
     # caching of variables for shorter access
-    translate_options = measurement_config.translate_options
     variable = options.variable
-
     output_path = options.path
     if options.closure_test:
         output_path += '/closure_test/'
