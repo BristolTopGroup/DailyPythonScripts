@@ -16,6 +16,8 @@ from math import sqrt
 from ROOT import kRed, kGreen, kMagenta, kBlue, kBlack
 from dps.utils.ROOT_utils import set_root_defaults
 import matplotlib as mpl
+from matplotlib import rc
+
 from dps.utils.plotting import get_best_max_y
 mpl.use( 'agg' )
 import rootpy.plotting.root2matplotlib as rplt
@@ -28,6 +30,7 @@ from dps.utils.latex import setup_matplotlib
 setup_matplotlib()
 
 import matplotlib.patches as mpatches
+import latexcodec
 
 from dps.utils.logger import log
 xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
@@ -40,7 +43,7 @@ def read_xsection_measurement_results( category, channel ):
     filename = file_template.format(
                 path = path_to_JSON,
                 category = category,
-                name = 'normalised_xsection',
+                name = 'xsection_normalised',
                 channel = channel,
                 method = method,
                 suffix = '',
@@ -92,7 +95,7 @@ def read_xsection_measurement_results( category, channel ):
         filename = file_template.format(
                 path = path_to_JSON,
                 category = category,
-                name = 'normalised_xsection',
+                name = 'xsection_normalised',
                 channel = channel,
                 method = method,
                 suffix = '_with_errors',
@@ -136,192 +139,6 @@ def read_xsection_measurement_results( category, channel ):
         histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
 
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
-
-@xsec_04_log.trace()
-def read_fit_templates_and_results_as_histograms( category, channel ):
-    global path_to_JSON, variable, met_type, phase_space
-    templates = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/templates_' + channel + '_' + met_type + '.txt' )
-
-    data_values = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/initial_values_' + channel + '_' + met_type + '.txt' )['data']
-    fit_results = read_data_from_JSON( path_to_JSON + '/fit_results/' + category + '/fit_results_' + channel + '_' + met_type + '.txt' )
-    fit_variables = templates.keys()
-    template_histograms = {fit_variable: {} for fit_variable in fit_variables}
-    fit_results_histograms = {fit_variable: {} for fit_variable in fit_variables}
-
-    variableBins = None
-    if phase_space == 'VisiblePS':
-        variableBins = variable_bins_visiblePS_ROOT
-    elif phase_space == 'FullPS':
-        variableBins = variable_bins_ROOT
-
-    for bin_i, variable_bin in enumerate( variableBins[variable] ):
-        for fit_variable in fit_variables:
-            h_template_data = value_tuplelist_to_hist( templates[fit_variable]['data'][bin_i], fit_variable_bin_edges[fit_variable] )
-            h_template_ttjet =  value_tuplelist_to_hist( templates[fit_variable]['TTJet'][bin_i], fit_variable_bin_edges[fit_variable] )
-            h_template_singletop =  value_tuplelist_to_hist( templates[fit_variable]['SingleTop'][bin_i], fit_variable_bin_edges[fit_variable] )
-            h_template_VJets = value_tuplelist_to_hist( templates[fit_variable]['V+Jets'][bin_i], fit_variable_bin_edges[fit_variable] )
-            h_template_QCD = value_tuplelist_to_hist( templates[fit_variable]['QCD'][bin_i], fit_variable_bin_edges[fit_variable] )
-            template_histograms[fit_variable][variable_bin] = {
-                                        'TTJet' : h_template_ttjet,
-                                        'SingleTop' : h_template_singletop,
-                                        'V+Jets':h_template_VJets,
-                                        'QCD':h_template_QCD
-                                        }
-            h_data = h_template_data.Clone()
-            h_ttjet = h_template_ttjet.Clone()
-            h_singletop = h_template_singletop.Clone()
-            h_VJets = h_template_VJets.Clone()
-            h_QCD = h_template_QCD.Clone()
-
-            data_normalisation = data_values[bin_i][0]
-            n_ttjet = fit_results['TTJet'][bin_i][0]
-            n_singletop = fit_results['SingleTop'][bin_i][0]
-            VJets_normalisation = fit_results['V+Jets'][bin_i][0]
-            QCD_normalisation = fit_results['QCD'][bin_i][0]
-
-            h_data.Scale( data_normalisation )
-            h_ttjet.Scale( n_ttjet )
-            h_singletop.Scale( n_singletop )
-            h_VJets.Scale( VJets_normalisation )
-            h_QCD.Scale( QCD_normalisation )
-            h_background = h_VJets + h_QCD + h_singletop
-
-            for bin_i_data in range( len( h_data ) ):
-                h_data.SetBinError( bin_i_data + 1, sqrt( h_data.GetBinContent( bin_i_data + 1 ) ) )
-
-            fit_results_histograms[fit_variable][variable_bin] = {
-                                                    'data' : h_data,
-                                                    'signal' : h_ttjet,
-                                                    'background' : h_background
-                                                    }
-
-    return template_histograms, fit_results_histograms
-
-@xsec_04_log.trace()
-def make_template_plots( histograms, category, channel ):
-    global variable, output_folder, phase_space
-    fit_variables = histograms.keys()
-
-    variableBins = None
-    if phase_space == 'VisiblePS':
-        variableBins = variable_bins_visiblePS_ROOT
-    elif phase_space == 'FullPS':
-        variableBins = variable_bins_ROOT
-
-    for variable_bin in variableBins[variable]:
-        path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_templates/'
-        make_folder_if_not_exists( path )
-        for fit_variable in fit_variables:
-            plotname = path + channel + '_' + fit_variable + '_template_bin_' + variable_bin
-
-            # check if template plots exist already
-            for output_format in output_formats:
-                if os.path.isfile( plotname + '.' + output_format ):
-                    continue
-
-            # plot with matplotlib
-            h_ttjet = histograms[fit_variable][variable_bin]['TTJet']
-            h_single_top = histograms[fit_variable][variable_bin]['SingleTop']
-            h_VJets = histograms[fit_variable][variable_bin]['V+Jets']
-            h_QCD = histograms[fit_variable][variable_bin]['QCD']
-
-            h_ttjet.linecolor = 'red'
-            h_single_top.linecolor = 'magenta'
-            h_VJets.linecolor = 'green'
-            h_QCD.linecolor = 'gray'
-            h_VJets.linestyle = 'dashed'
-            h_QCD.linestyle = 'dotted'  # currently not working
-            # bug report: http://trac.sagemath.org/sage_trac/ticket/13834
-
-            h_ttjet.linewidth = 5
-            h_single_top.linewidth = 5
-            h_VJets.linewidth = 5
-            h_QCD.linewidth = 5
-
-            plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
-            axes = plt.axes()
-            if not variable in ['NJets']:
-                axes.minorticks_on()
-
-            plt.xlabel( fit_variables_latex[fit_variable], CMS.x_axis_title )
-            plt.ylabel( 'normalised to unit area/(%s)' % get_unit_string(fit_variable), CMS.y_axis_title )
-            plt.tick_params( **CMS.axis_label_major )
-            if not variable in ['NJets']:
-                plt.tick_params( **CMS.axis_label_minor )
-
-            rplt.hist( h_ttjet, axes = axes, label = 'signal' )
-            rplt.hist( h_single_top, axes = axes, label = 'Single Top' )
-
-            if ( h_VJets.Integral() != 0 ):
-                rplt.hist( h_VJets, axes = axes, label = 'V+Jets' )
-            else:
-                print("WARNING: in %s bin %s, %s category, %s channel, V+Jets template is empty: not plotting." % ( variable, variable_bin, category, channel ))
-            if ( h_QCD.Integral() != 0 ):
-                rplt.hist( h_QCD, axes = axes, label = 'QCD' )
-            else:
-                print("WARNING: in %s bin %s, %s category, %s channel, QCD template is empty: not plotting." % ( variable, variable_bin, category, channel ))
-            y_max = get_best_max_y([h_ttjet, h_single_top, h_VJets, h_QCD])
-            axes.set_ylim( [0, y_max * 1.1] )
-            axes.set_xlim( measurement_config.fit_boundaries[fit_variable] )
-
-            plt.legend( numpoints = 1, loc = 'upper right', prop = CMS.legend_properties )
-            label, channel_label = get_cms_labels( channel )
-            plt.title( label, CMS.title )
-            # CMS text
-            # note: fontweight/weight does not change anything as we use Latex text!!!
-            plt.text(0.95, 0.95, r"\textbf{CMS}", transform=axes.transAxes, fontsize=42,
-                     verticalalignment='top',horizontalalignment='right')
-            # channel text
-            axes.text(0.95, 0.95, r"\emph{%s}" %channel_label, transform=axes.transAxes, fontsize=40,
-                      verticalalignment='top',horizontalalignment='right')
-
-            plt.tight_layout()
-
-            for output_format in output_formats:
-                plt.savefig( plotname + '.' + output_format )
-
-            plt.close()
-            gc.collect()
-
-@xsec_04_log.trace()
-def plot_fit_results( histograms, category, channel ):
-    global variable, b_tag_bin, output_folder, phase_space
-    from dps.utils.plotting import Histogram_properties, make_data_mc_comparison_plot
-    fit_variables = histograms.keys()
-
-    variableBins = None
-    if phase_space == 'VisiblePS':
-        variableBins = variable_bins_visiblePS_ROOT
-    elif phase_space == 'FullPS':
-        variableBins = variable_bins_ROOT
-
-    for variable_bin in variableBins[variable]:
-        path = output_folder + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/' + category + '/fit_results/'
-        make_folder_if_not_exists( path )
-        for fit_variable in fit_variables:
-            plotname = channel + '_' + fit_variable + '_bin_' + variable_bin
-            # check if template plots exist already
-            for output_format in output_formats:
-                if os.path.isfile( plotname + '.' + output_format ):
-                    continue
-
-            # plot with matplotlib
-            h_data = histograms[fit_variable][variable_bin]['data']
-            h_signal = histograms[fit_variable][variable_bin]['signal']
-            h_background = histograms[fit_variable][variable_bin]['background']
-
-            histogram_properties = Histogram_properties()
-            histogram_properties.name = plotname
-            histogram_properties.x_axis_title = fit_variables_latex[fit_variable]
-            histogram_properties.y_axis_title = 'Events/(%s)' % get_unit_string(fit_variable)
-            label, _ = get_cms_labels( channel )
-            histogram_properties.title = label
-            histogram_properties.x_limits = measurement_config.fit_boundaries[fit_variable]
-
-            make_data_mc_comparison_plot( [h_data, h_background, h_signal],
-                                         ['data', 'background', 'signal'],
-                                         ['black', 'green', 'red'], histogram_properties,
-                                         save_folder = path, save_as = output_formats )
 
 @xsec_04_log.trace()
 def get_cms_labels( channel ):
