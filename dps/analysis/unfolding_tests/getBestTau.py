@@ -39,6 +39,7 @@ from dps.config.latex_labels import variables_latex
 from ROOT import TUnfoldDensity, TUnfold, TCanvas, TPad, TMath, gROOT, TRandom3
 
 from dps.config.variable_binning import reco_bin_edges_vis
+# , gen_bin_edges_vis
 from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from dps.utils.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from dps.utils.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
@@ -155,39 +156,35 @@ def main():
         if args.run_measured_as_data:
             regularisation_settings.taus_to_test = [0]
             regularisation_settings.h_data = regularisation_settings.h_measured
+            df_chi2 = get_chi2s_of_tau_range(regularisation_settings, args)
 
             if args.perform_varied_measured_unfolding_test:
                 h_data = hist_to_value_error_tuplelist(regularisation_settings.h_data)
                 h_data_varied = [(return_rnd_Poisson(val),return_rnd_Poisson(err)) for val, err in h_data ]
                 h_data_varied = value_error_tuplelist_to_hist(h_data_varied, reco_bin_edges_vis[variable])
-
+                regularisation_settings.h_data = h_data_varied
+                df_chi2_smeared = get_chi2s_of_tau_range(regularisation_settings, args, unfold_test=True)
+                print df_chi2_smeared
+            # No point in trying to find best tau if it is given as 0...
+            sys.exit()
+        
         # Find the corresponding Chi2 and write to file
         df_chi2 = get_chi2s_of_tau_range(regularisation_settings, args)
-
-        if args.perform_varied_measured_unfolding_test:
-            regularisation_settings.h_data = h_data_varied
-            df_chi2_smeared = get_chi2s_of_tau_range(regularisation_settings, args, unfold_test=True)
-
-    print df_chi2
-    if args.perform_varied_measured_unfolding_test:
-        print df_chi2_smeared
-
-    # No point in trying to find best tau if it is given as 0...
-    if args.run_measured_as_data: return
+        print df_chi2
 
     # Have the dataframes now - albeit read to a file
     # Read in each one corresponding to their channel
-    # Find the best tau and pront to screen
-    # Maybe find way to include in previous loop (would requires three dataframes instantiations)
+    # Find the best tau and print to screen
     for channel in ['electron', 'muon', 'combined']:
+        chi2_cut = 0.005
         path = regularisation_settings.outpath+'tbl_'+channel+'_tauscan.txt'
         df_chi2 = get_df_from_file(path)
         if df_chi2 is None: continue
         print '\n', "1 - P(Chi2|NDF)", '\n', df_chi2, '\n'
 
         # cutoff to be changed to 0.001 when able to
-        best_taus = interpolate_tau(0.7, df_chi2)
-        chi2_to_plots(df_chi2, regularisation_settings, channel)
+        best_taus = interpolate_tau(chi2_cut, df_chi2)
+        chi2_to_plots(df_chi2, regularisation_settings, chi2_cut, channel)
         print_results_to_screen(best_taus, channel)
     return
 
@@ -204,7 +201,7 @@ def parse_options():
         dest = "run_measured_as_data",
         action = "store_true", 
         help = "For debugging - run the measured distribution as data." ) 
-    parser.add_argument( "-u", "--vary_measured_test", 
+    parser.add_argument( "-v", "--vary_measured_test", 
         dest = "perform_varied_measured_unfolding_test",
         action = "store_true", 
         help = "Unfolding test. Vary measured vals by Poisson then find ChiSq" ) 
@@ -217,8 +214,14 @@ def parse_options():
         default = 10,
         type = int,
         help = "How many taus in the range do you want" ) 
-
+    parser.add_argument( "-u", "--unfolded_binning", 
+        dest = "unfolded_binning",
+        action = "store_true", 
+        help = "Run the tau scans for unfolded (gen) binning" ) 
     args = parser.parse_args()
+
+    if args.unfolded_binning:
+        print "Calculating the chi2 in the unfolded (gen) binning scheme"
 
     input_values_sets = []
     json_input_files = []
@@ -279,22 +282,29 @@ def get_chi2s_of_tau_range( regularisation_settings, args, unfold_test=False ):
         h_unfolded_data = unfolding.unfold()
         h_refolded_data = unfolding.refold()
 
-        print("Data")
-        print (hist_to_value_error_tuplelist(h_data))
-        print("Unfolded Data")
-        print (hist_to_value_error_tuplelist(h_unfolded_data))
-        print("Refolded Data")
-        print (hist_to_value_error_tuplelist(h_refolded_data))
-        # if test:
+        # print("Data")
+        # print (hist_to_value_error_tuplelist(h_data))
+        # print("Unfolded Data")
+        # print (hist_to_value_error_tuplelist(h_unfolded_data))
+        # print("Refolded Data")
+        # print (hist_to_value_error_tuplelist(h_refolded_data))
+
         regularisation_settings.h_refolded = h_refolded_data
+        ndf = regularisation_settings.ndf
+
         if args.run_refold_plots:
             plot_data_vs_refold(args, regularisation_settings, tau)
-
-        data = np.array( [val for (val, err) in hist_to_value_error_tuplelist(h_data)] )
-        ref = np.array( [val for (val, err) in hist_to_value_error_tuplelist(h_refolded_data)] )
+        if args.unfolded_binning:
+            unfolding.refolded_data = h_refolded_data.rebinned(2)
+            unfolding.data = h_data.rebinned(2)
+            ndf = int(regularisation_settings.ndf / 2)
+            # print("Data")
+            # print (hist_to_value_error_tuplelist(regularisation_settings.h_data))
+            # print("Refolded Data")
+            # print (hist_to_value_error_tuplelist(regularisation_settings.h_refolded))
 
         chi2 = unfolding.getUnfoldRefoldChi2()
-        prob = TMath.Prob( chi2, regularisation_settings.ndf ) #bins-1?
+        prob = TMath.Prob( chi2, ndf ) 
         chi2_ndf.append(1-prob)
         # print( tau, chi2, prob, 1-prob )
 
@@ -389,7 +399,7 @@ def get_df_from_file(p):
         print "Cannot find path : ", p
     return df
 
-def chi2_to_plots(df_chi2, regularisation_settings, channel):
+def chi2_to_plots(df_chi2, regularisation_settings, chi2_cut, channel):
     '''
     Plot chi2 figures
     '''
@@ -399,8 +409,8 @@ def chi2_to_plots(df_chi2, regularisation_settings, channel):
 
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(1, 1, 1)
-    ax1.set_xlim([pow(10,-16), 1])
-    ax1.set_ylim([pow(10,-16), 1])
+    ax1.set_xlim([pow(10,-6), 1])
+    ax1.set_ylim([pow(10,-6), 1])
     for var in df_chi2.columns:
         if var == 'tau': continue
 
@@ -409,15 +419,14 @@ def chi2_to_plots(df_chi2, regularisation_settings, channel):
             df_chi2[var],
             label = variables_latex[var],
         )
-
+    plt.axhline(y=chi2_cut, color='black', linestyle='dashed')
     handles, labels = ax1.get_legend_handles_labels()
-    ax1.legend(handles, labels)
+    ax1.legend(handles, labels, loc=4)
     ax1.set_xlabel('Regularisation Parameter \ensuremath{\\tau}')
     ax1.set_ylabel('\ensuremath{1-P(\\chi^{2}|NDF)}')
 
     pltName = os.path.join(plot_outpath,'{channel}_all_tauscan.pdf'.format(channel = channel))
-    plt.show()
-    plt.savefig(pltName) 
+    fig1.savefig(pltName) 
     print "Written plots to {plot_outpath}{channel}_all_tauscan.pdf".format(plot_outpath = plot_outpath, channel = channel)
 
     return
