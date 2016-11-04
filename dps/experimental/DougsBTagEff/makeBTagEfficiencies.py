@@ -27,8 +27,8 @@ if __name__ == '__main__':
 		0 : ["TTJets_PowhegPythia8_tree.root" , "PowhegPythia8"], 
 		1 : ["TTJets_powhegHerwigpp_tree.root" , "PowhegHerwigpp"],
 		2 : ["TTJets_amc_tree.root" , "aMCatNLOPythia8"],
-		3 : ["TTJets_amcatnloHerwigpp_tree.root" , "aMCatNLOHerwigpp"],
-		4 : ["TTJets_madgraph_tree.root" , "Madgraph"],
+		3 : ["TTJets_madgraph_tree.root" , "Madgraph"],
+		# 4 : ["TTJets_amcatnloHerwigpp_tree.root" , "aMCatNLOHerwigpp"],
 		}
 
 	partonHists = [
@@ -114,8 +114,20 @@ if __name__ == '__main__':
 					if (NJets == 0): continue;
 
 					for JetIndex in range (0,int(NJets)):
-
-						if (pt[JetIndex] < 25): continue;
+						if (pt[JetIndex] < 30): continue;
+						if (abs(eta[JetIndex]) > 2.4): continue;
+						# print "- "*10
+						# print 'leptonweight chosen ' , leptonWeight
+						# print 'electron wieght ' ,event.__getattr__("ElectronEfficiencyCorrection")
+						# print 'muon weight ' ,event.__getattr__("MuonEfficiencyCorrection")
+						# print "NJets ", NJets
+						# print "Weight ", weight
+						# print "eventWeight ", eventWeight
+						# print "puWeight ", puWeight
+						# print "lepWeight ", leptonWeight
+						# print "HadronFlavour ", hadronFlavour[JetIndex]
+						# print "is Med BTagged", isMedium[JetIndex]
+						# print "Pt jet", pt[JetIndex]
 
 						if (hadronFlavour[JetIndex] == 5):
 							bQuarkJets_Total_Hist[sample].Fill(pt[JetIndex], eta[JetIndex], weight)
