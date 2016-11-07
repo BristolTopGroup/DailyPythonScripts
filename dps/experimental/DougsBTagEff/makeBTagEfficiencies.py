@@ -13,21 +13,22 @@ if __name__ == '__main__':
 	gStyle.SetOptStat("")
 
 	parser = OptionParser()
-	parser.add_option("-t", "--test", dest="test", default=False, 
+	parser.add_option("-t", "--test", dest="test", action = "store_true", 
 		help="Run over a few events only")
-	parser.add_option("-p", "--plots", dest="make_plots", default=True, 
+	parser.add_option("-p", "--plots", dest="make_plots", action = "store_true", 
     	help="Print out files to .png")
-	parser.add_option("-o", "--only_plots", dest="only_plots", default=False, 
+	parser.add_option("-o", "--only_plots", dest="only_plots", action = "store_true", 
     	help="Print out files to .png")
 	(options, args) = parser.parse_args()
 	if options.test : print "RUNNING OVER TEST SAMPLE"
 
-	basepath = "/hdfs/TopQuarkGroup/run2/atOutput/13TeV/25ns/20_05_16/"
+	basepath = "/hdfs/TopQuarkGroup/ec6821/0.0.10/atOutput/combined/"
 	input_files = {
 		0 : ["TTJets_PowhegPythia8_tree.root" , "PowhegPythia8"], 
 		1 : ["TTJets_powhegHerwigpp_tree.root" , "PowhegHerwigpp"],
 		2 : ["TTJets_amc_tree.root" , "aMCatNLOPythia8"],
 		3 : ["TTJets_madgraph_tree.root" , "Madgraph"],
+		4 : ["TTJets_PowhegPythia8_Moriond17_tree.root" , "PowhegPythia8_Moriond17"]
 		# 4 : ["TTJets_amcatnloHerwigpp_tree.root" , "aMCatNLOHerwigpp"],
 		}
 
@@ -60,6 +61,8 @@ if __name__ == '__main__':
 			in_file = input_files[key][0]
 			sample = input_files[key][1]
 			input_file = basepath+in_file
+			if key == 4:
+				input_file = "/hdfs/TopQuarkGroup/run2/atOutput/13TeV/2016/TTJets_PowhegPythia8_Moriond17_tree.root"
 
 			print "Generator : ", sample
 
