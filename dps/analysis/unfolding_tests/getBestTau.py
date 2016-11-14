@@ -3,7 +3,7 @@ Created on 20 Sep 2016
 
 @author: Burns
 
-run src/unfolding_tests/makeConfig.py first
+run dps/analysis/unfolding_tests/makeConfig.py first
 
 This script creates, for each variable:
  - 1-P(Chi2|NDF) between data and refolded data for various tau 
@@ -17,9 +17,10 @@ What it needs:
 usage:
     python getBestTau.py config.json
     # for 13 TeV in the visible phase space :
-    python src/unfolding_tests/getBestTau.py config/unfolding/VisiblePS/*.json -n 100 --refold_plots
+    python dps/analysis/unfolding_tests/getBestTau.py config/unfolding/VisiblePS/*.json -n 100 --refold_plots --test
     -n = number of tau points
     --refold_plots = output some comparison plots for every tau (suggest few tau)
+    --test = runs the measured distribution as data. Should return P(Chi2|NDF) of 0 i.e. exact
 '''
 # imports
 from __future__ import division
@@ -35,9 +36,10 @@ from dps.config.xsection import XSectionConfig
 from dps.utils.plotting import Histogram_properties
 from dps.config import CMS
 from dps.config.latex_labels import variables_latex
-from ROOT import TUnfoldDensity, TUnfold, TCanvas, TPad, TMath, gROOT
+from ROOT import TUnfoldDensity, TUnfold, TCanvas, TPad, TMath, gROOT, TRandom3
 
 from dps.config.variable_binning import reco_bin_edges_vis
+# , gen_bin_edges_vis
 from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from dps.utils.file_utilities import read_data_from_JSON, make_folder_if_not_exists
 from dps.utils.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
@@ -139,42 +141,50 @@ def main():
     clear_old_df('tables/taufinding/')
 
     for input_values, json_file in zip( input_values_sets, json_input_files ):
-        print '\nProcessing', json_file
+        # print '\nProcessing', json_file
         # Initialise the TauFinding class
         regularisation_settings = TauFinding( input_values )
         # Set additional elemtents
         regularisation_settings.taus_to_test = get_tau_list(args.n_ticks_in_log)
-        if args.run_measured_as_data:
-            regularisation_settings.taus_to_test = [0]
-            regularisation_settings.h_data = regularisation_settings.h_measured
 
         variable = regularisation_settings.variable
         channel = regularisation_settings.channel
         com = regularisation_settings.centre_of_mass_energy
+        if 'muon' not in channel : continue
         print 'Variable = {0}, channel = {1}, sqrt(s) = {2}'.format(variable, channel, com)
 
-        # Find the corresponding Chi2
-        pd_chi2, pd_taus = get_chi2s_of_tau_range(regularisation_settings, args)
+        if args.run_measured_as_data:
+            regularisation_settings.taus_to_test = [0]
+            regularisation_settings.h_data = regularisation_settings.h_measured
+            df_chi2 = get_chi2s_of_tau_range(regularisation_settings, args)
 
-        # Write to file
-        df_chi2 = chi2_to_df(pd_chi2, pd_taus, regularisation_settings) 
-
-    # No point in trying to find best tau if it is given as 0...
-    if args.run_measured_as_data: return
+            if args.perform_varied_measured_unfolding_test:
+                h_data = hist_to_value_error_tuplelist(regularisation_settings.h_data)
+                h_data_varied = [(return_rnd_Poisson(val),return_rnd_Poisson(err)) for val, err in h_data ]
+                h_data_varied = value_error_tuplelist_to_hist(h_data_varied, reco_bin_edges_vis[variable])
+                regularisation_settings.h_data = h_data_varied
+                df_chi2_smeared = get_chi2s_of_tau_range(regularisation_settings, args, unfold_test=True)
+                print df_chi2_smeared
+            # No point in trying to find best tau if it is given as 0...
+            sys.exit()
+        
+        # Find the corresponding Chi2 and write to file
+        df_chi2 = get_chi2s_of_tau_range(regularisation_settings, args)
+        print df_chi2
 
     # Have the dataframes now - albeit read to a file
     # Read in each one corresponding to their channel
-    # Find the best tau and pront to screen
-    # Maybe find way to include in previous loop (would requires three dataframes instantiations)
+    # Find the best tau and print to screen
     for channel in ['electron', 'muon', 'combined']:
+        chi2_cut = 0.005
         path = regularisation_settings.outpath+'tbl_'+channel+'_tauscan.txt'
         df_chi2 = get_df_from_file(path)
         if df_chi2 is None: continue
         print '\n', "1 - P(Chi2|NDF)", '\n', df_chi2, '\n'
 
         # cutoff to be changed to 0.001 when able to
-        best_taus = interpolate_tau(0.3, df_chi2)
-        chi2_to_plots(df_chi2, regularisation_settings, channel)
+        best_taus = interpolate_tau(chi2_cut, df_chi2)
+        chi2_to_plots(df_chi2, regularisation_settings, chi2_cut, channel)
         print_results_to_screen(best_taus, channel)
     return
 
@@ -191,6 +201,10 @@ def parse_options():
         dest = "run_measured_as_data",
         action = "store_true", 
         help = "For debugging - run the measured distribution as data." ) 
+    parser.add_argument( "-v", "--vary_measured_test", 
+        dest = "perform_varied_measured_unfolding_test",
+        action = "store_true", 
+        help = "Unfolding test. Vary measured vals by Poisson then find ChiSq" ) 
     parser.add_argument( "-p", "--refold_plots", 
         dest = "run_refold_plots",
         action = "store_true", 
@@ -200,8 +214,14 @@ def parse_options():
         default = 10,
         type = int,
         help = "How many taus in the range do you want" ) 
-
+    parser.add_argument( "-u", "--unfolded_binning", 
+        dest = "unfolded_binning",
+        action = "store_true", 
+        help = "Run the tau scans for unfolded (gen) binning" ) 
     args = parser.parse_args()
+
+    if args.unfolded_binning:
+        print "Calculating the chi2 in the unfolded (gen) binning scheme"
 
     input_values_sets = []
     json_input_files = []
@@ -224,7 +244,7 @@ def clear_old_df(path):
             os.remove(os.path.join(root, name))
     return
 
-def get_tau_list(logSpacing, logMin = log10(pow(10,-8)), logMax = log10(1)):
+def get_tau_list(logSpacing, logMin = log10(pow(10,-16)), logMax = log10(1)):
     '''
     Large scanning range from unity to 10^-8. Split into equal points based on log system 
     given the number of tau points to scan over.
@@ -234,10 +254,11 @@ def get_tau_list(logSpacing, logMin = log10(pow(10,-8)), logMax = log10(1)):
     tau_test_range = [10**(logMax - i/float(logSpacing)) for i in range(r*logSpacing)]
     return tau_test_range
 
-def get_chi2s_of_tau_range( regularisation_settings, args ):
+def get_chi2s_of_tau_range( regularisation_settings, args, unfold_test=False ):
     '''
         Takes each tau value, unfolds and refolds, calcs the chi2, the prob of chi2 given ndf (n_bins)
         and returns a dictionary of (1-P(Chi2|NDF)) for each tau
+        For measured test where we only worry about tau=0 outputs tau variables to data frame (+smeared measured values)
     '''
     h_truth, h_response, h_measured, h_data, h_fakes = regularisation_settings.get_histograms()
     if not args.run_measured_as_data : 
@@ -260,25 +281,79 @@ def get_chi2s_of_tau_range( regularisation_settings, args ):
         # Cannot refold without first unfolding
         h_unfolded_data = unfolding.unfold()
         h_refolded_data = unfolding.refold()
-        # if test:
-        regularisation_settings.h_refolded = h_refolded_data
-        if args.run_refold_plots:
-            plot_unfold_vs_refold(args, regularisation_settings, tau)
 
-        data = np.array( [val for (val, err) in hist_to_value_error_tuplelist(h_data)] )
-        ref = np.array( [val for (val, err) in hist_to_value_error_tuplelist(h_refolded_data)] )
+        # print("Data")
+        # print (hist_to_value_error_tuplelist(h_data))
+        # print("Unfolded Data")
+        # print (hist_to_value_error_tuplelist(h_unfolded_data))
+        # print("Refolded Data")
+        # print (hist_to_value_error_tuplelist(h_refolded_data))
+
+        regularisation_settings.h_refolded = h_refolded_data
+        ndf = regularisation_settings.ndf
+
+        if args.run_refold_plots:
+            plot_data_vs_refold(args, regularisation_settings, tau)
+        if args.unfolded_binning:
+            unfolding.refolded_data = h_refolded_data.rebinned(2)
+            unfolding.data = h_data.rebinned(2)
+            ndf = int(regularisation_settings.ndf / 2)
+            # print("Data")
+            # print (hist_to_value_error_tuplelist(regularisation_settings.h_data))
+            # print("Refolded Data")
+            # print (hist_to_value_error_tuplelist(regularisation_settings.h_refolded))
 
         chi2 = unfolding.getUnfoldRefoldChi2()
-        prob = TMath.Prob( chi2, regularisation_settings.ndf ) #bins-1?
+        prob = TMath.Prob( chi2, ndf ) 
         chi2_ndf.append(1-prob)
         # print( tau, chi2, prob, 1-prob )
 
     # Create pandas dictionary
     d_chi2 = {variable : pd.Series( chi2_ndf )}
     d_taus = {'tau' : pd.Series( taus )}
-    return d_chi2, d_taus
 
-def chi2_to_df(chi2, taus, regularisation_settings):
+    if unfold_test: 
+        d_tau_vars = {
+            variable : {
+                'Tau' : tau,
+                'Chi2' : chi2,
+                'Prob' : prob,
+                '1-Prob' : 1-prob,
+            }
+        }
+        df_unfold_tests = tau_vars_to_df(d_tau_vars, regularisation_settings)
+        return df_unfold_tests
+
+    df_chi2 = chi2_to_df(d_chi2, d_taus, regularisation_settings )
+    return df_chi2
+
+def tau_vars_to_df(tau_vars, regularisation_settings):
+    '''
+    Take the list of taus and chi2 for each variable and append to those already there
+    '''
+    variable = regularisation_settings.variable
+    channel = regularisation_settings.channel
+    outpath = regularisation_settings.outpath
+
+    df_new = pd.DataFrame(tau_vars)
+
+    make_folder_if_not_exists(outpath)
+    tblName = os.path.join(outpath,'tbl_{}_tauscan_smeared.txt').format(channel)
+    df_existing = get_df_from_file(tblName)
+
+    if df_existing is not None:
+        df_new = pd.concat([df_new, df_existing], axis=1)
+
+    # overwrite old df with new one
+    with open(tblName,'w') as f:
+        df_new.to_string(f, index=True)
+        f.write('\n')
+        f.close()
+    print('DataFrame {} written to file'.format(tblName))
+    # return the new df
+    return df_new
+
+def chi2_to_df(chi2, taus, regularisation_settings, appendage=''):
     '''
     Take the list of taus and chi2 for each variable and append to those already there
     '''
@@ -291,7 +366,7 @@ def chi2_to_df(chi2, taus, regularisation_settings):
 
     # better output path
     make_folder_if_not_exists(outpath)
-    tblName = os.path.join(outpath,'tbl_{}_tauscan.txt'.format(channel))
+    tblName = os.path.join(outpath,'tbl_{}_tauscan{}.txt'.format(channel, appendage))
     df_existing = get_df_from_file(tblName)
 
     if df_existing is not None:
@@ -308,20 +383,23 @@ def chi2_to_df(chi2, taus, regularisation_settings):
     # return the new df
     return df_new
 
+
+
 def get_df_from_file(p):
     '''
     Get the dataframe from the file
     '''
     df = None
     # check if the file exists and is not empty
-    if os.path.exists(p) and os.stat(p).st_size != 0:
+    # if os.path.exists(p) and os.stat(p).st_size != 0:
+    if(os.path.exists(p)):
         with open(p,'r') as f:
             df = pd.read_table(f, delim_whitespace=True)
     else:
         print "Cannot find path : ", p
     return df
 
-def chi2_to_plots(df_chi2, regularisation_settings, channel):
+def chi2_to_plots(df_chi2, regularisation_settings, chi2_cut, channel):
     '''
     Plot chi2 figures
     '''
@@ -331,8 +409,8 @@ def chi2_to_plots(df_chi2, regularisation_settings, channel):
 
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(1, 1, 1)
-    ax1.set_xlim([pow(10,-5), 1])
-    ax1.set_ylim([pow(10,-5), 1])
+    ax1.set_xlim([pow(10,-6), 1])
+    ax1.set_ylim([pow(10,-6), 1])
     for var in df_chi2.columns:
         if var == 'tau': continue
 
@@ -341,15 +419,14 @@ def chi2_to_plots(df_chi2, regularisation_settings, channel):
             df_chi2[var],
             label = variables_latex[var],
         )
-
+    plt.axhline(y=chi2_cut, color='black', linestyle='dashed')
     handles, labels = ax1.get_legend_handles_labels()
-    ax1.legend(handles, labels)
+    ax1.legend(handles, labels, loc=4)
     ax1.set_xlabel('Regularisation Parameter \ensuremath{\\tau}')
     ax1.set_ylabel('\ensuremath{1-P(\\chi^{2}|NDF)}')
 
     pltName = os.path.join(plot_outpath,'{channel}_all_tauscan.pdf'.format(channel = channel))
-    plt.show()
-    plt.savefig(pltName) 
+    fig1.savefig(pltName) 
     print "Written plots to {plot_outpath}{channel}_all_tauscan.pdf".format(plot_outpath = plot_outpath, channel = channel)
 
     return
@@ -398,7 +475,7 @@ def interpolate_tau(cutoff, df_chi2):
     return best_tau
 
 
-def plot_unfold_vs_refold(args, regularisation_settings, tau):
+def plot_data_vs_refold(args, regularisation_settings, tau):
     '''
     Plot the differences between the unfolded and refolded distributions
 
@@ -434,6 +511,7 @@ def plot_unfold_vs_refold(args, regularisation_settings, tau):
     p2.cd()
     h_ratio = regularisation_settings.h_data.Clone()
     h_ratio.Divide(regularisation_settings.h_refolded)
+    h_ratio.SetMarkerSize(0.1);
     h_ratio.Draw()
     c.SaveAs(outfile)
     c.Delete()
@@ -450,6 +528,23 @@ def print_results_to_screen(best_taus, channel):
     return
         
 
+def return_rnd_Poisson(mu):
+    '''
+    Returning a random poisson number
+            lambda^{k} . e^{-lambda}
+    Po() =  ------------------------
+                       k!
+
+    k       : events
+    lambda  : expected separation
+    '''
+    gRandom = TRandom3()
+    gRandom.SetSeed(0)
+    # Cache for quicker running
+    landau = gRandom.Landau
+    poisson = gRandom.Poisson
+    rnd_po = poisson( mu )
+    return rnd_po
 if __name__ == '__main__':
     set_root_defaults( set_batch = True, msg_ignore_level = 3001 )
     main()
