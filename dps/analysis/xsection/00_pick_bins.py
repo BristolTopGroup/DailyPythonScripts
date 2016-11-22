@@ -106,6 +106,8 @@ def main():
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], x_min=23. )
         elif variable == 'abs_lepton_eta':
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
+        elif variable == 'NJets':
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], is_NJet=True)
         else:
             best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable] )
 
@@ -209,7 +211,7 @@ def get_histograms( variable, options ):
 
 
 
-def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None ):
+def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None, is_NJet=False ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
     Step 3: Check if it is true for all other histograms. If not back to step 2
@@ -232,7 +234,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
     
     while current_bin_end < n_bins:
         # bin_End, p, s, N_reco
-        current_bin_end, _, _, _, r = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width )
+        current_bin_end, _, _, _, r = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width, is_NJet=is_NJet )
         resolutions.append(r)
         if not bin_edges:
             # if empty
@@ -264,7 +266,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
 
     return bin_edges, histogram_information
 
-def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width ): 
+def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width, is_NJet=False ): 
     current_bin_start = bin_start
     current_bin_end = bin_end
     p, s = 0, 0
@@ -313,8 +315,8 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 # The StdDev of Gaussian = Resolution.
                 # If Resolution < Bin width then we are all good
 
-                # NJets is not great at the moment for fitting guassians 
-                if (var=='NJets'):
+                # Dont use resolution information on NJets 
+                if is_NJet:
                     current_bin_end = bin_i
                     break
 
@@ -324,7 +326,6 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 if ( x_high - x_mid > res and x_mid - x_low > res ):
                     current_bin_end = bin_i
                     break
-
 
             # if it gets to the end, this is the best we can do
             current_bin_end = bin_i
