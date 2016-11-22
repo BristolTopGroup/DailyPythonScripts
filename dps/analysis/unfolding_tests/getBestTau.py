@@ -185,12 +185,14 @@ def main():
             df_chi2_smeared = get_chi2(regularisation_settings, args, smearing_test=True)
             isTauCalculator = False
         
-        # Dont need to calculate tau for given tests
-        if not isTauCalculator: sys.exit()
+        # Dont need to calculate chi2 for given tau tests
+        if not isTauCalculator: continue
 
         # Find Chi2 for each tau and write to file
         df_chi2 = get_chi2(regularisation_settings, args)
-        print df_chi2
+
+    # Dont need to calculate tau for given tests
+    if not isTauCalculator: sys.exit()
 
     # Have the dataframes now - albeit read to a file
     # Read in each one corresponding to their channel
@@ -245,11 +247,13 @@ def parse_options():
         help = "Run the tau scans for unfolded (gen) binning" ) 
     parser.add_argument( "-c", "--channel", 
         dest = "ch",
-        default = "", 
+        default = None, 
+        type = str,
         help = "Which channel to run over" ) 
     parser.add_argument( "-v", "--variable", 
         dest = "var",
-        default = "", 
+        default = None, 
+        type = str,
         help = "Which varibale to run over" ) 
     args = parser.parse_args()
 
@@ -553,7 +557,6 @@ def return_rnd_Poisson(mu):
     gRandom = TRandom3()
     gRandom.SetSeed(0)
     # Cache for quicker running
-    landau = gRandom.Landau
     poisson = gRandom.Poisson
     rnd_po = poisson( mu )
     return rnd_po
