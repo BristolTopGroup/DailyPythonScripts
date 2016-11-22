@@ -16,7 +16,7 @@
     All should come down to the function to extract the # events from TTJet
 '''
 from __future__ import division
-from optparse import OptionParser
+from argparse import ArgumentParser
 from dps.utils.logger import log
 from dps.config.xsection import XSectionConfig
 from dps.analysis.xsection.lib import closure_tests
@@ -160,50 +160,50 @@ class TTJetNormalisation(object):
         self.channel = 'combined'
 
 
-def parse_options():
-    parser = OptionParser(__doc__)
-    parser.add_option("-p", "--path", dest="path", default='data',
+def parse_arguments():
+    parser = ArgumentParser(__doc__)
+    parser.add_argument("-p", "--path", dest="path", default='data',
                       help="set output path for JSON files. Default is 'data'.")
-    parser.add_option("-i", "--input", dest="input",
+    parser.add_argument("-i", "--input", dest="input",
                       default='config/measurements/background_subtraction/',
                       help="set output path for JSON files")
-    parser.add_option("-v", "--variable", dest="variable", default='MET',
+    parser.add_argument("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (MET, HT, ST, MT, WPT). Default is MET.")
-    parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
+    parser.add_argument("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
                       help="set the centre of mass energy for analysis. Default = 13 [TeV]")
-    parser.add_option('-d', '--debug', dest="debug", action="store_true",
+    parser.add_argument('-d', '--debug', dest="debug", action="store_true",
                       help="Print the debug information")
-    parser.add_option('--closure_test', dest="closure_test", action="store_true",
+    parser.add_argument('--closure_test', dest="closure_test", action="store_true",
                       help="Perform fit on data == sum(MC) * scale factor (MC process)")
-    parser.add_option('--closure_test_type', dest="closure_test_type", default='simple',
+    parser.add_argument('--closure_test_type', dest="closure_test_type", default='simple',
                       help="Type of closure test (relative normalisation):" + '|'.join(closure_tests.keys()))
-    parser.add_option('--test', dest="test", action="store_true",
+    parser.add_argument('--test', dest="test", action="store_true",
                       help="Just run the central measurement")
-    parser.add_option('--visiblePS', dest="visiblePS", action="store_true",
+    parser.add_argument('--visiblePS', dest="visiblePS", action="store_true",
                       help="Unfold to visible phase space")
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
     # fix some of the inputs
-    if not options.path.endswith('/'):
-        options.path = options.path + '/'
-    if not options.input.endswith('/'):
-        options.input = options.input + '/'
+    if not args.path.endswith('/'):
+        args.path = args.path + '/'
+    if not args.input.endswith('/'):
+        args.input = args.input + '/'
 
-    return options, args
+    return args
 
 @mylog.trace()
 def main():
     # construct categories from files:
-    input_template = options.input + '{energy}TeV/{channel}/{variable}/{phase_space}/'
+    input_template = args.input + '{energy}TeV/{channel}/{variable}/{phase_space}/'
 
     phase_space = 'FullPS'
-    if options.visiblePS:
+    if args.visiblePS:
         phase_space = 'VisiblePS'
     results = {}
 
     for channel in ['electron', 'muon']:
         measurement_filepath = input_template.format(
-            energy = options.CoM,
+            energy = args.CoM,
             channel = channel,
             variable = variable,
             phase_space = phase_space,
@@ -242,19 +242,19 @@ def main():
 if __name__ == '__main__':
     set_root_defaults()
 
-    options, args = parse_options()
+    args = parse_arguments()
 
     # set global variables
-    debug = options.debug
+    debug = args.debug
     if debug:
         log.setLevel(log.DEBUG)
 
-    measurement_config = XSectionConfig(options.CoM)
+    measurement_config = XSectionConfig(args.CoM)
     # caching of variables for shorter access
-    variable = options.variable
-    output_path = options.path
-    if options.closure_test:
+    variable = args.variable
+    output_path = args.path
+    if args.closure_test:
         output_path += '/closure_test/'
-        output_path += options.closure_test_type + '/'
+        output_path += args.closure_test_type + '/'
 
     main()
