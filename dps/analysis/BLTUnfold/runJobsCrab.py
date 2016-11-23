@@ -8,12 +8,21 @@ jobs = [
 
         '--centreOfMassEnergy 13 -s central',
 
+        '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
+        '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
+        '--centreOfMassEnergy 13 -s central --topEtaReweighting 1',
+        '--centreOfMassEnergy 13 -s central --topEtaReweighting -1',
+
         # '--centreOfMassEnergy 13 -s amcatnlo',
         # '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s powhegherwigpp',
         # # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
-        # # ME scale weights
+        # # PS scale samples
+        '--centreOfMassEnergy 13 -s scaleup',
+        '--centreOfMassEnergy 13 -s scaledown',
+
+        # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
         '--centreOfMassEnergy 13 --muFmuRWeight 2',
         '--centreOfMassEnergy 13 --muFmuRWeight 3',
