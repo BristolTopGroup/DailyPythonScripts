@@ -1,0 +1,35 @@
+{
+	"com": 13, 
+	"channel": "electron", 
+	"variable": "HT",
+	"name": "central",
+	"samples": { 
+		"QCD": {
+			"bin_edges": [0.0, 17.0, 34.0, 49.0, 64.0, 91.5, 119.0, 151.0, 183.0, 343.0, 503.0], 
+			"branch": "HT", 
+			"input_file": "/hdfs/TopQuarkGroup/ec6821/0.0.10/atOutput/combined//QCD_Electron_tree.root", 
+			"lumi_scale": 1.0, 
+			"scale": 1.0, 
+			"tree": "TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables", 
+			"weight_branches": ["EventWeight", "PUWeight", "BJetWeight"]
+		},
+		"TTBar": {
+			"bin_edges": [0.0, 17.0, 34.0, 49.0, 64.0, 91.5, 119.0, 151.0, 183.0, 343.0, 503.0], 
+			"branch": "HT", 
+			"input_file": "/hdfs/TopQuarkGroup/ec6821/0.0.10/atOutput/combined/TTJets_PowhegPythia8_tree.root", 
+			"lumi_scale": 1.0, 
+			"scale": 1.0, 
+			"tree": "TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables", 
+			"weight_branches": ["EventWeight", "PUWeight", "BJetWeight"]
+		},
+		"data": {
+			"bin_edges": [0.0, 17.0, 34.0, 49.0, 64.0, 91.5, 119.0, 151.0, 183.0, 343.0, 503.0], 
+			"branch": "HT", 
+			"input_file": "/hdfs/TopQuarkGroup/ec6821/0.0.10/atOutput/combined/data_electron_tree.root", 
+			"lumi_scale": 1.0, 
+			"scale": 1.0, 
+			"tree": "TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables", 
+			"weight_branches": ["E1"]
+		}
+	}
+}
