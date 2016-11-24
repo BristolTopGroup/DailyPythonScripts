@@ -105,6 +105,10 @@ def main():
 		# print config
 		# Create Measurement Class using JSON
 		measurement = Measurement(config)
+        print measurement.histograms
+        # measurement.qcd_from_data()
+        measurement.calculate_normalisation()
+        measurement.save()
 
 
 def parse_arguments():
