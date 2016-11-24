@@ -174,10 +174,10 @@ def get_histograms( variable, options ):
     path_combined = '%s_combined/%s' % ( variable, histogram_name )
 
     histogram_information = [
-                {'file': config.unfolding_central_raw,
-                 'CoM': 13,
-                 'path':path_electron,
-                 'channel':'electron'},
+                # {'file': config.unfolding_central_raw,
+                #  'CoM': 13,
+                #  'path':path_electron,
+                #  'channel':'electron'},
                 {'file':config.unfolding_central_raw,
                  'CoM': 13,
                  'path':path_muon,
@@ -269,7 +269,6 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
 def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width, is_NJet=False ): 
     current_bin_start = bin_start
     current_bin_end = bin_end
-    p, s = 0, 0
     for gen_vs_reco_histogram in histograms:
         reco = asrootpy( gen_vs_reco_histogram.ProjectionX() )
         gen = asrootpy( gen_vs_reco_histogram.ProjectionY( 'py', 1 ) )
@@ -299,7 +298,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 # the histogram and taking the diagonal elements (which is what we want)
                 n_gen_and_reco = gen_vs_reco_histogram.Integral( current_bin_start + 1, bin_i , current_bin_start + 1, bin_i )
 
-            p, s = 0, 0
+            p, s, res = 0, 0, 99
             if n_reco > 0:            
                 p = round( n_gen_and_reco / n_reco, 3 )
             if n_gen > 0:
@@ -314,6 +313,7 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
                 # Find slices of X and Y between bin edges and fit them with a Gaussian. 
                 # The StdDev of Gaussian = Resolution.
                 # If Resolution < Bin width then we are all good
+                # Initiate res
 
                 # Dont use resolution information on NJets 
                 if is_NJet:
