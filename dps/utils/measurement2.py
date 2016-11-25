@@ -20,6 +20,7 @@ class Measurement():
     def __init__(self, measurement):
         self.measurement = measurement
         self.histograms = {}
+        self.cr_histograms = {}
         self.normalisation = {}
         self.variable = None
         self.com = None
@@ -28,24 +29,66 @@ class Measurement():
         self.is_normalised = False
         self.central = False
         self.samples = {}
-        self.setFromConfig()
+        self.__setFromConfig()
 
-    def setFromConfig(self):
+    def __setFromConfig(self):
         self.variable = self.measurement["variable"]
         self.com = self.measurement["com"]
         self.channel = self.measurement["channel"]
         self.samples = self.measurement["samples"]
         self.name = self.measurement["name"]
+        data_driven_qcd = self.measurement["data_driven_qcd"]
         # Is this central or a systematic?
         if "central" in self.name:
             self.central = True
 
         for sample, histogram_info in self.samples.iteritems():
-            self.histograms[sample] = self.return_histogram(histogram_info)
-            print hist_to_value_error_tuplelist(self.histograms[sample])
+            self.histograms[sample] = self.__return_histogram(histogram_info)
+            if data_driven_qcd:
+                self.cr_histograms[sample] = self.__return_histogram(histogram_info, useQCDControl=True)
+            # print hist_to_value_error_tuplelist(self.histograms[sample])
+            # print hist_to_value_error_tuplelist(self.cr_histograms[sample])
+
+        if data_driven_qcd:
+            self.__qcd_from_data()
+
         return
 
-    def return_histogram(self, d_hist_info, ignoreUnderflow=True):
+    def __qcd_from_data(self):
+        '''
+        Replace Signal region mc qcd with data driven qcd
+
+                        N MC QCD in SR      N DD QCD in CR
+        QCD_SHAPE   *   --------------  *   --------------
+                        N DD QCD in CR      N MC QCD in CR
+
+          Shape         normalise to        scale from
+                        SR mc qcd           mc qcd to dd qcd
+        '''
+        from dps.utils.hist_utilities import clean_control_region
+
+        # Get the shape of the data driven qcd in the control region
+        qcd_shape = clean_control_region(
+            self.cr_histograms,
+            subtract=['TTBar', 'V+Jets', 'SingleTop']
+        )
+
+        # Now to normalise the qcd shape to the MC in the Signal Region
+        # n_dd_cr= Number of datadriven qcd from Control Region
+        n_mc_sr = self.histograms['QCD'].Integral()
+        n_dd_cr = qcd_shape.Integral()
+        qcd_shape.Scale( n_mc_sr/n_dd_cr )
+
+        # Now to scale from mc qcd to datadriven qcd
+        n_mc_cr = self.cr_histograms['QCD'].Integral()
+        qcd_shape.Scale( n_dd_cr/n_mc_cr )
+
+        # Replace QCD histogram with datadriven one
+        self.histograms['QCD'] = qcd_shape
+        return
+
+
+    def __return_histogram(self, d_hist_info, ignoreUnderflow=True, useQCDControl=False):
         '''
         Takes basic histogram info and returns histo.
         '''
@@ -55,16 +98,25 @@ class Measurement():
 
         f = d_hist_info['input_file']
         tree = d_hist_info['tree']
+        qcd_tree = d_hist_info["qcd_control_region"]
         var = d_hist_info['branch']
         bins = d_hist_info['bin_edges']
+        lumi_scale = d_hist_info['lumi_scale']
+        scale = d_hist_info['scale']
         weights = d_hist_info['weight_branches']
         weights = "*".join(weights)
+
+        if useQCDControl: 
+            tree = qcd_tree
+
+        scale *= lumi_scale
 
         root_file = File( f )
         root_tree = root_file.Get( tree )
 
         root_histogram = Hist( bins )
         root_tree.Draw(var, weights, hist = root_histogram)
+        root_histogram.Scale(scale)
 
         # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
         if ignoreUnderflow:
@@ -73,8 +125,19 @@ class Measurement():
 
         # Fix overflow (Moves entries from overflow bin into last bin i.e. last bin not | | but |--> ) 
         root_histogram = fix_overflow(root_histogram)
+
         root_file.Close()
         return root_histogram
+
+    def __background_subtraction(self, histograms):
+        from dps.utils.hist_utilities import clean_control_region
+
+        ttjet_hist = clean_control_region(
+            histograms,
+            subtract=['QCD', 'V+Jets', 'SingleTop']
+        )
+        self.normalisation['TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
+        return
 
     def calculate_normalisation(self):
         '''
@@ -83,7 +146,7 @@ class Measurement():
         if self.is_normalised: return
 
         histograms = self.histograms
-        self.background_subtraction(histograms)
+        self.__background_subtraction(histograms)
 
         # next, let's round all numbers (they are event numbers after all)
         for sample, values in self.normalisation.items():
@@ -92,17 +155,6 @@ class Measurement():
         print self.normalisation
 
         self.is_normalised = True
-        return
-
-    def background_subtraction(self, histograms):
-        from dps.utils.hist_utilities import clean_control_region
-
-        ttjet_hist = clean_control_region(
-            histograms,
-            # subtract=['QCD', 'V+Jets', 'SingleTop']
-            subtract=['QCD']
-        )
-        self.normalisation['TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
         return
 
     def save(self):
@@ -118,122 +170,3 @@ class Measurement():
             output_folder + file_template.format(type='normalisation', channel=self.channel)
         )
         return 
-
-
-
-
-
-
-
-# def get_histograms_from_trees(
-#                               trees = [],
-#                               branch = 'var',
-#                               weightBranch = 'EventWeight',
-#                               selection = '1',
-#                               files = {},
-#                               verbose = False,
-#                               nBins = 40,
-#                               xMin = 0,
-#                               xMax = 100,
-#                               ignoreUnderflow = True,
-#                               ):
-#     histograms = {}
-#     nHistograms = 0
-
-#     # Setup selection and weight string for ttree draw
-#     weightAndSelection = '( %s ) * ( %s )' % ( weightBranch, selection )
-
-#     for sample, input_file in files.iteritems():
-#         root_file = File( input_file )
-
-#         get_tree = root_file.Get
-#         histograms[sample] = {}
-
-#         for tree in trees:
-
-#             tempTree = tree
-#             if 'data' in sample and ( 'Up' in tempTree or 'Down' in tempTree ) :
-#                 tempTree = tempTree.replace('_'+tempTree.split('_')[-1],'')
-
-#             currentTree = get_tree( tempTree )
-#             root_histogram = Hist( nBins, xMin, xMax)
-#             currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
-#             if not is_valid_histogram( root_histogram, tree, input_file):
-#                 return
-
-#             # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
-#             if ignoreUnderflow:
-#                 root_histogram.SetBinContent(0, 0)
-#                 root_histogram.SetBinError(0,0)
-
-#             gcd()
-#             nHistograms += 1
-#             histograms[sample][tree] = root_histogram.Clone()
-
-#         root_file.Close()
-#     return histograms
-
-    # @staticmethod
-    # def fromDict(d):
-    #     m = None
-    #     if d['class'] == 'dps.utils.measurement.Measurement':
-    #         m = Measurement(d['name'])
-    #     if d['class'] == 'dps.utils.measurement.Systematic':
-    #         m = Systematic(d['name'], d['type'],
-    #                        affected_samples=d['affected_samples'], scale=d['scale'])
-    #     m.setVariable(d['variable'])
-    #     m.setCentreOfMassEnergy(int(d['centre_of_mass_energy']))
-    #     m.setChannel(d['channel'])
-    #     m.setMETType(d['met_type'])
-    #     for sample, i in d['samples'].items():
-    #         if i.has_key('input'):
-    #             inp = Input(**i['input'])
-    #             m.addSample(sample, read=True, input=inp)
-    #         else:
-    #             m.addSample(sample, i['file'], i['hist'], read=True)
-    #     for shape, obj in d['shapes'].items():
-    #         m.addShapeForSample(shape, Measurement.fromDict(obj), read=True)
-    #     for norm, obj in d['norms'].items():
-    #         m.addNormForSample(
-    #             norm, Measurement.fromDict(obj), read=True)
-    #     return m
-
-
-
-
-
-
-class Systematic(Measurement):
-
-    '''
-        The Systematic class is an extension of the Measurement class.
-        It allows to implement systematic specific functionality
-        (e.g. rate systematics).
-    '''
-
-    SHAPE = 10
-    RATE = 20
-
-    @meas_log.trace()
-    def __init__(self, name,
-                 stype=SHAPE,
-                 affected_samples=[],
-                 scale=1.):
-        '''
-        Constructor
-        '''
-        Measurement.__init__(self, name)
-        self.type = stype
-
-        self.affected_samples = affected_samples
-
-        self.scale = scale
-
-    @meas_log.trace()
-    def toDict(self):
-        output = Measurement.toDict(self)
-        output['type'] = self.type
-        output['affected_samples'] = self.affected_samples
-        output['scale'] = self.scale
-
-        return output

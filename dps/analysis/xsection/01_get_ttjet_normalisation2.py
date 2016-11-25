@@ -13,13 +13,13 @@ mylog = log["01b_get_ttjet_normalisation"]
 
 class TTJetNormalisation(object):
     '''
-        Determines the normalisation for top quark pair production.
-        Unless stated otherwise all templates and (initial) normalisations 
-        are taken from simulation, except for QCD where the template is 
-        extracted from data.
+    Determines the normalisation for top quark pair production.
+    Unless stated otherwise all templates and (initial) normalisations 
+    are taken from simulation, except for QCD where the template is 
+    extracted from data.
 
-        Subtracts the known backgrounds from data to obtain TTJet template
-        and normalisation
+    Subtracts the known backgrounds from data to obtain TTJet template
+    and normalisation
     '''
     @mylog.trace()
     def __init__(self, measurement_config):
@@ -67,7 +67,7 @@ class TTJetNormalisation(object):
 
     # @mylog.trace()
     # def save(self):
-    # 	# If normalisation hasnt been calculated  - then go calculate it!
+    #   # If normalisation hasnt been calculated  - then go calculate it!
     #     if not self.have_normalisation:
     #         self.calculate_normalisation()
 
@@ -78,49 +78,50 @@ class TTJetNormalisation(object):
     #         self.normalisation,
     #         output_folder + file_template.format(type='normalisation', channel=self.channel)
     #     )
-	#     return 
+    #     return 
 
 def main():
-	'''
-	1 - Create config file reading in templates
-	2 - Create 'jobs' for each config
-	3 - Read in config
-	4 - Differentiate between Syst and Central
-	5 - Work in QCD from data
-	'''
-	results = {}
+    '''
+    1 - Create config file reading in templates
+    2 - Create 'jobs' for each config
+    3 - Read in config
+    4 - Differentiate between Syst and Central
+    5 - Work in QCD from data
+    '''
+    results = {}
 
-	# construct categories from files:
-	input_template = 'TESTING/'
+    # construct categories from files:
+    input_template = 'TESTING/'
 
-	# Create measuremewnt_filepath
-	measurement_filepath = input_template		
-	# Loop over channels
-	measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
+    # Create measuremewnt_filepath
+    measurement_filepath = input_template
+    # Loop over channels
+    measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
+    print measurement_files
 
-	for f in sorted(measurement_files):
-		print('Processing file ' + f)
-		# Read in Measurement JSON
-		config = read_data_from_JSON(f)
-		# print config
-		# Create Measurement Class using JSON
-		measurement = Measurement(config)
-        print measurement.histograms
+    for f in sorted(measurement_files):
+        print('Processing file ' + f)
+        # Read in Measurement JSON
+        config = read_data_from_JSON(f)
+        # print config
+        # Create Measurement Class using JSON
+        measurement = Measurement(config)
         # measurement.qcd_from_data()
         measurement.calculate_normalisation()
         measurement.save()
+        break
 
 
 def parse_arguments():
-	parser = ArgumentParser(__doc__)
-	parser.add_argument("-v", "--variable", dest="variable", default='HT',
-							help="set the variable to analyse (MET, HT, ST, MT, WPT). Default is MET.")
-	parser.add_argument("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
-							help="set the centre of mass energy for analysis. Default = 13 [TeV]")
-	parser.add_argument('--visiblePS', dest="visiblePS", action="store_true",
-							help="Unfold to visible phase space")
-	args = parser.parse_args()
-	return args
+    parser = ArgumentParser(__doc__)
+    parser.add_argument("-v", "--variable", dest="variable", default='HT',
+                            help="set the variable to analyse (MET, HT, ST, MT, WPT). Default is MET.")
+    parser.add_argument("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
+                            help="set the centre of mass energy for analysis. Default = 13 [TeV]")
+    parser.add_argument('--visiblePS', dest="visiblePS", action="store_true",
+                            help="Unfold to visible phase space")
+    args = parser.parse_args()
+    return args
 
 if __name__ == '__main__':
     set_root_defaults()
