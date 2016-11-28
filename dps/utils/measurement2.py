@@ -104,11 +104,14 @@ class Measurement():
         lumi_scale = d_hist_info['lumi_scale']
         scale = d_hist_info['scale']
         weights = d_hist_info['weight_branches']
-        weights = "*".join(weights)
 
         if useQCDControl: 
             tree = qcd_tree
+            # Remove the Lepton reweighting for the datadriven qcd (SF not derived for unisolated leptons)
+            weights = [x if not 'Electron' in x and not 'Muon' in x for x in weights]:
 
+        weights = "*".join(weights)
+        print weights
         scale *= lumi_scale
 
         root_file = File( f )
