@@ -161,6 +161,8 @@ def get_sample_info(options, xsec_config, sample):
         sample_info["scale"] = 1.0 + 1.0*generator_scale
     elif options['category'] == 'QCD_cross_section-':
         sample_info["scale"] = 1.0 - 1.0*generator_scale
+    # scaling will always have some non zero value
+    if sample_info["scale"] <= 0.0001: sample_info["scale"] = 0.0001
 
     # Weight branches (Shape)
     weight_branches = []
