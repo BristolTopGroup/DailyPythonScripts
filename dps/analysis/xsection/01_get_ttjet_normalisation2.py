@@ -91,26 +91,41 @@ def main():
     results = {}
 
     # construct categories from files:
-    input_template = 'TESTING/'
+    input_template = 'TESTING/config/measurements/background_subtraction/{com}TeV/{ch}/{var}/{ps}/'
 
     # Create measuremewnt_filepath
     measurement_filepath = input_template
-    # Loop over channels
-    measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
-    print measurement_files
 
-    for f in sorted(measurement_files):
-        print('Processing file ' + f)
-        # Read in Measurement JSON
-        config = read_data_from_JSON(f)
-        # print config
-        # Create Measurement Class using JSON
-        measurement = Measurement(config)
-        # measurement.qcd_from_data()
-        measurement.calculate_normalisation()
-        measurement.save()
-        break
+    if args.visiblePS:
+        ps = 'VisiblePS'
+    else:
+        ps = 'FullPS'
 
+    for ch in ['electron', 'muon']:
+        for var in measurement_config.variables:
+
+            # Create measurement_filepath
+            measurement_filepath = input_template.format(
+                com = args.CoM,
+                ch = ch,
+                var = var,
+                ps = ps,
+            )
+            print measurement_filepath
+
+            # Loop over channels
+            measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
+
+            for f in sorted(measurement_files):
+                print('Processing file ' + f)
+                # Read in Measurement JSON
+                config = read_data_from_JSON(f)
+                # print config
+                # Create Measurement Class using JSON
+                measurement = Measurement(config)
+                measurement.calculate_normalisation()
+                measurement.save()
+    return
 
 def parse_arguments():
     parser = ArgumentParser(__doc__)
