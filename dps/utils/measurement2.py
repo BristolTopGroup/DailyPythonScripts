@@ -108,10 +108,11 @@ class Measurement():
         if useQCDControl: 
             tree = qcd_tree
             # Remove the Lepton reweighting for the datadriven qcd (SF not derived for unisolated leptons)
-            weights = [x if not 'Electron' in x and not 'Muon' in x for x in weights]:
+            for weight in weights:
+                if 'Electron' in weight: weights.remove(weight)
+                elif 'Muon' in weight: weights.remove(weight)
 
         weights = "*".join(weights)
-        print weights
         scale *= lumi_scale
 
         root_file = File( f )
@@ -134,12 +135,18 @@ class Measurement():
 
     def __background_subtraction(self, histograms):
         from dps.utils.hist_utilities import clean_control_region
+        print histograms
 
         ttjet_hist = clean_control_region(
             histograms,
             subtract=['QCD', 'V+Jets', 'SingleTop']
         )
         self.normalisation['TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
+        self.normalisation['data'] = hist_to_value_error_tuplelist(histograms['data'])
+        # self.normalisation['TTBar'] = hist_to_value_error_tuplelist(histograms['TTBar'])
+        self.normalisation['SingleTop'] = hist_to_value_error_tuplelist(histograms['SingleTop'])
+        self.normalisation['V+Jets'] = hist_to_value_error_tuplelist(histograms['V+Jets'])
+        self.normalisation['QCD'] = hist_to_value_error_tuplelist(histograms['QCD'])
         return
 
     def calculate_normalisation(self):
@@ -155,21 +162,31 @@ class Measurement():
         for sample, values in self.normalisation.items():
             new_values = [(round(v, 0), round(e, 0)) for v, e in values]
             self.normalisation[sample] = new_values
-        print self.normalisation
 
         self.is_normalised = True
         return
 
-    def save(self):
+    def save(self, phase_space):
         from dps.utils.file_utilities import write_data_to_JSON
         # If normalisation hasnt been calculated  - then go calculate it!
         if not self.is_normalised: self.calculate_normalisation()
 
+        output_folder = 'TESTING/data/normalisation/background_subtraction/{com}TeV/{var}/{ps}/{cat}/'
+        output_folder = output_folder.format(
+            com = self.com,
+            var = self.variable,
+            ps  = phase_space,
+            cat = self.name,
+            )
+
         file_template = '{type}_{channel}.txt'
-        output_folder = ''
+        f = file_template.format(
+            type='normalisation', 
+            channel=self.channel
+        )
 
         write_data_to_JSON(
             self.normalisation,
-            output_folder + file_template.format(type='normalisation', channel=self.channel)
+            output_folder + f
         )
         return 
