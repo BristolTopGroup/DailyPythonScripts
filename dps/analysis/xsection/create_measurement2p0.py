@@ -87,6 +87,7 @@ def main():
                     )
 
 
+@cml.trace()
 def create_measurement(options, norm_method):
     '''
     Create the config file
@@ -107,6 +108,7 @@ def create_measurement(options, norm_method):
     return measurement
 
 
+@cml.trace()
 def get_samples(options, xsec_config):
     '''
     Return the dictionary of all sample information
@@ -118,6 +120,8 @@ def get_samples(options, xsec_config):
 
     return samples
 
+
+@cml.trace()
 def get_sample_info(options, xsec_config, sample):
     '''
     Generate each measurements information
@@ -216,24 +220,29 @@ def get_sample_info(options, xsec_config, sample):
                 weight_branches.append('ElectronEfficiencyCorrection')
     sample_info["weight_branches"] = weight_branches
 
-    # Input File
+    # Input File and Tree
+    # QCD Contorol Regions (Shape) JES and JER
     sample_info["input_file"] = get_file(xsec_config, sample, options)
+    sample_info["tree"], sample_info["qcd_control_region"] = get_tree(xsec_config, options)
     if sample != 'data':
         if options['category'] == 'JES_up':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'plusJES_tree')
+            sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JESUp')
+            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JESUp')
         elif options['category'] == 'JES_down':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'minusJES_tree')
+            sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JESDown')
+            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JESDown')
         elif options['category'] == 'JER_up':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'plusJER_tree')
+            sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JERUp')
+            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERUp')
         elif options['category'] == 'JER_down':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'minusJER_tree')
+            sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JERDown')
+            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERDown')
 
-    # Input Trees
-    # QCD Shape and QCD Control Regions
-    sample_info["tree"], sample_info["qcd_control_region"] = get_tree(xsec_config, options)
-    
     return sample_info
-
 
 
 @cml.trace()
@@ -257,6 +266,7 @@ def get_file(config, sample, options):
     }
     return files[sample]
 
+
 @cml.trace()
 def get_tree(config, options):
     '''
@@ -276,7 +286,7 @@ def get_tree(config, options):
     return tree, qcd_tree
 
 
-
+@cml.trace()
 def write_measurement(options, measurement, norm_method):
     '''
     Write the config
