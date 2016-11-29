@@ -103,6 +103,7 @@ def main():
 
     for ch in ['electron', 'muon']:
         for var in measurement_config.variables:
+            if args.variable not in var: continue
 
             # Create measurement_filepath
             measurement_filepath = input_template.format(
@@ -111,8 +112,7 @@ def main():
                 var = var,
                 ps = ps,
             )
-            print measurement_filepath
-
+            
             # Loop over channels
             measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
 
@@ -124,7 +124,8 @@ def main():
                 # Create Measurement Class using JSON
                 measurement = Measurement(config)
                 measurement.calculate_normalisation()
-                measurement.save()
+                measurement.save(ps)
+                # break
     return
 
 def parse_arguments():
