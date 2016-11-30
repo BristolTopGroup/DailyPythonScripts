@@ -3,10 +3,8 @@
 '''
 from __future__ import division
 from . import log
-import copy
-from dps.utils.file_utilities import make_folder_if_not_exists, read_data_from_JSON
-from dps.utils.input import Input
-from dps.utils.hist_utilities import hist_to_value_error_tuplelist
+from dps.utils.hist_utilities import hist_to_value_error_tuplelist, clean_control_region
+from dps.utils.file_utilities import write_data_to_JSON
 # define logger for this module
 meas_log = log["dps.utils.measurement"]
 
@@ -38,20 +36,23 @@ class Measurement():
         self.samples = self.measurement["samples"]
         self.name = self.measurement["name"]
         data_driven_qcd = self.measurement["data_driven_qcd"]
+
         # Is this central or a systematic?
         if "central" in self.name:
             self.central = True
 
+        # Retrieve histograms from files for SR and CR
         for sample, histogram_info in self.samples.iteritems():
             self.histograms[sample] = self.__return_histogram(histogram_info)
             if data_driven_qcd:
                 self.cr_histograms[sample] = self.__return_histogram(histogram_info, useQCDControl=True)
-            # print hist_to_value_error_tuplelist(self.histograms[sample])
-            # print hist_to_value_error_tuplelist(self.cr_histograms[sample])
 
+            # print(hist_to_value_error_tuplelist(self.histograms[sample]))
+            # print(hist_to_value_error_tuplelist(self.cr_histograms[sample]))
+
+        # Replace QCD MC with data-driven MC
         if data_driven_qcd:
             self.__qcd_from_data()
-
         return
 
     def __qcd_from_data(self):
@@ -65,32 +66,34 @@ class Measurement():
           Shape         normalise to        scale from
                         SR mc qcd           mc qcd to dd qcd
         '''
-        from dps.utils.hist_utilities import clean_control_region
-
         # Get the shape of the data driven qcd in the control region
         qcd_shape = clean_control_region(
             self.cr_histograms,
             subtract=['TTBar', 'V+Jets', 'SingleTop']
         )
+        # print(hist_to_value_error_tuplelist(qcd_shape))
 
         # Now to normalise the qcd shape to the MC in the Signal Region
         # n_dd_cr= Number of datadriven qcd from Control Region
         n_mc_sr = self.histograms['QCD'].Integral()
         n_dd_cr = qcd_shape.Integral()
         qcd_shape.Scale( n_mc_sr/n_dd_cr )
+        # print "scaling to normalisation in SR MC : ", n_mc_sr/n_dd_cr
 
         # Now to scale from mc qcd to datadriven qcd
         n_mc_cr = self.cr_histograms['QCD'].Integral()
         qcd_shape.Scale( n_dd_cr/n_mc_cr )
+        # print "scaling from MC to datadriven : ", n_dd_cr/n_mc_cr
+        # print "Total scaling : ", n_mc_sr/n_mc_cr
 
         # Replace QCD histogram with datadriven one
         self.histograms['QCD'] = qcd_shape
         return
 
-
     def __return_histogram(self, d_hist_info, ignoreUnderflow=True, useQCDControl=False):
         '''
         Takes basic histogram info and returns histo.
+        Maybe this can move to ROOT_utilities?
         '''
         from rootpy.io.file import File
         from rootpy.plotting import Hist
@@ -104,8 +107,10 @@ class Measurement():
         lumi_scale = d_hist_info['lumi_scale']
         scale = d_hist_info['scale']
         weights = d_hist_info['weight_branches']
+        selection = d_hist_info['selection']
 
         if useQCDControl: 
+            # replace SR tree with CR tree
             tree = qcd_tree
             # Remove the Lepton reweighting for the datadriven qcd (SF not derived for unisolated leptons)
             for weight in weights:
@@ -113,13 +118,17 @@ class Measurement():
                 elif 'Muon' in weight: weights.remove(weight)
 
         weights = "*".join(weights)
+        # Selection will return a weight 0 or 1 depending on whether event passes selection
+        weights_and_selection = '( {0} ) * ( {1} )'.format(weights, selection)
+
         scale *= lumi_scale
 
         root_file = File( f )
         root_tree = root_file.Get( tree )
 
         root_histogram = Hist( bins )
-        root_tree.Draw(var, weights, hist = root_histogram)
+        # Draw histogram of var for selection into root_histogram
+        root_tree.Draw(var, selection = weights_and_selection, hist = root_histogram)
         root_histogram.Scale(scale)
 
         # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
@@ -127,16 +136,18 @@ class Measurement():
             root_histogram.SetBinContent(0, 0)
             root_histogram.SetBinError(0,0)
 
-        # Fix overflow (Moves entries from overflow bin into last bin i.e. last bin not | | but |--> ) 
+        # Fix overflow (Moves entries from overflow bin into last bin i.e. last bin not |..| but |--> ) 
         root_histogram = fix_overflow(root_histogram)
 
         root_file.Close()
         return root_histogram
 
-    def __background_subtraction(self, histograms):
-        from dps.utils.hist_utilities import clean_control_region
-        print histograms
 
+    def __background_subtraction(self, histograms):
+        '''
+        Subtracts the backgrounds from data to give amount of ttbar in data.
+        Also adds all backgrounds to normalisation output
+        '''
         ttjet_hist = clean_control_region(
             histograms,
             subtract=['QCD', 'V+Jets', 'SingleTop']
@@ -151,6 +162,7 @@ class Measurement():
 
     def calculate_normalisation(self):
         '''
+        Calls the normalisation of the ttbar samples
         '''
         # normalisation already calculated
         if self.is_normalised: return
@@ -160,14 +172,18 @@ class Measurement():
 
         # next, let's round all numbers (they are event numbers after all)
         for sample, values in self.normalisation.items():
-            new_values = [(round(v, 0), round(e, 0)) for v, e in values]
+            new_values = [(round(v, 1), round(e, 1)) for v, e in values]
             self.normalisation[sample] = new_values
 
         self.is_normalised = True
         return
 
     def save(self, phase_space):
-        from dps.utils.file_utilities import write_data_to_JSON
+        '''
+        Saves the normalisation output into a JSON.
+        I would like to change this to a pandas Dataframe at somepoint after 
+        a few issues have been worked out
+        '''
         # If normalisation hasnt been calculated  - then go calculate it!
         if not self.is_normalised: self.calculate_normalisation()
 
