@@ -11,75 +11,6 @@ from dps.utils.ROOT_utils import set_root_defaults
 # define logger for this module
 mylog = log["01b_get_ttjet_normalisation"]
 
-class TTJetNormalisation(object):
-    '''
-    Determines the normalisation for top quark pair production.
-    Unless stated otherwise all templates and (initial) normalisations 
-    are taken from simulation, except for QCD where the template is 
-    extracted from data.
-
-    Subtracts the known backgrounds from data to obtain TTJet template
-    and normalisation
-    '''
-    @mylog.trace()
-    def __init__(self, measurement_config):
-        self.config = measurement_config
-        # self.variable = measurement.variable
-        # self.category = measurement.name
-        # self.channel = measurement.channel
-        # self.phase_space = phase_space
-
-        self.have_normalisation = False
-        # normalisation for current config
-        self.normalisation = {}
-
-    # @mylog.trace()
-    # def calculate_normalisation(self):
-    #     '''
-    #     '''
-    #     # normalisation already calculated
-    #     if self.have_normalisation: return
-
-
-    #     histograms = self.measurement.histograms
-
-    #     for sample, hist in histograms.items():
-    #         hist = fix_overflow(hist)
-    #         histograms[sample] = hist
-    #         self.normalisation[sample] = self.initial_normalisation[sample]
-
-    #     self.background_subtraction(histograms)
-
-    #     # next, let's round all numbers (they are event numbers after all)
-    #     for sample, values in self.normalisation.items():
-    #         new_values = [(round(v, 1), round(e, 1)) for v, e in values]
-    #         self.normalisation[sample] = new_values
-
-    #     self.have_normalisation = True
-
-    # @mylog.trace()
-    # def background_subtraction(self, histograms):
-    #     ttjet_hist = clean_control_region(
-    #         histograms,
-    #         subtract=['QCD', 'V+Jets', 'SingleTop']
-    #     )
-    #     self.normalisation['TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
-
-    # @mylog.trace()
-    # def save(self):
-    #   # If normalisation hasnt been calculated  - then go calculate it!
-    #     if not self.have_normalisation:
-    #         self.calculate_normalisation()
-
-    #     file_template = '{type}_{channel}.txt'
-    #     output_folder = ''
-
-    #     write_data_to_JSON(
-    #         self.normalisation,
-    #         output_folder + file_template.format(type='normalisation', channel=self.channel)
-    #     )
-    #     return 
-
 def main():
     '''
     1 - Create config file reading in templates
@@ -90,11 +21,8 @@ def main():
     '''
     results = {}
 
-    # construct categories from files:
+    # config file template
     input_template = 'TESTING/config/measurements/background_subtraction/{com}TeV/{ch}/{var}/{ps}/'
-
-    # Create measuremewnt_filepath
-    measurement_filepath = input_template
 
     if args.visiblePS:
         ps = 'VisiblePS'
@@ -113,14 +41,14 @@ def main():
                 ps = ps,
             )
             
-            # Loop over channels
+            # Get all config files in measurement_filepath
             measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
 
             for f in sorted(measurement_files):
                 print('Processing file ' + f)
                 # Read in Measurement JSON
                 config = read_data_from_JSON(f)
-                # print config
+
                 # Create Measurement Class using JSON
                 measurement = Measurement(config)
                 measurement.calculate_normalisation()
