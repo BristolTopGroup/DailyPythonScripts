@@ -13,10 +13,7 @@ from argparse import ArgumentParser
 from dps.config.xsection import XSectionConfig
 from dps.config import variable_binning
 from dps.utils.logger import log
-from copy import deepcopy
 from dps.utils.file_utilities import write_data_to_JSON
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
 
 # define logger for this module
 create_measurement_log = log["01b_get_ttjet_normalisation"]
@@ -131,6 +128,12 @@ def get_sample_info(options, xsec_config, sample):
 
     # Branch (variable) 
     sample_info["branch"] = options['variable']
+    if 'abs_lepton_eta' in options['variable']:
+        sample_info["branch"] = 'abs(lepton_eta)'
+
+    # Selections
+    sample_info["selection"] = get_selection(options['variable'])
+
     # MET Systematics
     # Only Met Variables
     if options['variable'] not in xsec_config.variables_no_met:
@@ -244,6 +247,16 @@ def get_sample_info(options, xsec_config, sample):
 
     return sample_info
 
+@cml.trace()
+def get_selection(var):
+    '''
+    Return a selection for the branch used by ROOT.Tree.Draw()
+    '''
+    sel = str(var)+" >= 0"
+    if 'abs_lepton_eta' in var:
+        sel = "abs(lepton_eta) >= 0 && abs(lepton_eta) <= 3"
+    return sel
+
 
 @cml.trace()
 def get_file(config, sample, options):
@@ -293,7 +306,6 @@ def write_measurement(options, measurement, norm_method):
     '''
     base_path = 'TESTING/config/measurements/{norm_method}/{energy}TeV/{channel}/{variable}/{phase_space}/'
     path = base_path + '{category}.json'
-    # pp.pprint(measurement)
 
     path = path.format(
         norm_method = norm_method,
