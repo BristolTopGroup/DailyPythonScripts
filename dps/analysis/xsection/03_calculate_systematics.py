@@ -23,7 +23,8 @@ from dps.utils.systematic import append_PDF_uncertainties, print_dictionary,\
     get_normalised_cross_sections, get_symmetrised_systematic_uncertainty,\
     generate_covariance_matrices,\
     get_measurement_with_total_systematic_uncertainty,\
-    write_normalised_xsection_measurement
+    write_normalised_xsection_measurement,\
+    write_systematic_xsection_measurement
 
 if __name__ == '__main__':
     '''
@@ -32,12 +33,10 @@ if __name__ == '__main__':
     3) 
     '''
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
+    parser.add_option( "-p", "--path", dest = "path", default = 'data/normalisation/background_subtraction/',
                   help = "set path to JSON files" )
     parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
                   help = "set variable to plot (MET, HT, ST, MT)" )
-    parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
-                      help = "set MET type used in the analysis of MET, ST or MT" )
     parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
                   help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
     parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
@@ -54,7 +53,6 @@ if __name__ == '__main__':
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
     met_specific_systematics = measurement_config.met_specific_systematics
-    met_type = translate_options[options.metType]
     variables_no_met = measurement_config.variables_no_met
     method = options.unfolding_method
     symmetrise_errors = options.symmetrise_errors
@@ -79,7 +77,6 @@ if __name__ == '__main__':
     # List of options to pass to systematic functions
     opts={
     'met_specific_systematics' : met_specific_systematics,
-    'met_type' : met_type,
     'variables_no_met' : variables_no_met,
     'symmetrise_errors' : symmetrise_errors,
     'path_to_JSON' : path_to_JSON,

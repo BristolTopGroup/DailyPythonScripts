@@ -38,8 +38,8 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         unfoldCfg.error_treatment = options.error_treatment
 
     h_unfolded_data = unfolding.unfold()
-    print "h_response bin edges : ", h_response
-    print "h_unfolded_data bin edges : ", h_unfolded_data
+    # print "h_response bin edges : ", h_response
+    # print "h_unfolded_data bin edges : ", h_unfolded_data
 
     del unfolding
     return hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data )
@@ -53,235 +53,204 @@ def data_covariance_matrix( data ):
         cov_matrix.SetBinContent( bin_i + 1, bin_i + 1, error * error )
     return cov_matrix
 
-def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value, visiblePS ):
-    global centre_of_mass, luminosity, ttbar_xsection, method
-    global variable, met_type, path_to_JSON, file_for_unfolding, file_for_powheg_pythia, file_for_powheg_herwig, file_for_ptreweight, files_for_pdfs
-    global file_for_powhegPythia8, file_for_madgraphMLM, file_for_amcatnlo, file_for_amcatnlo_herwig
-    # global file_for_matchingdown, file_for_matchingup
+def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, tau_value, visiblePS ):
+    global centre_of_mass, luminosity, ttbar_xsection, method, variable, path_to_JSON
+    global file_for_unfolding, file_for_ptreweight, files_for_pdfs
+    global file_for_powhegPythia8, file_for_powheg_herwig, file_for_madgraphMLM, file_for_amcatnlo, file_for_amcatnlo_herwig
     global file_for_scaledown, file_for_scaleup
     global file_for_massdown, file_for_massup
-    global ttbar_generator_systematics, ttbar_theory_systematics, pdf_uncertainties
+    global pdf_uncertainties
+    # Add in this option?
     global use_ptreweight
 
     files_for_systematics = {
-                             ttbar_theory_systematic_prefix + 'scaledown'       	:  file_for_scaledown,
-                             ttbar_theory_systematic_prefix + 'scaleup'         	:  file_for_scaleup,
-                             ttbar_theory_systematic_prefix + 'massdown'        	:  file_for_massdown,
-                             ttbar_theory_systematic_prefix + 'massup'          	:  file_for_massup,
-                             
-                             ttbar_theory_systematic_prefix + 'factorisationdown'	:  file_for_factorisationdown,
-                             ttbar_theory_systematic_prefix + 'factorisationup'   	:  file_for_factorisationup,
-                             ttbar_theory_systematic_prefix + 'renormalisationdown'	:  file_for_renormalisationdown,
-                             ttbar_theory_systematic_prefix + 'renormalisationup'  	:  file_for_renormalisationup,
-                             ttbar_theory_systematic_prefix + 'combineddown'     	:  file_for_combineddown,
-                             ttbar_theory_systematic_prefix + 'combinedup'          :  file_for_combinedup,
-                             ttbar_theory_systematic_prefix + 'alphaSdown'			:  file_for_alphaSdown,
-                             ttbar_theory_systematic_prefix + 'alphaSup'   			:  file_for_alphaSup,
+        'TTJets_scaledown'       	   :  file_for_scaledown,
+        'TTJets_scaleup'         	   :  file_for_scaleup,
+        'TTJets_massdown'        	   :  file_for_massdown,
+        'TTJets_massup'          	   :  file_for_massup,
+       
+        'TTJets_factorisationdown'	 :  file_for_factorisationdown,
+        'TTJets_factorisationup'   	 :  file_for_factorisationup,
+        'TTJets_renormalisationdown' :  file_for_renormalisationdown,
+        'TTJets_renormalisationup'   :  file_for_renormalisationup,
+        'TTJets_combineddown'     	 :  file_for_combineddown,
+        'TTJets_combinedup'          :  file_for_combinedup,
+        'TTJets_alphaSdown'			     :  file_for_alphaSdown,
+        'TTJets_alphaSup'   			   :  file_for_alphaSup,
 
-                             'JES_down'        :  file_for_jesdown,
-                             'JES_up'        :  file_for_jesup,
+        'JES_down'                   :  file_for_jesdown,
+        'JES_up'                     :  file_for_jesup,
 
-                             'JER_down'        :  file_for_jerdown,
-                             'JER_up'        :  file_for_jerup,
+        'JER_down'                   :  file_for_jerdown,
+        'JER_up'                     :  file_for_jerup,
 
-                             'BJet_up'        :  file_for_bjetup,
-                             'BJet_down'        :  file_for_bjetdown,
+        'BJet_up'                    :  file_for_bjetup,
+        'BJet_down'                  :  file_for_bjetdown,
 
-                             'LightJet_up'        :  file_for_lightjetup,
-                             'LightJet_down'        :  file_for_lightjetdown,
+        'LightJet_up'                :  file_for_lightjetup,
+        'LightJet_down'              :  file_for_lightjetdown,
 
-                             ttbar_theory_systematic_prefix + 'hadronisation'   :  file_for_powheg_herwig,
-                             ttbar_theory_systematic_prefix + 'NLOgenerator'   :  file_for_amcatnlo,
+        'TTJets_hadronisation'       :  file_for_powheg_herwig,
+        'TTJets_NLOgenerator'        :  file_for_amcatnlo,
 
-                             'ElectronEnUp' : file_for_ElectronEnUp,
-                             'ElectronEnDown' : file_for_ElectronEnDown,
-                             'MuonEnUp' : file_for_MuonEnUp,
-                             'MuonEnDown' : file_for_MuonEnDown,
-                             'TauEnUp' : file_for_TauEnUp,
-                             'TauEnDown' : file_for_TauEnDown,
-                             'UnclusteredEnUp' : file_for_UnclusteredEnUp,
-                             'UnclusteredEnDown' : file_for_UnclusteredEnDown,
+        'ElectronEnUp'               :  file_for_ElectronEnUp,
+        'ElectronEnDown'             :  file_for_ElectronEnDown,
+        'MuonEnUp'                   :  file_for_MuonEnUp,
+        'MuonEnDown'                 :  file_for_MuonEnDown,
+        'TauEnUp'                    :  file_for_TauEnUp,
+        'TauEnDown'                  :  file_for_TauEnDown,
+        'UnclusteredEnUp'            :  file_for_UnclusteredEnUp,
+        'UnclusteredEnDown'          :  file_for_UnclusteredEnDown,
 
-                             'Muon_up' : file_for_LeptonUp,
-                             'Muon_down' : file_for_LeptonDown,
-                             'Electron_up' : file_for_LeptonUp,
-                             'Electron_down' : file_for_LeptonDown,
+        'Muon_up'                    :  file_for_LeptonUp,
+        'Muon_down'                  :  file_for_LeptonDown,
+        'Electron_up'                :  file_for_LeptonUp,
+        'Electron_down'              :  file_for_LeptonDown,
 
-                             'PileUp_up' : file_for_PUUp,
-                             'PileUp_down' : file_for_PUDown,
-                             }
+        'PileUp_up'                  :  file_for_PUUp,
+        'PileUp_down'                :  file_for_PUDown,
+    }
 
     h_truth, h_measured, h_response, h_fakes = None, None, None, None
+
     # Systematics where you change the response matrix
     if category in files_for_systematics :
         print 'Doing category',category,'by changing response matrix'
-        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_systematics[category],
-                                                                              variable = variable,
-                                                                              channel = channel,
-                                                                              met_type = met_type,
-                                                                              centre_of_mass = centre_of_mass,
-                                                                              ttbar_xsection = ttbar_xsection,
-                                                                              luminosity = luminosity,
-                                                                              load_fakes = True,
-                                                                              visiblePS = visiblePS,
-                                                                              )
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
+            inputfile = files_for_systematics[category],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
     elif category in pdf_uncertainties:
-        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = files_for_pdfs[category],
-                                                                              variable = variable,
-                                                                              channel = channel,
-                                                                              met_type = met_type,
-                                                                              centre_of_mass = centre_of_mass,
-                                                                              ttbar_xsection = ttbar_xsection,
-                                                                              luminosity = luminosity,
-                                                                              load_fakes = True,
-                                                                              visiblePS = visiblePS,
-                                                                              )
+        print 'Doing category',category,'by changing response matrix'
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
+            inputfile = files_for_pdfs[category],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
     # Central and systematics where you just change input MC
     else:
-        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( inputfile = file_for_unfolding,
-                                                                              variable = variable,
-                                                                              channel = channel,
-                                                                              met_type = met_type,
-                                                                              centre_of_mass = centre_of_mass,
-                                                                              ttbar_xsection = ttbar_xsection,
-                                                                              luminosity = luminosity,
-                                                                              load_fakes = True,
-                                                                              visiblePS = visiblePS,
-                                                                              )
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
+            inputfile = file_for_unfolding,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
 
-#     central_results = hist_to_value_error_tuplelist( h_truth )
-    TTJet_fit_results_unfolded, TTJet_fit_results_withoutFakes = unfold_results( TTJet_fit_results,
-                                                category,
-                                                channel,
-                                                tau_value,
-                                                h_truth,
-                                                h_measured,
-                                                h_response,
-                                                h_fakes,
-                                                method,
-                                                visiblePS,
-                                                )
+    # Unfold current normalisation measurements  
+    TTJet_normalisation_results_unfolded, TTJet_normalisation_results_withoutFakes = unfold_results( 
+        TTJet_normalisation_results,
+        category,
+        channel,
+        tau_value,
+        h_truth,
+        h_measured,
+        h_response,
+        h_fakes,
+        method,
+        visiblePS,
+    )
+
+    # Store measurements
     normalisation_unfolded = {
-                      'TTJet_measured' : TTJet_fit_results,
-                      'TTJet_measured_withoutFakes' : TTJet_fit_results_withoutFakes,
-                      'TTJet_unfolded' : TTJet_fit_results_unfolded
-                      }
+        'TTJet_measured' : TTJet_normalisation_results,
+        'TTJet_measured_withoutFakes' : TTJet_normalisation_results_withoutFakes,
+        'TTJet_unfolded' : TTJet_normalisation_results_unfolded
+    }
 
-    #
-    # THESE ARE FOR GETTING THE HISTOGRAMS FOR COMPARING WITH UNFOLDED DATA
-    #
-
+    # Return truth of different generators for comparison to data in 04
     if category == 'central':
-        h_truth_scaledown, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_scaledown,
-                                                    variable = variable,
-                                                    channel = channel,
-                                                    met_type = met_type,
-                                                    centre_of_mass = centre_of_mass,
-                                                    ttbar_xsection = ttbar_xsection,
-                                                    luminosity = luminosity,
-                                                    load_fakes = True,
-                                                    visiblePS = visiblePS,
-                                                    )
-        h_truth_scaleup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_scaleup,
-                                                    variable = variable,
-                                                    channel = channel,
-                                                    met_type = met_type,
-                                                    centre_of_mass = centre_of_mass,
-                                                    ttbar_xsection = ttbar_xsection,
-                                                    luminosity = luminosity,
-                                                    load_fakes = True,
-                                                    visiblePS = visiblePS,
-                                                    )
-
-        h_truth_massdown, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_massdown,
-                                                    variable = variable,
-                                                    channel = channel,
-                                                    met_type = met_type,
-                                                    centre_of_mass = centre_of_mass,
-                                                    ttbar_xsection = ttbar_xsection,
-                                                    luminosity = luminosity,
-                                                    load_fakes = True,
-                                                    visiblePS = visiblePS,
-                                                    )
-        h_truth_massup, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_massup,
-                                                    variable = variable,
-                                                    channel = channel,
-                                                    met_type = met_type,
-                                                    centre_of_mass = centre_of_mass,
-                                                    ttbar_xsection = ttbar_xsection,
-                                                    luminosity = luminosity,
-                                                    load_fakes = True,
-                                                    visiblePS = visiblePS,
-                                                    )
-
-        h_truth_powhegPythia8, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powhegPythia8,
-                                                variable = variable,
-                                                channel = channel,
-                                                met_type = met_type,
-                                                centre_of_mass = centre_of_mass,
-                                                ttbar_xsection = ttbar_xsection,
-                                                luminosity = luminosity,
-                                                load_fakes = True,
-                                                visiblePS = visiblePS,
-                                                )
-
-        h_truth_amcatnlo, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_amcatnlo,
-                                                variable = variable,
-                                                channel = channel,
-                                                met_type = met_type,
-                                                centre_of_mass = centre_of_mass,
-                                                ttbar_xsection = ttbar_xsection,
-                                                luminosity = luminosity,
-                                                load_fakes = True,
-                                                visiblePS = visiblePS,
-                                                )
-
-        h_truth_madgraphMLM, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_madgraphMLM,
-                                                    variable = variable,
-                                                    channel = channel,
-                                                    met_type = met_type,
-                                                    centre_of_mass = centre_of_mass,
-                                                    ttbar_xsection = ttbar_xsection,
-                                                    luminosity = luminosity,
-                                                    load_fakes = True,
-                                                    visiblePS = visiblePS,
-                                                    )
-
-        h_truth_powheg_herwig, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_powheg_herwig,
-                                                    variable = variable,
-                                                    channel = channel,
-                                                    met_type = met_type,
-                                                    centre_of_mass = centre_of_mass,
-                                                    ttbar_xsection = ttbar_xsection,
-                                                    luminosity = luminosity,
-                                                    load_fakes = True,
-                                                    visiblePS = visiblePS,
-                                                    )
-
-        # h_truth_amcatnlo_herwig, _, _, _ = get_unfold_histogram_tuple( inputfile = file_for_amcatnlo_herwig,
-        #                                             variable = variable,
-        #                                             channel = channel,
-        #                                             met_type = met_type,
-        #                                             centre_of_mass = centre_of_mass,
-        #                                             ttbar_xsection = ttbar_xsection,
-        #                                             luminosity = luminosity,
-        #                                             load_fakes = True,
-        #                                             visiblePS = visiblePS,
-        #                                             )
+        h_truth_massdown, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = file_for_massdown,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        h_truth_massup, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = file_for_massup,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        h_truth_powhegPythia8, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = file_for_powhegPythia8,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        h_truth_amcatnlo, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = file_for_amcatnlo,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        h_truth_madgraphMLM, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = file_for_madgraphMLM,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        h_truth_powheg_herwig, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = file_for_powheg_herwig,
+            variable = variable,
+            channel = channel,
+            centre_of_mass = centre_of_mass,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        # h_truth_amcatnlo_herwig, _, _, _ = get_unfold_histogram_tuple( 
+        #     inputfile = file_for_amcatnlo_herwig,
+        #     variable = variable,
+        #     channel = channel,
+        #     centre_of_mass = centre_of_mass,
+        #     ttbar_xsection = ttbar_xsection,
+        #     luminosity = luminosity,
+        #     load_fakes = True,
+        #     visiblePS = visiblePS,
+        # )
     
-        # MADGRAPH_ptreweight_results = hist_to_value_error_tuplelist( h_truth_ptreweight )
-        # POWHEG_PYTHIA_results = hist_to_value_error_tuplelist( h_truth_POWHEG_PYTHIA )
-        # MCATNLO_results = None
         powhegPythia8_results = hist_to_value_error_tuplelist( h_truth_powhegPythia8 )
         madgraphMLM_results = hist_to_value_error_tuplelist( h_truth_madgraphMLM )
         amcatnloPythia8_results = hist_to_value_error_tuplelist( h_truth_amcatnlo )
         powheg_herwig_results = hist_to_value_error_tuplelist( h_truth_powheg_herwig )
         # amcatnlo_herwig_results = hist_to_value_error_tuplelist( h_truth_amcatnlo_herwig )
 
-        # matchingdown_results = hist_to_value_error_tuplelist( h_truth_matchingdown )
-        # matchingup_results = hist_to_value_error_tuplelist( h_truth_matchingup )
-        scaledown_results = hist_to_value_error_tuplelist( h_truth_scaledown )
-        scaleup_results = hist_to_value_error_tuplelist( h_truth_scaleup )
         massdown_results = hist_to_value_error_tuplelist( h_truth_massdown )
         massup_results = hist_to_value_error_tuplelist( h_truth_massup )
 
@@ -291,28 +260,26 @@ def get_unfolded_normalisation( TTJet_fit_results, category, channel, tau_value,
         normalisation_unfolded['powhegHerwig'] =  powheg_herwig_results
         # normalisation_unfolded['amcatnloHerwig'] =  amcatnlo_herwig_results
 
-        normalisation_unfolded['scaledown'] =  scaledown_results
-        normalisation_unfolded['scaleup'] =  scaleup_results
         normalisation_unfolded['massdown'] =  massdown_results
         normalisation_unfolded['massup'] =  massup_results
-
 
     return normalisation_unfolded
 
 def calculate_xsections( normalisation, category, channel ):
-    global variable, met_type, path_to_JSON
+    global variable, path_to_JSON
     # calculate the x-sections
     branching_ratio = 0.15
-    if channel == 'combined':
+    if 'combined' in channel:
         branching_ratio = branching_ratio * 2
     TTJet_xsection = calculate_xsection( normalisation['TTJet_measured'], luminosity, branching_ratio )  # L in pb1
     TTJet_withoutFakes_xsection = calculate_xsection( normalisation['TTJet_measured_withoutFakes'], luminosity, branching_ratio )  # L in pb1
     TTJet_xsection_unfolded = calculate_xsection( normalisation['TTJet_unfolded'], luminosity, branching_ratio )  # L in pb1
 
-    xsection_unfolded = {'TTJet_measured' : TTJet_xsection,
-                         'TTJet_measured_withoutFakes' : TTJet_withoutFakes_xsection,
-                         'TTJet_unfolded' : TTJet_xsection_unfolded,
-                         }
+    xsection_unfolded = {
+      'TTJet_measured' : TTJet_xsection,
+      'TTJet_measured_withoutFakes' : TTJet_withoutFakes_xsection,
+      'TTJet_unfolded' : TTJet_xsection_unfolded,
+    }
 
     if category == 'central':
         powhegPythia8_xsection = calculate_xsection( normalisation['powhegPythia8'], luminosity, branching_ratio )  # L in pb1
@@ -321,8 +288,6 @@ def calculate_xsections( normalisation, category, channel ):
         # amcatnloHerwig_xsection = calculate_xsection( normalisation['amcatnloHerwig'], luminosity, branching_ratio )  # L in pb1
         madgraphMLM_xsection = calculate_xsection( normalisation['madgraphMLM'], luminosity, branching_ratio )
 
-        scaledown_xsection = calculate_xsection( normalisation['scaledown'], luminosity, branching_ratio )  # L in pb1
-        scaleup_xsection = calculate_xsection( normalisation['scaleup'], luminosity, branching_ratio )  # L in pb1
         massdown_xsection = calculate_xsection( normalisation['massdown'], luminosity, branching_ratio )  # L in pb1
         massup_xsection = calculate_xsection( normalisation['massup'], luminosity, branching_ratio )  # L in pb1
 
@@ -332,22 +297,21 @@ def calculate_xsections( normalisation, category, channel ):
         xsection_unfolded['powhegHerwig'] =  powhegHerwig_xsection
         # xsection_unfolded['amcatnloHerwig'] =  amcatnloHerwig_xsection
 
-        xsection_unfolded['scaledown'] =  scaledown_xsection
-        xsection_unfolded['scaleup'] =  scaleup_xsection
         xsection_unfolded['massdown'] =  massdown_xsection
         xsection_unfolded['massup'] =  massup_xsection
+
     file_template = '{path_to_JSON}/{category}/xsection_{channel}_{method}.txt'
     filename = file_template.format(
-                path_to_JSON = path_to_JSON,
-                category = category,
-                channel = channel,
-                method = method,
-                )
-
+        path_to_JSON = path_to_JSON,
+        category = category,
+        channel = channel,
+        method = method,
+    )
     write_data_to_JSON( xsection_unfolded, filename )
+    return
 
 def calculate_normalised_xsections( normalisation, category, channel, normalise_to_one = False ):
-    global variable, met_type, path_to_JSON, phase_space
+    global variable, path_to_JSON, phase_space
 
     binWidths = None
     if phase_space == 'VisiblePS':
@@ -371,8 +335,6 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
         # amcatnloHerwig_normalised_xsection = calculate_normalised_xsection( normalisation['amcatnloHerwig'], binWidths[variable], normalise_to_one )
         madgraphMLM_normalised_xsection = calculate_normalised_xsection( normalisation['madgraphMLM'], binWidths[variable], normalise_to_one )
 
-        scaledown_normalised_xsection = calculate_normalised_xsection( normalisation['scaledown'], binWidths[variable], normalise_to_one )
-        scaleup_normalised_xsection = calculate_normalised_xsection( normalisation['scaleup'], binWidths[variable], normalise_to_one )
         massdown_normalised_xsection = calculate_normalised_xsection( normalisation['massdown'], binWidths[variable], normalise_to_one )
         massup_normalised_xsection = calculate_normalised_xsection( normalisation['massup'], binWidths[variable], normalise_to_one )
 
@@ -382,28 +344,26 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
         normalised_xsection['powhegHerwig'] = powhegHerwig_normalised_xsection
         # normalised_xsection['amcatnloHerwig'] = amcatnloHerwig_normalised_xsection
 
-        normalised_xsection['scaledown'] = scaledown_normalised_xsection
-        normalised_xsection['scaleup'] = scaleup_normalised_xsection
         normalised_xsection['massdown'] = massdown_normalised_xsection
         normalised_xsection['massup'] = massup_normalised_xsection
 
-    file_template = '{path_to_JSON}/{category}/normalised_xsection_{channel}_{method}.txt'
+    file_template = '{path_to_JSON}/{category}/xsection_normalised_{channel}_{method}.txt'
     filename = file_template.format(
-                path_to_JSON = path_to_JSON,
-                category = category,
-                channel = channel,
-                method = method,
-                )
+        path_to_JSON = path_to_JSON,
+        category = category,
+        channel = channel,
+        method = method,
+    )
 
     if normalise_to_one:
-        filename = filename.replace( 'normalised_xsection', 'normalised_to_one_xsection' )
+        filename = filename.replace( 'xsection_normalised', 'xsection_normalised_to_one' )
     write_data_to_JSON( normalised_xsection, filename )
 
 if __name__ == '__main__':
     set_root_defaults( msg_ignore_level = 3001 )
     # setup
     parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/normalisation/',
+    parser.add_option( "-p", "--path", dest = "path", default = 'data/normalisation/background_subtraction/',
                       help = "set path to JSON files" )
     parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
                       help = "set the variable to analyse (MET, HT, ST, MT)" )
@@ -436,8 +396,6 @@ if __name__ == '__main__':
     # caching of variables for faster access
     translate_options = measurement_config.translate_options
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
-    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
-    met_systematics = measurement_config.met_systematics
     
     centre_of_mass = options.CoM
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
@@ -445,20 +403,11 @@ if __name__ == '__main__':
     path_to_files = measurement_config.path_to_files
     file_for_unfolding = File( measurement_config.unfolding_central, 'read' )
 
-    # Not unfolding with other files at the moment
-    ###
-    ###    # file_for_powheg_pythia = File( measurement_config.unfolding_powheg_pythia, 'read' )
-    ###    # file_for_mcatnlo = None
-    ###    # if centre_of_mass == 8:
-    ###    #     file_for_mcatnlo = File( measurement_config.unfolding_mcatnlo, 'read' )
-    ###    # file_for_ptreweight = File ( measurement_config.unfolding_ptreweight, 'read' )
     files_for_pdfs = { 'PDFWeights_%d' % (index) : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 0, 100 ) }
 
     ###
     file_for_scaledown = File( measurement_config.unfolding_scale_down, 'read' )
     file_for_scaleup = File( measurement_config.unfolding_scale_up, 'read' )
-    ###    # file_for_matchingdown = File( measurement_config.unfolding_matching_down, 'read' )
-    ###    # file_for_matchingup = File( measurement_config.unfolding_matching_up, 'read' )
    	###
     file_for_renormalisationdown = File( measurement_config.unfolding_renormalisation_down, 'read' )
     file_for_renormalisationup = File( measurement_config.unfolding_renormalisation_up, 'read' )    
@@ -521,7 +470,6 @@ if __name__ == '__main__':
     unfoldCfg.error_treatment = options.error_treatment
     method = options.unfolding_method
     combine_before_unfolding = options.combine_before_unfolding
-    met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
     path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'.format( 
             path = options.path,
@@ -530,153 +478,130 @@ if __name__ == '__main__':
             phase_space = phase_space,
             )
 
-    categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
-    # No generator or theory systematics yet
-    ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    ### vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    # categories.extend( ttbar_generator_systematics )
-    ### categories.extend( vjets_generator_systematics )
-
-    # ### ttbar theory systematics, including pt reweightingnsystematic
-    # ttbar_theory_systematics = [] #[ ttbar_theory_systematic_prefix + 'ptreweight' ]
-    # categories.extend( ttbar_theory_systematics )
+    all_measurements = deepcopy( measurement_config.measurements_and_prefixes.keys() )
+    
+    # ### ttbar pt reweightingng systematic
+    # ttbar_theory_systematics = [] #[ 'TTJets_ptreweight' ]
+    # all_measurements.extend( ttbar_theory_systematics )
 
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 0, 100 )]
-    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics_names]
-    #  all MET uncertainties except JES as this is already included
-    met_uncertainties = [suffix for suffix in measurement_config.met_systematics_suffixes if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    
-    all_measurements = deepcopy( categories )
-    all_measurements.extend( ttbar_generator_systematics )
     all_measurements.extend( pdf_uncertainties )
-    all_measurements.extend( ['QCD_shape'] )
-    all_measurements.extend( rate_changing_systematics )
+
 
     print 'Performing unfolding for variable', variable
     for category in all_measurements:
         if run_just_central and not category == 'central':
             continue
-        # Don't need to consider MET uncertainties for HT
-        if ( variable in measurement_config.variables_no_met ) and (category in measurement_config.met_systematics_suffixes and not category in ['JES_up', 'JES_down', 'JER_up', 'JER_down']):
+        # Don't need to consider MET uncertainties for HT, abs_lepton_eta, lepton_pt and NJets
+        if ( variable in measurement_config.variables_no_met ) and (category in measurement_config.met_specific_systematics):
             continue
-        print 'Doing category ', category
         print 'Unfolding category "%s"' % category
-        # Setting up systematic MET for JES up/down samples
-        met_type = translate_options[options.metType]
 
-        if category == 'JES_up':
-            met_type += 'JetEnUp'
-        elif category == 'JES_down':
-            met_type += 'JetEnDown'
-        elif category == 'JER_up':
-            met_type += 'JetResUp'
-        elif category == 'JER_down':
-            met_type += 'JetResDown'
-        if category in met_uncertainties and not 'JES' in category and not 'JER' in category:
-            met_type += category
+        # read normalisation results from JSON
+        electron_file = path_to_JSON + '/' + category + '/normalisation_electron.txt'
+        muon_file = path_to_JSON + '/' + category + '/normalisation_muon.txt'
 
-        # read fit results from JSON
-        electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
-        muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'
+        # don't change normalisation input for ttbar generator/theory systematics and PDF weights
+        # For systematics not run in 01 [PDF and TTJet_] then use the central normalisations
+        if ttbar_theory_systematic_prefix in category or category in pdf_uncertainties:
+            electron_file = path_to_JSON + '/central/normalisation_electron.txt'
+            muon_file = path_to_JSON + '/central/normalisation_muon.txt'
+            # combined_file = path_to_JSON + '/central/normalisation_combined.txt'           
 
-        # don't change fit input for ttbar generator/theory systematics and PDF weights
-        if category in ttbar_generator_systematics or category in pdf_uncertainties:
-            # or category in ttbar_mass_systematics 
-                electron_file = path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt'
-                muon_file = path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt'
-            # combined_file = path_to_JSON + '/central/normalisation_combined_' + met_type + '.txt'    
-        elif category in rate_changing_systematics or category == 'QCD_shape':
-                electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
-                muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'            
-        elif category == 'central_TTJet':
-                electron_file = path_to_JSON + '/central/initial_normalisation_electron_' + met_type + '.txt'
-                muon_file = path_to_JSON + '/central/initial_normalisation_muon_' + met_type + '.txt'            
-        # elif category in met_uncertainties and not 'JES' in category and not 'JER' in category:
-        #         electron_file = path_to_JSON + '/'+category+'/initial_normalisation_electron_' + met_type + '.txt'
-        #         muon_file = path_to_JSON + '/'+category+'/initial_normalisation_muon_' + met_type + '.txt'
-        elif category != 'central':
-                electron_file = path_to_JSON + '/' + category + '/normalisation_electron_' + met_type + '.txt'
-                muon_file = path_to_JSON + '/' + category + '/normalisation_muon_' + met_type + '.txt'    
-
-        fit_results_electron = None
-        fit_results_muon = None
-        
+        # Read the normalisations
+        normalisation_results_electron = None
+        normalisation_results_muon = None
         if category == 'Muon_up' or category == 'Muon_down':
-            # fit_results_electron = read_data_from_JSON( path_to_JSON + '/central/initial_normalisation_electron_' + met_type + '.txt' )
-            fit_results_electron = read_data_from_JSON( path_to_JSON + '/central/normalisation_electron_' + met_type + '.txt' )
-            fit_results_muon = read_data_from_JSON( muon_file )
+            normalisation_results_electron = read_data_from_JSON( path_to_JSON + '/central/normalisation_electron.txt' )
+            normalisation_results_muon = read_data_from_JSON( muon_file )
         elif category == 'Electron_up' or category == 'Electron_down':
-            fit_results_electron = read_data_from_JSON( electron_file )
-            # fit_results_muon = read_data_from_JSON( path_to_JSON + '/central/initial_normalisation_muon_' + met_type + '.txt' )
-            fit_results_muon = read_data_from_JSON( path_to_JSON + '/central/normalisation_muon_' + met_type + '.txt' )
+            normalisation_results_electron = read_data_from_JSON( electron_file )
+            normalisation_results_muon = read_data_from_JSON( path_to_JSON + '/central/normalisation_muon.txt' )
         else:
-            fit_results_electron = read_data_from_JSON( electron_file )
-            fit_results_muon = read_data_from_JSON( muon_file )
-        fit_results_combined = combine_complex_results(fit_results_electron, fit_results_muon)
-        TTJet_fit_results_electron = fit_results_electron['TTJet']
-        TTJet_fit_results_muon = fit_results_muon['TTJet']
-        TTJet_fit_results_combined = fit_results_combined['TTJet']
+            normalisation_results_electron = read_data_from_JSON( electron_file )
+            normalisation_results_muon = read_data_from_JSON( muon_file )
 
-    #     # change back to original MET type for the unfolding
-        met_type = translate_options[options.metType]
-    #     # ad-hoc switch for PFMET -> patMETsPFlow
-    #     if met_type == 'PFMET':
-    #         met_type = 'patMETsPFlow'
+        # Combine the normalisations (beforeUnfolding)
+        normalisation_results_combined = combine_complex_results(normalisation_results_electron, normalisation_results_muon)
+        TTJet_normalisation_results_electron = normalisation_results_electron['TTJet']
+        TTJet_normalisation_results_muon = normalisation_results_muon['TTJet']
+        TTJet_normalisation_results_combined = normalisation_results_combined['TTJet']
 
         file_template = '{path_to_JSON}/{category}/unfolded_normalisation_{channel}_{method}.txt'
         filename = ''
 
-    #     # get unfolded normalisation
+        # get unfolded normalisations and xsections
         unfolded_normalisation_electron = {}
         unfolded_normalisation_muon = {}
 
+
         # Electron channel
-        unfolded_normalisation_electron = get_unfolded_normalisation( TTJet_fit_results_electron, category, 'electron', tau_value_electron, visiblePS = visiblePS )
+        channel = 'electron'
+        unfolded_normalisation_electron = get_unfolded_normalisation( 
+            TTJet_normalisation_results_electron, 
+            category, 
+            channel, 
+            tau_value_electron, 
+            visiblePS = visiblePS 
+        )
         filename = file_template.format(
-                            path_to_JSON = path_to_JSON,
-                            category = category,
-                            channel = 'electron',
-                            method = method,
-                            )
+            path_to_JSON = path_to_JSON,
+            category = category,
+            channel = channel,
+            method = method,
+        )
         write_data_to_JSON( unfolded_normalisation_electron, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, 'electron' )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, 'electron' , True )
+        calculate_xsections( unfolded_normalisation_electron, category, channel )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, channel )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, channel , True )
+
 
         # Muon channel
-        unfolded_normalisation_muon = get_unfolded_normalisation( TTJet_fit_results_muon, category, 'muon', tau_value_muon, visiblePS = visiblePS )
+        channel = 'muon'
+        unfolded_normalisation_muon = get_unfolded_normalisation( 
+            TTJet_normalisation_results_muon, 
+            category, 
+            channel, 
+            tau_value_muon, 
+            visiblePS = visiblePS 
+        )
         filename = file_template.format(
-                            path_to_JSON = path_to_JSON,
-                            category = category,
-                            channel = 'muon',
-                            method = method,
-                            )
+            path_to_JSON = path_to_JSON,
+            category = category,
+            channel = channel,
+            method = method,
+        )
         write_data_to_JSON( unfolded_normalisation_muon, filename )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, 'muon' )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, 'muon' , True )
+        calculate_xsections( unfolded_normalisation_muon, category, channel )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, channel )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, channel , True )
+
 
         # Results where the channels are combined after unfolding
         unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
         channel = 'combined'
         filename = file_template.format(
-                            path_to_JSON = path_to_JSON,
-                            category = category,
-                            channel = channel,
-                            method = method,
-                            )
+            path_to_JSON = path_to_JSON,
+            category = category,
+            channel = channel,
+            method = method,
+        )
         write_data_to_JSON( unfolded_normalisation_combined, filename )
+        # measure xsection
         calculate_xsections( unfolded_normalisation_combined, category, channel )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, channel )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, channel , True )
 
-        # Results where the channels are combined before unfolding
+
+        # Results where the channels are combined before unfolding (the 'combined in the response matrix')
         unfolded_normalisation_combinedBeforeUnfolding = get_unfolded_normalisation(
-                TTJet_fit_results_combined,
-                category,'combined', tau_value=tau_value_combined,
-                visiblePS=visiblePS,
+            TTJet_normalisation_results_combined,
+            category,
+            'combined', 
+            tau_value=tau_value_combined,
+            visiblePS=visiblePS,
         )
         channel = 'combinedBeforeUnfolding'
         filename = file_template.format(
@@ -686,6 +611,7 @@ if __name__ == '__main__':
                             method = method,
                             )
         write_data_to_JSON( unfolded_normalisation_combinedBeforeUnfolding, filename )
+        # measure xsection
         calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
         calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
         calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )

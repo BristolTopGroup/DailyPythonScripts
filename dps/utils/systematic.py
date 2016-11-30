@@ -16,7 +16,7 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     method=options['method']
     channel=options['channel']
 
-    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_with_errors.txt'
+    output_file = '{path_to_JSON}/central/xsection_normalised_{channel}_{method}_with_errors.txt'
     output_file = output_file.format(
         path_to_JSON = path_to_JSON,
         channel = channel,
@@ -40,7 +40,7 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     method=options['method']
     channel=options['channel']
 
-    output_file = '{path_to_JSON}/central/normalised_xsection_{channel}_{method}_summary_absolute.txt'
+    output_file = '{path_to_JSON}/central/xsection_normalised_{channel}_{method}_summary_absolute.txt'
     output_file = output_file.format(
         path_to_JSON = path_to_JSON,
         channel = channel,
@@ -100,7 +100,7 @@ def read_normalised_xsection_measurement(options, category):
     path_to_JSON=options['path_to_JSON']
     method=options['method']
     channel=options['channel']
-    filename = '{path}/{category}/normalised_xsection_{channel}_{method}.txt'
+    filename = '{path}/{category}/xsection_normalised_{channel}_{method}.txt'
     # Disregarding Met Uncertainties if variable does not use MET
     if (category in met_specific_systematics) and (variable in variables_no_met):
         filename = filename.format(
@@ -117,7 +117,7 @@ def read_normalised_xsection_measurement(options, category):
             method = method
         )
     normalised_xsection = read_data_from_JSON( filename )
-    measurement = normalised_xsection['TTJet_measured']#should this be measured without fakes???
+    measurement = normalised_xsection['TTJet_measured_withoutFakes']#should this be measured without fakes???
     measurement_unfolded = normalised_xsection['TTJet_unfolded']
     return measurement, measurement_unfolded  
 
