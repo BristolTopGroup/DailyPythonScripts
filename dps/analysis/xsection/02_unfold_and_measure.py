@@ -1,6 +1,6 @@
 # general
 from __future__ import division
-from optparse import OptionParser
+from optparse import ArgumentParser
 # from array import array
 # rootpy
 from rootpy.io import File
@@ -20,7 +20,7 @@ from dps.utils.ROOT_utils import set_root_defaults
 # from ROOT import TGraph, TSpline3, TUnfoldDensity
 
 def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method, visiblePS ):
-    global variable, path_to_JSON, options
+    global variable, path_to_JSON, args
     edges = reco_bin_edges_full[variable]
     if visiblePS:
         edges = reco_bin_edges_vis[variable]
@@ -35,7 +35,7 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     if not category == 'central':
         unfoldCfg.error_treatment = 0
     else:
-        unfoldCfg.error_treatment = options.error_treatment
+        unfoldCfg.error_treatment = args.error_treatment
 
     h_unfolded_data = unfolding.unfold()
 
@@ -367,45 +367,53 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
         filename = filename.replace( 'xsection_normalised', 'xsection_normalised_to_one' )
     write_data_to_JSON( normalised_xsection, filename )
 
+
+def parse_arguments():
+    parser = ArgumentParser(__doc__)
+    parser.add_argument( "-p", "--path", dest = "path", default = 'data/normalisation/background_subtraction/',
+                      help = "set path to JSON files" )
+    parser.add_argument( "-v", "--variable", dest = "variable", default = 'MET',
+                      help = "set the variable to analyse (MET, HT, ST, MT)" )
+    parser.add_argument( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
+                      help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
+    parser.add_argument( "-m", "--metType", dest = "metType", default = 'type1',
+                      help = "set MET type for analysis of MET, ST or MT" )
+    parser.add_argument( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
+                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
+    parser.add_argument( "-e", "--error_treatment", type = 'int',
+                      dest = "error_treatment", default = unfoldCfg.error_treatment,
+                      help = "parameter for error treatment in RooUnfold" )
+    parser.add_argument( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13,
+                      help = "set the centre of mass energy for analysis. Default = 13 [TeV]", type = int )
+    parser.add_argument( "-C", "--combine-before-unfolding", dest = "combine_before_unfolding", action = "store_true",
+                      help = "Perform combination of channels before unfolding" )
+    parser.add_argument( "-w", "--write-unfolding-objects", dest = "write_unfolding_objects", action = "store_true",
+                      help = "Write out the unfolding objects (D, SV)" )
+    parser.add_argument( '--test', dest = "test", action = "store_true",
+                      help = "Just run the central measurement" )
+    parser.add_argument( '--ptreweight', dest = "ptreweight", action = "store_true",
+                      help = "Use pt-reweighted MadGraph for the measurement" )
+    parser.add_argument( '--visiblePS', dest = "visiblePS", action = "store_true",
+                      help = "Unfold to visible phase space" )
+    args = parser.parse_args()
+    return args
+
+
+
+
 if __name__ == '__main__':
     set_root_defaults( msg_ignore_level = 3001 )
     # setup
-    parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/normalisation/background_subtraction/',
-                      help = "set path to JSON files" )
-    parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
-                      help = "set the variable to analyse (MET, HT, ST, MT)" )
-    parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
-                      help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
-    parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
-                      help = "set MET type for analysis of MET, ST or MT" )
-    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
-                      help = "Unfolding method: RooUnfoldSvd (default), TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
-    parser.add_option( "-e", "--error_treatment", type = 'int',
-                      dest = "error_treatment", default = unfoldCfg.error_treatment,
-                      help = "parameter for error treatment in RooUnfold" )
-    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13,
-                      help = "set the centre of mass energy for analysis. Default = 13 [TeV]", type = int )
-    parser.add_option( "-C", "--combine-before-unfolding", dest = "combine_before_unfolding", action = "store_true",
-                      help = "Perform combination of channels before unfolding" )
-    parser.add_option( "-w", "--write-unfolding-objects", dest = "write_unfolding_objects", action = "store_true",
-                      help = "Write out the unfolding objects (D, SV)" )
-    parser.add_option( '--test', dest = "test", action = "store_true",
-                      help = "Just run the central measurement" )
-    parser.add_option( '--ptreweight', dest = "ptreweight", action = "store_true",
-                      help = "Use pt-reweighted MadGraph for the measurement" )
-    parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
-                      help = "Unfold to visible phase space" )
+    args = parse_arguments()
 
-    ( options, args ) = parser.parse_args()
-    measurement_config = XSectionConfig( options.CoM )
-    run_just_central = options.test
-    use_ptreweight = options.ptreweight
+    measurement_config = XSectionConfig( args.CoM )
+    run_just_central = args.test
+    use_ptreweight = args.ptreweight
     # caching of variables for faster access
     translate_options = measurement_config.translate_options
     ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
     
-    centre_of_mass = options.CoM
+    centre_of_mass = args.CoM
     luminosity = measurement_config.luminosity * measurement_config.luminosity_scale
     ttbar_xsection = measurement_config.ttbar_xsection
     path_to_files = measurement_config.path_to_files
@@ -464,23 +472,23 @@ if __name__ == '__main__':
     # file_for_madgraphMLM = File( measurement_config.unfolding_madgraphMLM, 'read')
     file_for_powheg_herwig = File( measurement_config.unfolding_powheg_herwig, 'read' )
 
-    variable = options.variable
+    variable = args.variable
 
     tau_value_electron = measurement_config.tau_values_electron[variable]
     tau_value_muon = measurement_config.tau_values_muon[variable]
     tau_value_combined = measurement_config.tau_values_combined[variable]
 
-    visiblePS = options.visiblePS
+    visiblePS = args.visiblePS
     phase_space = 'FullPS'
     if visiblePS:
         phase_space = "VisiblePS"
 
-    unfoldCfg.error_treatment = options.error_treatment
-    method = options.unfolding_method
-    combine_before_unfolding = options.combine_before_unfolding
-    b_tag_bin = translate_options[options.bjetbin]
+    unfoldCfg.error_treatment = args.error_treatment
+    method = args.unfolding_method
+    combine_before_unfolding = args.combine_before_unfolding
+    b_tag_bin = translate_args[args.bjetbin]
     path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'.format( 
-            path = options.path,
+            path = args.path,
             com = measurement_config.centre_of_mass_energy,
             variable = variable,
             phase_space = phase_space,
