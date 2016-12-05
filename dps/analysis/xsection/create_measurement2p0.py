@@ -150,12 +150,17 @@ def get_sample_info(options, xsec_config, sample):
         sample_info["bin_edges"] = None
 
     # Lumi Scale (Rate)
-    sample_info["lumi_scale"]=1.0
+    # Normal lumi scale
+    ls = 1.0
+    # If want to rescale MC to new lumi
+    if 'data' not in sample:
+        ls = xsec_config.luminosity_scale
+    sample_info["lumi_scale"]=ls
     lumi_scale = xsec_config.rate_changing_systematics['luminosity']
     if options['category'] == 'luminosity+':
-        sample_info["lumi_scale"]= 1.0 + 1.0*lumi_scale
+        sample_info["lumi_scale"]= ls*(1+lumi_scale)
     elif options['category'] == 'luminosity-':
-        sample_info["lumi_scale"]= 1.0 - 1.0*lumi_scale
+        sample_info["lumi_scale"]= ls*(1-lumi_scale)
 
     # Generator Scale (Rate)
     sample_info["scale"]=1.0
