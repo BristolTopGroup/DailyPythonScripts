@@ -134,7 +134,7 @@ class XSectionConfig():
         self.analysis_types = {
             'electron'  :'EPlusJets',
             'muon'      :'MuPlusJets',
-            'combined'  : 'combined'
+            'combined'  : 'combined',
         }
 
         # Needed? Where?
@@ -164,8 +164,8 @@ class XSectionConfig():
 
         # self.data_file_muon = path_to_files + 'data_muon_tree.root'
         # self.data_file_electron = path_to_files + 'data_electron_tree.root'
-        self.data_file_muon = '/hdfs/TopQuarkGroup/db0268/data_muon_tree.root'
-        self.data_file_electron = '/hdfs/TopQuarkGroup/db0268/data_electron_tree.root'
+        self.data_file_muon = '/hdfs/TopQuarkGroup/db0268/0.1.2/atOutput/combined/data_muon_tree.root'
+        self.data_file_electron = '/hdfs/TopQuarkGroup/db0268/0.1.2/atOutput/combined/data_electron_tree.root'
 
         self.higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
@@ -361,39 +361,39 @@ class XSectionConfig():
             'madgraph'    
         ]
 
-        # self.rate_changing_systematics_values = {}
-        # for systematic in self.rate_changing_systematics.keys():
-        #     affected_samples = XSectionConfig.samples # all samples
-        #     if 'SingleTop' in systematic:
-        #         affected_samples = ['SingleTop']
-        #     if 'TTJet' in systematic:
-        #         affected_samples = ['TTJet'] 
-        #     if 'VJets' in systematic:
-        #         affected_samples = ['V+Jets']
-        #     if 'QCD' in systematic:
-        #         affected_samples = ['QCD']
+        self.rate_changing_systematics_values = {}
+        for systematic in self.rate_changing_systematics.keys():
+            affected_samples = XSectionConfig.samples # all samples
+            if 'SingleTop' in systematic:
+                affected_samples = ['SingleTop']
+            if 'TTJet' in systematic:
+                affected_samples = ['TTJet'] 
+            if 'VJets' in systematic:
+                affected_samples = ['V+Jets']
+            if 'QCD' in systematic:
+                affected_samples = ['QCD']
 
-        #     sp = dps.utils.measurement.Systematic( 
-        #                 systematic + '+',
-        #                 # systematic + '_up',
-        #                 stype = dps.utils.measurement.Systematic.RATE,
-        #                 affected_samples = affected_samples,
-        #                 scale = 1 + self.rate_changing_systematics[systematic],
-        #                 )
-        #     scale = 1 - self.rate_changing_systematics[systematic]
-        #     if scale <= 0: scale = 10e-5
+            sp = dps.utils.measurement.Systematic( 
+                        systematic + '+',
+                        # systematic + '_up',
+                        stype = dps.utils.measurement.Systematic.RATE,
+                        affected_samples = affected_samples,
+                        scale = 1 + self.rate_changing_systematics[systematic],
+                        )
+            scale = 1 - self.rate_changing_systematics[systematic]
+            if scale <= 0: scale = 10e-5
 
-        #     sm = dps.utils.measurement.Systematic( 
-        #                 systematic + '-',
-        #                 # systematic + '_down',
-        #                 stype = dps.utils.measurement.Systematic.RATE,
-        #                 affected_samples = affected_samples,
-        #                 scale = scale,
-        #                 )
-        #     self.rate_changing_systematics_values[sp.name] = sp
-        #     self.rate_changing_systematics_values[sm.name] = sm
+            sm = dps.utils.measurement.Systematic( 
+                        systematic + '-',
+                        # systematic + '_down',
+                        stype = dps.utils.measurement.Systematic.RATE,
+                        affected_samples = affected_samples,
+                        scale = scale,
+                        )
+            self.rate_changing_systematics_values[sp.name] = sp
+            self.rate_changing_systematics_values[sm.name] = sm
 
-        # self.rate_changing_systematics_names = self.rate_changing_systematics_values.keys()
+        self.rate_changing_systematics_names = self.rate_changing_systematics_values.keys()
 
         self.topMass_systematics = [ 'TTJets_massup', 'TTJets_massdown']
 
@@ -404,6 +404,7 @@ class XSectionConfig():
         ]
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
+        # Needed?
         self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
         self.generator_systematic_vjets_templates = {}
         for systematic in self.generator_systematics:
@@ -417,21 +418,21 @@ class XSectionConfig():
         generator_mcsamples = self.generator_mcsamples
 
         # Used in 01
-        self.general_trees =            {category: path_to_files + category + '/%s' + middle + prefix + '.root' 
-            for category, prefix in categories_and_prefixes.iteritems()}
-        self.ttbar_trees =              {category: path_to_files + 'TTJets_PowhegPythia8_tree.root' 
-            for category in self.normalisation_systematics}
-        self.SingleTop_trees =          {category: path_to_files + 'SingleTop_tree.root' 
-            for category in self.normalisation_systematics}
-        self.VJets_trees =              {category: path_to_files + 'VJets_tree.root' 
-            for category in self.normalisation_systematics}
-        self.electron_QCD_MC_trees =    {category: path_to_files + 'QCD_Electron_tree.root' 
-            for category in self.normalisation_systematics}
-        self.muon_QCD_MC_trees =        {category: path_to_files + 'QCD_Muon_tree.root' 
-            for category in self.normalisation_systematics}
-        self.ttbar_generator_trees =    {category: path_to_files + 'TTJets_' + category + '_tree.root' 
-            for category in generator_mcsamples}
-        
+        self.general_trees          = {
+            category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
+        self.ttbar_trees            = {
+            category: path_to_files + 'TTJets_PowhegPythia8_tree.root' for category in self.normalisation_systematics}
+        self.SingleTop_trees        = {
+            category: path_to_files + 'SingleTop_tree.root' for category in self.normalisation_systematics}
+        self.VJets_trees            = {
+            category: path_to_files + 'VJets_tree.root' for category in self.normalisation_systematics}
+        self.electron_QCD_MC_trees  = {
+            category: path_to_files + 'QCD_Electron_tree.root' for category in self.normalisation_systematics}
+        self.muon_QCD_MC_trees      = {
+            category: path_to_files + 'QCD_Muon_tree.root' for category in self.normalisation_systematics}
+        self.ttbar_generator_trees  = {
+            category: path_to_files + 'TTJets_' + category + '_tree.root' for category in generator_mcsamples}
+
         # Need with generator_mcsamples????
         self.ttbar_amc_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_trees = path_to_files + '/TTJets_madgraph_tree.root'
@@ -446,6 +447,7 @@ class XSectionConfig():
         self.ttbar_jesdown_trees = path_to_files + '/TTJets_PowhegPythia8_minusJES_tree.root'
         self.ttbar_jerup_trees = path_to_files + '/TTJets_PowhegPythia8_plusJER_tree.root'
         self.ttbar_jerdown_trees = path_to_files + '/TTJets_PowhegPythia8_minusJER_tree.root'
+
 
         # Needed?
         self.data_muon_category_templates = {
@@ -631,7 +633,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 36459
+        self.new_luminosity = 36260
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
