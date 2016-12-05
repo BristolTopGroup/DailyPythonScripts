@@ -4,7 +4,7 @@
 from __future__ import division
 from . import log
 from dps.utils.hist_utilities import hist_to_value_error_tuplelist, clean_control_region
-from dps.utils.file_utilities import write_data_to_JSON
+
 # define logger for this module
 meas_log = log["dps.utils.measurement"]
 
@@ -16,25 +16,25 @@ class Measurement():
     '''
     @meas_log.trace()
     def __init__(self, measurement):
-        self.measurement = measurement
-        self.histograms = {}
-        self.cr_histograms = {}
-        self.normalisation = {}
-        self.variable = None
-        self.com = None
-        self.channel = None
-        self.name = None
-        self.is_normalised = False
-        self.central = False
-        self.samples = {}
+        self.measurement    = measurement
+        self.histograms     = {}
+        self.cr_histograms  = {}
+        self.normalisation  = {}
+        self.variable       = None
+        self.com            = None
+        self.channel        = None
+        self.name           = None
+        self.is_normalised  = False
+        self.central        = False
+        self.samples        = {}
         self.__setFromConfig()
 
     def __setFromConfig(self):
-        self.variable = self.measurement["variable"]
-        self.com = self.measurement["com"]
-        self.channel = self.measurement["channel"]
-        self.samples = self.measurement["samples"]
-        self.name = self.measurement["name"]
+        self.variable   = self.measurement["variable"]
+        self.com        = self.measurement["com"]
+        self.channel    = self.measurement["channel"]
+        self.samples    = self.measurement["samples"]
+        self.name       = self.measurement["name"]
         data_driven_qcd = self.measurement["data_driven_qcd"]
 
         # Is this central or a systematic?
@@ -99,15 +99,15 @@ class Measurement():
         from rootpy.plotting import Hist
         from dps.utils.hist_utilities import fix_overflow
 
-        f = d_hist_info['input_file']
-        tree = d_hist_info['tree']
-        qcd_tree = d_hist_info["qcd_control_region"]
-        var = d_hist_info['branch']
-        bins = d_hist_info['bin_edges']
-        lumi_scale = d_hist_info['lumi_scale']
-        scale = d_hist_info['scale']
-        weights = d_hist_info['weight_branches']
-        selection = d_hist_info['selection']
+        f           = d_hist_info['input_file']
+        tree        = d_hist_info['tree']
+        qcd_tree    = d_hist_info["qcd_control_region"]
+        var         = d_hist_info['branch']
+        bins        = d_hist_info['bin_edges']
+        lumi_scale  = d_hist_info['lumi_scale']
+        scale       = d_hist_info['scale']
+        weights     = d_hist_info['weight_branches']
+        selection   = d_hist_info['selection']
 
         if useQCDControl: 
             # replace SR tree with CR tree
@@ -115,7 +115,7 @@ class Measurement():
             # Remove the Lepton reweighting for the datadriven qcd (SF not derived for unisolated leptons)
             for weight in weights:
                 if 'Electron' in weight: weights.remove(weight)
-                elif 'Muon' in weight: weights.remove(weight)
+                elif 'Muon'   in weight: weights.remove(weight)
 
         weights = "*".join(weights)
         # Selection will return a weight 0 or 1 depending on whether event passes selection
@@ -152,12 +152,12 @@ class Measurement():
             histograms,
             subtract=['QCD', 'V+Jets', 'SingleTop']
         )
-        self.normalisation['TTJet'] = hist_to_value_error_tuplelist(ttjet_hist)
-        self.normalisation['data'] = hist_to_value_error_tuplelist(histograms['data'])
-        # self.normalisation['TTBar'] = hist_to_value_error_tuplelist(histograms['TTBar'])
+        self.normalisation['TTJet']     = hist_to_value_error_tuplelist(ttjet_hist)
+        self.normalisation['data']      = hist_to_value_error_tuplelist(histograms['data'])
+        # self.normalisation['TTBar']   = hist_to_value_error_tuplelist(histograms['TTBar'])
         self.normalisation['SingleTop'] = hist_to_value_error_tuplelist(histograms['SingleTop'])
-        self.normalisation['V+Jets'] = hist_to_value_error_tuplelist(histograms['V+Jets'])
-        self.normalisation['QCD'] = hist_to_value_error_tuplelist(histograms['QCD'])
+        self.normalisation['V+Jets']    = hist_to_value_error_tuplelist(histograms['V+Jets'])
+        self.normalisation['QCD']       = hist_to_value_error_tuplelist(histograms['QCD'])
         return
 
     def calculate_normalisation(self):
@@ -174,7 +174,6 @@ class Measurement():
         for sample, values in self.normalisation.items():
             new_values = [(round(v, 1), round(e, 1)) for v, e in values]
             self.normalisation[sample] = new_values
-
         self.is_normalised = True
         return
 
@@ -184,6 +183,8 @@ class Measurement():
         I would like to change this to a pandas Dataframe at somepoint after 
         a few issues have been worked out
         '''
+        from dps.utils.pandas_utilities import write_normalisation_to_df
+        from dps.utils.file_utilities import make_folder_if_not_exists
         # If normalisation hasnt been calculated  - then go calculate it!
         if not self.is_normalised: self.calculate_normalisation()
 
@@ -194,6 +195,7 @@ class Measurement():
             ps  = phase_space,
             cat = self.name,
             )
+        make_folder_if_not_exists(output_folder)
 
         file_template = '{type}_{channel}.txt'
         f = file_template.format(
@@ -201,8 +203,23 @@ class Measurement():
             channel=self.channel
         )
 
-        write_data_to_JSON(
+        write_normalisation_to_df(
             self.normalisation,
             output_folder + f
         )
         return 
+
+    def combine(self, other):
+        '''
+        Combines the electron and muon measurements
+        '''
+        from dps.utils.Calculation import combine_complex_results
+        if not self.is_normalised or not other.is_normalised:
+            mylog.warn(
+                'One of the TTJetNormalisations does not have a normalisation, aborting.')
+            return
+
+        self.normalisation = combine_complex_results(
+            self.normalisation, other.normalisation)
+        self.channel = 'combined'
+        return

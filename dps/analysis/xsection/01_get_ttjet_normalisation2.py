@@ -2,9 +2,7 @@ from __future__ import division
 from argparse import ArgumentParser
 from dps.utils.logger import log
 from dps.config.xsection import XSectionConfig
-from dps.utils.file_utilities import write_data_to_JSON, get_files_in_path, make_folder_if_not_exists, read_data_from_JSON
-from dps.utils.hist_utilities import clean_control_region, hist_to_value_error_tuplelist, fix_overflow
-from dps.utils.Calculation import combine_complex_results
+from dps.utils.file_utilities import get_files_in_path, read_data_from_JSON
 from dps.utils.measurement2 import Measurement
 from dps.utils.ROOT_utils import set_root_defaults
 
@@ -13,11 +11,9 @@ mylog = log["01b_get_ttjet_normalisation"]
 
 def main():
     '''
-    1 - Create config file reading in templates
-    2 - Create 'jobs' for each config
-    3 - Read in config
-    4 - Differentiate between Syst and Central
-    5 - Work in QCD from data
+    1 - Read Config file for normalisation measurement
+    2 - Run measurement
+    3 - Combine measurement before unfolding
     '''
     results = {}
 
@@ -45,15 +41,28 @@ def main():
             measurement_files = get_files_in_path(measurement_filepath, file_ending='.json')
 
             for f in sorted(measurement_files):
+                if args.test:
+                    if 'central' not in f: continue
                 print('Processing file ' + f)
                 # Read in Measurement JSON
                 config = read_data_from_JSON(f)
 
-                # Create Measurement Class using JSON
-                measurement = Measurement(config)
-                measurement.calculate_normalisation()
-                measurement.save(ps)
+                if 'electron' in ch:
+                    # Create Measurement Class using JSON
+                    electron_measurement = Measurement(config)
+                    electron_measurement.calculate_normalisation()
+                    electron_measurement.save(ps)
+                elif 'muon' in ch:
+                    # Create Measurement Class using JSON
+                    muon_measurement = Measurement(config)
+                    muon_measurement.calculate_normalisation()
+                    muon_measurement.save(ps)
                 # break
+
+    # Combining the channels before unfolding
+    combined_measurement = electron_measurement
+    combined_measurement.combine(muon_measurement)
+    combined_measurement.save(ps)
     return
 
 def parse_arguments():
@@ -63,6 +72,8 @@ def parse_arguments():
     parser.add_argument("-c", "--centre-of-mass-energy", dest="CoM", default=13, type=int,
                             help="set the centre of mass energy for analysis. Default = 13 [TeV]")
     parser.add_argument('--visiblePS', dest="visiblePS", action="store_true",
+                            help="Unfold to visible phase space")
+    parser.add_argument('--test', dest="test", action="store_true",
                             help="Unfold to visible phase space")
     args = parser.parse_args()
     return args

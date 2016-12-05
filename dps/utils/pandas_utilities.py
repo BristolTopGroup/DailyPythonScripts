@@ -20,13 +20,13 @@ def list_to_series(l):
  	s = pd.Series( l )
  	return s
 
-def df_to_file(filename, df):
+def df_to_file(filename, df, index=True):
 	'''
 	Save a dataframe to an output text file
 	Nicely human readable
 	'''
 	with open(filename,'w') as f:
-		df.to_string(f, index=True)
+		df.to_string(f, index=index)
 		f.write('\n')
 		print('DataFrame written to {}'.format(f))
 		f.close()
@@ -65,3 +65,23 @@ def divide_by_series(s1, s2):
 	'''
 	s = s1.div(s2)
 	return s
+
+def write_normalisation_to_df( d_norm, filename ):
+	'''
+	Writing the output of 01 to dataframe
+	'''
+	# First create the dataframe
+	df = dict_to_df(d_norm)
+
+	# pandas really cant handle reading in tuples. Have to split here
+	for col in df.columns:
+	    df[[col, col+'_Unc']] = df[col].apply(pd.Series)
+	# Make columns alphabetical for easy reading
+	l=df.columns.tolist()
+	l.sort()
+	print l
+	df = df[l]
+
+	# Write dataframe
+	df_to_file(filename, df, index=False)
+	return
