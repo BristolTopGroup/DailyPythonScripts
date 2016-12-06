@@ -183,7 +183,7 @@ class Measurement():
         I would like to change this to a pandas Dataframe at somepoint after 
         a few issues have been worked out
         '''
-        from dps.utils.pandas_utilities import write_normalisation_to_df
+        from dps.utils.pandas_utilities import write_tuple_to_df
         from dps.utils.file_utilities import make_folder_if_not_exists
         # If normalisation hasnt been calculated  - then go calculate it!
         if not self.is_normalised: self.calculate_normalisation()
@@ -203,7 +203,7 @@ class Measurement():
             channel=self.channel
         )
 
-        write_normalisation_to_df(
+        write_tuple_to_df(
             self.normalisation,
             output_folder + f
         )
