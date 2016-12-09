@@ -1,7 +1,7 @@
 from __future__ import division, print_function
-from dps.utils.file_utilities import read_data_from_JSON, write_data_to_JSON, deprecated
+from dps.utils.file_utilities import write_data_to_JSON, deprecated
 from dps.utils.Calculation import combine_errors_in_quadrature
-from dps.utils.pandas_utilities import dict_to_df, list_to_series, df_to_file, divide_by_series
+from dps.utils.pandas_utilities import read_tuple_from_file, dict_to_df, list_to_series, df_to_file, divide_by_series
 from copy import deepcopy
 from math import sqrt
 import numpy as np
@@ -12,13 +12,13 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     [Central Value, Lower Systemtic, Upper Systematic] to a json. Different combinations of 
     systematic uncertainty are stored as different json by appending different 'summary'
     '''
-    path_to_JSON=options['path_to_JSON']
+    path_to_DF=options['path_to_DF']
     method=options['method']
     channel=options['channel']
 
-    output_file = '{path_to_JSON}/central/xsection_normalised_{channel}_{method}_with_errors.txt'
+    output_file = '{path_to_DF}/central/xsection_normalised_{channel}_{method}_with_errors.txt'
     output_file = output_file.format(
-        path_to_JSON = path_to_JSON,
+        path_to_DF = path_to_DF,
         channel = channel,
         method = method,
     )
@@ -36,13 +36,13 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     '''
     Write systematics to a df.
     '''
-    path_to_JSON=options['path_to_JSON']
+    path_to_DF=options['path_to_DF']
     method=options['method']
     channel=options['channel']
 
-    output_file = '{path_to_JSON}/central/xsection_normalised_{channel}_{method}_summary_absolute.txt'
+    output_file = '{path_to_DF}/central/xsection_normalised_{channel}_{method}_summary_absolute.txt'
     output_file = output_file.format(
-        path_to_JSON = path_to_JSON,
+        path_to_DF = path_to_DF,
         channel = channel,
         method = method,
     )
@@ -66,7 +66,7 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     d_abs = dict_to_df(all_uncertainties)
     df_to_file(output_file, d_abs)
 
-    # Create Relative Paths
+    # Create Relative Uncertainties
     output_file = output_file.replace('absolute', 'relative')
     for uncertainty, vals in all_uncertainties.iteritems():
         if uncertainty == 'central': continue
@@ -97,27 +97,27 @@ def read_normalised_xsection_measurement(options, category):
     variable=options['variable']
     variables_no_met=options['variables_no_met']
     met_specific_systematics=options['met_specific_systematics']
-    path_to_JSON=options['path_to_JSON']
+    path_to_DF=options['path_to_DF']
     method=options['method']
     channel=options['channel']
     filename = '{path}/{category}/xsection_normalised_{channel}_{method}.txt'
     # Disregarding Met Uncertainties if variable does not use MET
     if (category in met_specific_systematics) and (variable in variables_no_met):
         filename = filename.format(
-            path = path_to_JSON,
+            path = path_to_DF,
             channel = channel,
             category = 'central',
             method = method,
         )
     else:
         filename = filename.format(
-            path = path_to_JSON,
+            path = path_to_DF,
             channel = channel,
             category = category,
             method = method
         )
-    normalised_xsection = read_data_from_JSON( filename )
-    measurement = normalised_xsection['TTJet_measured_withoutFakes']#should this be measured without fakes???
+    normalised_xsection = read_tuple_from_file( filename )
+    measurement = normalised_xsection['TTJet_measured_withoutFakes']
     measurement_unfolded = normalised_xsection['TTJet_unfolded']
     return measurement, measurement_unfolded  
 
@@ -288,7 +288,7 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     return pdf_sym  
 
 
-def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
+def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
     '''
     Returns the symmetrised uncertainties on the normalised cross sections.
 
@@ -511,6 +511,7 @@ def make_covariance_plot( options, systematic, matrix, label='Covariance' ):
     Saves to plots/covariance_matrices/{PhaseSpace}/{Channel}/{Variable}/
     '''
     from dps.config.variable_binning import bin_edges_vis
+    from dps.utils.file_utilities import make_folder_if_not_exists
     from ROOT import TH2F, TCanvas, TPad, gROOT, gStyle
     from array import array
     gROOT.SetBatch(True)
@@ -518,7 +519,16 @@ def make_covariance_plot( options, systematic, matrix, label='Covariance' ):
 
     variable = options['variable']
     channel = options['channel']
-    covariance_matrix_output_path = options['covariance_matrix_output_path']
+    phase_space = options['phase_space']
+
+    # Output folder of covariance matrices
+    covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{channel}/{variable}/'
+    covariance_matrix_output_path = covariance_matrix_output_path.format(
+        variable = variable,
+        channel = channel,
+        phase_space = phase_space,
+        )
+    make_folder_if_not_exists(covariance_matrix_output_path)
 
     x_binning = array ( 'f' , bin_edges_vis[variable] )
     y_binning = array ( 'f', bin_edges_vis[variable] )
