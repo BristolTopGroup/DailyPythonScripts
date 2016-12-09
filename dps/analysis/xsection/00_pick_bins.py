@@ -45,7 +45,7 @@ from rootpy.io import File
 from dps.utils.Calculation import calculate_purities, calculate_stabilities
 from dps.utils.hist_utilities import rebin_2d
 from dps.config.xsection import XSectionConfig
-from optparse import OptionParser
+from argparse import ArgumentParser
 from dps.config.variable_binning import bin_edges_full, minimum_bin_width
 from dps.utils.file_utilities import write_data_to_JSON
 from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray, TColor, TLegend
@@ -59,15 +59,23 @@ def main():
     Step 3: Check if it is true for all other histograms. If not back to step 2
     Step 4: Repeat step 2 & 3 until no mo bins can be created
     '''
-
-    parser = OptionParser()
-    parser.add_option( '-v', dest = "visiblePhaseSpace", action = "store_true",
-                      help = "Consider visible phase space or not" )
-    parser.add_option( '-c', dest = "combined", action = "store_true",
-                      help = "Combine channels" )
-    parser.add_option( '-r', dest = "redo_resolution", action = "store_true",
-                      help = "Recalculate the resolution plots" )
-    ( options, _ ) = parser.parse_args()
+    parser = ArgumentParser()
+    parser.add_argument( '-v', 
+        dest    = "visiblePhaseSpace", 
+        action  = "store_true",
+        help    = "Consider visible phase space or not" 
+    )
+    parser.add_argument( '-c', 
+        dest    = "combined", 
+        action  = "store_true",
+        help    = "Combine channels" 
+    )
+    parser.add_argument( '-r', 
+        dest    = "redo_resolution", 
+        action  = "store_true",
+        help    = "Recalculate the resolution plots" 
+    )
+    args = parser.parse_args()
 
     measurement_config = XSectionConfig(13)
 
@@ -89,9 +97,9 @@ def main():
         variableToUse = variable
         if 'Rap' in variable:
             variableToUse = 'abs_%s' % variable
-        histogram_information = get_histograms( variableToUse, options )
+        histogram_information = get_histograms( variableToUse, args )
 
-        if options.redo_resolution:
+        if args.redo_resolution:
             rs.generate_resolution_plots(histogram_information, variable)
 
         if variable == 'HT':
@@ -145,7 +153,7 @@ def main():
             outputInfo['N'] = info['N']
             outputInfo['res'] = info['res']
             outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_FullPS.txt' % ( variable, info['channel'] )
-            if options.visiblePhaseSpace:
+            if args.visiblePhaseSpace:
                 outputJsonFile = 'unfolding/13TeV/binningInfo_%s_%s_VisiblePS.txt' % ( variable, info['channel'] )
             write_data_to_JSON( outputInfo, outputJsonFile )
         for key in outputInfo:
@@ -157,14 +165,14 @@ def main():
     for variable in bin_choices:
         print('\''+variable+'\' : '+str(bin_choices[variable])+',')
 
-def get_histograms( variable, options ):
+def get_histograms( variable, args ):
     config = XSectionConfig( 13 )
 
     path_electron = ''
     path_muon = ''
     path_combined = ''    
     histogram_name = ''
-    if options.visiblePhaseSpace:
+    if args.visiblePhaseSpace:
         histogram_name = 'responseVis_without_fakes'
     else :
         histogram_name = 'response_without_fakes'
@@ -184,7 +192,7 @@ def get_histograms( variable, options ):
                  'channel':'muon'},
                 ]
     
-    if options.combined:
+    if args.combined:
         histogram_information = [
                     {'file': config.unfolding_central_raw,
                      'CoM': 13,
