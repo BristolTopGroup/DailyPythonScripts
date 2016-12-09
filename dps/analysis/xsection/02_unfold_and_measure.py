@@ -510,7 +510,7 @@ if __name__ == '__main__':
     )
 
     # Core Systematics
-    all_measurements    = deepcopy( measurement_config.measurements_and_prefixes.keys() )
+    all_measurements    = deepcopy( measurement_config.measurements )
     # Adding PDF Systematics
     pdf_uncertainties   = ['PDFWeights_%d' % index for index in range( 0, 100 )]
     all_measurements.extend( pdf_uncertainties )

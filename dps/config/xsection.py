@@ -169,87 +169,39 @@ class XSectionConfig():
 
         self.higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
-        self.categories_and_prefixes = {
-            'central':'',
-            'Electron_down':'ElectronDown',
-            'Electron_up':'ElectronUp',
-            'Muon_down':'MuonDown',
-            'Muon_up':'MuonUp',
-            'BJet_down':'BJetDown',
-            'BJet_up':'BJetUp',
-            'LightJet_down':'LightJetDown',
-            'LightJet_up':'LightJetUp',
-            'JES_down':'_JESDown',
-            'JES_up':'_JESUp',
-            # 'JES_down_alphaCorr':'_JESDown_alphaCorr',
-            # 'JES_up_alphaCorr':'_JESUp_alphaCorr',
-            'JER_down':'_JERDown',
-            'JER_up':'_JERUp',
+        # self.categories_and_prefixes = {
+        #     'central':'',
+        #     'Electron_down':'ElectronDown',
+        #     'Electron_up':'ElectronUp',
+        #     'Muon_down':'MuonDown',
+        #     'Muon_up':'MuonUp',
+        #     'BJet_down':'BJetDown',
+        #     'BJet_up':'BJetUp',
+        #     'LightJet_down':'LightJetDown',
+        #     'LightJet_up':'LightJetUp',
+        #     'JES_down':'_JESDown',
+        #     'JES_up':'_JESUp',
+        #     # 'JES_down_alphaCorr':'_JESDown_alphaCorr',
+        #     # 'JES_up_alphaCorr':'_JESUp_alphaCorr',
+        #     'JER_down':'_JERDown',
+        #     'JER_up':'_JERUp',
 
-            'PileUp_up' : '',
-            'PileUp_down' : '',
+        #     'PileUp_up' : '',
+        #     'PileUp_down' : '',
 
-            # Other MET uncertainties not already included
-            'ElectronEnUp' : '',
-            'ElectronEnDown' : '',
-            'MuonEnUp' : '',
-            'MuonEnDown' : '',
-            'TauEnUp' : '',
-            'TauEnDown' : '',
-            'UnclusteredEnUp' : '',
-            'UnclusteredEnDown' : '',
-        }
-
-        self.measurements_and_prefixes = {
-            'central' : '',
-            'JER_up' : '',
-            'JER_down' : '',
-            'JES_up' : '',
-            'JES_down' : '',
-            'ElectronEnUp' : '',
-            'ElectronEnDown' : '',
-            'MuonEnUp' : '',
-            'MuonEnDown' : '',
-            'TauEnUp' : '',
-            'TauEnDown' : '',
-            'UnclusteredEnUp' : '',
-            'UnclusteredEnDown' : '',
-            'PileUp_up' : '',
-            'PileUp_down' : '',
-            'LightJet_up' : '',
-            'LightJet_down' : '',
-            'BJet_up' : '',
-            'BJet_down' : '',
-            'Electron_up' : '',
-            'Electron_down' : '',
-            'Muon_up' : '',
-            'Muon_down' : '',
-            'luminosity+' : '',
-            'luminosity-' : '',
-            'SingleTop_cross_section+' : '',
-            'SingleTop_cross_section-' : '',
-            'V+Jets_cross_section+' : '',
-            'V+Jets_cross_section-' : '',
-            'QCD_cross_section+' : '',
-            'QCD_cross_section-' : '',
-            'QCD_shape' : '',
-            'TTJets_scaleup' : '',
-            'TTJets_scaledown' : '',
-            'TTJets_massup' : '',
-            'TTJets_massdown' : '',
-            'TTJets_hadronisation' : '',
-            'TTJets_NLOgenerator' : '',
-            'TTJets_factorisationup' : '',
-            'TTJets_factorisationdown' : '',
-            'TTJets_renormalisationup' : '',
-            'TTJets_renormalisationdown' : '',
-            'TTJets_combinedup' : '',
-            'TTJets_combineddown' : '',
-            'TTJets_alphaSup' : '',
-            'TTJets_alphaSdown' : '',
-        }
+        #     # Other MET uncertainties not already included
+        #     'ElectronEnUp' : '',
+        #     'ElectronEnDown' : '',
+        #     'MuonEnUp' : '',
+        #     'MuonEnDown' : '',
+        #     'TauEnUp' : '',
+        #     'TauEnDown' : '',
+        #     'UnclusteredEnUp' : '',
+        #     'UnclusteredEnDown' : '',
+        # }
 
         # Used in 01
+        # Rename to normalisation_measurements?
         self.normalisation_systematics = [
             'central',
 
@@ -293,8 +245,25 @@ class XSectionConfig():
             'QCD_shape',
         ]
 
-
-
+        # Rename to generator_measurements?
+        self.generator_systematics = [ 
+            'TTJets_scaleup',
+            'TTJets_scaledown',
+            'TTJets_massup',
+            'TTJets_massdown',
+            'TTJets_hadronisation',
+            'TTJets_NLOgenerator',
+            'TTJets_factorisationup',
+            'TTJets_factorisationdown',
+            'TTJets_renormalisationup',
+            'TTJets_renormalisationdown',
+            'TTJets_combinedup',
+            'TTJets_combineddown',
+            'TTJets_alphaSup',
+            'TTJets_alphaSdown',
+        ]
+        
+        self.measurements = self.normalisation_systematics + self.generator_systematics
 
         self.list_of_systematics = {
             # Theoretical Uncertainties (Rate Changing)
@@ -339,19 +308,6 @@ class XSectionConfig():
         # now fill in the centre of mass dependent values
         self.__fill_defaults_13TeV__()
 
-        # Needed?
-        self.generator_systematics = [ 
-            'scaleup', 'scaledown',
-            'massup', 'massdown',
-            'hadronisation',
-            'NLOgenerator',
-            'factorisationup', 'factorisationdown', 
-            'renormalisationup', 'renormalisationdown', 
-            'combinedup', 'combineddown',
-            'fsrup', 'fsrdown',
-            'isrup', 'isrdown',
-            'ueup', 'uedown'
-        ]
 
         self.generator_mcsamples = [
             'PowhegPythia8',
@@ -414,12 +370,12 @@ class XSectionConfig():
             tmp = tmp.format(systematic, self.luminosity)
             self.generator_systematic_vjets_templates[systematic] = tmp
 
-        categories_and_prefixes = self.categories_and_prefixes
+        # categories_and_prefixes = self.categories_and_prefixes
         generator_mcsamples = self.generator_mcsamples
 
         # Used in 01
-        self.general_trees          = {
-            category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
+        # self.general_trees          = {
+        #     category: path_to_files + category + '/%s' + middle + prefix + '.root' for category, prefix in categories_and_prefixes.iteritems()}
         self.ttbar_trees            = {
             category: path_to_files + 'TTJets_PowhegPythia8_tree.root' for category in self.normalisation_systematics}
         self.SingleTop_trees        = {
