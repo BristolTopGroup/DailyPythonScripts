@@ -1,6 +1,6 @@
 # the result of the division will be always a float
 from __future__ import division, print_function
-from optparse import OptionParser
+from argparse import ArgumentParser
 import os, gc
 from copy import deepcopy
 
@@ -632,62 +632,99 @@ def get_unit_string(fit_variable):
 
     return unit_string
 
+
+def parse_arguments():
+    parser = ArgumentParser()
+    parser.add_argument( "-p", "--path", 
+        dest    = "path", 
+        default = 'data/normalisation/background_subtraction/',
+        help    = "set path to files containing dataframes" 
+    )
+    parser.add_argument( "-o", "--output_folder", 
+        dest    = "output_folder", 
+        default = 'plots/',
+        help    = "set path to save plots" 
+    )
+    parser.add_argument( "-v", "--variable", 
+        dest    = "variable", 
+        default = 'MET',
+        help    = "set variable to plot (MET, HT, ST, WPT, NJets, lepton_pt, abs_lepton_eta )" 
+    )
+    parser.add_argument( "-m", "--metType", 
+        dest    = "metType", 
+        default = 'type1',
+        help    = "set MET type used in the analysis of MET, ST or MT" 
+    )
+    parser.add_argument( "-b", "--bjetbin", 
+        dest    = "bjetbin", 
+        default = '2m',
+        help    = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" 
+    )
+    parser.add_argument( "-c", "--centre-of-mass-energy", 
+        dest    = "CoM", 
+        default = 13, 
+        type    = int,
+        help    = "set the centre of mass energy for analysis. Default = 13 [TeV]" 
+    )
+    parser.add_argument( "-a", "--additional-plots", 
+        action  = "store_true", 
+        dest    = "additional_plots",
+        help    = "Draws additional plots like the comparison of different systematics to the central result."
+    )
+    parser.add_argument( "-g", "--show-generator-ratio", 
+        action  = "store_true", 
+        dest    = "show_generator_ratio",
+        help    = "Show the ratio of generators to central" 
+    )
+    parser.add_argument( "-d", "--debug", 
+        action  = "store_true", 
+        dest    = "debug",
+        help    = "Enables debugging output"
+    )
+    parser.add_argument( '--visiblePS', 
+        dest    = "visiblePS", 
+        action  = "store_true",
+        help    = "Unfold to visible phase space" 
+    )
+    parser.add_argument( "-u", "--unfolding_method", 
+        dest    = "unfolding_method", 
+        default = 'TUnfold',
+        help    = "Unfolding method: TUnfold (default)" 
+    )
+
+    args = parser.parse_args()
+    return args
+
 if __name__ == '__main__':
     set_root_defaults()
-    parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
-                  help = "set path to JSON files" )
-    parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/',
-                  help = "set path to save plots" )
-    parser.add_option( "-v", "--variable", dest = "variable", default = 'MET',
-                  help = "set variable to plot (MET, HT, ST, MT)" )
-    parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
-                      help = "set MET type used in the analysis of MET, ST or MT" )
-    parser.add_option( "-b", "--bjetbin", dest = "bjetbin", default = '2m',
-                  help = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" )
-    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
-                      help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
-    parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_plots",
-                      help = """Draws additional plots like the comparison of different
-                      systematics to the central result.""" )
-    parser.add_option( "-g", "--show-generator-ratio", action = "store_true", dest = "show_generator_ratio",
-                      help = "Show the ratio of generators to central" )
-    parser.add_option( "-d", "--debug", action = "store_true", dest = "debug",
-                      help = """Enables debugging output""" )
-    parser.add_option("--draw-systematics", action = "store_true", dest = "draw_systematics",
-                      help = "creates a set of plots for each systematic (in addition to central result)." )
-    parser.add_option( '--visiblePS', dest = "visiblePS", action = "store_true",
-                      help = "Unfold to visible phase space" )
-    parser.add_option( "-u", "--unfolding_method", dest = "unfolding_method", default = 'TUnfold',
-                      help = "Unfolding method: TUnfold (default), RooUnfoldSvd, TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes" )
+    args = parse_arguments()
 
-    output_formats = ['pdf']
-    ( options, args ) = parser.parse_args()
-    if options.debug:
+    if args.debug:
         log.setLevel(log.DEBUG)
 
-    measurement_config = XSectionConfig( options.CoM )
+    output_formats = ['pdf']
+    measurement_config = XSectionConfig( args.CoM )
     # caching of variables for shorter access
-    method = options.unfolding_method
+    method = args.unfolding_method
     translate_options = measurement_config.translate_options
-    variable = options.variable
-    show_generator_ratio = options.show_generator_ratio
-    visiblePS = options.visiblePS
+    variable = args.variable
+    show_generator_ratio = args.show_generator_ratio
+    visiblePS = args.visiblePS
     phase_space = 'FullPS'
     if visiblePS:
         phase_space = 'VisiblePS'
 
-    output_folder = options.output_folder
+    output_folder = args.output_folder
     if not output_folder.endswith( '/' ):
         output_folder += '/'
-    met_type = translate_options[options.metType]
-    b_tag_bin = translate_options[options.bjetbin]
+    met_type = translate_options[args.metType]
+    b_tag_bin = translate_options[args.bjetbin]
     path_to_DF = '{path}/{com}TeV/{variable}/{phase_space}/'
-    path_to_DF = path_to_DF.format(path = options.path, com = options.CoM,
+    path_to_DF = path_to_DF.format(path = args.path, com = args.CoM,
                                        variable = variable,
                                        phase_space = phase_space,
                                        )
-#     path_to_DF = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
+#     path_to_DF = args.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
 
     all_measurements = deepcopy( measurement_config.measurements )
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
@@ -697,12 +734,12 @@ if __name__ == '__main__':
     for channel in ['muon']:
         for category in all_measurements:
 
-            if not category == 'central' and not options.additional_plots: continue
+            if not category == 'central' and not args.additional_plots: continue
 
             # if variable == 'HT' and category in met_uncertainties:
             #     continue
             # setting up systematic MET for JES up/down samples for reading fit templates
-            met_type = translate_options[options.metType]
+            met_type = translate_options[args.metType]
             if category == 'JES_up':
                 met_type += 'JetEnUp'
             elif category == 'JES_down':
@@ -718,38 +755,42 @@ if __name__ == '__main__':
             #     plot_fit_results( fit_results, category, channel )
 
             # change back to original MET type
-            met_type = translate_options[options.metType]
+            met_type = translate_options[args.metType]
             if met_type == 'PFMET':
                 met_type = 'patMETsPFlow'
 
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
-            histname = '{variable}_normalised_xsection_{channel}_{phase_space}'
-            histname = histname.format(variable = variable, channel = channel,
-                            phase_space = phase_space)
-            if method != 'RooUnfoldSvd':
-                histname += '_' + method
-            make_plots( histograms_normalised_xsection_different_generators, category, output_folder, histname + '_different_generators', show_generator_ratio = show_generator_ratio )
-            make_plots( histograms_normalised_xsection_systematics_shifts, category, output_folder, histname + '_systematics_shifts' )
+            histname = '{variable}_normalised_xsection_{channel}_{phase_space}_{method}'
+            histname = histname.format(
+                variable = variable, 
+                channel = channel,
+                phase_space = phase_space,
+                method = method
+            )
+
+            make_plots( 
+                histograms_normalised_xsection_different_generators, 
+                category, 
+                output_folder, 
+                histname + '_different_generators', 
+                show_generator_ratio = show_generator_ratio 
+            )
+            make_plots( 
+                histograms_normalised_xsection_systematics_shifts, 
+                category, 
+                output_folder, 
+                histname + '_systematics_shifts' 
+            )
 
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
-        if options.additional_plots:
-            plot_central_and_systematics( channel, measurements, exclude = ttbar_generator_systematics )
-
-            plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
-
-#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_1_to_11 ) )
-#             plot_central_and_systematics( channel, pdf_uncertainties_1_to_11, exclude = exclude, suffix = 'PDF_1_to_11' )
-#
-#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_12_to_22 ) )
-#             plot_central_and_systematics( channel, pdf_uncertainties_12_to_22, exclude = exclude, suffix = 'PDF_12_to_22' )
-#
-#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_23_to_33 ) )
-#             plot_central_and_systematics( channel, pdf_uncertainties_23_to_33, exclude = exclude, suffix = 'PDF_23_to_33' )
-#
-#             exclude = set( pdf_uncertainties ).difference( set( pdf_uncertainties_34_to_45 ) )
-#             plot_central_and_systematics( channel, pdf_uncertainties_34_to_45, exclude = exclude, suffix = 'PDF_34_to_45' )
-#
-#             plot_central_and_systematics( channel, met_uncertainties, suffix = 'MET_only' )
-#             plot_central_and_systematics( channel, new_uncertainties, suffix = 'new_only' )
-            plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )
+        # if args.additional_plots:
+            # TODO
+            # Generator Only
+            # PDF Only
+            # MET Only
+            # Rate Changing Only
+            # etc...
+            # plot_central_and_systematics( channel, measurements, exclude = ttbar_generator_systematics )
+            # plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
+            # plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )
