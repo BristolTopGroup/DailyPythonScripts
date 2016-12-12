@@ -7,7 +7,7 @@ from copy import deepcopy
 from dps.config.latex_labels import variables_latex, measurements_latex
 from dps.config.variable_binning import bin_edges_full, bin_edges_vis
 from dps.config.xsection import XSectionConfig
-from dps.utils.file_utilities import make_folder_if_not_exists, read_data_from_JSON
+from dps.utils.file_utilities import make_folder_if_not_exists
 from dps.utils.pandas_utilities import read_tuple_from_file, file_to_df, tupleise_cols
 from dps.utils.hist_utilities import value_error_tuplelist_to_hist, \
 value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
@@ -36,11 +36,11 @@ xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
 
 @xsec_04_log.trace()
 def read_xsection_measurement_results( category, channel ):
-    global path_to_JSON, variable, met_type, phase_space, method
+    global path_to_DF, variable, met_type, phase_space, method
 
     file_template = 'TESTING/{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
     filename = file_template.format(
-                path = path_to_JSON,
+                path = path_to_DF,
                 category = category,
                 name = 'xsection_normalised',
                 channel = channel,
@@ -97,7 +97,7 @@ def read_xsection_measurement_results( category, channel ):
         )
 
         filename = file_template.format(
-            path = path_to_JSON,
+            path = path_to_DF,
             category = category,
             name = 'xsection_normalised',
             channel = channel,
@@ -116,7 +116,7 @@ def read_xsection_measurement_results( category, channel ):
 
         xsec_04_log.debug('Reading file {0}'.format(filename))
 #         filename = file_template.format(
-#                 path = path_to_JSON,
+#                 path = path_to_DF,
 #                 category = category,
 #                 name = 'normalised_xsection',
 #                 channel = channel,
@@ -682,12 +682,12 @@ if __name__ == '__main__':
         output_folder += '/'
     met_type = translate_options[options.metType]
     b_tag_bin = translate_options[options.bjetbin]
-    path_to_JSON = '{path}/{com}TeV/{variable}/{phase_space}/'
-    path_to_JSON = path_to_JSON.format(path = options.path, com = options.CoM,
+    path_to_DF = '{path}/{com}TeV/{variable}/{phase_space}/'
+    path_to_DF = path_to_DF.format(path = options.path, com = options.CoM,
                                        variable = variable,
                                        phase_space = phase_space,
                                        )
-#     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
+#     path_to_DF = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
 
     all_measurements = deepcopy( measurement_config.measurements )
     pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
