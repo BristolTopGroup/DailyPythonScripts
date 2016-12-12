@@ -8,8 +8,6 @@ from dps.config.variableBranchNames import branchNames, genBranchNames_particle,
 from dps.utils.file_utilities import make_folder_if_not_exists
 from math import trunc
 
-from scaleFactors import *
-
 import ROOT as ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.gROOT.ProcessLine( 'gErrorIgnoreLevel = 2001;' )
@@ -43,27 +41,31 @@ def getFileName( com, sample, measurementConfig ) :
     fileNames = {
                  '13TeV' : {
                         'central' : measurementConfig.ttbar_category_templates_trees['central'],
+
                         'amcatnlo' : measurementConfig.ttbar_amc_category_templates_trees,
                         'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
                         'powhegherwigpp' : measurementConfig.ttbar_powhegherwigpp_category_templates_trees,
-                        'amcatnloherwigpp' : measurementConfig.ttbar_amcatnloherwigpp_category_templates_trees,
+                        # 'amcatnloherwigpp' : measurementConfig.ttbar_amcatnloherwigpp_category_templates_trees,
+
                         'scaleup' : measurementConfig.ttbar_scaleup_category_templates_trees,
                         'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
                         'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
                         'massup' : measurementConfig.ttbar_mtop1755_category_templates_trees,
+
                         'jesdown' : measurementConfig.ttbar_jesdown_category_templates_trees,
                         'jesup' : measurementConfig.ttbar_jesup_category_templates_trees,
                         'jerdown' : measurementConfig.ttbar_jerdown_category_templates_trees,
                         'jerup' : measurementConfig.ttbar_jerup_category_templates_trees,
+
                         'bjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'bjetup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'lightjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'lightjetup' : measurementConfig.ttbar_category_templates_trees['central'],
+
                         'leptondown' : measurementConfig.ttbar_category_templates_trees['central'],
                         'leptonup' : measurementConfig.ttbar_category_templates_trees['central'],
                         'pileupUp' : measurementConfig.ttbar_category_templates_trees['central'],
                         'pileupDown' : measurementConfig.ttbar_category_templates_trees['central'],
-
 
                         'ElectronEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
                         'ElectronEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
@@ -79,7 +81,7 @@ def getFileName( com, sample, measurementConfig ) :
     return fileNames[com][sample]
 
 channels = [
-        # channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
+        channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
         channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
         ]
 
@@ -106,7 +108,6 @@ def main():
     # Input file name
     file_name = 'crap.root'
     if int(options.centreOfMassEnergy) == 13:
-        # file_name = fileNames['13TeV'][options.sample]
         file_name = getFileName('13TeV', options.sample, measurement_config)
         # if options.generatorWeight >= 0:
         #     file_name = 'localInputFile.root'
@@ -196,7 +197,6 @@ def main():
 
             for variable in allVariablesBins:
                 if options.debug and variable != 'HT' : continue
-
                 if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                     continue
 
@@ -434,6 +434,7 @@ def main():
                             nOfflineNotVis[channel.channelName] += offlineWeight
 
                     for variable in allVariablesBins:
+                        if options.debug and variable != 'HT' : continue
                         if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                             continue
 
@@ -500,6 +501,7 @@ def main():
             # Output histgorams to file
             #
             for variable in allVariablesBins:
+                if options.debug and variable != 'HT' : continue
                 if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                     continue
                 for channel in channels:

@@ -33,17 +33,27 @@ def values_and_errors_to_hist( values, errors, bins ):
     value_error_tuplelist = zip( values, errors )
     return value_error_tuplelist_to_hist( value_error_tuplelist, bins )
 
-def value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges ):
-    value_error_tuplelist = [( value, 0 ) for value, lower_error, upper_error in value_errors_tuplelist]
+def value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges, is_symmetric_errors=False ):
+    value_error_tuplelist = []
+    if is_symmetric_errors:
+        value_error_tuplelist = [( value, 0 ) for value, error in value_errors_tuplelist]
+    else:
+        value_error_tuplelist = [( value, 0 ) for value, lower_error, upper_error in value_errors_tuplelist]
+
     hist = value_error_tuplelist_to_hist( value_error_tuplelist, bin_edges )
     rootpy_graph = asrootpy( TGraphAsymmErrors( hist ) )
-#    rootpy_graph = Graph(hist = hist)
+
     set_lower_error = rootpy_graph.SetPointEYlow
     set_upper_error = rootpy_graph.SetPointEYhigh
 
-    for point_i, ( value, lower_error, upper_error ) in enumerate( value_errors_tuplelist ):
-        set_lower_error( point_i, lower_error )
-        set_upper_error( point_i, upper_error )
+    if is_symmetric_errors:
+        for point_i, ( value, error ) in enumerate( value_errors_tuplelist ):
+            set_lower_error( point_i, error )
+            set_upper_error( point_i, error )
+    else:
+        for point_i, ( value, lower_error, upper_error ) in enumerate( value_errors_tuplelist ):
+            set_lower_error( point_i, lower_error )
+            set_upper_error( point_i, upper_error )
 
     return rootpy_graph
 
