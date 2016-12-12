@@ -4,11 +4,11 @@ from optparse import OptionParser
 import os, gc
 from copy import deepcopy
 
-from dps.config.latex_labels import variables_latex, measurements_latex, fit_variables_latex
-from dps.config.variable_binning import bin_edges_full, variable_bins_ROOT, variable_bins_visiblePS_ROOT, fit_variable_bin_edges,\
-    bin_edges_vis
+from dps.config.latex_labels import variables_latex, measurements_latex
+from dps.config.variable_binning import bin_edges_full, bin_edges_vis
 from dps.config.xsection import XSectionConfig
-from dps.utils.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from dps.utils.file_utilities import make_folder_if_not_exists, read_data_from_JSON
+from dps.utils.pandas_utilities import read_tuple_from_file, file_to_df, tupleise_cols
 from dps.utils.hist_utilities import value_error_tuplelist_to_hist, \
 value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
 from math import sqrt
@@ -18,7 +18,6 @@ from dps.utils.ROOT_utils import set_root_defaults
 import matplotlib as mpl
 from matplotlib import rc
 
-from dps.utils.plotting import get_best_max_y
 mpl.use( 'agg' )
 import rootpy.plotting.root2matplotlib as rplt
 import matplotlib.pyplot as plt
@@ -39,7 +38,7 @@ xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
 def read_xsection_measurement_results( category, channel ):
     global path_to_JSON, variable, met_type, phase_space, method
 
-    file_template = '{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
+    file_template = 'TESTING/{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
     filename = file_template.format(
                 path = path_to_JSON,
                 category = category,
@@ -50,7 +49,7 @@ def read_xsection_measurement_results( category, channel ):
                 )
 
     xsec_04_log.debug('Reading file {0}'.format(filename))
-    normalised_xsection_unfolded = read_data_from_JSON( filename )
+    normalised_xsection_unfolded = read_tuple_from_file( filename )
     edges = bin_edges_full[variable]
     if phase_space == 'VisiblePS':
         edges = bin_edges_vis[variable]
@@ -66,42 +65,55 @@ def read_xsection_measurement_results( category, channel ):
 
     if category == 'central':
         # true distributions
-        h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
-        # h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
-        # h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
-        h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
+        h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
+        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
+        h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
+        h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
         # h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnloHerwig'], edges )
 
-        # h_normalised_xsection_scaleup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
-        # h_normalised_xsection_scaledown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
-        h_normalised_xsection_massup = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
-        h_normalised_xsection_massdown = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
+        # h_normalised_xsection_scaleup         = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaleup'], edges )
+        # h_normalised_xsection_scaledown       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['scaledown'], edges )
+        h_normalised_xsection_massup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
+        h_normalised_xsection_massdown          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
 
-        histograms_normalised_xsection_different_generators.update( {
-                                                                     'powhegPythia8':h_normalised_xsection_powhegPythia8,
-                                                                     # 'amcatnloPythia8':h_normalised_xsection_amcatnlo,
-                                                                     # 'madgraphMLM':h_normalised_xsection_madgraphMLM,
-                                                                     'powhegHerwig':h_normalised_xsection_powhegHerwigpp,
-                                                                     # 'amcatnloHerwig':h_normalised_xsection_amcatnloHerwigpp,
-                                                                })
+        histograms_normalised_xsection_different_generators.update( 
+            {
+                'powhegPythia8':h_normalised_xsection_powhegPythia8,
+                'amcatnloPythia8':h_normalised_xsection_amcatnlo,
+                'madgraphMLM':h_normalised_xsection_madgraphMLM,
+                'powhegHerwig':h_normalised_xsection_powhegHerwigpp,
+                # 'amcatnloHerwig':h_normalised_xsection_amcatnloHerwigpp,
+            }
+        )
 
-        histograms_normalised_xsection_systematics_shifts.update( {'powhegPythia8':h_normalised_xsection_powhegPythia8,
-                                                                  # 'scaledown': h_normalised_xsection_scaledown,
-                                                                  # 'scaleup': h_normalised_xsection_scaleup,
-                                                                  'massdown': h_normalised_xsection_massdown,
-                                                                  'massup': h_normalised_xsection_massup
-                                                                  })
+        histograms_normalised_xsection_systematics_shifts.update( 
+            {
+                'powhegPythia8':h_normalised_xsection_powhegPythia8,
+                # 'scaledown': h_normalised_xsection_scaledown,
+                # 'scaleup': h_normalised_xsection_scaleup,
+                'massdown': h_normalised_xsection_massdown,
+                'massup': h_normalised_xsection_massup
+            }
+        )
 
         filename = file_template.format(
-                path = path_to_JSON,
-                category = category,
-                name = 'xsection_normalised',
-                channel = channel,
-                method = method,
-                suffix = '_with_errors',
-                )
+            path = path_to_JSON,
+            category = category,
+            name = 'xsection_normalised',
+            channel = channel,
+            method = method,
+            suffix = '_summary_absolute',
+        )
 
-        normalised_xsection_unfolded_with_errors = read_data_from_JSON( filename )
+        normalised_xsection_unfolded_with_errors = file_to_df( filename )
+        normalised_xsection_unfolded_with_errors['TTJet_unfolded'] = tupleise_cols(
+            normalised_xsection_unfolded_with_errors['central'], 
+            normalised_xsection_unfolded_with_errors['systematic'],
+        )
+        print(normalised_xsection_unfolded_with_errors['TTJet_unfolded'])
+
+
+
         xsec_04_log.debug('Reading file {0}'.format(filename))
 #         filename = file_template.format(
 #                 path = path_to_JSON,
@@ -111,7 +123,7 @@ def read_xsection_measurement_results( category, channel ):
 #                 method = method,
 #                 suffix = '_with_systematics_but_without_generator_errors',
 #                 )
-        ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_data_from_JSON( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
+        ### normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory = read_tuple_from_file( file_template + '_with_systematics_but_without_ttbar_theory_errors.txt' )
 #         normalised_xsection_unfolded_with_errors_with_systematics_but_without_generator = normalised_xsection_unfolded_with_errors
 
         # a rootpy.Graph with asymmetric errors!
@@ -122,20 +134,22 @@ def read_xsection_measurement_results( category, channel ):
         ###                                                         normalised_xsection_unfolded_with_errors_with_systematics_but_without_ttbar_theory['TTJet_unfolded'],
         ###                                                         edges )
 
-        h_normalised_xsection_unfolded_with_errors = value_errors_tuplelist_to_graph(
-                                                                normalised_xsection_unfolded_with_errors['TTJet_measured'],
-                                                                edges )
+        # h_normalised_xsection_unfolded_with_errors = value_errors_tuplelist_to_graph(
+        #                                                         normalised_xsection_unfolded_with_errors['TTJet_measured'],
+        #                                                         edges )
         h_normalised_xsection_unfolded_with_errors_unfolded = value_errors_tuplelist_to_graph(
-                                                                normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
-                                                                edges )
+            normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
+            edges, 
+            is_symmetric_errors=True
+        )
 
 
         # histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory
         # histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_with_systematics_but_without_ttbar_theory_unfolded
-        histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_unfolded_with_errors
+        # histograms_normalised_xsection_different_generators['measured_with_systematics'] = h_normalised_xsection_unfolded_with_errors
         histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
 
-        histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_unfolded_with_errors
+        # histograms_normalised_xsection_systematics_shifts['measured_with_systematics'] = h_normalised_xsection_unfolded_with_errors
         histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
 
     return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
@@ -654,12 +668,8 @@ if __name__ == '__main__':
 
     measurement_config = XSectionConfig( options.CoM )
     # caching of variables for shorter access
-    translate_options = measurement_config.translate_options
-    ttbar_theory_systematic_prefix = measurement_config.ttbar_theory_systematic_prefix
-    vjets_theory_systematic_prefix = measurement_config.vjets_theory_systematic_prefix
-    met_systematics = measurement_config.met_systematics
     method = options.unfolding_method
-
+    translate_options = measurement_config.translate_options
     variable = options.variable
     show_generator_ratio = options.show_generator_ratio
     visiblePS = options.visiblePS
@@ -679,25 +689,12 @@ if __name__ == '__main__':
                                        )
 #     path_to_JSON = options.path + '/' + str( measurement_config.centre_of_mass_energy ) + 'TeV/' + variable + '/'
 
-    categories = deepcopy( measurement_config.categories_and_prefixes.keys() )
-    ttbar_generator_systematics = [ttbar_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    vjets_generator_systematics = [vjets_theory_systematic_prefix + systematic for systematic in measurement_config.generator_systematics]
-    categories.extend( ttbar_generator_systematics )
-    # categories.extend( vjets_generator_systematics )
+    all_measurements = deepcopy( measurement_config.measurements )
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
+    all_measurements.extend( pdf_uncertainties )
 
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( measurement_config.pdfWeightMin, measurement_config.pdfWeightMax )]
-    # # all MET uncertainties except JES as this is already included
-    # met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
-    # new_uncertainties = ['QCD_shape']
-    rate_changing_systematics = [systematic for systematic in measurement_config.rate_changing_systematics.keys()]
-
-    all_measurements = deepcopy( categories )
-    # all_measurements.extend( pdf_uncertainties )
-    # all_measurements.extend( met_uncertainties )
-    # all_measurements.extend( new_uncertainties )
-    all_measurements.extend( rate_changing_systematics )
     # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
-    for channel in ['combinedBeforeUnfolding', 'combined']:
+    for channel in ['muon']:
         for category in all_measurements:
 
             if not category == 'central' and not options.additional_plots: continue
@@ -737,7 +734,7 @@ if __name__ == '__main__':
             del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
 
         if options.additional_plots:
-            plot_central_and_systematics( channel, categories, exclude = ttbar_generator_systematics )
+            plot_central_and_systematics( channel, measurements, exclude = ttbar_generator_systematics )
 
             plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
 
