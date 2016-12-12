@@ -11,10 +11,10 @@ from dps.config.xsection import XSectionConfig
 from dps.utils.file_utilities import make_folder_if_not_exists
 from dps.utils.pandas_utilities import read_tuple_from_file, file_to_df, tupleise_cols
 from dps.utils.hist_utilities import value_error_tuplelist_to_hist, \
-value_tuplelist_to_hist, value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
-from math import sqrt
+value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
+
 # rootpy & matplotlib
-from ROOT import kRed, kGreen, kMagenta, kBlue, kBlack
+from ROOT import kBlue
 from dps.utils.ROOT_utils import set_root_defaults
 import matplotlib as mpl
 from matplotlib import rc
@@ -30,7 +30,6 @@ from dps.utils.latex import setup_matplotlib
 setup_matplotlib()
 
 import matplotlib.patches as mpatches
-import latexcodec
 
 from dps.utils.logger import log
 xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
