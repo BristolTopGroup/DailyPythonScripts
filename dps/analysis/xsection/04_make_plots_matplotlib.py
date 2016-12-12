@@ -156,7 +156,6 @@ def read_xsection_measurement_results( category, channel ):
 
 @xsec_04_log.trace()
 def get_cms_labels( channel ):
-    global b_tag_bin
     lepton = 'e'
     if channel == 'electron':
         lepton = 'e + jets'
@@ -164,7 +163,6 @@ def get_cms_labels( channel ):
         lepton = '$\mu$ + jets'
     else:
         lepton = 'e, $\mu$ + jets combined'
-#     channel_label = '%s, $\geq$ 4 jets, %s' % ( lepton, b_tag_bins_latex[b_tag_bin] )
     channel_label = lepton
     template = '%.1f fb$^{-1}$ (%d TeV)'
     label = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
@@ -556,7 +554,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
 
 @xsec_04_log.trace()
 def plot_central_and_systematics( channel, systematics, exclude = [], suffix = 'altogether' ):
-    global variable, b_tag_bin, met_type
+    global variable, met_type
 
     plt.figure( figsize = ( 16, 16 ), dpi = 200, facecolor = 'white' )
     axes = plt.axes()
@@ -655,11 +653,6 @@ def parse_arguments():
         default = 'type1',
         help    = "set MET type used in the analysis of MET, ST or MT" 
     )
-    parser.add_argument( "-b", "--bjetbin", 
-        dest    = "bjetbin", 
-        default = '2m',
-        help    = "set b-jet multiplicity for analysis. Options: exclusive: 0-3, inclusive (N or more): 0m, 1m, 2m, 3m, 4m" 
-    )
     parser.add_argument( "-c", "--centre-of-mass-energy", 
         dest    = "CoM", 
         default = 13, 
@@ -718,7 +711,6 @@ if __name__ == '__main__':
     if not output_folder.endswith( '/' ):
         output_folder += '/'
     met_type = translate_options[args.metType]
-    b_tag_bin = translate_options[args.bjetbin]
     path_to_DF = '{path}/{com}TeV/{variable}/{phase_space}/'
     path_to_DF = path_to_DF.format(path = args.path, com = args.CoM,
                                        variable = variable,
