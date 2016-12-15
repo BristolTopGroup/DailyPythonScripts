@@ -47,50 +47,50 @@ def ptWeight( pt ):
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
-                 '13TeV' : {
-                        'central' : measurementConfig.ttbar_trees['central'],
+        '13TeV' : {
+            'central'           : measurementConfig.ttbar_trees['central'],
 
-                        'amcatnlo' : measurementConfig.ttbar_amc_trees,
-                        'madgraph' : measurementConfig.ttbar_madgraph_trees,
-                        'powhegherwigpp' : measurementConfig.ttbar_powhegherwigpp_trees,
+            'amcatnlo'          : measurementConfig.ttbar_amc_trees,
+            'madgraph'          : measurementConfig.ttbar_madgraph_trees,
+            'powhegherwigpp'    : measurementConfig.ttbar_powhegherwigpp_trees,
 
-                        'scaleup' : measurementConfig.ttbar_scaleup_trees,
-                        'scaledown' : measurementConfig.ttbar_scaledown_trees,
-                        'massdown' : measurementConfig.ttbar_mtop1695_trees,
-                        'massup' : measurementConfig.ttbar_mtop1755_trees,
+            'scaleup'           : measurementConfig.ttbar_scaleup_trees,
+            'scaledown'         : measurementConfig.ttbar_scaledown_trees,
+            'massdown'          : measurementConfig.ttbar_mtop1695_trees,
+            'massup'            : measurementConfig.ttbar_mtop1755_trees,
 
-                        'jesdown' : measurementConfig.ttbar_jesdown_trees,
-                        'jesup' : measurementConfig.ttbar_jesup_trees,
-                        'jerdown' : measurementConfig.ttbar_jerdown_trees,
-                        'jerup' : measurementConfig.ttbar_jerup_trees,
+            'jesdown'           : measurementConfig.ttbar_jesdown_trees,
+            'jesup'             : measurementConfig.ttbar_jesup_trees,
+            'jerdown'           : measurementConfig.ttbar_jerdown_trees,
+            'jerup'             : measurementConfig.ttbar_jerup_trees,
 
-                        'bjetdown' : measurementConfig.ttbar_trees['central'],
-                        'bjetup' : measurementConfig.ttbar_trees['central'],
-                        'lightjetdown' : measurementConfig.ttbar_trees['central'],
-                        'lightjetup' : measurementConfig.ttbar_trees['central'],
+            'bjetdown'          : measurementConfig.ttbar_trees['central'],
+            'bjetup'            : measurementConfig.ttbar_trees['central'],
+            'lightjetdown'      : measurementConfig.ttbar_trees['central'],
+            'lightjetup'        : measurementConfig.ttbar_trees['central'],
 
-                        'leptondown' : measurementConfig.ttbar_trees['central'],
-                        'leptonup' : measurementConfig.ttbar_trees['central'],
-                        'pileupUp' : measurementConfig.ttbar_trees['central'],
-                        'pileupDown' : measurementConfig.ttbar_trees['central'],
+            'leptondown'        : measurementConfig.ttbar_trees['central'],
+            'leptonup'          : measurementConfig.ttbar_trees['central'],
+            'pileupUp'          : measurementConfig.ttbar_trees['central'],
+            'pileupDown'        : measurementConfig.ttbar_trees['central'],
 
-                        'ElectronEnUp' : measurementConfig.ttbar_trees['central'],
-                        'ElectronEnDown' : measurementConfig.ttbar_trees['central'],
-                        'MuonEnUp' : measurementConfig.ttbar_trees['central'],
-                        'MuonEnDown' : measurementConfig.ttbar_trees['central'],
-                        'TauEnUp' : measurementConfig.ttbar_trees['central'],
-                        'TauEnDown' : measurementConfig.ttbar_trees['central'],
-                        'UnclusteredEnUp' : measurementConfig.ttbar_trees['central'],
-                        'UnclusteredEnDown' : measurementConfig.ttbar_trees['central'],
-                    },
-                 }
+            'ElectronEnUp'      : measurementConfig.ttbar_trees['central'],
+            'ElectronEnDown'    : measurementConfig.ttbar_trees['central'],
+            'MuonEnUp'          : measurementConfig.ttbar_trees['central'],
+            'MuonEnDown'        : measurementConfig.ttbar_trees['central'],
+            'TauEnUp'           : measurementConfig.ttbar_trees['central'],
+            'TauEnDown'         : measurementConfig.ttbar_trees['central'],
+            'UnclusteredEnUp'   : measurementConfig.ttbar_trees['central'],
+            'UnclusteredEnDown' : measurementConfig.ttbar_trees['central'],
+        },
+    }
 
     return fileNames[com][sample]
 
 channels = [
-        channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
-        channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
-        ]
+    channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
+    channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon'),
+]
 
 
 
@@ -169,12 +169,10 @@ def main():
     file_name = 'crap.root'
     if int(args.centreOfMassEnergy) == 13:
         file_name = getFileName('13TeV', args.sample, measurement_config)
-        # if args.generatorWeight >= 0:
-        #     file_name = 'localInputFile.root'
     else:
         print "Error: Unrecognised centre of mass energy."
 
-    pdfWeight = args.pdfWeight
+    pdfWeight    = args.pdfWeight
     muFmuRWeight = args.muFmuRWeight
     alphaSWeight = args.alphaSWeight
 
@@ -231,19 +229,12 @@ def main():
 
             tree = f.Get(treeName)
             nEntries = tree.GetEntries()
-            # weightTree = f.Get('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
-            # if meWeight >= 0 :
-            #     tree.AddFriend('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
-            #     tree.SetBranchStatus('genWeight_*',1)
-            #     tree.SetBranchStatus('genWeight_%i' % meWeight, 1)
 
             # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
             allVariablesBins = bin_edges_vis.copy()
             for variable in bin_edges_vis:
-
                 if 'Rap' in variable:
                     allVariablesBins['abs_%s' % variable] = [0,bin_edges_vis[variable][-1]]
-
 
             recoVariableNames = {}
             genVariable_particle_names = {}
@@ -253,7 +244,8 @@ def main():
 
             for variable in allVariablesBins:
                 if args.debug and variable != 'HT' : continue
-                if args.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                if args.sample in measurement_config.met_specific_systematics 
+                    and variable in measurement_config.variables_no_met:
                     continue
 
                 outputDirs[variable] = {}
@@ -265,18 +257,19 @@ def main():
                 recoVariableName = branchNames[variable]
                 sysIndex = None
                 if variable in ['MET', 'ST', 'WPT']:
-                    if args.sample == "jesup":
-                        recoVariableName += '_METUncertainties'
-                        sysIndex = 2
-                    elif args.sample == "jesdown":
-                        recoVariableName += '_METUncertainties'
-                        sysIndex = 3
-                    elif args.sample == "jerup":
+                    if args.sample == "jerup":
                         recoVariableName += '_METUncertainties'
                         sysIndex = 0
                     elif args.sample == "jerdown":
                         recoVariableName+= '_METUncertainties'
                         sysIndex = 1
+                    elif args.sample == "jesup":
+                        recoVariableName += '_METUncertainties'
+                        sysIndex = 2
+                    elif args.sample == "jesdown":
+                        recoVariableName += '_METUncertainties'
+                        sysIndex = 3
+                    # Dont need this?
                     elif args.sample in measurement_config.met_systematics:
                         recoVariableName += '_METUncertainties'
                         sysIndex = measurement_config.met_systematics[args.sample]
@@ -398,9 +391,6 @@ def main():
                 # Generator level weight
                 genWeight = event.EventWeight * measurement_config.luminosity_scale
 
-                # Offline level weights
-                offlineWeight = pileupWeight
-
                 # Lepton weight
                 leptonWeight = event.LeptonEfficiencyCorrection
 
@@ -420,11 +410,7 @@ def main():
                 elif args.sample == "lightjetdown":
                     bjetWeight = event.LightJetDownWeight
 
-                # Top pt systematic weight
-                topPtSystematicWeight = 1
-                if options.sample == 'topPtSystematic':
-                    topPtSystematicWeight = calculateTopPtSystematicWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
-
+                # Offline level weights
                 offlineWeight = event.EventWeight * measurement_config.luminosity_scale
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
