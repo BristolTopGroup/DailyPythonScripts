@@ -186,7 +186,7 @@ def main():
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'TESTING/unfolding/%sTeV/' % args.centreOfMassEnergy
+    outputFileDir = 'unfolding/%sTeV/' % args.centreOfMassEnergy
     make_folder_if_not_exists(outputFileDir)
    
     energySuffix = '%sTeV' % ( args.centreOfMassEnergy )
@@ -445,7 +445,7 @@ def main():
                     genWeight *= ptWeight
 
                 if args.applyTopPtReweighting:
-                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), args.applyTopPtReweighting)
+                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
                     offlineWeight *= ptWeight
                     genWeight *= ptWeight
                 
