@@ -28,13 +28,23 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
     else :
         return 1
 
-def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
-    if whichWayToWeight == -1 :
-        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
-    elif whichWayToWeight == 1 :
-        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
-    else :
-        return 1
+def calculateTopPtWeight( lepTopPt, hadTopPt ):
+    '''
+    Calculating the top pt weight
+         ______________            A + B.Pt
+    W = / SF(t)SF(tbar) , SF(t) = e
+
+    A = 0.0615
+    B = -0.0005
+    '''
+    ptWeight = 1
+    A = 0.0615
+    B = -0.0005 
+    sf_lept = exp(A+(B*lepTopPt))
+    sf_hadt = exp(A+(B*hadTopPt))
+    ptWeight = sqrt(sf_hadt*sf_lept)
+    return ptWeight
+
 
 def calculateTopPtSystematicWeight( lepTopPt, hadTopPt ):
     lepTopWeight = ptWeight( lepTopPt )
@@ -97,37 +107,37 @@ channels = [
 def parse_arguments():
     parser = ArgumentParser(__doc__)
     parser.add_argument('--topPtReweighting', 
+        action='store_true', 
         dest='applyTopPtReweighting', 
-        type='int', 
-        default=0 
+        default=False 
     )
     parser.add_argument('--topEtaReweighting', 
         dest='applyTopEtaReweighting', 
-        type='int', 
+        type=int, 
         default=0 
     )
     parser.add_argument('-c', '--centreOfMassEnergy', 
         dest='centreOfMassEnergy', 
-        type='int', 
+        type=int, 
         default=13 
     )
     parser.add_argument('--pdfWeight', 
-        type='int', 
+        type=int, 
         dest='pdfWeight', 
         default=-1 
     )
     parser.add_argument('--muFmuRWeight', 
-        type='int', 
+        type=int, 
         dest='muFmuRWeight', 
         default=-1 
     )
     parser.add_argument('--alphaSWeight', 
-        type='int', 
+        type=int, 
         dest='alphaSWeight', 
         default=-1 
     )
     parser.add_argument('--nGeneratorWeights', 
-        type='int', 
+        type=int, 
         dest='nGeneratorWeights', 
         default=1 
     )
@@ -158,8 +168,6 @@ def parse_arguments():
     args = parser.parse_args()
     return args
 
-
-
 def main():
     args = parse_arguments()
 
@@ -188,11 +196,12 @@ def main():
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_up.root' % energySuffix
         elif args.applyTopEtaReweighting == -1:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_down.root' % energySuffix
-    elif args.applyTopPtReweighting != 0:
-        if args.applyTopPtReweighting == 1:
-            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
-        elif args.applyTopPtReweighting == -1:
-            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_down.root' % energySuffix            
+    elif args.applyTopPtReweighting:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
+    elif alphaSWeight == 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaSDown.root' % ( energySuffix )
+    elif alphaSWeight == 1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaSUp.root' % ( energySuffix )
     elif muFmuRWeight == 1:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_1muR2muF.root' % ( energySuffix )
     elif muFmuRWeight == 2:
@@ -244,8 +253,8 @@ def main():
 
             for variable in allVariablesBins:
                 if args.debug and variable != 'HT' : continue
-                if args.sample in measurement_config.met_specific_systematics 
-                    and variable in measurement_config.variables_no_met:
+                if args.sample in measurement_config.met_specific_systematics \
+                and variable in measurement_config.variables_no_met:
                     continue
 
                 outputDirs[variable] = {}
@@ -360,12 +369,12 @@ def main():
 
 
             # Counters for studying phase space
-            nVis = {c.channelName : 0 for c in channels}
-            nVisNotOffline = {c.channelName : 0 for c in channels}
-            nOffline = {c.channelName : 0 for c in channels}
-            nOfflineNotVis = {c.channelName : 0 for c in channels}
-            nFull = {c.channelName : 0 for c in channels}
-            nOfflineSL = {c.channelName : 0 for c in channels}
+            nVis            = {c.channelName : 0 for c in channels}
+            nVisNotOffline  = {c.channelName : 0 for c in channels}
+            nOffline        = {c.channelName : 0 for c in channels}
+            nOfflineNotVis  = {c.channelName : 0 for c in channels}
+            nFull           = {c.channelName : 0 for c in channels}
+            nOfflineSL      = {c.channelName : 0 for c in channels}
 
             n=0
             # Event Loop
@@ -374,7 +383,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                if n == 10000: break
+                if n == 1000: break
                 # # #
                 # # # Weights and selection
                 # # #
@@ -435,7 +444,7 @@ def main():
                     offlineWeight *= ptWeight
                     genWeight *= ptWeight
 
-                if args.applyTopPtReweighting != 0:
+                if args.applyTopPtReweighting:
                     ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), args.applyTopPtReweighting)
                     offlineWeight *= ptWeight
                     genWeight *= ptWeight
@@ -484,7 +493,8 @@ def main():
 
                     for variable in allVariablesBins:
                         if args.debug and variable != 'HT' : continue
-                        if args.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                        if args.sample in measurement_config.met_specific_systematics and \
+                        variable in measurement_config.variables_no_met:
                             continue
 
                         # # #
@@ -555,15 +565,25 @@ def main():
                     continue
                 for channel in channels:
 
-                    # Fill phase space info
-                    h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
-                    h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])
-                    h.SetBinContent(2, nOfflineNotVis[channel.channelName] / nOffline[channel.channelName])
-                    h.SetBinContent(3, nVis[channel.channelName] / nFull[channel.channelName])
-                    # Selection efficiency for SL ttbar
-                    h.SetBinContent(4, nOfflineSL[channel.channelName] / nFull[channel.channelName])
-                    # Fraction of offline that are SL
-                    h.SetBinContent(5, nOfflineSL[channel.channelName] / nOffline[channel.channelName])
+                    if nOffline[channel.channelName] != 0 : 
+                        # Fill phase space info
+                        h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
+                        h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(1, "nVisNotOffline/nVis")
+
+                        h.SetBinContent(2, nOfflineNotVis[channel.channelName] / nOffline[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(2, "nOfflineNotVis/nOffline")
+
+                        h.SetBinContent(3, nVis[channel.channelName] / nFull[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(3, "nVis/nFull")
+
+                        # Selection efficiency for SL ttbar
+                        h.SetBinContent(4, nOfflineSL[channel.channelName] / nFull[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(4, "nOfflineSL/nFull")
+
+                        # Fraction of offline that are SL
+                        h.SetBinContent(5, nOfflineSL[channel.channelName] / nOffline[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(5, "nOfflineSL/nOffline")
 
                     outputDirs[variable][channel.channelName].cd()
                     for h in histograms[variable][channel.channelName]:
