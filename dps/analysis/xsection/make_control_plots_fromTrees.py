@@ -39,8 +39,8 @@ def getHistograms( histogram_files,
     
     # Channel specific files and weights
     if 'electron' in channel:
-        histogram_files['data'] = measurement_config.data_file_electron_trees
-        histogram_files['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
+        histogram_files['data'] = measurement_config.data_file_electron
+        histogram_files['QCD'] = measurement_config.electron_QCD_MC_trees[category]
         if normalise_to_fit:
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
@@ -48,8 +48,8 @@ def getHistograms( histogram_files,
         # if not 'QCD' in channel and not 'NPU' in branchName:
         #     weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
-        histogram_files['data'] = measurement_config.data_file_muon_trees
-        histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
+        histogram_files['data'] = measurement_config.data_file_muon
+        histogram_files['QCD'] = measurement_config.muon_QCD_MC_trees[category]
         if normalise_to_fit:
             normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
@@ -69,12 +69,12 @@ def getHistograms( histogram_files,
     # Get histograms for combined channel
     if channel == 'combined':
         histogram_files_electron = dict(histogram_files)
-        histogram_files_electron['data'] = measurement_config.data_file_electron_trees
-        histogram_files_electron['QCD'] = measurement_config.electron_QCD_MC_category_templates_trees[category]
+        histogram_files_electron['data'] = measurement_config.data_file_electron
+        histogram_files_electron['QCD'] = measurement_config.electron_QCD_MC_trees[category]
 
         histogram_files_muon = dict(histogram_files)
-        histogram_files_muon['data'] = measurement_config.data_file_muon_trees
-        histogram_files_muon['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
+        histogram_files_muon['data'] = measurement_config.data_file_muon
+        histogram_files_muon['QCD'] = measurement_config.muon_QCD_MC_trees[category]
 
         # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
         # histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
@@ -352,14 +352,14 @@ if __name__ == '__main__':
     make_additional_QCD_plots = options.additional_QCD_plots
     
     histogram_files = {
-            'TTJet': measurement_config.ttbar_category_templates_trees[category],
-            'V+Jets': measurement_config.VJets_category_templates_trees[category],
-            'QCD': measurement_config.electron_QCD_MC_category_templates_trees[category],
-            'SingleTop': measurement_config.SingleTop_category_templates_trees[category],
+            'TTJet': measurement_config.ttbar_trees[category],
+            'V+Jets': measurement_config.VJets_trees[category],
+            'QCD': measurement_config.electron_QCD_MC_trees[category],
+            'SingleTop': measurement_config.SingleTop_trees[category],
     }
 
-    if (generator != 'PowhegPythia8'):
-        histogram_files['TTJet'] = measurement_config.ttbar_generator_category_templates_trees[generator]
+    if 'PowhegPythia8' not in generator:
+        histogram_files['TTJet'] = measurement_config.ttbar_trees[category].replace('PowhegPythia8', generator)
 
     # Leftover from run1, when fit method was used
     # Leave implementation for now
@@ -371,7 +371,6 @@ if __name__ == '__main__':
     preliminary = True
     useQCDControl = True
     # showErrorBandOnRatio = True
-    b_tag_bin = '2orMoreBtags'
     norm_variable = 'MET'
     # comment out plots you don't want
     include_plots = [
@@ -387,13 +386,13 @@ if __name__ == '__main__':
                         'AbsLeptonEta',
                         'NJets',
                         'NBJets',
-                        'NBJetsNoWeight',
-                        'NBJetsUp',
-                        'NBJetsDown',
-                        'NBJets_LightUp',
-                        'NBJets_LightDown',
-                        'JetPt',
-                        'RelIso',
+                        # 'NBJetsNoWeight',
+                        # 'NBJetsUp',
+                        # 'NBJetsDown',
+                        # 'NBJets_LightUp',
+                        # 'NBJets_LightDown',
+                        # 'JetPt',
+                        # 'RelIso',
                         # 'sigmaietaieta'
                         ]
 
@@ -423,6 +422,7 @@ if __name__ == '__main__':
         b_tag_bin = '2orMoreBtags'
 
         # Set folder for this batch of plots
+        b_tag_bin = '2orMoreBtags'
         output_folder = output_folder_base + "/Variables/" + selection + "/"
         make_folder_if_not_exists(output_folder)
         print '--->', channel
