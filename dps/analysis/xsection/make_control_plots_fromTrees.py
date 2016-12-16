@@ -301,18 +301,13 @@ def parse_arguments():
     parser = ArgumentParser(__doc__)
     parser.add_argument( "-p", "--path", 
         dest = "path", 
-        default = 'data/M3_angle_bl/',
+        default = 'data/normalisation/background_subtraction',
         help = "set path to JSON files" 
     )
     parser.add_argument( "-o", "--output_folder", 
         dest = "output_folder", 
         default = 'plots/control_plots/',
         help = "set path to save plots" 
-    )
-    parser.add_argument( "-m", "--metType", 
-        dest = "metType", 
-        default = 'type1',
-        help = "set MET type used in the analysis of MET-dependent variables" 
     )
     parser.add_argument( "-c", "--centre-of-mass-energy", 
         dest = "CoM", 
@@ -350,7 +345,6 @@ if __name__ == '__main__':
 
     measurement_config = XSectionConfig( args.CoM )
     # caching of variables for shorter access
-    translate_options = measurement_config.translate_options
     
     path_to_JSON = '%s/%dTeV/' % ( args.path, measurement_config.centre_of_mass_energy )
     normalise_to_data = args.normalise_to_data
@@ -361,7 +355,6 @@ if __name__ == '__main__':
     output_folder_base = output_folder
     category = args.category
     generator = args.generator
-    met_type = translate_options[args.metType]
     make_additional_QCD_plots = args.additional_QCD_plots
     
     histogram_files = {
