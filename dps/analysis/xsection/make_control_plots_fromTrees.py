@@ -299,11 +299,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
 def parse_arguments():
     parser = ArgumentParser(__doc__)
-    parser.add_argument( "-p", "--path", 
-        dest = "path", 
-        default = 'data/normalisation/background_subtraction',
-        help = "set path to JSON files" 
-    )
     parser.add_argument( "-o", "--output_folder", 
         dest = "output_folder", 
         default = 'plots/control_plots/',
@@ -340,13 +335,11 @@ def parse_arguments():
 
 if __name__ == '__main__':
     set_root_defaults()
-
     args = parse_arguments()
 
     measurement_config = XSectionConfig( args.CoM )
     # caching of variables for shorter access
     
-    path_to_JSON = '%s/%dTeV/' % ( args.path, measurement_config.centre_of_mass_energy )
     normalise_to_data = args.normalise_to_data
     
     output_folder = '%s/before_fit/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
