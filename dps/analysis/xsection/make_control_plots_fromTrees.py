@@ -41,8 +41,6 @@ def getHistograms( histogram_files,
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron
         histogram_files['QCD'] = measurement_config.electron_QCD_MC_trees[category]
-        if normalise_to_fit:
-            normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_electron
         # if not 'QCD' in channel and not 'NPU' in branchName:
@@ -50,8 +48,6 @@ def getHistograms( histogram_files,
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_trees[category]
-        if normalise_to_fit:
-            normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_muon
         # if not 'QCD' in channel:
@@ -116,12 +112,7 @@ def getHistograms( histogram_files,
             control_region_hists[sample] = histograms_QCDControlRegion[sample][qcd_control_region]
 
     # Prepare histograms
-    if normalise_to_fit:
-        # only scale signal region to fit (results are invalid for control region)
-        prepare_histograms( signal_region_hists, rebin = rebin,
-                            scale_factor = measurement_config.luminosity_scale,
-                            normalisation = normalisation )
-    elif normalise_to_data:
+    if normalise_to_data:
         totalMC = 0
         for sample in signal_region_hists:
             if sample is 'data' : continue
@@ -179,7 +170,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
               ratio_y_limits = [0.5, 1.5],
               normalise = False,
               ):
-    global output_folder, measurement_config, category, normalise_to_fit, showErrorBandOnRatio
+    global output_folder, measurement_config, category, showErrorBandOnRatio
     global preliminary, norm_variable, sum_bins, b_tag_bin, histogram_files
 
     # Lumi title of plots
@@ -277,10 +268,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
     if branchName in ['NJets', 'NBJets', 'NBJetsNoWeight']:
         histogram_properties.integerXVariable = True
 
-    # if normalise_to_fit:
-    #     histogram_properties.mc_error = get_normalisation_error( normalisation )
-    #     histogram_properties.mc_errors_label = 'fit uncertainty'
-
     if normalise_to_data:
             histogram_properties.name += '_normToData'
     output_folder_to_use = output_folder
@@ -342,11 +329,6 @@ def parse_arguments():
         default = 'PowhegPythia8',
         help = "set the generator (PowhegPythia8, powhegHerwigpp, amc, amcatnloHerwigpp, madgraph)" 
     )
-    parser.add_argument( "-n", "--normalise_to_fit", 
-        dest = "normalise_to_fit", 
-        action = "store_true",
-        help = "normalise the MC to fit results" 
-    )
     parser.add_argument( "-d", "--normalise_to_data", 
         dest = "normalise_to_data", 
         action = "store_true",
@@ -371,12 +353,10 @@ if __name__ == '__main__':
     translate_options = measurement_config.translate_options
     
     path_to_JSON = '%s/%dTeV/' % ( args.path, measurement_config.centre_of_mass_energy )
-    normalise_to_fit = args.normalise_to_fit
     normalise_to_data = args.normalise_to_data
-    if normalise_to_fit:
-        output_folder = '%s/after_fit/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
-    else:
-        output_folder = '%s/before_fit/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
+    
+    output_folder = '%s/before_fit/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
+    
     make_folder_if_not_exists( output_folder )
     output_folder_base = output_folder
     category = args.category
