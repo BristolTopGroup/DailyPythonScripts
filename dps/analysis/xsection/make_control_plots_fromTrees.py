@@ -310,46 +310,79 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # make_plot_tmp( qcd_from_data, histogram_properties, save_folder = output_folder_to_use+'test' )
 
 
+def parse_arguments():
+    parser = ArgumentParser(__doc__)
+    parser.add_argument( "-p", "--path", 
+        dest = "path", 
+        default = 'data/M3_angle_bl/',
+        help = "set path to JSON files" 
+    )
+    parser.add_argument( "-o", "--output_folder", 
+        dest = "output_folder", 
+        default = 'plots/control_plots/',
+        help = "set path to save plots" 
+    )
+    parser.add_argument( "-m", "--metType", 
+        dest = "metType", 
+        default = 'type1',
+        help = "set MET type used in the analysis of MET-dependent variables" 
+    )
+    parser.add_argument( "-c", "--centre-of-mass-energy", 
+        dest = "CoM", 
+        default = 13, type = int,
+        help = "set the centre of mass energy for analysis. Default = 13 [TeV]" 
+    )
+    parser.add_argument( "--category", 
+        dest = "category", 
+        default = 'central',
+        help = "set the category to take the fit results from (default: central)" 
+    )
+    parser.add_argument( "--generator", 
+        dest = "generator", 
+        default = 'PowhegPythia8',
+        help = "set the generator (PowhegPythia8, powhegHerwigpp, amc, amcatnloHerwigpp, madgraph)" 
+    )
+    parser.add_argument( "-n", "--normalise_to_fit", 
+        dest = "normalise_to_fit", 
+        action = "store_true",
+        help = "normalise the MC to fit results" 
+    )
+    parser.add_argument( "-d", "--normalise_to_data", 
+        dest = "normalise_to_data", 
+        action = "store_true",
+        help = "normalise the MC to data" 
+    )
+    parser.add_argument( "-a", "--additional-plots", 
+        action = "store_true", 
+        dest = "additional_QCD_plots",
+        help = "creates a set of QCD plots for exclusive bins for all variables" 
+    )
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == '__main__':
     set_root_defaults()
-    parser = OptionParser()
-    parser.add_option( "-p", "--path", dest = "path", default = 'data/M3_angle_bl/',
-                  help = "set path to JSON files" )
-    parser.add_option( "-o", "--output_folder", dest = "output_folder", default = 'plots/control_plots/',
-                  help = "set path to save plots" )
-    parser.add_option( "-m", "--metType", dest = "metType", default = 'type1',
-                      help = "set MET type used in the analysis of MET-dependent variables" )
-    parser.add_option( "-c", "--centre-of-mass-energy", dest = "CoM", default = 13, type = int,
-                      help = "set the centre of mass energy for analysis. Default = 13 [TeV]" )
-    parser.add_option( "--category", dest = "category", default = 'central',
-                      help = "set the category to take the fit results from (default: central)" )
-    parser.add_option( "--generator", dest = "generator", default = 'PowhegPythia8',
-                      help = "set the generator (PowhegPythia8, powhegHerwigpp, amc, amcatnloHerwigpp, madgraph)" )
-    parser.add_option( "-n", "--normalise_to_fit", dest = "normalise_to_fit", action = "store_true",
-                  help = "normalise the MC to fit results" )
-    parser.add_option( "-d", "--normalise_to_data", dest = "normalise_to_data", action = "store_true",
-                  help = "normalise the MC to data" )
-    parser.add_option( "-a", "--additional-plots", action = "store_true", dest = "additional_QCD_plots",
-                      help = "creates a set of QCD plots for exclusive bins for all variables" )
 
-    ( options, args ) = parser.parse_args()
-    measurement_config = XSectionConfig( options.CoM )
+    args = parse_arguments()
+
+    measurement_config = XSectionConfig( args.CoM )
     # caching of variables for shorter access
     translate_options = measurement_config.translate_options
     
-    path_to_JSON = '%s/%dTeV/' % ( options.path, measurement_config.centre_of_mass_energy )
-    normalise_to_fit = options.normalise_to_fit
-    normalise_to_data = options.normalise_to_data
+    path_to_JSON = '%s/%dTeV/' % ( args.path, measurement_config.centre_of_mass_energy )
+    normalise_to_fit = args.normalise_to_fit
+    normalise_to_data = args.normalise_to_data
     if normalise_to_fit:
-        output_folder = '%s/after_fit/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
+        output_folder = '%s/after_fit/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
     else:
-        output_folder = '%s' % ( options.output_folder )
+        output_folder = '%s/before_fit/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
     make_folder_if_not_exists( output_folder )
     output_folder_base = output_folder
-    category = options.category
-    generator = options.generator
-    met_type = translate_options[options.metType]
-    make_additional_QCD_plots = options.additional_QCD_plots
+    category = args.category
+    generator = args.generator
+    met_type = translate_options[args.metType]
+    make_additional_QCD_plots = args.additional_QCD_plots
     
     histogram_files = {
             'TTJet': measurement_config.ttbar_trees[category],
