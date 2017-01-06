@@ -3,314 +3,223 @@
 '''
 from __future__ import division
 from . import log
-import copy
-from rootpy.io.file import Directory
-from dps.utils.ROOT_utils import get_histogram_from_file
-from dps.utils.file_utilities import make_folder_if_not_exists,\
-    write_data_to_JSON, read_data_from_JSON
-from dps.utils.input import Input
-from dps.utils.hist_utilities import clean_control_region
+from dps.utils.hist_utilities import hist_to_value_error_tuplelist, clean_control_region
+
 # define logger for this module
 meas_log = log["dps.utils.measurement"]
 
-
 class Measurement():
-
     '''
         The Measurement class combines files and histogram paths into
         one container. It also allows to provide separate shapes for the
         histograms while using the normalisation from the initial set.
     '''
-
     @meas_log.trace()
-    def __init__(self, name):
-        self.name = name
-        self.variable = ''
-        self.centre_of_mass_energy = 0
-        self.channel = ''
-        self.samples = {}
-        self.shapes = {}
-        self.norms = {}
-        self.histograms = {}
-        self.fit_variables = {}
+    def __init__(self, measurement):
+        self.measurement    = measurement
+        self.histograms     = {}
+        self.cr_histograms  = {}
+        self.normalisation  = {}
+        self.variable       = None
+        self.com            = None
+        self.channel        = None
+        self.name           = None
+        self.is_normalised  = False
+        self.central        = False
+        self.samples        = {}
+        self.__setFromConfig()
 
-        self.have_read_samples = False
-        self.have_read_shapes = False
-        self.have_read_norms = False
+    def __setFromConfig(self):
+        self.variable   = self.measurement["variable"]
+        self.com        = self.measurement["com"]
+        self.channel    = self.measurement["channel"]
+        self.samples    = self.measurement["samples"]
+        self.name       = self.measurement["name"]
+        data_driven_qcd = self.measurement["data_driven_qcd"]
 
-        self.met_type = ''
+        # Is this central or a systematic?
+        if "central" in self.name:
+            self.central = True
 
-        self.type = 0
+        # Retrieve histograms from files for SR and CR
+        for sample, histogram_info in self.samples.iteritems():
+            self.histograms[sample] = self.__return_histogram(histogram_info)
+            if data_driven_qcd:
+                self.cr_histograms[sample] = self.__return_histogram(histogram_info, useQCDControl=True)
 
-        self.aux_info_norms = {}
+            # print(hist_to_value_error_tuplelist(self.histograms[sample]))
+            # print(hist_to_value_error_tuplelist(self.cr_histograms[sample]))
 
-    @meas_log.trace()
-    def addSample(self, sample, read=True, **kwargs):
-        self.samples[sample] = kwargs
-        # TODO: add tree & branch, selection etc
-        # whatever get_histograms_from_trees needs
-        if read:
-            self.read_sample(sample)
-
-    @meas_log.trace()
-    def addShapeForSample(self, sample, measurement, read=True):
-        self.shapes[sample] = measurement
-        if read:
-            self.read_shape(sample)
-
-    @meas_log.trace()
-    def addNormForSample(self, sample, measurement, read=True):
-        self.norms[sample] = measurement
-        if read:
-            self.read_norm(sample)
-
-    @meas_log.trace()
-    def addFitVariable(self, variable, measurement):
-        self.fit_variables[variable] = measurement
-
-    @meas_log.trace()
-    def toJSON(self, JSON_file):
-        output = self.toDict()
-        filename = JSON_file.split('/')[-1]
-        directory = JSON_file.replace(filename, '')
-        make_folder_if_not_exists(directory)
-        write_data_to_JSON(output, JSON_file)
-
-    @meas_log.trace()
-    def toDict(self):
-        output = {}
-        output['class'] = str(self.__class__)
-        output['name'] = self.name
-        output['variable'] = self.variable
-        output['centre_of_mass_energy'] = self.centre_of_mass_energy
-        output['samples'] = self.samples
-        output['shapes'] = {shape: meas.toDict()
-                            for shape, meas in self.shapes.items()}
-        output['norms'] = {norm: meas.toDict()
-                           for norm, meas in self.norms.items()}
-        output['channel'] = self.channel
-        output['met_type'] = self.met_type
-        for sample in output['samples'].keys():
-            if output['samples'][sample].has_key('input'):
-                output['samples'][sample]['input'] = output[
-                    'samples'][sample]['input'].toDict()
-
-        return output
-
-    @staticmethod
-    def fromJSON(JSON_file):
-        src = read_data_from_JSON(JSON_file)
-        m = Measurement.fromDict(src)
-
-        return m
-
-    @staticmethod
-    def fromDict(d):
-        m = None
-        if d['class'] == 'dps.utils.measurement.Measurement':
-            m = Measurement(d['name'])
-        if d['class'] == 'dps.utils.measurement.Systematic':
-            m = Systematic(d['name'], d['type'],
-                           affected_samples=d['affected_samples'], scale=d['scale'])
-        m.setVariable(d['variable'])
-        m.setCentreOfMassEnergy(int(d['centre_of_mass_energy']))
-        m.setChannel(d['channel'])
-        m.setMETType(d['met_type'])
-        for sample, i in d['samples'].items():
-            if i.has_key('input'):
-                inp = Input(**i['input'])
-                m.addSample(sample, read=True, input=inp)
-            else:
-                m.addSample(sample, i['file'], i['hist'], read=True)
-        for shape, obj in d['shapes'].items():
-            m.addShapeForSample(shape, Measurement.fromDict(obj), read=True)
-        for norm, obj in d['norms'].items():
-            m.addNormForSample(
-                norm, Measurement.fromDict(obj), read=True)
-        return m
-
-    @meas_log.trace()
-    def toROOT(self):
-        '''
-            Converts measurement into something that can be stored in a ROOT
-            file
-        '''
+        # Replace QCD MC with data-driven MC
+        if data_driven_qcd:
+            self.__qcd_from_data()
         return
-        d = Directory(name=self.name)
-        # create shape and norm folders if there is anything to be saved
-        # what needs to be saved
-        # MET type
-        return d
 
-    @meas_log.trace()
-    def setVariable(self, variable):
-        self.variable = variable
+    def __qcd_from_data(self):
+        '''
+        Replace Signal region mc qcd with data driven qcd
 
-    @meas_log.trace()
-    def setCentreOfMassEnergy(self, com):
-        self.centre_of_mass_energy = com
+                        N MC QCD in SR      N DD QCD in CR
+        QCD_SHAPE   *   --------------  *   --------------
+                        N DD QCD in CR      N MC QCD in CR
 
-    @meas_log.trace()
-    def setChannel(self, channel):
-        self.channel = channel
+          Shape         normalise to        scale from
+                        SR mc qcd           mc qcd to dd qcd
+        '''
+        # Get the shape of the data driven qcd in the control region
+        qcd_shape = clean_control_region(
+            self.cr_histograms,
+            subtract=['TTBar', 'V+Jets', 'SingleTop']
+        )
+        # print(hist_to_value_error_tuplelist(qcd_shape))
 
-    @meas_log.trace()
-    def setMETType(self, met_type):
-        self.met_type = met_type
+        # Now to normalise the qcd shape to the MC in the Signal Region
+        # n_dd_cr= Number of datadriven qcd from Control Region
+        n_mc_sr = self.histograms['QCD'].Integral()
+        n_dd_cr = qcd_shape.Integral()
+        qcd_shape.Scale( n_mc_sr/n_dd_cr )
+        # print "scaling to normalisation in SR MC : ", n_mc_sr/n_dd_cr
 
-    @meas_log.trace()
-    def getCleanedShape(self, sample):
-        subtract = copy.copy(self.histograms.keys())
-        subtract.remove(sample)
-        subtract.remove('data')
-        hist = clean_control_region(self.histograms,
-                                       data_label='data',
-                                       subtract=subtract,
-                                       fix_to_zero=True)
-        return hist
+        # Now to scale from mc qcd to datadriven qcd
+        n_mc_cr = self.cr_histograms['QCD'].Integral()
+        qcd_shape.Scale( n_dd_cr/n_mc_cr )
+        # print "scaling from MC to datadriven : ", n_dd_cr/n_mc_cr
+        # print "Total scaling : ", n_mc_sr/n_mc_cr
 
-    @meas_log.trace()
-    def read(self):
-        self.read_samples()
-        self.read_shapes()
-        self.read_norms()
+        # Replace QCD histogram with datadriven one
+        self.histograms['QCD'] = qcd_shape
+        return
 
-    @meas_log.trace()
-    def read_samples(self):
-        if self.have_read_samples:
+    def __return_histogram(self, d_hist_info, ignoreUnderflow=True, useQCDControl=False):
+        '''
+        Takes basic histogram info and returns histo.
+        Maybe this can move to ROOT_utilities?
+        '''
+        from rootpy.io.file import File
+        from rootpy.plotting import Hist
+        from dps.utils.hist_utilities import fix_overflow
+
+        f           = d_hist_info['input_file']
+        tree        = d_hist_info['tree']
+        qcd_tree    = d_hist_info["qcd_control_region"]
+        var         = d_hist_info['branch']
+        bins        = d_hist_info['bin_edges']
+        lumi_scale  = d_hist_info['lumi_scale']
+        scale       = d_hist_info['scale']
+        weights     = d_hist_info['weight_branches']
+        selection   = d_hist_info['selection']
+
+        if useQCDControl: 
+            # replace SR tree with CR tree
+            tree = qcd_tree
+            # Remove the Lepton reweighting for the datadriven qcd (SF not derived for unisolated leptons)
+            for weight in weights:
+                if 'Electron' in weight: weights.remove(weight)
+                elif 'Muon'   in weight: weights.remove(weight)
+
+        weights = "*".join(weights)
+        # Selection will return a weight 0 or 1 depending on whether event passes selection
+        weights_and_selection = '( {0} ) * ( {1} )'.format(weights, selection)
+
+        scale *= lumi_scale
+
+        root_file = File( f )
+        root_tree = root_file.Get( tree )
+
+        root_histogram = Hist( bins )
+        # Draw histogram of var for selection into root_histogram
+        root_tree.Draw(var, selection = weights_and_selection, hist = root_histogram)
+        root_histogram.Scale(scale)
+
+        # When a tree is filled with a dummy variable, it will end up in the underflow, so ignore it
+        if ignoreUnderflow:
+            root_histogram.SetBinContent(0, 0)
+            root_histogram.SetBinError(0,0)
+
+        # Fix overflow (Moves entries from overflow bin into last bin i.e. last bin not |..| but |--> ) 
+        root_histogram = fix_overflow(root_histogram)
+
+        root_file.Close()
+        return root_histogram
+
+
+    def __background_subtraction(self, histograms):
+        '''
+        Subtracts the backgrounds from data to give amount of ttbar in data.
+        Also adds all backgrounds to normalisation output
+        '''
+        ttjet_hist = clean_control_region(
+            histograms,
+            subtract=['QCD', 'V+Jets', 'SingleTop']
+        )
+        self.normalisation['TTJet']     = hist_to_value_error_tuplelist(ttjet_hist)
+        self.normalisation['data']      = hist_to_value_error_tuplelist(histograms['data'])
+        # self.normalisation['TTBar']   = hist_to_value_error_tuplelist(histograms['TTBar'])
+        self.normalisation['SingleTop'] = hist_to_value_error_tuplelist(histograms['SingleTop'])
+        self.normalisation['V+Jets']    = hist_to_value_error_tuplelist(histograms['V+Jets'])
+        self.normalisation['QCD']       = hist_to_value_error_tuplelist(histograms['QCD'])
+        return
+
+    def calculate_normalisation(self):
+        '''
+        Calls the normalisation of the ttbar samples
+        '''
+        # normalisation already calculated
+        if self.is_normalised: return
+
+        histograms = self.histograms
+        self.__background_subtraction(histograms)
+
+        # next, let's round all numbers (they are event numbers after all)
+        for sample, values in self.normalisation.items():
+            new_values = [(round(v, 1), round(e, 1)) for v, e in values]
+            self.normalisation[sample] = new_values
+        self.is_normalised = True
+        return
+
+    def save(self, phase_space):
+        '''
+        Saves the normalisation output into a JSON.
+        I would like to change this to a pandas Dataframe at somepoint after 
+        a few issues have been worked out
+        '''
+        from dps.utils.pandas_utilities import write_tuple_to_df
+        from dps.utils.file_utilities import make_folder_if_not_exists
+        # If normalisation hasnt been calculated  - then go calculate it!
+        if not self.is_normalised: self.calculate_normalisation()
+
+        output_folder = 'data/normalisation/background_subtraction/{com}TeV/{var}/{ps}/{cat}/'
+        output_folder = output_folder.format(
+            com = self.com,
+            var = self.variable,
+            ps  = phase_space,
+            cat = self.name,
+            )
+        make_folder_if_not_exists(output_folder)
+
+        file_template = '{type}_{channel}.txt'
+        f = file_template.format(
+            type='normalisation', 
+            channel=self.channel
+        )
+
+        write_tuple_to_df(
+            self.normalisation,
+            output_folder + f
+        )
+        return 
+
+    def combine(self, other):
+        '''
+        Combines the electron and muon measurements
+        '''
+        from dps.utils.Calculation import combine_complex_results
+        if not self.is_normalised or not other.is_normalised:
+            mylog.warn(
+                'One of the TTJetNormalisations does not have a normalisation, aborting.')
             return
-        for sample in self.samples.keys():
-            self.read_sample(sample)
-        self.have_read_samples = True
 
-    @meas_log.trace()
-    def read_sample(self, sample):
-        if self.samples[sample].has_key('input'):
-            i = self.samples[sample]['input']
-            if isinstance(i, dict):
-                i = Input(**self.samples[sample]['input'])
-            self.histograms[sample] = i.read()
-            return
-        input_file = self.samples[sample]['input_file']
-        if self.samples[sample].has_key('hist'):
-            hist = self.samples[sample]['hist']
-            self.histograms[sample] = get_histogram_from_file(
-                hist, input_file)
-
-    @meas_log.trace()
-    def read_shapes(self):
-        if self.have_read_shapes:
-            return
-        if not self.have_read_samples:
-            self.read_samples()
-        for sample in self.shapes.keys():
-            self.read_shape(sample)
-        self.have_read_shapes = True
-
-    @meas_log.trace()
-    def read_norms(self):
-        if self.have_read_norms:
-            return
-        if not self.have_read_samples:
-            self.read_samples()
-        for sample in self.norms.keys():
-            self.read_norm(sample)
-        self.have_read_norms = True
-
-    @meas_log.trace()
-    def read_shape(self, sample):
-        '''
-            Shape from a Control Region (CR) is currently treated as:
-             - define process A for which you which to get the shape
-             - define CR
-             - subtract other processes from data in the CR
-             - normalise the result to process A in signal region
-             - replace process A in signal region with the new histogram
-        '''
-        measurement = self.shapes[sample]
-        shape = measurement.getCleanedShape(sample)
-        if sample in self.histograms.keys():
-            n_shape = shape.Integral()
-            mc = self.histograms[sample]
-            n_mc = mc.Integral()
-            scale = 1
-            if not n_shape == 0:
-                if not n_mc == 0:
-                    scale = 1 / n_shape * n_mc
-                else:
-                    scale = 1 / n_shape
-            shape.Scale(scale)
-            self.histograms[sample] = shape
-        else:
-            meas_log.warning(
-                'No MC entry found for sample "{0}", using shape normalisation'.format(sample))
-            self.histograms[sample] = shape
-
-    @meas_log.trace()
-    def read_norm(self, sample):
-        '''
-            Normalisation from a Control Region (CR) is currently treated as:
-             - define normalisation for process A
-             - define CR
-             - subtract other processes from data in the CR
-             - calculate the ratio between process A and data (both in CR)
-             - apply ratio to process A in signal region
-        '''
-        measurement = self.norms[sample]
-        self.aux_info_norms[sample] = {}
-        # get ratio from control region
-        norm = measurement.getCleanedShape(sample)
-        mc_in_control = measurement.histograms[sample]
-        # scale sample to this ratio
-        if sample in self.histograms.keys():
-            n_data_control = norm.Integral()
-            n_mc_control = mc_in_control.Integral()
-            ratio = n_data_control / n_mc_control
-            meas_log.debug('Ratio from control region {0}'.format(ratio))
-            n_mc_signal_region = self.histograms[sample].integral()
-            self.histograms[sample].Scale(ratio)
-            self.aux_info_norms[sample]['norm_factor'] = round(ratio, 2)
-            self.aux_info_norms[sample]['n_mc_control'] = n_mc_control
-            self.aux_info_norms[sample][
-                'n_mc_signal_region'] = n_mc_signal_region
-            self.aux_info_norms[sample]['n_data_control'] = n_data_control
-        else:
-            meas_log.warning(
-                'No MC entry found for sample "{0}", using control region normalisation'.format(sample))
-            self.histograms[sample] = norm
-
-
-class Systematic(Measurement):
-
-    '''
-        The Systematic class is an extension of the Measurement class.
-        It allows to implement systematic specific functionality
-        (e.g. rate systematics).
-    '''
-
-    SHAPE = 10
-    RATE = 20
-
-    @meas_log.trace()
-    def __init__(self, name,
-                 stype=SHAPE,
-                 affected_samples=[],
-                 scale=1.):
-        '''
-        Constructor
-        '''
-        Measurement.__init__(self, name)
-        self.type = stype
-
-        self.affected_samples = affected_samples
-
-        self.scale = scale
-
-    @meas_log.trace()
-    def toDict(self):
-        output = Measurement.toDict(self)
-        output['type'] = self.type
-        output['affected_samples'] = self.affected_samples
-        output['scale'] = self.scale
-
-        return output
+        self.normalisation = combine_complex_results(
+            self.normalisation, other.normalisation)
+        self.channel = 'combined'
+        return

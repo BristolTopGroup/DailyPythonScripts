@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from dps.utils.logger import log
 from dps.config.xsection import XSectionConfig
 from dps.utils.file_utilities import get_files_in_path, read_data_from_JSON
-from dps.utils.measurement2 import Measurement
+from dps.utils.measurement import Measurement
 from dps.utils.ROOT_utils import set_root_defaults
 
 # define logger for this module
