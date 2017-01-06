@@ -14,15 +14,15 @@ Summary of what to run:
 Make the configs.  These store where the input unfolding files and input data (ttbar normalisation) are.
 Check that you pick up the correct files - typically they are in your local dps directory, or on hdfs.
 ```shell
-python src/unfolding_tests/makeConfig.py 
+python src/unfolding_tests/00_makeConfig.py 
 ```
 You can get the best regularisation for one variable/phase space/channel (i.e. one config file), example:
 ```shell
-python src/unfolding_tests/get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/abs_lepton_eta_13TeV_combined_channel.json
+python src/unfolding_tests/01_get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/abs_lepton_eta_13TeV_combined_channel.json
 ```
 or run on several using wildcards.  To run on all 13TeV variables, combined channel, in the visible phase:
 ```shell
-python src/unfolding_tests/get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/*_13TeV_combined_channel.json
+python src/unfolding_tests/01_get_best_regularisation_TUnfold.py config/unfolding/VisiblePS/*_13TeV_combined_channel.json
 ```
 
 ## Reweighting check
@@ -35,7 +35,7 @@ and the underlying true distribution in data, should then be smaller than (or si
 the bias seen in the unfolded distributions for the reweighted samples.
 
 ```shell
-python src/unfolding_tests/compare_reweighting.py
+python src/unfolding_tests/02_compare_reweighting.py
 ```
 
 
@@ -49,21 +49,21 @@ For the bias plots, the central case is plotted as points, and all other MC samp
  
  Currently, the central sample (Powheg Pythia) is plotted, along with two reweighted MC samples.  The reweighting is performed on the top pt.
 ```shell
-python src/unfolding_tests/closure_test.py 
+python src/unfolding_tests/03_closure_test.py 
 ```
 
 
 ## Creating toy MC
 First we need to create a set of toy MC. Run
 ```shell
-python src/unfolding_tests/create_toy_mc.py -s powhegPythia
+python src/unfolding_tests/04_create_toy_mc.py -s powhegPythia
 ```
 This will create 300 toy mc (300 is the default amount, probably need more for a full study) based on the powheg pythia sample.
 Other possible options for -s are currently "madgraph" and "amcatnlo"
 
 For more information about available parameters, do
 ```shell
-python src/unfolding_tests/create_toy_mc.py -h
+python src/unfolding_tests/04_create_toy_mc.py -h
 ```
 This will create a root file in data/toy_mc named toy_mc_powhegPythia_N_300_13TeV.root
 (generally toy_mc_<sample>_N_<n>_<centre-of-mass>TeV.root).
@@ -71,7 +71,7 @@ This file can be used in the next step.
 
 ## Creating pull distributions
 ```shell
-python src/unfolding_tests/create_unfolding_pull_data.py -f data/toy_mc/toy_mc_powhegPythia_N_300_13TeV.root -c combined -n 10 -v HT -s powhegPythia --tau 0.001
+python src/unfolding_tests/05_create_unfolding_pull_data.py -f data/toy_mc/toy_mc_powhegPythia_N_300_13TeV.root -c combined -n 10 -v HT -s powhegPythia --tau 0.001
 ```
 This will consider the toy mc file, for HT in the combined channel.  It will take the first 10 toy mc in that file, and unfold with a tau value of 0.001.
 Output will be placed in:
@@ -95,9 +95,9 @@ Passing --scan_tau will tell the script to submit jobs for a range of tau values
 ## Analysing pull data
 Making the plots (just pass a file created by the previous step):
 ```shell
-python src/unfolding_tests/make_unfolding_pull_plots.py data/pull_data/13TeV/HT/powhegPythia/Pull_data_TUnfold_combined_0.001905.txt 
+python src/unfolding_tests/06_make_unfolding_pull_plots.py data/pull_data/13TeV/HT/powhegPythia/Pull_data_TUnfold_combined_0.001905.txt 
 ```
 for more information on which plots are going to be produce please consult
 ```shell
-python src/unfolding_tests/make_unfolding_pull_plots.py -h
+python src/unfolding_tests/06_make_unfolding_pull_plots.py -h
 ```

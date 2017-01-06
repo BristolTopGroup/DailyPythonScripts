@@ -9,20 +9,15 @@ from dps.config.variable_binning import reco_bin_edges_vis
 from dps.utils.plotting import compare_measurements, Histogram_properties
 from dps.config import latex_labels
 
-
-
 def main():
 
 	config = XSectionConfig(13)
 
-	file_for_powhegPythia  = File(config.unfolding_central, 'read')
-	file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
-	file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
-	file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
-	file_for_etaReweight_down = File(config.unfolding_etareweight_down, 'read')
-	file_for_data_template = 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_combined_patType1CorrectedPFMet.txt'
-
-
+	file_for_powhegPythia  		= File(config.unfolding_central, 'read')
+	file_for_ptReweight 		= File(config.unfolding_ptreweight, 'read')
+	file_for_etaReweight_up 	= File(config.unfolding_etareweight_up, 'read')
+	file_for_etaReweight_down 	= File(config.unfolding_etareweight_down, 'read')
+	file_for_data_template 		= 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_combined.txt'
 
 	for channel in ['combined']:
 		for variable in config.variables:
@@ -43,8 +38,8 @@ def main():
 
 
 			# Get the reweighted powheg pythia distributions
-			_, _, response_pt_reweighted_up, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_ptReweight_up,
+			_, _, response_pt_reweighted, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_ptReweight,
 				variable=variable,
 				channel=channel,
 				centre_of_mass=13,
@@ -52,21 +47,9 @@ def main():
 				visiblePS=True
 			)
 
-			measured_pt_reweighted_up = asrootpy(response_pt_reweighted_up.ProjectionX('px',1))
-			truth_pt_reweighted_up = asrootpy(response_pt_reweighted_up.ProjectionY())
+			measured_pt_reweighted = asrootpy(response_pt_reweighted_up.ProjectionX('px',1))
+			truth_pt_reweighted = asrootpy(response_pt_reweighted_up.ProjectionY())
 
-			_, _, response_pt_reweighted_down, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_ptReweight_down,
-				variable=variable,
-				channel=channel,
-				centre_of_mass=13,
-				load_fakes=False,
-				visiblePS=True
-			)
-				
-			measured_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionX('px',1))
-			truth_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionY())
-			
 			_, _, response_eta_reweighted_up, _ = get_unfold_histogram_tuple(
 				inputfile=file_for_etaReweight_up,
 				variable=variable,
@@ -101,9 +84,9 @@ def main():
 
 			hp = Histogram_properties()
 			hp.name = 'Reweighting_check_{channel}_{variable}_at_{com}TeV'.format(
-						channel=channel,
-						variable=variable,
-						com='13',
+				channel=channel,
+				variable=variable,
+				com='13',
 			)
 
 			v_latex = latex_labels.variables_latex[variable]
@@ -115,28 +98,26 @@ def main():
 			hp.title = 'Reweighting check for {variable}'.format(variable=v_latex)
 
 			measured_central.Rebin(2)
-			measured_pt_reweighted_up.Rebin(2)
-			measured_pt_reweighted_down.Rebin(2)
+			measured_pt_reweighted.Rebin(2)
 			measured_eta_reweighted_up.Rebin(2)
 			measured_eta_reweighted_down.Rebin(2)
 			data.Rebin(2)
 
 			measured_central.Scale( 1 / measured_central.Integral() )
-			measured_pt_reweighted_up.Scale( 1 / measured_pt_reweighted_up.Integral() )
-			measured_pt_reweighted_down.Scale( 1 / measured_pt_reweighted_down.Integral() )
+			measured_pt_reweighted.Scale( 1 / measured_pt_reweighted.Integral() )
 			measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
 			measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
 
 			data.Scale( 1 / data.Integral() )
 
 			compare_measurements(
-					models = {'Central' : measured_central, 'PtReweighted Up' : measured_pt_reweighted_up, 'PtReweighted Down' : measured_pt_reweighted_down, 'EtaReweighted Up' : measured_eta_reweighted_up, 'EtaReweighted Down' : measured_eta_reweighted_down},
-					measurements = {'Data' : data},
-					show_measurement_errors=True,
-					histogram_properties=hp,
-					save_folder='plots/unfolding/reweighting_check',
-					save_as=['pdf']
-					)
+				models = {'Central' : measured_central, 'PtReweighted' : measured_pt_reweighted, 'EtaReweighted Up' : measured_eta_reweighted_up, 'EtaReweighted Down' : measured_eta_reweighted_down},
+				measurements = {'Data' : data},
+				show_measurement_errors=True,
+				histogram_properties=hp,
+				save_folder='plots/unfolding/reweighting_check',
+				save_as=['pdf']
+			)
 
 
 if __name__ == '__main__':
