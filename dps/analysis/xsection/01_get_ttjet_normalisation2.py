@@ -18,7 +18,7 @@ def main():
     results = {}
 
     # config file template
-    input_template = 'TESTING/config/measurements/background_subtraction/{com}TeV/{ch}/{var}/{ps}/'
+    input_template = 'config/measurements/background_subtraction/{com}TeV/{ch}/{var}/{ps}/'
 
     if args.visiblePS:
         ps = 'VisiblePS'

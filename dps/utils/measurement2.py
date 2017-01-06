@@ -188,7 +188,7 @@ class Measurement():
         # If normalisation hasnt been calculated  - then go calculate it!
         if not self.is_normalised: self.calculate_normalisation()
 
-        output_folder = 'TESTING/data/normalisation/background_subtraction/{com}TeV/{var}/{ps}/{cat}/'
+        output_folder = 'data/normalisation/background_subtraction/{com}TeV/{var}/{ps}/{cat}/'
         output_folder = output_folder.format(
             com = self.com,
             var = self.variable,
