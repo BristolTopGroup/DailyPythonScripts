@@ -5,6 +5,7 @@ e.g. /hdfs/TopQuarkGroup/phxlk/ntuple/v0.0.8/Spring16/SingleMuon_Run2016E_Prompt
 import ROOT 
 from ROOT import gROOT, TFile, TH1F
 import sys
+import json
 
 inputFiles = sys.argv[1:]
 
@@ -32,4 +33,6 @@ for file in inputFiles:
 			outputJson[str(run)] = [[lumi, lumi]]
 		# print run,lumi
 	# print outputJson
-print json.dumps(outputJson)
+with open('json.txt', 'w') as outfile:
+	print json.dumps(outputJson)
+	json.dump(outputJson, outfile)
