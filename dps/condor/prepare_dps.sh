@@ -8,9 +8,9 @@ if [ -f "dps.tar" ]; then
 fi
 echo "... creating tar file (dps.tar)"
 mkdir -p jobs
-tar -zcf dps.tar bin condor config jobs src tools experimental \
+tar -zcf dps.tar bin dps config jobs src tools experimental \
 --exclude="*.pyc" --exclude="jobs/*/logs" \
 --exclude "*.tar" --exclude="config/unfolding" --exclude="experimental/topReco"
 
-hadoop fs -mkdir -p $1
-hadoop fs -copyFromLocal dps.tar $1
+# hadoop fs -mkdir -p $1
+# hadoop fs -copyFromLocal dps.tar $1

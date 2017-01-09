@@ -45,8 +45,8 @@ def getHistograms( histogram_files,
             normalisation = normalisations_electron[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_electron
-        if not 'QCD' in channel and not 'NPU' in branchName:
-            weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
+        # if not 'QCD' in channel and not 'NPU' in branchName:
+        #     weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon_trees
         histogram_files['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
@@ -54,8 +54,8 @@ def getHistograms( histogram_files,
             normalisation = normalisations_muon[norm_variable]
         if use_qcd_data_region:
             qcd_data_region = qcd_data_region_muon
-        if not 'QCD' in channel:
-            weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
+        # if not 'QCD' in channel:
+        #     weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
     print weightBranchSignalRegion
 
     # Apply selection to avoid non-physical values
@@ -76,10 +76,10 @@ def getHistograms( histogram_files,
         histogram_files_muon['data'] = measurement_config.data_file_muon_trees
         histogram_files_muon['QCD'] = measurement_config.muon_QCD_MC_category_templates_trees[category]
 
-        histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
-        histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
-        # histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
-        # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        # histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        # histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        histograms_muon = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_muon, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
+        histograms_electron = get_histograms_from_trees( trees = [signal_region_tree.replace('COMBINED','EPlusJets')], branch = branchName, weightBranch = weightBranchSignalRegion, files = histogram_files_electron, nBins = nBins, xMin = x_limits[0], xMax = x_limits[-1], selection = selection )
 
         if use_qcd_data_region:
             qcd_control_region = signal_region_tree.replace(b_Selection ,'QCD_Control')
@@ -235,12 +235,12 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
     mcSum = signal_region_hists['TTJet'].integral(overflow=True) + signal_region_hists['SingleTop'].integral(overflow=True) + signal_region_hists['V+Jets'].integral(overflow=True) + qcd_from_data.integral(overflow=True)
     print 'Total MC :',mcSum
-    print y_limits
 
     maxData = max( list(signal_region_hists['data'].y()) )
     y_limits = [0, maxData * 1.4]
     if log_y:
-        y_limits = [0.1, maxData * 10 ]
+        y_limits = [0.1, maxData * 100 ]
+
     # for i in range(0,signal_region_hists['data'].GetNbinsX()):
     #     print signal_region_hists['data'].GetBinContent()
     #     print i
@@ -343,7 +343,7 @@ if __name__ == '__main__':
     if normalise_to_fit:
         output_folder = '%s/after_fit/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
     else:
-        output_folder = '%s/before_fit/%dTeV/' % ( options.output_folder, measurement_config.centre_of_mass_energy )
+        output_folder = '%s' % ( options.output_folder )
     make_folder_if_not_exists( output_folder )
     output_folder_base = output_folder
     category = options.category
@@ -417,9 +417,10 @@ if __name__ == '__main__':
     selection = 'Ref selection' # also 'Ref selection NoBSelection'
     for channel, label in {
                             'electron' : 'EPlusJets', 
-                            # 'muon' : 'MuPlusJets',
-                            # 'combined' : 'COMBINED'
+                            'muon' : 'MuPlusJets',
+                            'combined' : 'COMBINED'
                             }.iteritems() : 
+        b_tag_bin = '2orMoreBtags'
 
         # Set folder for this batch of plots
         output_folder = output_folder_base + "/Variables/" + selection + "/"
@@ -609,7 +610,7 @@ if __name__ == '__main__':
                       x_limits = control_plots_bins['NJets'],
                       nBins = len(control_plots_bins['NJets'])-1,
                       rebin = 1,
-                      legend_location = ( 0.9, 0.83 ),
+                      legend_location = ( 1, 0.78 ),
                       cms_logo_location = 'left',
                       use_qcd_data_region = useQCDControl,
                       log_y = True,

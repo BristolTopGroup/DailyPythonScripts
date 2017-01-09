@@ -23,7 +23,9 @@ from dps.utils.systematic import append_PDF_uncertainties, print_dictionary,\
     get_normalised_cross_sections, get_symmetrised_systematic_uncertainty,\
     generate_covariance_matrices,\
     get_measurement_with_total_systematic_uncertainty,\
-    write_normalised_xsection_measurement
+    write_normalised_xsection_measurement,\
+    write_systematic_xsection_measurement
+
 
 if __name__ == '__main__':
     '''
@@ -93,7 +95,7 @@ if __name__ == '__main__':
     # Get list of all systematics
     all_systematics = measurement_config.list_of_systematics
     # Add in the PDF weights
-    all_systematics = append_PDF_uncertainties(all_systematics)
+    all_systematics = append_PDF_uncertainties(all_systematics, measurement_config.pdfWeightMin, measurement_config.pdfWeightMax)
 
     list_of_systematics = all_systematics
     # If you want different lists of systematics can just do some manipulation here

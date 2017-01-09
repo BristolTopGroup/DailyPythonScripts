@@ -6,7 +6,7 @@ from dps.config.xsection import XSectionConfig
 from dps.config.variable_binning import bin_edges_vis, reco_bin_edges_vis
 from dps.config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from dps.utils.file_utilities import make_folder_if_not_exists
-from math import trunc
+from math import trunc, exp, sqrt
 
 from scaleFactors import *
 
@@ -38,6 +38,14 @@ def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     else :
         return 1
 
+def calculateTopPtSystematicWeight( lepTopPt, hadTopPt ):
+    lepTopWeight = ptWeight( lepTopPt )
+    hadTopWeight = ptWeight( hadTopPt )
+    return sqrt( lepTopWeight * hadTopWeight )
+
+def ptWeight( pt ):
+    return exp( 0.0615 - 0.0005 * pt )
+
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
@@ -47,10 +55,16 @@ def getFileName( com, sample, measurementConfig ) :
                         'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
                         'powhegherwigpp' : measurementConfig.ttbar_powhegherwigpp_category_templates_trees,
                         'amcatnloherwigpp' : measurementConfig.ttbar_amcatnloherwigpp_category_templates_trees,
-                        'scaleup' : measurementConfig.ttbar_scaleup_category_templates_trees,
-                        'scaledown' : measurementConfig.ttbar_scaledown_category_templates_trees,
                         'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
                         'massup' : measurementConfig.ttbar_mtop1755_category_templates_trees,
+                        'topPtSystematic' : measurementConfig.ttbar_category_templates_trees['central'],
+                        'fsrup' : measurementConfig.ttbar_fsrup_category_templates_trees,
+                        'fsrdown' : measurementConfig.ttbar_fsrdown_category_templates_trees,
+                        'isrup' : measurementConfig.ttbar_isrup_category_templates_trees,
+                        'isrdown' : measurementConfig.ttbar_isrdown_category_templates_trees,
+                        'ueup' : measurementConfig.ttbar_ueup_category_templates_trees,
+                        'uedown' : measurementConfig.ttbar_uedown_category_templates_trees,
+
                         'jesdown' : measurementConfig.ttbar_jesdown_category_templates_trees,
                         'jesup' : measurementConfig.ttbar_jesup_category_templates_trees,
                         'jerdown' : measurementConfig.ttbar_jerdown_category_templates_trees,
@@ -79,7 +93,7 @@ def getFileName( com, sample, measurementConfig ) :
     return fileNames[com][sample]
 
 channels = [
-        # channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
+        channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
         channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
         ]
 
@@ -91,7 +105,6 @@ def main():
     parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
     parser.add_option('--pdfWeight', type='int', dest='pdfWeight', default=-1 )
     parser.add_option('--muFmuRWeight', type='int', dest='muFmuRWeight', default=-1 )
-    parser.add_option('--alphaSWeight', type='int', dest='alphaSWeight', default=-1 )
     parser.add_option('--nGeneratorWeights', type='int', dest='nGeneratorWeights', default=1 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
@@ -115,7 +128,6 @@ def main():
 
     pdfWeight = options.pdfWeight
     muFmuRWeight = options.muFmuRWeight
-    alphaSWeight = options.alphaSWeight
 
     # Output file name
     outputFileName = 'crap.root'
@@ -134,10 +146,6 @@ def main():
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
         elif options.applyTopPtReweighting == -1:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_down.root' % energySuffix            
-    elif alphaSWeight == 0:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaSDown.root' % ( energySuffix )
-    elif alphaSWeight == 1:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaSUp.root' % ( energySuffix )
     elif muFmuRWeight == 1:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_1muR2muF.root' % ( energySuffix )
     elif muFmuRWeight == 2:
@@ -160,7 +168,7 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
 
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
-        
+
             # Get the tree
             treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
             if options.sample == "jesup":
@@ -325,7 +333,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n == 10000: break
+                # if n == 100000: break
                 # # #
                 # # # Weights and selection
                 # # #
@@ -364,10 +372,16 @@ def main():
                 elif options.sample == "lightjetdown":
                     bjetWeight = event.LightJetDownWeight
 
+                # Top pt systematic weight
+                topPtSystematicWeight = 1
+                if options.sample == 'topPtSystematic':
+                    topPtSystematicWeight = calculateTopPtSystematicWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
+
                 offlineWeight = event.EventWeight * measurement_config.luminosity_scale
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
-                offlineWeight *= leptonWeight
+                # offlineWeight *= leptonWeight
+                offlineWeight *= topPtSystematicWeight
 
                 # Generator weight
                 # Scale up/down, pdf
@@ -376,15 +390,16 @@ def main():
                     offlineWeight *= branch('pdfWeight_%i' % pdfWeight)
                     pass
 
+
                 if muFmuRWeight >= 0:
                     genWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
                     offlineWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
                     pass
 
-                if alphaSWeight >= 0:
-                    genWeight *= branch('alphaSWeight_%i' % alphaSWeight)
-                    offlineWeight *= branch('alphaSWeight_%i' % alphaSWeight)
-                    pass
+                if options.applyTopPtReweighting != 0:
+                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
+                    offlineWeight *= ptWeight
+                    genWeight *= ptWeight
 
                 if options.applyTopPtReweighting != 0:
                     ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)

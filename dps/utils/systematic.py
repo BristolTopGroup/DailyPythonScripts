@@ -78,12 +78,12 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     df_to_file(output_file, d_rel)
     return
 
-def append_PDF_uncertainties(all_systematics):
+def append_PDF_uncertainties(all_systematics, minPdfWeight, maxPdfWeight):
     '''
     Replace 'PDF' entry in list of all systematics with actual PDF variations
     '''
     variation = []
-    for index in xrange (0, 100):
+    for index in xrange (minPdfWeight, maxPdfWeight):
         variation.append('PDFWeights_'+str(index))
     all_systematics['PDF'] = variation
     return all_systematics
@@ -346,15 +346,15 @@ def get_symmetrised_systematic_uncertainty(norm_syst_unc_x_secs, options):
     normalised_x_sections_with_symmetrised_systematics['BJet'][0] = bJet_tot
 
     # Combine PDF with alphaS variations
-    alphaS = normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS'][0]
-    pdf = normalised_x_sections_with_symmetrised_systematics['PDF'][0]
-    pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
-    normalised_x_sections_with_symmetrised_systematics['PDF'][0] = pdf_tot
+    # alphaS = normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS'][0]
+    # pdf = normalised_x_sections_with_symmetrised_systematics['PDF'][0]
+    # pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
+    # normalised_x_sections_with_symmetrised_systematics['PDF'][0] = pdf_tot
     # TODO combine the signs....
 
     # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
     del normalised_x_sections_with_symmetrised_systematics['LightJet']
-    del normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS']
+    # del normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS']
 
     return normalised_x_sections_with_symmetrised_systematics           
 

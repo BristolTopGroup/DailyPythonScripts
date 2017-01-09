@@ -2,10 +2,10 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/run2/atOutput/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.0/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
-    luminosities = {13:12835}
+    luminosities = {13:36459}
 
     parameters = [
         'SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
@@ -45,8 +45,6 @@ class XSectionConfig():
         'unfolding_matching_up', 'unfolding_matching_up_raw',
         'unfolding_mass_down', 'unfolding_mass_up',
         'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
-        'unfolding_scale_down', 'unfolding_scale_down_raw',
-        'unfolding_scale_up', 'unfolding_scale_up_raw',
         'unfolding_pdfweights',
         'vjets_theory_systematic_prefix'
     ]
@@ -88,8 +86,9 @@ class XSectionConfig():
     def __fill_defaults__( self ):
         self.met_type = 'patType1CorrectedPFMet'
 
-        self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/2016/'
-        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/2016/'
+        # self.path_to_files = self.current_analysis_path + str( self.centre_of_mass_energy ) + 'TeV/2016/'
+        self.path_to_files = self.current_analysis_path
+        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/Moriond2017/'
 
         path_to_files = self.path_to_files
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
@@ -208,15 +207,15 @@ class XSectionConfig():
             # QCD Shape
             'QCD_shape'                 : ['QCD_shape', 'QCD_shape'],
             # Generator Uncertainties
-            'TTJets_scale'              : ['TTJets_scaleup', 'TTJets_scaledown'],
             'TTJets_mass'               : ['TTJets_massup', 'TTJets_massdown'],
             'TTJets_hadronisation'      : ['TTJets_hadronisation', 'TTJets_hadronisation'],
-            'TTJets_NLOgenerator'       : ['TTJets_NLOgenerator', 'TTJets_NLOgenerator'],
-
-            'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
+            'TTJets_ue'               : ['TTJets_ueup', 'TTJets_uedown'],
             'TTJets_envelope'           : ['TTJets_factorisationup', 'TTJets_factorisationdown',
                                             'TTJets_renormalisationup', 'TTJets_renormalisationdown',
-                                            'TTJets_combinedup', 'TTJets_combineddown'],
+                                            'TTJets_combinedup', 'TTJets_combineddown',
+                                            'TTJets_fsrup', 'TTJets_fsrdown',
+                                            'TTJets_isrup', 'TTJets_isrdown',
+                                            ],
 
             # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
@@ -264,8 +263,10 @@ class XSectionConfig():
             'NLOgenerator',
             'factorisationup', 'factorisationdown', 
             'renormalisationup', 'renormalisationdown', 
-            'combinedup', 'combineddown', 
-            'alphaSup', 'alphaSdown',
+            'combinedup', 'combineddown',
+            'fsrup', 'fsrdown',
+            'isrup', 'isrdown',
+            'ueup', 'uedown'
         ]
 
         self.generator_mcsamples = [
@@ -347,14 +348,19 @@ class XSectionConfig():
         self.electron_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Electron_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.muon_QCD_MC_category_templates_trees = {category: path_to_files + '/QCD_Muon_tree.root' for ( category, prefix ) in categories_and_prefixes.iteritems()}
         self.ttbar_generator_category_templates_trees = {category: path_to_files + '/TTJets_' + category + '_tree.root' for category in generator_mcsamples}
-        
+
+        self.ttbar_fsrup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_fsrup_tree.root'
+        self.ttbar_fsrdown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_fsrdown_tree.root'
+        self.ttbar_isrup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_isrup_tree.root'
+        self.ttbar_isrdown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_isrdown_tree.root'
+        self.ttbar_ueup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_up_tree.root'
+        self.ttbar_uedown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_down_tree.root'
+
         self.ttbar_amc_category_templates_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_category_templates_trees = path_to_files + '/TTJets_madgraph_tree.root'
         self.ttbar_powhegpythia8_category_templates_trees = path_to_files + '/TTJets_powhegPythia8_tree.root'
         self.ttbar_powhegherwigpp_category_templates_trees = path_to_files + '/TTJets_powhegHerwigpp_tree.root'
         self.ttbar_amcatnloherwigpp_category_templates_trees = path_to_files + '/TTJets_amcatnloHerwigpp_tree.root'
-        self.ttbar_scaleup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaleup_tree.root'
-        self.ttbar_scaledown_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_scaledown_tree.root'
         self.ttbar_mtop1695_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1695_tree.root'
         self.ttbar_mtop1755_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1755_tree.root'
         self.ttbar_jesup_category_templates_trees = path_to_files + '/TTJets_PowhegPythia8_plusJES_tree.root'
@@ -398,27 +404,19 @@ class XSectionConfig():
         self.unfolding_ptreweight_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting_up.root' % self.centre_of_mass_energy
         self.unfolding_ptreweight_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting_down.root' % self.centre_of_mass_energy
 
-        self.unfolding_scale_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleDownWeight.root' % self.centre_of_mass_energy
-        self.unfolding_scale_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_scaleUpWeight.root' % self.centre_of_mass_energy
-        self.unfolding_matching_down_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingdown.root' % self.centre_of_mass_energy
-        self.unfolding_matching_up_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_matchingup.root' % self.centre_of_mass_energy
-
-        self.unfolding_scale_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaSDown.root' % self.centre_of_mass_energy
-        self.unfolding_scale_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaSUp.root' % self.centre_of_mass_energy
-
-        # self.unfolding_scale_down = self.unfolding_scale_down_raw.replace( '_scaleDown', '_asymmetric_scaleDown' )
-        # self.unfolding_scale_up = self.unfolding_scale_up_raw.replace( '_scaleUp', '_asymmetric_scaleUp' )
-        self.unfolding_matching_down = self.unfolding_matching_down_raw.replace( '.root', '_asymmetric.root' )
-        self.unfolding_matching_up = self.unfolding_matching_up_raw.replace( '.root', '_asymmetric.root' )
-
         self.unfolding_renormalisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_05muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_renormalisation_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_2muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_factorisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_1muR05muF.root' % self.centre_of_mass_energy
         self.unfolding_factorisation_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_1muR2muF.root' % self.centre_of_mass_energy
         self.unfolding_combined_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_05muR05muF.root' % self.centre_of_mass_energy
         self.unfolding_combined_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_2muR2muF.root' % self.centre_of_mass_energy
-        self.unfolding_alphaS_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaSDown.root' % self.centre_of_mass_energy
-        self.unfolding_alphaS_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaSUp.root' % self.centre_of_mass_energy
+
+        self.unfolding_fsr_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_fsrup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_fsr_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_fsrup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_isr_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_isrdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_isr_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_isrup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_ue_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_uedown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_ue_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_ueup_asymmetric.root' % self.centre_of_mass_energy
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
@@ -446,7 +444,9 @@ class XSectionConfig():
         self.unfolding_PUSystematic_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_pileupDown_asymmetric.root' % self.centre_of_mass_energy
 
 
-        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( 0, 100 )}
+        self.pdfWeightMin = 0
+        self.pdfWeightMax = 100
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.pdfWeightMax )}
 
         self.tree_path_templates = {
             'electron' : 'TTbar_plus_X_analysis/EPlusJets/Ref selection/FitVariables',
@@ -544,7 +544,7 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 12835
+        self.new_luminosity = 36459
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used

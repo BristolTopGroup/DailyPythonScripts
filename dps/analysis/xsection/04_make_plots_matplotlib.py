@@ -64,8 +64,8 @@ def read_xsection_measurement_results( category, channel ):
     if category == 'central':
         # true distributions
         h_normalised_xsection_powhegPythia8 = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
-        h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
-        h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
+        # h_normalised_xsection_amcatnlo = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
+        # h_normalised_xsection_madgraphMLM = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
         h_normalised_xsection_powhegHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
         # h_normalised_xsection_amcatnloHerwigpp = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnloHerwig'], edges )
 
@@ -76,8 +76,8 @@ def read_xsection_measurement_results( category, channel ):
 
         histograms_normalised_xsection_different_generators.update( {
                                                                      'powhegPythia8':h_normalised_xsection_powhegPythia8,
-                                                                     'amcatnloPythia8':h_normalised_xsection_amcatnlo,
-                                                                     'madgraphMLM':h_normalised_xsection_madgraphMLM,
+                                                                     # 'amcatnloPythia8':h_normalised_xsection_amcatnlo,
+                                                                     # 'madgraphMLM':h_normalised_xsection_madgraphMLM,
                                                                      'powhegHerwig':h_normalised_xsection_powhegHerwigpp,
                                                                      # 'amcatnloHerwig':h_normalised_xsection_amcatnloHerwigpp,
                                                                 })
@@ -868,11 +868,7 @@ if __name__ == '__main__':
     categories.extend( ttbar_generator_systematics )
     # categories.extend( vjets_generator_systematics )
 
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
-    # pdf_uncertainties_1_to_11 = ['PDFWeights_%d' % index for index in range( 1, 12 )]
-    # pdf_uncertainties_12_to_22 = ['PDFWeights_%d' % index for index in range( 12, 23 )]
-    # pdf_uncertainties_23_to_33 = ['PDFWeights_%d' % index for index in range( 23, 34 )]
-    # pdf_uncertainties_34_to_45 = ['PDFWeights_%d' % index for index in range( 34, 45 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( measurement_config.pdfWeightMin, measurement_config.pdfWeightMax )]
     # # all MET uncertainties except JES as this is already included
     # met_uncertainties = [met_type + suffix for suffix in met_systematics if not 'JetEn' in suffix and not 'JetRes' in suffix]
     # new_uncertainties = ['QCD_shape']
@@ -884,7 +880,7 @@ if __name__ == '__main__':
     # all_measurements.extend( new_uncertainties )
     all_measurements.extend( rate_changing_systematics )
     # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
-    for channel in ['combinedBeforeUnfolding']:
+    for channel in ['combinedBeforeUnfolding', 'combined']:
         for category in all_measurements:
 
             if not category == 'central' and not options.additional_plots: continue
