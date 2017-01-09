@@ -453,21 +453,21 @@ def create_input(config, sample, variable, category, channel, template,
         else:
             weight_branches.append('BJetWeight')
 
-        if not 'QCD' in tree:
-            if channel == 'muon':
-                if category == 'Muon_down':
-                    weight_branches.append('MuonDown')
-                elif category == 'Muon_up':
-                    weight_branches.append('MuonUp')
-                else:
-                    weight_branches.append('MuonEfficiencyCorrection')
-            elif channel == 'electron':
-                if category == 'Electron_down':
-                    weight_branches.append('ElectronDown')
-                elif category == 'Electron_up':
-                    weight_branches.append('ElectronUp')
-                else:
-                    weight_branches.append('ElectronEfficiencyCorrection')
+        # if not 'QCD' in tree:
+        #     if channel == 'muon':
+        #         if category == 'Muon_down':
+        #             weight_branches.append('MuonDown')
+        #         elif category == 'Muon_up':
+        #             weight_branches.append('MuonUp')
+        #         else:
+        #             weight_branches.append('MuonEfficiencyCorrection')
+        #     elif channel == 'electron':
+        #         if category == 'Electron_down':
+        #             weight_branches.append('ElectronDown')
+        #         elif category == 'Electron_up':
+        #             weight_branches.append('ElectronUp')
+        #         else:
+        #             weight_branches.append('ElectronEfficiencyCorrection')
 
     i = Input(
         input_file=input_file,
