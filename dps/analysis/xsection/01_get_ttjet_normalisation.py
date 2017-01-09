@@ -271,6 +271,7 @@ def main():
         }
         measurement_files = glob.glob(input_template.format(**inputs))
         for f in sorted(measurement_files):
+            if options.test and not 'central' in f : continue
             print('Processing file ' + f)
             measurement = Measurement.fromJSON(f)
             # for each measurement
