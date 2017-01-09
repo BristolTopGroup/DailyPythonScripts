@@ -172,20 +172,20 @@ def main():
         df_chi2 = get_chi2s_of_tau_range(regularisation_settings, args)
         print df_chi2
 
-    # Have the dataframes now - albeit read to a file
-    # Read in each one corresponding to their channel
-    # Find the best tau and print to screen
-    for channel in ['electron', 'muon', 'combined']:
-        chi2_cut = 0.005
-        path = regularisation_settings.outpath+'tbl_'+channel+'_tauscan.txt'
-        df_chi2 = get_df_from_file(path)
-        if df_chi2 is None: continue
-        print '\n', "1 - P(Chi2|NDF)", '\n', df_chi2, '\n'
+        # Have the dataframes now - albeit read to a file
+        # Read in each one corresponding to their channel
+        # Find the best tau and print to screen
+        for channel in ['electron', 'muon', 'combined']:
+            chi2_cut = 0.005
+            path = regularisation_settings.outpath+'tbl_'+channel+'_tauscan.txt'
+            df_chi2 = get_df_from_file(path)
+            if df_chi2 is None: continue
+            print '\n', "1 - P(Chi2|NDF)", '\n', df_chi2, '\n'
 
-        # cutoff to be changed to 0.001 when able to
-        best_taus = interpolate_tau(chi2_cut, df_chi2)
-        chi2_to_plots(df_chi2, regularisation_settings, chi2_cut, channel)
-        print_results_to_screen(best_taus, channel)
+            # cutoff to be changed to 0.001 when able to
+            best_taus = interpolate_tau(chi2_cut, df_chi2)
+            chi2_to_plots(df_chi2, regularisation_settings, chi2_cut, channel)
+            print_results_to_screen(best_taus, channel)
     return
 
 
