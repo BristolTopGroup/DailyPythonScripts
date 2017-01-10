@@ -72,8 +72,8 @@ def read_xsection_measurement_results( category, channel ):
 
         # Add in distributions for the different MC to be shown
         h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
-        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
-        h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
+        # h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
+        # h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
         h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
 
         h_normalised_xsection_massup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
@@ -83,8 +83,8 @@ def read_xsection_measurement_results( category, channel ):
         histograms_normalised_xsection_different_generators.update( 
             {
                 'powhegPythia8'   : h_normalised_xsection_powhegPythia8,
-                'amcatnloPythia8' : h_normalised_xsection_amcatnlo,
-                'madgraphMLM'     : h_normalised_xsection_madgraphMLM,
+                # 'amcatnloPythia8' : h_normalised_xsection_amcatnlo,
+                # 'madgraphMLM'     : h_normalised_xsection_madgraphMLM,
                 'powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
             }
         )
@@ -756,11 +756,16 @@ if __name__ == '__main__':
     )
 
     all_measurements = deepcopy( measurement_config.measurements )
-    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( 1, 45 )]
+    pdf_uncertainties = ['PDFWeights_%d' % index for index in range( measurement_config.pdfWeightMin, measurement_config.pdfWeightMax )]
     all_measurements.extend( pdf_uncertainties )
 
-    # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
-    for channel in ['muon']:
+    channel = [
+        # 'electron', 
+        # 'muon', 
+        'combined', 
+        # 'combinedBeforeUnfolding',
+    ]
+    for ch in channel:
         for category in all_measurements:
 
             # Show central only. TODO Add in additional systematic comparison plots
@@ -770,10 +775,10 @@ if __name__ == '__main__':
             # Read the xsection results from dataframe
             histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
             
-            histname = '{variable}_normalised_xsection_{channel}_{phase_space}_{method}'
+            histname = '{variable}_normalised_xsection_{ch}_{phase_space}_{method}'
             histname = histname.format(
                 variable = variable, 
-                channel = channel,
+                ch = ch,
                 phase_space = phase_space,
                 method = method
             )
@@ -803,6 +808,6 @@ if __name__ == '__main__':
             # MET Only
             # Rate Changing Only
             # etc...
-            # plot_central_and_systematics( channel, measurements, exclude = ttbar_generator_systematics )
-            # plot_central_and_systematics( channel, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
-            # plot_central_and_systematics( channel, rate_changing_systematics, suffix = 'rate_changing_only' )
+            # plot_central_and_systematics( ch, measurements, exclude = ttbar_generator_systematics )
+            # plot_central_and_systematics( ch, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
+            # plot_central_and_systematics( ch, rate_changing_systematics, suffix = 'rate_changing_only' )

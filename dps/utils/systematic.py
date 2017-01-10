@@ -530,7 +530,7 @@ def make_covariance_plot( options, systematic, matrix, label='Covariance' ):
         )
     make_folder_if_not_exists(covariance_matrix_output_path)
 
-    x_binning = array ( 'f' , bin_edges_vis[variable] )
+    x_binning = array ( 'f', bin_edges_vis[variable] )
     y_binning = array ( 'f', bin_edges_vis[variable] )
     n_xbins = len( x_binning ) - 1
     n_ybins = len( y_binning ) - 1

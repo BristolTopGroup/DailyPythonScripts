@@ -46,16 +46,16 @@ def getHistograms( histogram_files,
         if use_qcd_data_region:
             qcd_data_region     = qcd_data_region_electron
         # No Lepton Eff in QCD CR and PU distributions
-        if not 'QCD' in channel and not 'NPU' in branchName:
-            weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
+        # if not 'QCD' in channel and not 'NPU' in branchName:
+            # weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
 
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon
         histogram_files['QCD']  = measurement_config.muon_QCD_MC_trees[category]
         if use_qcd_data_region:
             qcd_data_region     = qcd_data_region_muon
-        if not 'QCD' in channel:
-            weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
+        # if not 'QCD' in channel:
+            # weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
     
     # Print all the weights applied to this plot 
     print weightBranchSignalRegion
@@ -82,7 +82,8 @@ def getHistograms( histogram_files,
         histograms_electron = get_histograms_from_trees( 
             trees = [signal_region_tree.replace('COMBINED','EPlusJets')], 
             branch = branchName, 
-            weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', 
+            # weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', 
+            weightBranch = weightBranchSignalRegion, 
             files = histogram_files_electron, 
             nBins = nBins, 
             xMin = x_limits[0], 
@@ -92,7 +93,8 @@ def getHistograms( histogram_files,
         histograms_muon = get_histograms_from_trees( 
             trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], 
             branch = branchName, 
-            weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', 
+            # weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', 
+            weightBranch = weightBranchSignalRegion, 
             files = histogram_files_muon, 
             nBins = nBins, 
             xMin = x_limits[0], 
@@ -308,7 +310,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     maxData = max( list(signal_region_hists['data'].y()) )
     y_limits = [0, maxData * 1.4]
     if log_y:
-        y_limits = [0.1, maxData * 10 ]
+        y_limits = [0.1, maxData * 100 ]
 
     # More histogram settings to look semi decent
     histogram_properties = Histogram_properties()
@@ -427,7 +429,7 @@ if __name__ == '__main__':
     
     normalise_to_data = args.normalise_to_data
     
-    output_folder = '%s/%dTeV/' % ( args.output_folder, measurement_config.centre_of_mass_energy )
+    output_folder = '{o}/'.format( o = args.output_folder )
     output_folder_base = output_folder
     make_folder_if_not_exists( output_folder_base )
 
@@ -464,6 +466,7 @@ if __name__ == '__main__':
         'AbsLeptonEta',
         'NJets',
         'NBJets',
+
         # 'NBJetsNoWeight',
         # 'NBJetsUp',
         # 'NBJetsDown',
@@ -687,7 +690,7 @@ if __name__ == '__main__':
                       x_limits = control_plots_bins['NJets'],
                       nBins = len(control_plots_bins['NJets'])-1,
                       rebin = 1,
-                      legend_location = ( 1, 0.78 ),
+                      legend_location = ( 1.0, 0.78 ),
                       cms_logo_location = 'left',
                       use_qcd_data_region = useQCDControl,
                       log_y = True,

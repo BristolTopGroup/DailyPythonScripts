@@ -7,20 +7,28 @@ jobs = [
         '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
-
-        '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
-        '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
-        '--centreOfMassEnergy 13 -s central --topEtaReweighting 1',
-        '--centreOfMassEnergy 13 -s central --topEtaReweighting -1',
+        # '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
+        # '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
+        # '--centreOfMassEnergy 13 -s central --topEtaReweighting 1',
+        # '--centreOfMassEnergy 13 -s central --topEtaReweighting -1',
 
         # '--centreOfMassEnergy 13 -s amcatnlo',
         # '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s powhegherwigpp',
         # # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
-        # # PS scale samples
-        '--centreOfMassEnergy 13 -s scaleup',
-        '--centreOfMassEnergy 13 -s scaledown',
+        # Top pt
+        '--centreOfMassEnergy 13 -s topPtSystematic',
+
+        # Underlying event samples
+        '--centreOfMassEnergy 13 -s ueup',
+        '--centreOfMassEnergy 13 -s uedown',
+
+        # isr/fsr variations
+        '--centreOfMassEnergy 13 -s isrup',
+        '--centreOfMassEnergy 13 -s isrdown',
+        '--centreOfMassEnergy 13 -s fsrup',
+        '--centreOfMassEnergy 13 -s fsrdown',
 
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
