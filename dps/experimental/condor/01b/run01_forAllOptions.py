@@ -27,7 +27,7 @@ vars = [
 	# 'ttbarRap',
 ]
 
-jobOptions = ['-v %s -i config/measurements/background_subtraction' % ( var ) for var in vars ]
+jobOptions = ['-v %s' % ( var ) for var in vars ]
 
 parser = OptionParser("Merge histogram files on DICE")
 parser.add_option("-n", dest="jobNumber", default=-1, type='int',
