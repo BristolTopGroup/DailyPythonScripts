@@ -41,7 +41,7 @@ def read_xsection_measurement_results( category, channel ):
     '''
     global path_to_DF, variable, phase_space, method
 
-    file_template = 'TESTING/{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
+    file_template = '{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
     filename = file_template.format(
         path = path_to_DF,
         category = category,
@@ -773,7 +773,7 @@ if __name__ == '__main__':
             if variable in measurement_config.variables_no_met and category in measurement_config.met_specific_systematics: continue
 
             # Read the xsection results from dataframe
-            histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, channel )
+            histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, ch )
             
             histname = '{variable}_normalised_xsection_{ch}_{phase_space}_{method}'
             histname = histname.format(

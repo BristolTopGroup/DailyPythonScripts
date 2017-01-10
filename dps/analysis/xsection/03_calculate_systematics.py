@@ -76,7 +76,7 @@ if __name__ == '__main__':
     if not visiblePS:
         phase_space = 'FullPS'
 
-    path_to_DF = 'TESTING/{path}/{com}TeV/{variable}/{phase_space}'
+    path_to_DF = '{path}/{com}TeV/{variable}/{phase_space}'
     path_to_DF = path_to_DF.format(
         path = args.path, 
         com = args.CoM,
@@ -108,12 +108,19 @@ if __name__ == '__main__':
     list_of_systematics = all_systematics
     # If you want different lists of systematics can just do some manipulation here
 
-    # for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:
-    for channel in ['muon']:
-        print("Calculating {0} channel systematic uncertainties : ".format(channel))
+    print(list_of_systematics)
+
+    channel = [
+        'electron', 
+        'muon', 
+        'combined', 
+        # 'combinedBeforeUnfolding',
+    ]
+    for ch in channel:
+        print("Calculating {0} channel systematic uncertainties : ".format(ch))
 
         # Add channel specific args to list of args
-        args['channel'] = channel
+        args['channel'] = ch
 
         # Retreive the normalised cross sections, for all groups in list_of_systematics.
         systematic_normalised_uncertainty, unfolded_systematic_normalised_uncertainty = get_normalised_cross_sections(

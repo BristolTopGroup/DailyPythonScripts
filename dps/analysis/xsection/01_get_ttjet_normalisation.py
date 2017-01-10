@@ -20,10 +20,9 @@ def main():
     # config file template
     input_template = 'config/measurements/background_subtraction/{com}TeV/{ch}/{var}/{ps}/'
 
+    ps = 'FullPS'
     if args.visiblePS:
         ps = 'VisiblePS'
-    else:
-        ps = 'FullPS'
 
     for ch in ['electron', 'muon']:
         for var in measurement_config.variables:
