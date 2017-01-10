@@ -164,23 +164,31 @@ def get_sample_info(options, xsec_config, sample):
 
     # Generator Scale (Rate)
     sample_info["scale"]=1.0
-    generator_scale = xsec_config.rate_changing_systematics['V+Jets_cross_section']
-    if options['category'] == 'V+Jets_cross_section+':
-        sample_info["scale"] = 1.0 + 1.0*generator_scale
-    elif options['category'] == 'V+Jets_cross_section-':
-        sample_info["scale"] = 1.0 - 1.0*generator_scale
-    generator_scale = xsec_config.rate_changing_systematics['SingleTop_cross_section']
-    if options['category'] == 'SingleTop_cross_section+':
-        sample_info["scale"] = 1.0 + 1.0*generator_scale
-    elif options['category'] == 'SingleTop_cross_section-':
-        sample_info["scale"] = 1.0 - 1.0*generator_scale
-    generator_scale = xsec_config.rate_changing_systematics['QCD_cross_section']
-    if options['category'] == 'QCD_cross_section+':
-        sample_info["scale"] = 1.0 + 1.0*generator_scale
-    elif options['category'] == 'QCD_cross_section-':
-        sample_info["scale"] = 1.0 - 1.0*generator_scale
+
+    if sample == 'V+Jets':
+        generator_scale = xsec_config.rate_changing_systematics['V+Jets_cross_section']
+        if options['category'] == 'V+Jets_cross_section+':
+            sample_info["scale"] = 1.0 + 1.0*generator_scale
+        elif options['category'] == 'V+Jets_cross_section-':
+            sample_info["scale"] = 1.0 - 1.0*generator_scale
+    
+    if sample == 'SingleTop':
+        generator_scale = xsec_config.rate_changing_systematics['SingleTop_cross_section']
+        if options['category'] == 'SingleTop_cross_section+':
+            sample_info["scale"] = 1.0 + 1.0*generator_scale
+        elif options['category'] == 'SingleTop_cross_section-':
+            sample_info["scale"] = 1.0 - 1.0*generator_scale
+
+    if sample == 'QCD':
+        generator_scale = xsec_config.rate_changing_systematics['QCD_cross_section']
+        if options['category'] == 'QCD_cross_section+':
+            sample_info["scale"] = 1.0 + 1.0*generator_scale
+        elif options['category'] == 'QCD_cross_section-':
+            sample_info["scale"] = 1.0 - 1.0*generator_scale
+
     # scaling will always have some non zero value
     if sample_info["scale"] <= 0.0001: sample_info["scale"] = 0.0001
+
 
     # Weight branches (Shape)
     weight_branches = []
