@@ -29,7 +29,6 @@ if __name__ == '__main__':
 		1 : ["TTJets_powhegHerwigpp_tree.root" , "PowhegHerwigpp"],
 		2 : ["TTJets_amc_tree.root" , "aMCatNLOPythia8"],
 		3 : ["TTJets_madgraph_tree.root" , "Madgraph"],
-		4 : ["TTJets_PowhegPythia8_Moriond17_tree.root" , "PowhegPythia8_Moriond17"]
 		# 4 : ["TTJets_amcatnloHerwigpp_tree.root" , "aMCatNLOHerwigpp"],
 		}
 
@@ -62,9 +61,6 @@ if __name__ == '__main__':
 			in_file = input_files[key][0]
 			sample = input_files[key][1]
 			input_file = basepath+in_file
-			if key == 4:
-				input_file = "/hdfs/TopQuarkGroup/run2/atOutput/13TeV/2016/TTJets_PowhegPythia8_Moriond17_tree.root"
-
 			print "Generator : ", sample
 
 			directory = out_file.mkdir( sample )
