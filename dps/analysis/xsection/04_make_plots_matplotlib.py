@@ -325,8 +325,8 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
     # Title and CMS labels
     # note: fontweight/weight does not change anything as we use Latex text!!!
-    plt.title( label,loc='right', **CMS.title )
     label, channel_label = get_cms_labels( channel )
+    plt.title( label,loc='right', **CMS.title )
     # Locations of labels
     logo_location = (0.05, 0.98)
     prelim_location = (0.05, 0.92)
@@ -358,7 +358,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     )
     # channel text
     plt.text(channel_location[0], channel_location[1], 
-        r"\emph{{cl}}".format(cl=channel_label), 
+        r"\emph{%s}"%channel_label, 
         transform=axes.transAxes, 
         fontsize=40,
         verticalalignment='top',
@@ -394,7 +394,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         x_label = '${}$'.format(variables_latex[variable])
         if variable in ['HT', 'ST', 'MET', 'WPT']:
             x_label += ' [GeV]'
-        plt.xlabel( x_label, CMS.x_axis_title )
+
+        if not show_generator_ratio:
+            plt.xlabel( x_label, CMS.x_axis_title )
 
         y_label = '$\\frac{\\textrm{pred.}}{\\textrm{data}}$'
         plt.ylabel( y_label, CMS.y_axis_title )
