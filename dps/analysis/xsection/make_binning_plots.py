@@ -32,6 +32,12 @@ my_cmap.set_under( 'w' )
 def make_scatter_plot( input_file, histogram, bin_edges, channel, variable, title ):
     global output_folder, output_formats, options
     scatter_plot = get_histogram_from_file( histogram, input_file )
+
+    # Finding max value in scatterplot for colourmap normalisation
+    max_bin = scatter_plot.GetMaximumBin()
+    max_bin_content = scatter_plot.GetBinContent(max_bin)
+    norm = mpl.colors.LogNorm(vmin = 1, vmax = int(max_bin_content+1))
+
 #     scatter_plot.Rebin2D( 5, 5 )
 
     x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
@@ -51,7 +57,9 @@ def make_scatter_plot( input_file, histogram, bin_edges, channel, variable, titl
     plt.tick_params( **CMS.axis_label_minor )
     ax0.xaxis.labelpad = 12
     ax0.yaxis.labelpad = 12
-    im = rplt.imshow( scatter_plot, axes = ax0, cmap = my_cmap, vmin = 0.001 )
+
+    im = rplt.imshow( scatter_plot, axes = ax0, cmap = my_cmap, norm=norm )
+
     colorbar = plt.colorbar( im )
     colorbar.ax.tick_params( **CMS.axis_label_major )
 
