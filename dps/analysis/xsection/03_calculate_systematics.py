@@ -108,8 +108,6 @@ if __name__ == '__main__':
     list_of_systematics = all_systematics
     # If you want different lists of systematics can just do some manipulation here
 
-    print(list_of_systematics)
-
     channel = [
         'electron', 
         'muon', 

@@ -14,7 +14,8 @@ from dps.utils.hist_utilities import hist_to_value_error_tuplelist, \
 value_error_tuplelist_to_hist
 from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from dps.utils.ROOT_utils import set_root_defaults
-from dps.utils.pandas_utilities import read_tuple_from_file, write_tuple_to_df
+from dps.utils.pandas_utilities import read_tuple_from_file, write_tuple_to_df, combine_complex_df
+
 from copy import deepcopy
 
 def get_unfolding_files(measurement_config):
@@ -35,8 +36,11 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_factorisationup']     = File( measurement_config.unfolding_factorisation_up, 'read' )
     unfolding_files['file_for_combineddown']        = File( measurement_config.unfolding_combined_down, 'read' )
     unfolding_files['file_for_combinedup']          = File( measurement_config.unfolding_combined_up, 'read' )
-    # unfolding_files['file_for_alphaSdown']          = File( measurement_config.unfolding_alphaS_down, 'read' )
-    # unfolding_files['file_for_alphaSup']            = File( measurement_config.unfolding_alphaS_up, 'read' )
+    unfolding_files['file_for_alphaSdown']          = File( measurement_config.unfolding_alphaS_down, 'read' )
+    unfolding_files['file_for_alphaSup']            = File( measurement_config.unfolding_alphaS_up, 'read' )
+
+    unfolding_files['file_for_matchingdown']          = File( measurement_config.unfolding_matching_down, 'read' )
+    unfolding_files['file_for_matchingup']            = File( measurement_config.unfolding_matching_up, 'read' )
 
     unfolding_files['file_for_isrdown']             = File( measurement_config.unfolding_isr_down, 'read' )
     unfolding_files['file_for_isrup']               = File( measurement_config.unfolding_isr_up, 'read' )
@@ -44,6 +48,8 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_fsrup']               = File( measurement_config.unfolding_fsr_up, 'read' )
     unfolding_files['file_for_uedown']              = File( measurement_config.unfolding_ue_down, 'read' )
     unfolding_files['file_for_ueup']                = File( measurement_config.unfolding_ue_up, 'read' )
+
+    unfolding_files['file_for_topPtSystematic']     = File( measurement_config.unfolding_topPtSystematic, 'read' )
 
     unfolding_files['file_for_massdown']            = File( measurement_config.unfolding_mass_down, 'read' )
     unfolding_files['file_for_massup']              = File( measurement_config.unfolding_mass_up, 'read' )
@@ -132,8 +138,11 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_renormalisationup'   :  unfolding_files['file_for_renormalisationup'],
         'TTJets_combineddown'     	 :  unfolding_files['file_for_combineddown'],
         'TTJets_combinedup'          :  unfolding_files['file_for_combinedup'],
-        # 'TTJets_alphaSdown'			 :  unfolding_files['file_for_alphaSdown'],
-        # 'TTJets_alphaSup'   	     :  unfolding_files['file_for_alphaSup'],
+        'TTJets_alphaSdown'			 :  unfolding_files['file_for_alphaSdown'],
+        'TTJets_alphaSup'   	     :  unfolding_files['file_for_alphaSup'],
+
+        'TTJets_matchingdown'        :  unfolding_files['file_for_matchingdown'],
+        'TTJets_matchingup'          :  unfolding_files['file_for_matchingup'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
@@ -141,6 +150,8 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_fsrup'               :  unfolding_files['file_for_fsrup'],
         'TTJets_uedown'              :  unfolding_files['file_for_uedown'],
         'TTJets_ueup'                :  unfolding_files['file_for_ueup'],
+
+        'TTJets_topPt'               :  unfolding_files['file_for_topPtSystematic'],
 
         'JES_down'                   :  unfolding_files['file_for_jesdown'],
         'JES_up'                     :  unfolding_files['file_for_jesup'],
@@ -685,21 +696,18 @@ if __name__ == '__main__':
         if category == 'Muon_up' or category == 'Muon_down':
             normalisation_results_electron  = read_tuple_from_file( path_to_DF + '/central/normalisation_electron.txt' )
             normalisation_results_muon      = read_tuple_from_file( muon_file )
-            # normalisation_results_combined = read_tuple_from_file( combined_file )
         elif category == 'Electron_up' or category == 'Electron_down':
             normalisation_results_electron  = read_tuple_from_file( electron_file )
             normalisation_results_muon      = read_tuple_from_file( path_to_DF + '/central/normalisation_muon.txt' )
-            # normalisation_results_combined = read_tuple_from_file( combined_file )
         else:
             normalisation_results_electron  = read_tuple_from_file( electron_file )
             normalisation_results_muon      = read_tuple_from_file( muon_file )
-            # normalisation_results_combined  = read_tuple_from_file( combined_file )
 
         # Combine the normalisations (beforeUnfolding)
-        # normalisation_results_combined = combine_complex_results(normalisation_results_electron, normalisation_results_muon)
+        normalisation_results_combined = combine_complex_df(normalisation_results_electron, normalisation_results_muon)
         TTJet_normalisation_results_electron = normalisation_results_electron['TTJet']
         TTJet_normalisation_results_muon = normalisation_results_muon['TTJet']
-        # TTJet_normalisation_results_combined = normalisation_results_combined['TTJet']
+        TTJet_normalisation_results_combined = normalisation_results_combined['TTJet']
 
         # # get unfolded normalisations and xsections
         unfolded_normalisation_electron                 = {}
@@ -736,19 +744,19 @@ if __name__ == '__main__':
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel , True )
 
-    #     # # Results where the channels are combined before unfolding (the 'combined in the response matrix')
-    #     # channel = 'combinedBeforeUnfolding'
-    #     # unfolded_normalisation_combinedBeforeUnfolding = get_unfolded_normalisation(
-    #     #     TTJet_normalisation_results_combined,
-    #     #     category,
-    #     #     'combined', 
-    #     #     tau_value=tau_value_combined,
-    #     #     visiblePS=visiblePS,
-    #     # )
-    #     # # measure xsection
-    #     # calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
-    #     # calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
-    #     # calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
+        # Results where the channels are combined before unfolding (the 'combined in the response matrix')
+        channel = 'combinedBeforeUnfolding'
+        unfolded_normalisation_combinedBeforeUnfolding = get_unfolded_normalisation(
+            TTJet_normalisation_results_combined,
+            category,
+            'combined', 
+            tau_value=tau_value_combined,
+            visiblePS=visiblePS,
+        )
+        # measure xsection
+        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
+        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
+        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
 
         # Results where the channels are combined after unfolding
         channel = 'combined'

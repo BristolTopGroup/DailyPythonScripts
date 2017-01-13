@@ -152,6 +152,11 @@ def parse_arguments():
         dest='alphaSWeight', 
         default=-1 
     )
+    parser.add_argument('--matchingWeight', 
+        type=int, 
+        dest='matchingWeight', 
+        default=-1 
+    )
     parser.add_argument('--nGeneratorWeights', 
         type=int, 
         dest='nGeneratorWeights', 
@@ -198,6 +203,8 @@ def main():
 
     pdfWeight    = args.pdfWeight
     muFmuRWeight = args.muFmuRWeight
+    alphaSWeight = args.alphaSWeight
+    matchingWeight = options.matchingWeight
 
     # Output file name
     outputFileName = 'crap.root'
@@ -225,6 +232,18 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR1muF.root' % ( energySuffix )
     elif muFmuRWeight == 8:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR05muF.root' % ( energySuffix )
+
+    elif matchingWeight == 9:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_down.root' % ( energySuffix )
+    elif matchingWeight == 18:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_up.root' % ( energySuffix )
+    elif matchingWeight >= 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matchingWeight_%i.root' % ( energySuffix, matchingWeight )
+
+    elif alphaSWeight == 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_down.root' % ( energySuffix )
+    elif alphaSWeight == 1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_up.root' % ( energySuffix )
     elif pdfWeight >= 0 and pdfWeight <= 99:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
     elif args.sample != 'central':
@@ -453,6 +472,16 @@ def main():
                 if muFmuRWeight >= 0:
                     genWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
                     offlineWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
+                    pass
+
+                if alphaSWeight == 0 or alphaSWeight == 1:
+                    genWeight *= branch('alphaSWeight_%i' % alphaSWeight)
+                    offlineWeight *= branch('alphaSWeight_%i' % alphaSWeight)
+                    pass
+
+                if matchingWeight >= 0:
+                    genWeight *= branch('matchingWeight_%i' % matchingWeight)
+                    offlineWeight *= branch('matchingWeight_%i' % matchingWeight)
                     pass
 
                 if args.applyTopPtReweighting != 0:

@@ -38,7 +38,14 @@ jobs = [
         '--centreOfMassEnergy 13 --muFmuRWeight 6',
         '--centreOfMassEnergy 13 --muFmuRWeight 8',
 
-        # # # Top mass
+        '--centreOfMassEnergy 13 --alphaSWeight 0',
+        '--centreOfMassEnergy 13 --alphaSWeight 1',
+
+        # ME-PS matching weight
+        '--centreOfMassEnergy 13 --matchingWeight 9',
+        '--centreOfMassEnergy 13 --matchingWeight 18',
+
+        # # Top mass
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
 
