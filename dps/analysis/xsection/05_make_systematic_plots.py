@@ -16,8 +16,8 @@ from dps.config import CMS
 from matplotlib import rc
 from operator import itemgetter
 
-rc( 'font', **CMS.font )
-rc( 'text', usetex = False )
+# rc( 'font', **CMS.font )
+# rc( 'text', usetex = False )
 
 def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder, subcategories = [], subname = '', plot_largest = False):
 	'''
@@ -27,7 +27,9 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	if not subcategories: subcategories = systematic_uncertainties.keys()
 
 	x_limits = [bin_edges[0], bin_edges[-1]]
-	y_limits = [-0.6,0.6]
+	# y_limits = [-0.6,0.6]
+	y_limits = [0,0.4]
+
 	fig_syst = plt.figure( figsize = ( 20, 16 ), dpi = 400, facecolor = 'white' )
 	ax_syst = fig_syst.add_subplot(1, 1, 1)
 	ax_syst.minorticks_on()
@@ -74,8 +76,10 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	plt.tick_params( **CMS.axis_label_major )
 	plt.tick_params( **CMS.axis_label_minor )
 
-	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'gold', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink' ]
-	
+	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'gold', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink', 'deepskyblue' ]
+	# if len(colours) < len(error_hists.keys()):
+	# 	print '---> Need to add more colours!!!'
+
 	for error_hists in [error_hists_up, error_hists_down]:
 		for i, source, in enumerate(error_hists.keys()):
 			hist = error_hists[source]
@@ -92,7 +96,8 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 			else:
 				rplt.hist( hist, stacked=False, label = '' )
 
-	leg = plt.legend(loc='lower right',prop={'size':20},ncol=4)
+	leg = plt.legend(loc='upper right',prop={'size':25},ncol=3)
+	# leg = plt.legend(loc='upper right',prop={'size':20},ncol=4)
 	leg.draw_frame(False)	
 
 	x_title = variables_NonLatex[variable]
@@ -111,29 +116,29 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	logo_location = (0.05, 0.98)
 	prelim_location = (0.05, 0.92)
 	channel_location = ( 0.05, 0.86)
-	plt.text(logo_location[0], logo_location[1], 
-		r"\textbf{CMS}", 
-		transform=ax_syst.transAxes, 
-		fontsize=42,
-		verticalalignment='top',
-		horizontalalignment='left'
-	)
-	# preliminary
-	plt.text(prelim_location[0], prelim_location[1], 
-		r"\emph{Preliminary}",
-		transform=ax_syst.transAxes, 
-		fontsize=42,
-		verticalalignment='top',
-		horizontalalignment='left'
-	)
-	# channel text
-	plt.text(channel_location[0], channel_location[1], 
-		r"\emph{%s}" %channel, 
-		transform=ax_syst.transAxes, 
-		fontsize=40,
-		verticalalignment='top',
-		horizontalalignment='left'
-	)
+	# plt.text(logo_location[0], logo_location[1], 
+	# 	"CMS", 
+	# 	transform=ax_syst.transAxes, 
+	# 	fontsize=42,
+	# 	verticalalignment='top',
+	# 	horizontalalignment='left'
+	# )
+	# # preliminary
+	# plt.text(prelim_location[0], prelim_location[1], 
+	# 	r"\emph{Preliminary}",
+	# 	transform=ax_syst.transAxes, 
+	# 	fontsize=42,
+	# 	verticalalignment='top',
+	# 	horizontalalignment='left'
+	# )
+	# # channel text
+	# plt.text(channel_location[0], channel_location[1], 
+	# 	r"\emph{%s}" % channel, 
+	# 	transform=ax_syst.transAxes, 
+	# 	fontsize=40,
+	# 	verticalalignment='top',
+	# 	horizontalalignment='left'
+	# )
 
 	plt.tight_layout()
 
@@ -217,7 +222,7 @@ if __name__ == '__main__':
 
 
 	for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:  
-		# if channel != 'combined':continue
+		if channel != 'combined':continue
 		input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_normalised_{channel}_{method}_summary_relative.txt'.format(
 			basepath = 	path,
 			com = 	com,
