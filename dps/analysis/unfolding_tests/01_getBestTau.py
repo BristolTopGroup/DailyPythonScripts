@@ -17,7 +17,7 @@ What it needs:
 usage:
     python getBestTau.py config.json
     # for 13 TeV in the visible phase space :
-    python dps/analysis/unfolding_tests/getBestTau.py config/unfolding/VisiblePS/*.json -n 100 -t 0.005 --refold_plots --test
+    python dps/analysis/unfolding_tests/01_getBestTau.py config/unfolding/VisiblePS/*.json -n 100 -t 0.005 --refold_plots --test
     -n = number of tau points
     -t = specific tau value
     --refold_plots = output some comparison plots for every tau (suggest few tau)
@@ -43,6 +43,7 @@ from dps.config.variable_binning import reco_bin_edges_vis
 # , gen_bin_edges_vis
 from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from dps.utils.file_utilities import read_data_from_JSON, make_folder_if_not_exists
+from dps.utils.pandas_utilities import read_tuple_from_file
 from dps.utils.hist_utilities import hist_to_value_error_tuplelist, value_error_tuplelist_to_hist
 
 import pandas as pd
@@ -123,7 +124,7 @@ class TauFinding(object):
             edges = []
             edges = reco_bin_edges_vis[self.variable]
 
-            json_input = read_data_from_JSON(data_file)
+            json_input = read_tuple_from_file(data_file)
 
             if data_key == "": # JSON file == histogram
                 self.h_data = value_error_tuplelist_to_hist(json_input, edges)
@@ -143,6 +144,7 @@ def main():
     clear_old_df('tables/taufinding/')
 
     for input_values, json_file in zip( input_values_sets, json_input_files ):
+        if 'combined' in json_file: continue
 
         # Initialise the TauFinding class
         regularisation_settings = TauFinding( input_values )
