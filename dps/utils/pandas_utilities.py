@@ -5,6 +5,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.max_colwidth', 4096)
 pd.set_option('display.max_rows', 50)
 pd.set_option('display.width', 1000)
+pd.set_option('precision',12)
 
 def dict_to_df(d):
 	'''
@@ -73,7 +74,7 @@ def divide_by_series(s1, s2):
 
 def tupleise_cols(vals, errs):
 	'''
-	tupleising two cols in pandas
+	tupleising two cols
 	'''
 	vals_errs = [ (v, e) for v,e in zip(vals, errs)]
 	return vals_errs
@@ -134,3 +135,37 @@ def read_tuple_from_file( filename ):
 		df[sample] = tupleise_cols(vals, errs)
 		del df[sample+'_Unc']
 	return df
+
+def combine_complex_df( df1, df2 ):
+	'''
+	Takes a 2 pandii dataframes of the form:
+		A 	| 	B   	 	A 	| 	B 
+	  (v,e) | (v,e)		  (v,e) | (v,e) 
+
+	Returns 1 pandas dataframe of the form
+			      A   |   B 
+	  			(v,e) | (v,e)
+	'''
+	from uncertainties import ufloat
+	l1=df1.columns.tolist()
+	l2=df2.columns.tolist()
+	if l1 != l2:
+		print "Trying to combine two non compatible dataframes"
+		print l1
+		print l2
+		return
+
+	combined_result = {}
+	for sample in l1:
+		results = []
+		for entry1, entry2 in zip(df1[sample], df2[sample]):
+			v1 = ufloat(entry1[0], entry1[1])
+			v2 = ufloat(entry2[0], entry2[1])
+			s = v1 + v2
+			results.append( ( s.nominal_value, s.std_dev ) )
+		combined_result[sample] = results
+	df = dict_to_df(combined_result)
+	return df
+
+
+
