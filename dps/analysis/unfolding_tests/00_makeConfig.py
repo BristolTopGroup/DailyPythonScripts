@@ -3,11 +3,9 @@ from dps.config.xsection import XSectionConfig
 from dps.utils.file_utilities import make_folder_if_not_exists
 
 com = 13
-fitVars = "M3_angle_bl"
-
 config = XSectionConfig( com )
 
-make_folder_if_not_exists('config/unfolding/FullPS/')
+# make_folder_if_not_exists('config/unfolding/FullPS/')
 make_folder_if_not_exists('config/unfolding/VisiblePS/')
 
 for channel in config.analysis_types.keys():
