@@ -35,6 +35,7 @@ bin_edges_vis = {
 'HT' : [120.0, 220.0, 280.0, 345.0, 420.0, 500.0, 585.0, 680.0, 780.0, 890.0, 1010.0, 1140.0, 1275.0, 1950.0],
 'ST' : [146.0, 315.0, 395.0, 480.0, 575.0, 675.0, 785.0, 900.0, 1025.0, 1160.0, 1305.0, 1460.0, 2235.0],
 'MET' : [0.0, 50.0, 120.0, 210.0, 300.0, 660.0],
+'pseudoMET' : [0.0, 50.0, 120.0, 210.0, 300.0, 660.0],
 'abs_lepton_eta' : [0.0, 0.23, 0.45, 0.66, 0.9, 1.11, 1.32, 1.56, 1.78, 1.99, 3.0],
 }
 
@@ -78,6 +79,13 @@ control_plots_bins = {
   'HT' : [i * 50  for i in range ( 0, 21 )],
   'ST' : [i * 50  for i in range ( 2, 25 )],
   'sigmaietaieta' : [i * 0.002  for i in range ( 0, 20 )],
+
+# Long x axis, good for log y scale
+#  'ElectronPt' : [i * 30 for i in range ( 0, 35 )],
+#  'MET' : [i * 50  for i in range ( 0, 25 )],
+#  'WPT' : [i * 30  for i in range ( 0, 45 )],
+#  'HT' : [i * 60  for i in range ( 0, 70 )],
+#  'ST' : [i * 90  for i in range ( 1, 50 )],
 }
 
 # should we want separate binning for different centre of mass energies

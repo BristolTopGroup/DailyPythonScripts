@@ -209,6 +209,7 @@ class XSectionConfig():
             # Generator Uncertainties
             'TTJets_mass'               : ['TTJets_massup', 'TTJets_massdown'],
             'TTJets_hadronisation'      : ['TTJets_hadronisation', 'TTJets_hadronisation'],
+            'TTJets_topPt'              : ['TTJets_topPt', 'TTJets_topPt'],
             'TTJets_ue'               : ['TTJets_ueup', 'TTJets_uedown'],
             'TTJets_envelope'           : ['TTJets_factorisationup', 'TTJets_factorisationdown',
                                             'TTJets_renormalisationup', 'TTJets_renormalisationdown',
@@ -216,7 +217,8 @@ class XSectionConfig():
                                             'TTJets_fsrup', 'TTJets_fsrdown',
                                             'TTJets_isrup', 'TTJets_isrdown',
                                             ],
-
+            'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
+            'TTJets_matching'             : ['TTJets_matchingup', 'TTJets_matchingdown'],
             # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
             'JES'                       : ['JES_up', 'JES_down'],
@@ -259,7 +261,10 @@ class XSectionConfig():
         self.generator_systematics = [ 
             'scaleup', 'scaledown',
             'massup', 'massdown',
+            'alphaSup', 'alphaSdown',
+            'matchingup', 'matchingdown',
             'hadronisation',
+            'topPt',
             'NLOgenerator',
             'factorisationup', 'factorisationdown', 
             'renormalisationup', 'renormalisationdown', 
@@ -284,7 +289,7 @@ class XSectionConfig():
                 affected_samples = ['SingleTop']
             if 'TTJet' in systematic:
                 affected_samples = ['TTJet'] 
-            if 'VJets' in systematic:
+            if 'V+Jets' in systematic:
                 affected_samples = ['V+Jets']
             if 'QCD' in systematic:
                 affected_samples = ['QCD']
@@ -404,12 +409,20 @@ class XSectionConfig():
         self.unfolding_ptreweight_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting_up.root' % self.centre_of_mass_energy
         self.unfolding_ptreweight_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting_down.root' % self.centre_of_mass_energy
 
+        self.unfolding_topPtSystematic = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_topPtSystematic_asymmetric.root' % self.centre_of_mass_energy
+
         self.unfolding_renormalisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_05muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_renormalisation_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_2muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_factorisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_1muR05muF.root' % self.centre_of_mass_energy
         self.unfolding_factorisation_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_1muR2muF.root' % self.centre_of_mass_energy
         self.unfolding_combined_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_05muR05muF.root' % self.centre_of_mass_energy
         self.unfolding_combined_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_2muR2muF.root' % self.centre_of_mass_energy
+
+        self.unfolding_alphaS_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaS_down.root' % self.centre_of_mass_energy
+        self.unfolding_alphaS_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaS_up.root' % self.centre_of_mass_energy
+
+        self.unfolding_matching_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_matching_down.root' % self.centre_of_mass_energy
+        self.unfolding_matching_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_matching_up.root' % self.centre_of_mass_energy
 
         self.unfolding_fsr_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_fsrup_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_fsr_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_fsrup_asymmetric.root' % self.centre_of_mass_energy
@@ -548,7 +561,7 @@ class XSectionConfig():
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
-            'luminosity': 0.027,  # Best guess for 13 TeV 4.8->2.7
+            'luminosity': 0.062,  # Best guess for 13 TeV 4.8->2.7
             'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
             # 'TTJet_cross_section': 0.043, # Currently same as 8 TeV
             'V+Jets_cross_section': 0.5,

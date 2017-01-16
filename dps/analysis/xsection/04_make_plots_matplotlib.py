@@ -407,7 +407,6 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = True
     dashes = {}
     for key, hist in sorted( histograms.items() ):
         zorder = sorted( histograms, reverse = False ).index( key )
-        print (key)
         if key == 'powhegPythia8' and zorder != len(histograms) - 3:
             zorder = len(histograms) - 3
         elif key != 'powhegPythia8' and not 'unfolded' in key:

@@ -105,6 +105,8 @@ def main():
     parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
     parser.add_option('--pdfWeight', type='int', dest='pdfWeight', default=-1 )
     parser.add_option('--muFmuRWeight', type='int', dest='muFmuRWeight', default=-1 )
+    parser.add_option('--alphaSWeight', type='int', dest='alphaSWeight', default=-1 )
+    parser.add_option('--matchingWeight', type='int', dest='matchingWeight', default=-1 )
     parser.add_option('--nGeneratorWeights', type='int', dest='nGeneratorWeights', default=1 )
     parser.add_option('-s', '--sample', dest='sample', default='central')
     parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
@@ -128,6 +130,8 @@ def main():
 
     pdfWeight = options.pdfWeight
     muFmuRWeight = options.muFmuRWeight
+    alphaSWeight = options.alphaSWeight
+    matchingWeight = options.matchingWeight
 
     # Output file name
     outputFileName = 'crap.root'
@@ -158,6 +162,16 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR1muF.root' % ( energySuffix )
     elif muFmuRWeight == 8:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR05muF.root' % ( energySuffix )
+    elif matchingWeight == 9:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_down.root' % ( energySuffix )
+    elif matchingWeight == 18:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_up.root' % ( energySuffix )
+    elif matchingWeight >= 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matchingWeight_%i.root' % ( energySuffix, matchingWeight )
+    elif alphaSWeight == 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_down.root' % ( energySuffix )
+    elif alphaSWeight == 1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_up.root' % ( energySuffix )
     elif pdfWeight >= 0 and pdfWeight <= 99:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
     elif options.sample != 'central':
@@ -382,7 +396,8 @@ def main():
                 offlineWeight *= bjetWeight
                 # offlineWeight *= leptonWeight
                 offlineWeight *= topPtSystematicWeight
-
+                genWeight *= topPtSystematicWeight
+                
                 # Generator weight
                 # Scale up/down, pdf
                 if pdfWeight >= 0:
@@ -396,10 +411,15 @@ def main():
                     offlineWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
                     pass
 
-                if options.applyTopPtReweighting != 0:
-                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
-                    offlineWeight *= ptWeight
-                    genWeight *= ptWeight
+                if alphaSWeight == 0 or alphaSWeight == 1:
+                    genWeight *= branch('alphaSWeight_%i' % alphaSWeight)
+                    offlineWeight *= branch('alphaSWeight_%i' % alphaSWeight)
+                    pass
+
+                if matchingWeight >= 0:
+                    genWeight *= branch('matchingWeight_%i' % matchingWeight)
+                    offlineWeight *= branch('matchingWeight_%i' % matchingWeight)
+                    pass
 
                 if options.applyTopPtReweighting != 0:
                     ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)

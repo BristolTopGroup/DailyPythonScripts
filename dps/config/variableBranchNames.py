@@ -9,6 +9,7 @@ branchNames = {
     'HT': 'HT',
     'ST': 'ST',
     'MET': 'MET',
+    'pseudoMET': 'MET',
 
     'lepTopPt': 'lepTopPt',
     'hadTopPt': 'hadTopPt',
@@ -40,7 +41,8 @@ genBranchNames_particle = {
     'WPT': 'pseudoWPT',
     'HT': 'pseudoHT',
     'ST': 'pseudoST',
-    'MET': 'pseudoMET',
+    'MET': 'genMET',
+    'pseudoMET': 'pseudoMET',
 
     'lepTopPt': 'pseudoTop_pT',
     'hadTopPt': 'pseudoTop_pT',
