@@ -19,6 +19,7 @@ class Measurement():
         self.measurement    = measurement
         self.histograms     = {}
         self.cr_histograms  = {}
+        self.cr_histograms_for_normalisation = {}
         self.normalisation  = {}
         self.variable       = None
         self.com            = None
@@ -47,6 +48,9 @@ class Measurement():
             if data_driven_qcd:
                 self.cr_histograms[sample] = self.__return_histogram(histogram_info, useQCDControl=True)
 
+                if histogram_info["qcd_normalisation_region"] != histogram_info["qcd_control_region"]:
+                    self.cr_histograms_for_normalisation[sample] = self.__return_histogram(histogram_info, useQCDControl=True, useQCDSystematicControl=True)
+
             # print(hist_to_value_error_tuplelist(self.histograms[sample]))
             # print(hist_to_value_error_tuplelist(self.cr_histograms[sample]))
 
@@ -59,38 +63,47 @@ class Measurement():
         '''
         Replace Signal region mc qcd with data driven qcd
 
-                        N MC QCD in SR      N DD QCD in CR
-        QCD_SHAPE   *   --------------  *   --------------
-                        N DD QCD in CR      N MC QCD in CR
+                        N MC QCD in SR
+        Data in CR   *   --------------
+                        N MC QCD in CR
 
-          Shape         normalise to        scale from
-                        SR mc qcd           mc qcd to dd qcd
+          Shape         transfer factor 
+                        from control to 
+                        signal region 
         '''
         # Get the shape of the data driven qcd in the control region
-        qcd_shape = clean_control_region(
+        data_driven_qcd = clean_control_region(
             self.cr_histograms,
             subtract=['TTBar', 'V+Jets', 'SingleTop']
         )
-        # print(hist_to_value_error_tuplelist(qcd_shape))
-
-        # Now to normalise the qcd shape to the MC in the Signal Region
-        # n_dd_cr= Number of datadriven qcd from Control Region
+        # print(hist_to_value_error_tuplelist(data_driven_qcd))
+        # Calculate transfer factor from signal to control region
         n_mc_sr = self.histograms['QCD'].Integral()
-        n_dd_cr = qcd_shape.Integral()
-        qcd_shape.Scale( n_mc_sr/n_dd_cr )
-        # print "scaling to normalisation in SR MC : ", n_mc_sr/n_dd_cr
+        n_mc_cr = 1
+        transfer_factor = 1
+        if self.cr_histograms_for_normalisation == {}:
+            n_mc_cr = self.cr_histograms['QCD'].Integral()
+            transfer_factor = n_mc_sr/n_mc_cr
+        else :
+            # Treatment for QCD systematic uncertainties
+            # Use shape from the control region
+            # and the normalisation derived from a different control region
+            n_mc_cr = self.cr_histograms['QCD'].Integral()
+            n_mc_cr_norm = self.cr_histograms_for_normalisation['QCD'].Integral()
+            data_driven_qcd_normalisation = clean_control_region(
+                                                            self.cr_histograms_for_normalisation,
+                                                            subtract=['TTBar', 'V+Jets', 'SingleTop']
+                                                        )
+            n_data_cr_norm = data_driven_qcd_normalisation.Integral()
+            transfer_factor = n_mc_sr/ n_mc_cr_norm * n_data_cr_norm / data_driven_qcd.Integral()
 
-        # Now to scale from mc qcd to datadriven qcd
-        n_mc_cr = self.cr_histograms['QCD'].Integral()
-        qcd_shape.Scale( n_dd_cr/n_mc_cr )
-        # print "scaling from MC to datadriven : ", n_dd_cr/n_mc_cr
-        # print "Total scaling : ", n_mc_sr/n_mc_cr
+        data_driven_qcd.Scale( transfer_factor )
 
         # Replace QCD histogram with datadriven one
-        self.histograms['QCD'] = qcd_shape
+        self.histograms['QCD'] = data_driven_qcd
         return
 
-    def __return_histogram(self, d_hist_info, ignoreUnderflow=True, useQCDControl=False):
+    def __return_histogram(self, d_hist_info, ignoreUnderflow=True, useQCDControl=False, useQCDSystematicControl=False):
         '''
         Takes basic histogram info and returns histo.
         Maybe this can move to ROOT_utilities?
@@ -102,6 +115,7 @@ class Measurement():
         f           = d_hist_info['input_file']
         tree        = d_hist_info['tree']
         qcd_tree    = d_hist_info["qcd_control_region"]
+        qcd_tree_for_normalisation    = d_hist_info["qcd_normalisation_region"]
         var         = d_hist_info['branch']
         bins        = d_hist_info['bin_edges']
         lumi_scale  = d_hist_info['lumi_scale']
@@ -111,7 +125,10 @@ class Measurement():
 
         if useQCDControl: 
             # replace SR tree with CR tree
-            tree = qcd_tree
+            if useQCDSystematicControl:
+                tree = qcd_tree_for_normalisation
+            else:
+                tree = qcd_tree
             # Remove the Lepton reweighting for the datadriven qcd (SF not derived for unisolated leptons)
             for weight in weights:
                 if 'Electron' in weight: weights.remove(weight)

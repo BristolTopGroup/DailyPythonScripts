@@ -236,11 +236,10 @@ class XSectionConfig():
 
             'V+Jets_cross_section-',
             'V+Jets_cross_section+', 
-            'QCD_cross_section+', 
-            'QCD_cross_section-', 
             'SingleTop_cross_section+', 
             'SingleTop_cross_section-', 
 
+            'QCD_cross_section', 
             'QCD_shape',
         ]
 
@@ -273,7 +272,7 @@ class XSectionConfig():
         self.list_of_systematics = {
             # Theoretical Uncertainties (Rate Changing)
             'V+Jets_cross_section'      : ['V+Jets_cross_section+', 'V+Jets_cross_section-'],
-            'QCD_cross_section'         : ['QCD_cross_section+', 'QCD_cross_section-'],
+            'QCD_cross_section'         : ['QCD_cross_section', 'QCD_cross_section'],
             'SingleTop_cross_section'   : ['SingleTop_cross_section+', 'SingleTop_cross_section-'],
             'luminosity'                : ['luminosity+', 'luminosity-'],
             # QCD Shape
@@ -525,7 +524,7 @@ class XSectionConfig():
                 ('luminosity-', 'luminosity+'),
             ],
             'QCD Normalisation': [
-                ('QCD_cross_section-', 'QCD_cross_section+'),
+                ('QCD_cross_section', 'QCD_cross_section'),
             ],
             'QCD shape': [
                 ('QCD_shape', 'QCD_shape')
@@ -564,11 +563,9 @@ class XSectionConfig():
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
-            'luminosity': 0.027,  # Best guess for 13 TeV 4.8->2.7
+            'luminosity': 0.062,
             'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
-            # 'TTJet_cross_section': 0.043, # Currently same as 8 TeV
             'V+Jets_cross_section': 0.5,
-            'QCD_cross_section' : 1.,
          }
 
         self.tau_values_electron = {

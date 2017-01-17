@@ -179,13 +179,6 @@ def get_sample_info(options, xsec_config, sample):
         elif options['category'] == 'SingleTop_cross_section-':
             sample_info["scale"] = 1.0 - 1.0*generator_scale
 
-    if sample == 'QCD':
-        generator_scale = xsec_config.rate_changing_systematics['QCD_cross_section']
-        if options['category'] == 'QCD_cross_section+':
-            sample_info["scale"] = 1.0 + 1.0*generator_scale
-        elif options['category'] == 'QCD_cross_section-':
-            sample_info["scale"] = 1.0 - 1.0*generator_scale
-
     # scaling will always have some non zero value
     if sample_info["scale"] <= 0.0001: sample_info["scale"] = 0.0001
 
@@ -239,7 +232,7 @@ def get_sample_info(options, xsec_config, sample):
     # Input File and Tree
     # QCD Contorol Regions (Shape) JES and JER
     sample_info["input_file"] = get_file(xsec_config, sample, options)
-    sample_info["tree"], sample_info["qcd_control_region"] = get_tree(xsec_config, options)
+    sample_info["tree"], sample_info["qcd_control_region"], sample_info["qcd_normalisation_region"] = get_tree(xsec_config, options)
     if sample != 'data':
         if options['category'] == 'JES_up':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'plusJES_tree')
@@ -258,6 +251,8 @@ def get_sample_info(options, xsec_config, sample):
             sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JERDown')
             sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERDown')
 
+    if sample_info["qcd_normalisation_region"] is None:
+        sample_info["qcd_normalisation_region"] = sample_info["qcd_control_region"]
     return sample_info
 
 @cml.trace()
@@ -299,6 +294,8 @@ def get_tree(config, options):
     Return a specific sample tree
     '''
     tree = config.tree_path[options['channel']]
+    qcd_tree = None
+    qcd_normalisation_tree = None
     if options["data_driven_qcd"]:
         # QCD control region
         qcd_tree = tree.replace(
@@ -307,9 +304,15 @@ def get_tree(config, options):
         if "QCD_shape" in options['category']:
             qcd_tree = tree.replace(
                 "Ref selection", config.qcd_shape_syst_region[options['channel']])
-    else:
-        qcd_tree = None
-    return tree, qcd_tree
+            qcd_normalisation_tree = tree.replace(
+                "Ref selection", config.qcd_control_region[options['channel']])
+        elif "QCD_cross_section" in options['category']:
+            qcd_tree = tree.replace(
+                "Ref selection", config.qcd_control_region[options['channel']])
+            qcd_normalisation_tree = tree.replace(
+                "Ref selection", config.qcd_shape_syst_region[options['channel']])
+
+    return tree, qcd_tree, qcd_normalisation_tree
 
 
 @cml.trace()
