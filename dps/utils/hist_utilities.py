@@ -12,6 +12,7 @@ from itertools import izip
 from rootpy.plotting.hist import Hist2D
 import random
 import string
+from math import sqrt
 from copy import deepcopy
 from .file_utilities import read_data_from_JSON
 from .logger import log
@@ -205,7 +206,7 @@ def fix_overflow( hist ):
         overflow_error= hist.GetBinError( overflow_bin )
 
         new_last_bin_content = hist.GetBinContent( last_bin ) + overflow
-        new_last_bin_error = hist.GetBinError( last_bin ) + overflow_error
+        new_last_bin_error = sqrt(hist.GetBinError( last_bin ) ** 2 + overflow_error ** 2)
 
         hist.SetBinContent( last_bin, new_last_bin_content )
         hist.SetBinError( last_bin, new_last_bin_error )
@@ -225,7 +226,7 @@ def fix_overflow( hist ):
 
             hist.SetBinContent( x, overflow_bin_y, 0. )
             hist.SetBinContent( x, last_bin_y, overflow_y + last_bin_content_y )
-            hist.SetBinError( x, last_bin_y, overflow_error_y + last_bin_error_y )
+            hist.SetBinError( x, last_bin_y, sqrt( overflow_error_y ** 2 + last_bin_error_y ** 2 ) )
         # now all x-overflow
         for y in range( 1, overflow_bin_y +1):
             overflow_x = hist.GetBinContent( overflow_bin_x, y )
@@ -236,7 +237,7 @@ def fix_overflow( hist ):
 
             hist.SetBinContent( overflow_bin_x, y, 0. )
             hist.SetBinContent( last_bin_x, y, overflow_x + last_bin_content_x )
-            hist.SetBinError( last_bin_x, y, overflow_error_x + last_bin_error_x )
+            hist.SetBinError( last_bin_x, y, sqrt( overflow_error_x ** 2 + last_bin_error_x ** 2 ) )
         # and now the final bin (both x and y overflow)
         overflow_x_y = hist.GetBinContent( overflow_bin_x, overflow_bin_y )
         last_bin_content_x_y = hist.GetBinContent( last_bin_x, last_bin_y )
