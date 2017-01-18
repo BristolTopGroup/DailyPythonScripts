@@ -40,7 +40,7 @@ genBranchNames_particle = {
     'WPT': 'pseudoWPT',
     'HT': 'pseudoHT',
     'ST': 'pseudoST',
-    'MET': 'pseudoMET',
+    'MET': 'genMET',
 
     'lepTopPt': 'pseudoTop_pT',
     'hadTopPt': 'pseudoTop_pT',
