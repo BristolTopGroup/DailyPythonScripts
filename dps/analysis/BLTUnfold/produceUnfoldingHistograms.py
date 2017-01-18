@@ -28,7 +28,7 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
     else :
         return 1
 
- def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
+def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     if whichWayToWeight == -1 :
         return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
     elif whichWayToWeight == 1 :
@@ -204,7 +204,7 @@ def main():
     pdfWeight    = args.pdfWeight
     muFmuRWeight = args.muFmuRWeight
     alphaSWeight = args.alphaSWeight
-    matchingWeight = options.matchingWeight
+    matchingWeight = args.matchingWeight
 
     # Output file name
     outputFileName = 'crap.root'
@@ -413,7 +413,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n == 100000: break
+                # if n == 10000: break
                 # # #
                 # # # Weights and selection
                 # # #
@@ -501,10 +501,10 @@ def main():
                     genSelectionVis = ''
                     if channel.channelName is 'muPlusJets' :
                         genSelection = event.isSemiLeptonicMuon == 1
-                        genSelectionVis = event.isSemiLeptonicMuon == 1 and event.passesGenEventSelection == 1
+                        genSelectionVis = event.passesGenEventSelection == 1
                     elif channel.channelName is 'ePlusJets' :
                         genSelection = event.isSemiLeptonicElectron == 1
-                        genSelectionVis = event.isSemiLeptonicElectron == 1 and event.passesGenEventSelection == 1
+                        genSelectionVis = event.passesGenEventSelection == 1
 
                     # Offline level selection
                     offlineSelection = 0
