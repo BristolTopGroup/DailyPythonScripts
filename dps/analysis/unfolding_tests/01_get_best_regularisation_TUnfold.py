@@ -36,6 +36,7 @@ from matplotlib import rc
 from dps.config import CMS
 from ROOT import TGraph, TSpline3, Double, TUnfoldDensity, TUnfold, TDecompSVD, TMatrixD, TCanvas, gROOT
 from rootpy import asrootpy
+from dps.utils.pandas_utilities import read_tuple_from_file
 
 rc('font',**CMS.font)
 rc( 'text', usetex = True )
@@ -107,7 +108,7 @@ class RegularisationSettings(object):
             edges = []
             edges = reco_bin_edges_vis[self.variable]
 
-            json_input = read_data_from_JSON(data_file)
+            json_input = read_tuple_from_file(data_file)
 
             if data_key == "": # JSON file == histogram
                 self.h_data = value_error_tuplelist_to_hist(json_input, edges)
@@ -124,6 +125,7 @@ def main():
     results = {}
     for input_values, json_file in zip( input_values_sets, json_input_files ):
         print 'Processing', json_file
+        if 'combined' in json_file: continue
         regularisation_settings = RegularisationSettings( input_values )
         variable = regularisation_settings.variable
         channel = regularisation_settings.channel
@@ -142,7 +144,6 @@ def main():
                                 h_response,
                                 fakes = None,
                                 method = 'TUnfold', 
-                                k_value = -1, 
                                 tau = 0. 
                             )
 
@@ -266,7 +267,6 @@ def get_best_tau( regularisation_settings ):
                             h_response,
                             fakes = None,
                             method = 'TUnfold', 
-                            k_value = -1, 
                             tau = -1
                         )
 

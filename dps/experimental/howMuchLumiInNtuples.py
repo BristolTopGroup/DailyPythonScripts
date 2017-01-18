@@ -34,5 +34,6 @@ for file in inputFiles:
 		# print run,lumi
 	# print outputJson
 with open('json.txt', 'w') as outfile:
-	print json.dumps(outputJson)
-	json.dump(outputJson, outfile)
+ 	print json.dumps(outputJson)
+ 	json.dump(outputJson, outfile)
+ 	

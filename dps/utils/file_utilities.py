@@ -52,9 +52,19 @@ def read_data_from_JSON(JSON_input_file):
     return data
 
 def get_files_in_path(path, file_ending = '.root'):
-    path += '/*' + file_ending
-    files = glob.glob(path)
-    return files
+    '''
+    Return the files for a given path
+    '''
+    input_files=[]
+    print path
+    if os.path.exists(path):
+        for root, dirs, files in os.walk(path):
+            for name in files:
+                if file_ending in name:
+                    input_files.append(os.path.join(root, name))
+    else:
+        print "Could not find required folder"
+    return input_files
 
 def check_ROOT_file(filename):
     passesCheck = can_open_ROOT_file(filename)

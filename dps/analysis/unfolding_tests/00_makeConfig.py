@@ -3,11 +3,9 @@ from dps.config.xsection import XSectionConfig
 from dps.utils.file_utilities import make_folder_if_not_exists
 
 com = 13
-fitVars = "M3_angle_bl"
-
 config = XSectionConfig( com )
 
-make_folder_if_not_exists('config/unfolding/FullPS/')
+# make_folder_if_not_exists('config/unfolding/FullPS/')
 make_folder_if_not_exists('config/unfolding/VisiblePS/')
 
 for channel in config.analysis_types.keys():
@@ -48,7 +46,7 @@ for channel in config.analysis_types.keys():
 		histogramTemplate = "%s_%s" % ( variable, channel )
 		outputJson = {
 		    "output_folder": "plots/unfolding/bestRegularisation/VisiblePS", 
-		    "output_format": ["png", "pdf"], 
+		    "output_format": ["pdf"], 
 		    "centre-of-mass energy" : com,
 		    "channel": "%s" % channel,
 		    "variable": "%s" % variable,
@@ -66,7 +64,7 @@ for channel in config.analysis_types.keys():
 				# "histogram": "%s/measuredVis" % ( histogramTemplate ),
 				},
 			"data" : { 
-				"file": "data/normalisation/background_subtraction/%sTeV/%s/VisiblePS/central/normalisation_%s_patType1CorrectedPFMet.txt" % ( com, variable, channel),
+				"file": "data/normalisation/background_subtraction/%sTeV/%s/VisiblePS/central/normalisation_%s.txt" % ( com, variable, channel),
 				"histogram": "TTJet"
 				},
 			}

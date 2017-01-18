@@ -1,14 +1,12 @@
 from rootpy.plotting import Hist, Hist2D
 from rootpy.io import root_open
 #from rootpy.interactive import wait
-from optparse import OptionParser
+from argparse import ArgumentParser
 from dps.config.xsection import XSectionConfig
 from dps.config.variable_binning import bin_edges_vis, reco_bin_edges_vis
 from dps.config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from dps.utils.file_utilities import make_folder_if_not_exists
 from math import trunc, exp, sqrt
-
-from scaleFactors import *
 
 import ROOT as ROOT
 ROOT.gROOT.SetBatch(True)
@@ -30,13 +28,30 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
     else :
         return 1
 
-def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
+ def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     if whichWayToWeight == -1 :
         return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
     elif whichWayToWeight == 1 :
         return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
     else :
         return 1
+
+def calculateTopPtSystematicWeight( lepTopPt, hadTopPt ):
+    '''
+    Calculating the top pt weight
+         ______________            A + B.Pt
+    W = / SF(t)SF(tbar) , SF(t) = e
+
+    A = 0.0615
+    B = -0.0005
+    '''     
+    lepTopWeight = ptWeight( lepTopPt )
+    hadTopWeight = ptWeight( hadTopPt )
+    return sqrt( lepTopWeight * hadTopWeight )
+ 
+def ptWeight( pt ):
+    return exp( 0.0615 - 0.0005 * pt ) 
+ 
 
 def calculateTopPtSystematicWeight( lepTopPt, hadTopPt ):
     lepTopWeight = ptWeight( lepTopPt )
@@ -49,103 +64,162 @@ def ptWeight( pt ):
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
-                 '13TeV' : {
-                        'central' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'amcatnlo' : measurementConfig.ttbar_amc_category_templates_trees,
-                        'madgraph' : measurementConfig.ttbar_madgraph_category_templates_trees,
-                        'powhegherwigpp' : measurementConfig.ttbar_powhegherwigpp_category_templates_trees,
-                        'amcatnloherwigpp' : measurementConfig.ttbar_amcatnloherwigpp_category_templates_trees,
-                        'massdown' : measurementConfig.ttbar_mtop1695_category_templates_trees,
-                        'massup' : measurementConfig.ttbar_mtop1755_category_templates_trees,
-                        'topPtSystematic' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'fsrup' : measurementConfig.ttbar_fsrup_category_templates_trees,
-                        'fsrdown' : measurementConfig.ttbar_fsrdown_category_templates_trees,
-                        'isrup' : measurementConfig.ttbar_isrup_category_templates_trees,
-                        'isrdown' : measurementConfig.ttbar_isrdown_category_templates_trees,
-                        'ueup' : measurementConfig.ttbar_ueup_category_templates_trees,
-                        'uedown' : measurementConfig.ttbar_uedown_category_templates_trees,
+        '13TeV' : {
+            'central'           : measurementConfig.ttbar_trees['central'],
 
-                        'jesdown' : measurementConfig.ttbar_jesdown_category_templates_trees,
-                        'jesup' : measurementConfig.ttbar_jesup_category_templates_trees,
-                        'jerdown' : measurementConfig.ttbar_jerdown_category_templates_trees,
-                        'jerup' : measurementConfig.ttbar_jerup_category_templates_trees,
-                        'bjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'bjetup' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'lightjetdown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'lightjetup' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'leptondown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'leptonup' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'pileupUp' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'pileupDown' : measurementConfig.ttbar_category_templates_trees['central'],
+            'amcatnlo'          : measurementConfig.ttbar_amc_trees,
+            'madgraph'          : measurementConfig.ttbar_madgraph_trees,
+            'powhegherwigpp'    : measurementConfig.ttbar_powhegherwigpp_trees,
 
 
-                        'ElectronEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'ElectronEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'MuonEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'MuonEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'TauEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'TauEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'UnclusteredEnUp' : measurementConfig.ttbar_category_templates_trees['central'],
-                        'UnclusteredEnDown' : measurementConfig.ttbar_category_templates_trees['central'],
-                    },
-                 }
+            'ueup'              : measurementConfig.ttbar_ueup_trees,
+            'uedown'            : measurementConfig.ttbar_uedown_trees,
+            'isrup'             : measurementConfig.ttbar_isrup_trees,
+            'isrdown'           : measurementConfig.ttbar_isrdown_trees,
+            'fsrup'             : measurementConfig.ttbar_fsrup_trees,
+            'fsrdown'           : measurementConfig.ttbar_fsrdown_trees,
+
+            'massdown'          : measurementConfig.ttbar_mtop1695_trees,
+            'massup'            : measurementConfig.ttbar_mtop1755_trees,
+
+            'jesdown'           : measurementConfig.ttbar_jesdown_trees,
+            'jesup'             : measurementConfig.ttbar_jesup_trees,
+            'jerdown'           : measurementConfig.ttbar_jerdown_trees,
+            'jerup'             : measurementConfig.ttbar_jerup_trees,
+
+            'bjetdown'          : measurementConfig.ttbar_trees['central'],
+            'bjetup'            : measurementConfig.ttbar_trees['central'],
+            'lightjetdown'      : measurementConfig.ttbar_trees['central'],
+            'lightjetup'        : measurementConfig.ttbar_trees['central'],
+
+            'leptondown'        : measurementConfig.ttbar_trees['central'],
+            'leptonup'          : measurementConfig.ttbar_trees['central'],
+            'pileupUp'          : measurementConfig.ttbar_trees['central'],
+            'pileupDown'        : measurementConfig.ttbar_trees['central'],
+
+            'ElectronEnUp'      : measurementConfig.ttbar_trees['central'],
+            'ElectronEnDown'    : measurementConfig.ttbar_trees['central'],
+            'MuonEnUp'          : measurementConfig.ttbar_trees['central'],
+            'MuonEnDown'        : measurementConfig.ttbar_trees['central'],
+            'TauEnUp'           : measurementConfig.ttbar_trees['central'],
+            'TauEnDown'         : measurementConfig.ttbar_trees['central'],
+            'UnclusteredEnUp'   : measurementConfig.ttbar_trees['central'],
+            'UnclusteredEnDown' : measurementConfig.ttbar_trees['central'],
+
+            'topPtSystematic'   : measurementConfig.ttbar_trees['central'],
+
+        },
+    }
 
     return fileNames[com][sample]
 
 channels = [
-        channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
-        channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon')
-        ]
+    channel( 'ePlusJets', 'rootTupleTreeEPlusJets', 'electron'),
+    channel( 'muPlusJets', 'rootTupleTreeMuPlusJets', 'muon'),
+]
+
+
+
+def parse_arguments():
+    parser = ArgumentParser(__doc__)
+    parser.add_argument('--topPtReweighting', 
+        action='store_true', 
+        dest='applyTopPtReweighting', 
+        default=False 
+    )
+    parser.add_argument('--topEtaReweighting', 
+        dest='applyTopEtaReweighting', 
+        type=int, 
+        default=0 
+    )
+    parser.add_argument('-c', '--centreOfMassEnergy', 
+        dest='centreOfMassEnergy', 
+        type=int, 
+        default=13 
+    )
+    parser.add_argument('--pdfWeight', 
+        type=int, 
+        dest='pdfWeight', 
+        default=-1 
+    )
+    parser.add_argument('--muFmuRWeight', 
+        type=int, 
+        dest='muFmuRWeight', 
+        default=-1 
+    )
+    parser.add_argument('--alphaSWeight', 
+        type=int, 
+        dest='alphaSWeight', 
+        default=-1 
+    )
+    parser.add_argument('--matchingWeight', 
+        type=int, 
+        dest='matchingWeight', 
+        default=-1 
+    )
+    parser.add_argument('--nGeneratorWeights', 
+        type=int, 
+        dest='nGeneratorWeights', 
+        default=1 
+    )
+    parser.add_argument('-s', '--sample', 
+        dest='sample', 
+        default='central'
+    )
+    parser.add_argument('-d', '--debug', 
+        action='store_true', 
+        dest='debug', 
+        default=False
+    )
+    parser.add_argument('-n', 
+        action='store_true', 
+        dest='donothing', 
+        default=False
+    )
+    parser.add_argument('-e', 
+        action='store_true', 
+        dest='extraHists', 
+        default=False
+    )
+    parser.add_argument('-f',
+        action='store_true', 
+        dest='fineBinned', 
+        default=False
+    )
+    args = parser.parse_args()
+    return args
 
 def main():
-    
-    parser = OptionParser()
-    parser.add_option('--topPtReweighting', dest='applyTopPtReweighting', type='int', default=0 )
-    parser.add_option('--topEtaReweighting', dest='applyTopEtaReweighting', type='int', default=0 )
-    parser.add_option('-c', '--centreOfMassEnergy', dest='centreOfMassEnergy', type='int', default=13 )
-    parser.add_option('--pdfWeight', type='int', dest='pdfWeight', default=-1 )
-    parser.add_option('--muFmuRWeight', type='int', dest='muFmuRWeight', default=-1 )
-    parser.add_option('--nGeneratorWeights', type='int', dest='nGeneratorWeights', default=1 )
-    parser.add_option('-s', '--sample', dest='sample', default='central')
-    parser.add_option('-d', '--debug', action='store_true', dest='debug', default=False)
-    parser.add_option('-n', action='store_true', dest='donothing', default=False)
-    parser.add_option('-e', action='store_true', dest='extraHists', default=False)
-    parser.add_option('-f',action='store_true', dest='fineBinned', default=False)
+    args = parse_arguments()
 
-    (options, _) = parser.parse_args()
-
-    measurement_config = XSectionConfig( options.centreOfMassEnergy )
+    measurement_config = XSectionConfig( args.centreOfMassEnergy )
 
     # Input file name
     file_name = 'crap.root'
-    if int(options.centreOfMassEnergy) == 13:
-        # file_name = fileNames['13TeV'][options.sample]
-        file_name = getFileName('13TeV', options.sample, measurement_config)
-        # if options.generatorWeight >= 0:
-        #     file_name = 'localInputFile.root'
+    if int(args.centreOfMassEnergy) == 13:
+        file_name = getFileName('13TeV', args.sample, measurement_config)
     else:
         print "Error: Unrecognised centre of mass energy."
 
-    pdfWeight = options.pdfWeight
-    muFmuRWeight = options.muFmuRWeight
+    pdfWeight    = args.pdfWeight
+    muFmuRWeight = args.muFmuRWeight
+    alphaSWeight = args.alphaSWeight
+    matchingWeight = options.matchingWeight
 
     # Output file name
     outputFileName = 'crap.root'
-    outputFileDir = 'unfolding/%sTeV/' % options.centreOfMassEnergy
+    outputFileDir = 'unfolding/%sTeV/' % args.centreOfMassEnergy
     make_folder_if_not_exists(outputFileDir)
    
-    energySuffix = '%sTeV' % ( options.centreOfMassEnergy )
+    energySuffix = '%sTeV' % ( args.centreOfMassEnergy )
 
-    if options.applyTopEtaReweighting != 0:
-        if options.applyTopEtaReweighting == 1:
+    if args.applyTopEtaReweighting != 0:
+        if args.applyTopEtaReweighting == 1:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_up.root' % energySuffix
-        elif options.applyTopEtaReweighting == -1:
+        elif args.applyTopEtaReweighting == -1:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_down.root' % energySuffix
-    elif options.applyTopPtReweighting != 0:
-        if options.applyTopPtReweighting == 1:
-            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
-        elif options.applyTopPtReweighting == -1:
-            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_down.root' % energySuffix            
+    elif args.applyTopPtReweighting:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
     elif muFmuRWeight == 1:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_1muR2muF.root' % ( energySuffix )
     elif muFmuRWeight == 2:
@@ -158,11 +232,23 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR1muF.root' % ( energySuffix )
     elif muFmuRWeight == 8:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR05muF.root' % ( energySuffix )
+
+    elif matchingWeight == 9:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_down.root' % ( energySuffix )
+    elif matchingWeight == 18:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_up.root' % ( energySuffix )
+    elif matchingWeight >= 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matchingWeight_%i.root' % ( energySuffix, matchingWeight )
+
+    elif alphaSWeight == 0:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_down.root' % ( energySuffix )
+    elif alphaSWeight == 1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_up.root' % ( energySuffix )
     elif pdfWeight >= 0 and pdfWeight <= 99:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
-    elif options.sample != 'central':
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, options.sample  )
-    elif options.fineBinned :
+    elif args.sample != 'central':
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, args.sample  )
+    elif args.fineBinned :
         outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
@@ -171,30 +257,23 @@ def main():
 
             # Get the tree
             treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
-            if options.sample == "jesup":
+            if args.sample == "jesup":
                 treeName += "_JESUp"
-            elif options.sample == "jesdown":
+            elif args.sample == "jesdown":
                 treeName += "_JESDown"
-            elif options.sample == "jerup":
+            elif args.sample == "jerup":
                 treeName += "_JERUp"
-            elif options.sample == "jerdown":
+            elif args.sample == "jerdown":
                 treeName += "_JERDown"
 
             tree = f.Get(treeName)
             nEntries = tree.GetEntries()
-            # weightTree = f.Get('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
-            # if meWeight >= 0 :
-            #     tree.AddFriend('TTbar_plus_X_analysis/Unfolding/GeneratorSystematicWeights')
-            #     tree.SetBranchStatus('genWeight_*',1)
-            #     tree.SetBranchStatus('genWeight_%i' % meWeight, 1)
 
             # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
             allVariablesBins = bin_edges_vis.copy()
             for variable in bin_edges_vis:
-
                 if 'Rap' in variable:
                     allVariablesBins['abs_%s' % variable] = [0,bin_edges_vis[variable][-1]]
-
 
             recoVariableNames = {}
             genVariable_particle_names = {}
@@ -203,9 +282,9 @@ def main():
             outputDirs = {}
 
             for variable in allVariablesBins:
-                if options.debug and variable != 'HT' : continue
-
-                if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                if args.debug and variable != 'HT' : continue
+                if args.sample in measurement_config.met_specific_systematics \
+                and variable in measurement_config.variables_no_met:
                     continue
 
                 outputDirs[variable] = {}
@@ -217,21 +296,22 @@ def main():
                 recoVariableName = branchNames[variable]
                 sysIndex = None
                 if variable in ['MET', 'ST', 'WPT']:
-                    if options.sample == "jesup":
-                        recoVariableName += '_METUncertainties'
-                        sysIndex = 2
-                    elif options.sample == "jesdown":
-                        recoVariableName += '_METUncertainties'
-                        sysIndex = 3
-                    elif options.sample == "jerup":
+                    if args.sample == "jerup":
                         recoVariableName += '_METUncertainties'
                         sysIndex = 0
-                    elif options.sample == "jerdown":
+                    elif args.sample == "jerdown":
                         recoVariableName+= '_METUncertainties'
                         sysIndex = 1
-                    elif options.sample in measurement_config.met_systematics:
+                    elif args.sample == "jesup":
                         recoVariableName += '_METUncertainties'
-                        sysIndex = measurement_config.met_systematics[options.sample]
+                        sysIndex = 2
+                    elif args.sample == "jesdown":
+                        recoVariableName += '_METUncertainties'
+                        sysIndex = 3
+                    # Dont need this?
+                    elif args.sample in measurement_config.met_systematics:
+                        recoVariableName += '_METUncertainties'
+                        sysIndex = measurement_config.met_systematics[args.sample]
 
                 genVariable_particle_name = None
                 genVariable_parton_name = None
@@ -272,7 +352,7 @@ def main():
                     h['response_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
                     h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
 
-                    if options.fineBinned:
+                    if args.fineBinned:
                         minVar = trunc( allVariablesBins[variable][0] )
                         maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
                         nBins = int(maxVar - minVar)
@@ -319,12 +399,12 @@ def main():
 
 
             # Counters for studying phase space
-            nVis = {c.channelName : 0 for c in channels}
-            nVisNotOffline = {c.channelName : 0 for c in channels}
-            nOffline = {c.channelName : 0 for c in channels}
-            nOfflineNotVis = {c.channelName : 0 for c in channels}
-            nFull = {c.channelName : 0 for c in channels}
-            nOfflineSL = {c.channelName : 0 for c in channels}
+            nVis            = {c.channelName : 0 for c in channels}
+            nVisNotOffline  = {c.channelName : 0 for c in channels}
+            nOffline        = {c.channelName : 0 for c in channels}
+            nOfflineNotVis  = {c.channelName : 0 for c in channels}
+            nFull           = {c.channelName : 0 for c in channels}
+            nOfflineSL      = {c.channelName : 0 for c in channels}
 
             n=0
             # Event Loop
@@ -342,41 +422,39 @@ def main():
                 # Don't apply if calculating systematic
                 pileupWeight = event.PUWeight
                 # print event.PUWeight,event.PUWeight_up,event.PUWeight_down
-                if options.sample == "pileupUp":
+                if args.sample == "pileupUp":
                     pileupWeight = event.PUWeight_up
-                elif options.sample == "pileupDown":
+                elif args.sample == "pileupDown":
                     pileupWeight = event.PUWeight_down
 
                 # Generator level weight
                 genWeight = event.EventWeight * measurement_config.luminosity_scale
 
-                # Offline level weights
-                offlineWeight = pileupWeight
-
                 # Lepton weight
                 leptonWeight = event.LeptonEfficiencyCorrection
 
-                if options.sample == 'leptonup':
+                if args.sample == 'leptonup':
                     leptonWeight = event.LeptonEfficiencyCorrectionUp
-                elif options.sample == 'leptondown':
-                    leptonWeight == event.LeptonEfficiencyCorrectionDown
+                elif args.sample == 'leptondown':
+                    leptonWeight = event.LeptonEfficiencyCorrectionDown
 
                 # B Jet Weight
                 bjetWeight = event.BJetWeight
-                if options.sample == "bjetup":
+                if args.sample == "bjetup":
                     bjetWeight = event.BJetUpWeight
-                elif options.sample == "bjetdown":
+                elif args.sample == "bjetdown":
                     bjetWeight = event.BJetDownWeight
-                elif options.sample == "lightjetup":
+                elif args.sample == "lightjetup":
                     bjetWeight = event.LightJetUpWeight
-                elif options.sample == "lightjetdown":
+                elif args.sample == "lightjetdown":
                     bjetWeight = event.LightJetDownWeight
 
                 # Top pt systematic weight
                 topPtSystematicWeight = 1
-                if options.sample == 'topPtSystematic':
+                if args.sample == 'topPtSystematic':
                     topPtSystematicWeight = calculateTopPtSystematicWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
 
+                # Offline level weights
                 offlineWeight = event.EventWeight * measurement_config.luminosity_scale
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
@@ -396,18 +474,23 @@ def main():
                     offlineWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
                     pass
 
-                if options.applyTopPtReweighting != 0:
-                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
-                    offlineWeight *= ptWeight
-                    genWeight *= ptWeight
+                if alphaSWeight == 0 or alphaSWeight == 1:
+                    genWeight *= branch('alphaSWeight_%i' % alphaSWeight)
+                    offlineWeight *= branch('alphaSWeight_%i' % alphaSWeight)
+                    pass
 
-                if options.applyTopPtReweighting != 0:
-                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), options.applyTopPtReweighting)
+                if matchingWeight >= 0:
+                    genWeight *= branch('matchingWeight_%i' % matchingWeight)
+                    offlineWeight *= branch('matchingWeight_%i' % matchingWeight)
+                    pass
+
+                if args.applyTopPtReweighting != 0:
+                    ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), args.applyTopPtReweighting)
                     offlineWeight *= ptWeight
                     genWeight *= ptWeight
                 
-                if options.applyTopEtaReweighting != 0:
-                    etaWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), options.applyTopEtaReweighting)
+                if args.applyTopEtaReweighting != 0:
+                    etaWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), args.applyTopEtaReweighting)
                     offlineWeight *= etaWeight
                     genWeight *= etaWeight
 
@@ -449,7 +532,9 @@ def main():
                             nOfflineNotVis[channel.channelName] += offlineWeight
 
                     for variable in allVariablesBins:
-                        if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                        if args.debug and variable != 'HT' : continue
+                        if args.sample in measurement_config.met_specific_systematics and \
+                        variable in measurement_config.variables_no_met:
                             continue
 
                         # # #
@@ -467,7 +552,7 @@ def main():
                         # if recoVariable > allVariablesBins[variable][-1]:
                         #     print 'Big reco variable : ',recoVariable
                         #     print 'Setting to :',min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
-                        if not options.fineBinned:
+                        if not args.fineBinned:
                             recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
                         genVariable_particle = branch(genVariable_particle_names[variable])
                         if 'abs' in variable:
@@ -476,7 +561,7 @@ def main():
                         # # Fill histograms
                         # #
                         histogramsToFill = histograms[variable][channel.channelName]
-                        if not options.donothing:
+                        if not args.donothing:
 
                             if genSelection:
                                 histogramsToFill['truth'].Fill( genVariable_particle, genWeight)
@@ -505,7 +590,7 @@ def main():
                             if fakeSelectionVis:
                                 histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight)
 
-                            if options.extraHists:
+                            if args.extraHists:
                                 if genSelection:
                                     histogramsToFill['eventWeightHist'].Fill(event.EventWeight)
                                     histogramsToFill['genWeightHist'].Fill(genWeight)
@@ -515,19 +600,30 @@ def main():
             # Output histgorams to file
             #
             for variable in allVariablesBins:
-                if options.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
+                if args.debug and variable != 'HT' : continue
+                if args.sample in measurement_config.met_systematics and variable not in ['MET', 'ST', 'WPT']:
                     continue
                 for channel in channels:
 
-                    # Fill phase space info
-                    h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
-                    h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])
-                    h.SetBinContent(2, nOfflineNotVis[channel.channelName] / nOffline[channel.channelName])
-                    h.SetBinContent(3, nVis[channel.channelName] / nFull[channel.channelName])
-                    # Selection efficiency for SL ttbar
-                    h.SetBinContent(4, nOfflineSL[channel.channelName] / nFull[channel.channelName])
-                    # Fraction of offline that are SL
-                    h.SetBinContent(5, nOfflineSL[channel.channelName] / nOffline[channel.channelName])
+                    if nOffline[channel.channelName] != 0 : 
+                        # Fill phase space info
+                        h = histograms[variable][channel.channelName]['phaseSpaceInfoHist']
+                        h.SetBinContent(1, nVisNotOffline[channel.channelName] / nVis[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(1, "nVisNotOffline/nVis")
+
+                        h.SetBinContent(2, nOfflineNotVis[channel.channelName] / nOffline[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(2, "nOfflineNotVis/nOffline")
+
+                        h.SetBinContent(3, nVis[channel.channelName] / nFull[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(3, "nVis/nFull")
+
+                        # Selection efficiency for SL ttbar
+                        h.SetBinContent(4, nOfflineSL[channel.channelName] / nFull[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(4, "nOfflineSL/nFull")
+
+                        # Fraction of offline that are SL
+                        h.SetBinContent(5, nOfflineSL[channel.channelName] / nOffline[channel.channelName])
+                        # h.GetXaxis().SetBinLabel(5, "nOfflineSL/nOffline")
 
                     outputDirs[variable][channel.channelName].cd()
                     for h in histograms[variable][channel.channelName]:

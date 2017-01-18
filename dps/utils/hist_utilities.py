@@ -12,6 +12,7 @@ from itertools import izip
 from rootpy.plotting.hist import Hist2D
 import random
 import string
+from math import sqrt
 from copy import deepcopy
 from .file_utilities import read_data_from_JSON
 from .logger import log
@@ -33,17 +34,27 @@ def values_and_errors_to_hist( values, errors, bins ):
     value_error_tuplelist = zip( values, errors )
     return value_error_tuplelist_to_hist( value_error_tuplelist, bins )
 
-def value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges ):
-    value_error_tuplelist = [( value, 0 ) for value, lower_error, upper_error in value_errors_tuplelist]
+def value_errors_tuplelist_to_graph( value_errors_tuplelist, bin_edges, is_symmetric_errors=False ):
+    value_error_tuplelist = []
+    if is_symmetric_errors:
+        value_error_tuplelist = [( value, 0 ) for value, error in value_errors_tuplelist]
+    else:
+        value_error_tuplelist = [( value, 0 ) for value, lower_error, upper_error in value_errors_tuplelist]
+
     hist = value_error_tuplelist_to_hist( value_error_tuplelist, bin_edges )
     rootpy_graph = asrootpy( TGraphAsymmErrors( hist ) )
-#    rootpy_graph = Graph(hist = hist)
+
     set_lower_error = rootpy_graph.SetPointEYlow
     set_upper_error = rootpy_graph.SetPointEYhigh
 
-    for point_i, ( value, lower_error, upper_error ) in enumerate( value_errors_tuplelist ):
-        set_lower_error( point_i, lower_error )
-        set_upper_error( point_i, upper_error )
+    if is_symmetric_errors:
+        for point_i, ( value, error ) in enumerate( value_errors_tuplelist ):
+            set_lower_error( point_i, error )
+            set_upper_error( point_i, error )
+    else:
+        for point_i, ( value, lower_error, upper_error ) in enumerate( value_errors_tuplelist ):
+            set_lower_error( point_i, lower_error )
+            set_upper_error( point_i, upper_error )
 
     return rootpy_graph
 
@@ -195,7 +206,7 @@ def fix_overflow( hist ):
         overflow_error= hist.GetBinError( overflow_bin )
 
         new_last_bin_content = hist.GetBinContent( last_bin ) + overflow
-        new_last_bin_error = hist.GetBinError( last_bin ) + overflow_error
+        new_last_bin_error = sqrt(hist.GetBinError( last_bin ) ** 2 + overflow_error ** 2)
 
         hist.SetBinContent( last_bin, new_last_bin_content )
         hist.SetBinError( last_bin, new_last_bin_error )
@@ -215,7 +226,7 @@ def fix_overflow( hist ):
 
             hist.SetBinContent( x, overflow_bin_y, 0. )
             hist.SetBinContent( x, last_bin_y, overflow_y + last_bin_content_y )
-            hist.SetBinError( x, last_bin_y, overflow_error_y + last_bin_error_y )
+            hist.SetBinError( x, last_bin_y, sqrt( overflow_error_y ** 2 + last_bin_error_y ** 2 ) )
         # now all x-overflow
         for y in range( 1, overflow_bin_y +1):
             overflow_x = hist.GetBinContent( overflow_bin_x, y )
@@ -226,7 +237,7 @@ def fix_overflow( hist ):
 
             hist.SetBinContent( overflow_bin_x, y, 0. )
             hist.SetBinContent( last_bin_x, y, overflow_x + last_bin_content_x )
-            hist.SetBinError( last_bin_x, y, overflow_error_x + last_bin_error_x )
+            hist.SetBinError( last_bin_x, y, sqrt( overflow_error_x ** 2 + last_bin_error_x ** 2 ) )
         # and now the final bin (both x and y overflow)
         overflow_x_y = hist.GetBinContent( overflow_bin_x, overflow_bin_y )
         last_bin_content_x_y = hist.GetBinContent( last_bin_x, last_bin_y )
