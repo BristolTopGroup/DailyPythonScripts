@@ -460,7 +460,8 @@ def main():
                 offlineWeight *= bjetWeight
                 # offlineWeight *= leptonWeight
                 offlineWeight *= topPtSystematicWeight
-
+                genWeight *= topPtSystematicWeight
+                
                 # Generator weight
                 # Scale up/down, pdf
                 if pdfWeight >= 0:
