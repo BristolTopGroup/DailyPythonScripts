@@ -46,7 +46,7 @@ from dps.utils.Calculation import calculate_purities, calculate_stabilities
 from dps.utils.hist_utilities import rebin_2d
 from dps.config.xsection import XSectionConfig
 from argparse import ArgumentParser
-from dps.config.variable_binning import bin_edges_full, minimum_bin_width
+from dps.config.variable_binning import bin_edges_full, minimum_bin_width, nice_bin_width
 from dps.utils.file_utilities import write_data_to_JSON
 from ROOT import TH1, TCanvas, TLine, gDirectory, TObjArray, TColor, TLegend
 
@@ -108,21 +108,21 @@ def main():
 
         # Claculate the best binning
         if variable == 'HT':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=100. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], nice_bin_width[variable], x_min=120. )
         elif variable == 'ST':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=123. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], nice_bin_width[variable], x_min=146. )
         elif variable == 'MET':
-            best_binning, histogram_information = get_best_binning( histogram_information , 0.5, 0.5, n_min, minimum_bin_width[variable] )
+            best_binning, histogram_information = get_best_binning( histogram_information , 0.5, 0.5, n_min, minimum_bin_width[variable], nice_bin_width[variable] )
         elif variable == 'NJets':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], x_min=3.5 )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], nice_bin_width[variable], x_min=3.5 )
         elif variable == 'lepton_pt':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], x_min=23. )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], nice_bin_width[variable], x_min=26. )
         elif variable == 'abs_lepton_eta':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable] )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min_lepton, minimum_bin_width[variable], nice_bin_width[variable] )
         elif variable == 'NJets':
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], is_NJet=True)
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], nice_bin_width[variable], is_NJet=True)
         else:
-            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable] )
+            best_binning, histogram_information = get_best_binning( histogram_information , p_min, s_min, n_min, minimum_bin_width[variable], nice_bin_width[variable] )
 
         # Symmetric binning for lepton_eta
         if 'Rap' in variable:
@@ -233,7 +233,7 @@ def get_histograms( config, variable, args ):
     return histogram_information
 
 
-def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_min = None, is_NJet=False ):
+def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, nice_width, x_min = None, is_NJet=False ):
     '''
     Step 1: Change the size of the first bin until it fulfils the minimal criteria
     Step 3: Check if it is true for other channel histograms. If not back to step 2
@@ -259,7 +259,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
     # Calculate the bin edges until no more bins can be iterated over
     while current_bin_end < n_bins:
         # Return the next bin end + (p, s, N_reco, res)
-        current_bin_end, _, _, _, r = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width, is_NJet=is_NJet )
+        current_bin_end, _, _, _, r = get_next_end( histograms, current_bin_start, current_bin_end, p_min, s_min, n_min, min_width, nice_width, is_NJet=is_NJet )
         resolutions.append(r)
 
         # Attach first bin low edge
@@ -291,6 +291,11 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
             stabilities     = calculate_stabilities( new_hist.Clone() )
             n_events        = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
 
+        # Make sure last bin edge is also a nice rounded number
+        if bin_edges[-1] % nice_width != 0:
+            bin_edges[-1] = nice_width * round(bin_edges[-1]/nice_width)
+            # print (bin_edges[-1], nice_width * round(bin_edges[-1]/nice_width))
+
         # Add purites, stabilities, n_events and resolutions to the hstogram information
         hist_info['p_i'] = purities
         hist_info['s_i'] = stabilities
@@ -299,7 +304,7 @@ def get_best_binning( histogram_information, p_min, s_min, n_min, min_width, x_m
 
     return bin_edges, histogram_information
 
-def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width, is_NJet=False ): 
+def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width, nice_width, is_NJet=False ): 
     '''
     Getting the next bin end
     '''
@@ -320,6 +325,10 @@ def get_next_end( histograms, bin_start, bin_end, p_min, s_min, n_min, min_width
             binWidth = x_high - x_low
 
             if binWidth < min_width:
+                current_bin_end = bin_i
+                continue
+
+            if reco.GetXaxis().GetBinLowEdge(bin_i+1) % nice_width > 1e-8:
                 current_bin_end = bin_i
                 continue
 
