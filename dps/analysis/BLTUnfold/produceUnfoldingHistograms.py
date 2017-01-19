@@ -30,9 +30,9 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
 
 def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     if whichWayToWeight == -1 :
-        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
+        return max ( (-0.0005 * lepTopPt + 1.15 ) * (-0.0005 * hadTopPt + 1.15), 0.15 )
     elif whichWayToWeight == 1 :
-        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
+        return max ( (0.0005 * lepTopPt + 0.95 ) * (0.0005 * hadTopPt + 0.95), 0.1 )
     else :
         return 1
 
@@ -123,9 +123,9 @@ channels = [
 def parse_arguments():
     parser = ArgumentParser(__doc__)
     parser.add_argument('--topPtReweighting', 
-        action='store_true', 
         dest='applyTopPtReweighting', 
-        default=False 
+        type=int, 
+        default=0 
     )
     parser.add_argument('--topEtaReweighting', 
         dest='applyTopEtaReweighting', 
@@ -219,7 +219,10 @@ def main():
         elif args.applyTopEtaReweighting == -1:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_down.root' % energySuffix
     elif args.applyTopPtReweighting:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
+        if args.applyTopPtReweighting == 1:
+            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
+        elif args.applyTopPtReweighting == -1:
+            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_down.root' % energySuffix
     elif muFmuRWeight == 1:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_1muR2muF.root' % ( energySuffix )
     elif muFmuRWeight == 2:
