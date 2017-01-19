@@ -45,7 +45,7 @@ def file_to_df(f):
 	if os.path.exists(f):
 		with open(f,'r') as f:
 			df = pd.read_table(f, delim_whitespace=True)    	
-			# print('DataFrame read form {}'.format(f))
+			# print('DataFrame read from {}'.format(f))
 			f.close()
 	else:
 		print "Could not find {} ".format(f)
