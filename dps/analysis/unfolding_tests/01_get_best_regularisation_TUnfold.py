@@ -37,6 +37,7 @@ from dps.config import CMS
 from ROOT import TGraph, TSpline3, Double, TUnfoldDensity, TUnfold, TDecompSVD, TMatrixD, TCanvas, gROOT
 from rootpy import asrootpy
 from dps.utils.pandas_utilities import read_tuple_from_file
+from math import log
 
 rc('font',**CMS.font)
 rc( 'text', usetex = True )
@@ -208,7 +209,7 @@ def tau_from_scan( unfoldingObject, regularisation_settings ):
 
     # Parameters of scan
     # Number of points to scan, and min/max tau
-    nScan = 1000
+    nScan = 200
     minTau = 1.E-6
     maxTau = 1.E-0
 
@@ -228,25 +229,39 @@ def tau_from_scan( unfoldingObject, regularisation_settings ):
     # Plot the scan result
     # Correlation as function of log tau
     canvas = TCanvas()
-    scanResult.SetMarkerColor(600)
-    scanResult.SetMarkerSize(1)
-    scanResult.SetMarkerStyle(5)
-    scanResult.Draw('LP')
+
 
     # Add point corresponding to optimum tau
     t = Double(0)
     x = Double(0)
     scanResult.GetKnot(iBest,t,x);
+
     bestTau = Graph(1)
     bestTau.SetPoint(1,t,x)
     bestTau.markercolor = 'red'
-    bestTau.SetMarkerSize(1.25)
-    bestTau.Draw('*')
+    bestTau.SetMarkerSize(1.5)
+    bestTau.SetMarkerStyle(34)
+    bestTau.GetXaxis().SetTitle('log(#tau)')
+    bestTau.GetYaxis().SetTitle('Average global correlation coefficient squared')
+    bestTau.SetTitle('{0} {1}'.format(variable, regularisation_settings.channel))
+    bestTau.GetYaxis().SetRangeUser(x*0.8,0.95)
+    bestTau.GetXaxis().SetLimits(log(minTau, 10), log(maxTau, 10))
+
+    bestTau.Draw('AP')
+
+    scanResult.SetMarkerColor(600)
+    scanResult.SetMarkerSize(0.5)
+    scanResult.SetMarkerStyle(20)
+    scanResult.Draw('LPSAME')
+    # Redraw to get it to appear on top of TSpline3...
+    bestTau.Draw('PSAME')
+
+
 
     # Write to file
     output_dir = regularisation_settings.output_folder
     make_folder_if_not_exists(output_dir)
-    canvas.SaveAs(output_dir + '/{0}.png'.format(variable) )
+    canvas.SaveAs(output_dir + '/{0}_{1}.png'.format(variable, regularisation_settings.channel) )
 
     return unfoldingObject.GetTau()
 
