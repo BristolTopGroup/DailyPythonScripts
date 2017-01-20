@@ -22,8 +22,6 @@ def main():
 
     file_for_response = File(config.unfolding_central, 'read')
     file_for_powhegPythia  = File(config.unfolding_central, 'read')
-    file_for_madgraph  = File(config.unfolding_madgraphMLM, 'read')
-    file_for_amcatnlo  = File(config.unfolding_amcatnlo, 'read')
     file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
     file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
     file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
@@ -33,13 +31,12 @@ def main():
     'Central' : file_for_powhegPythia,
     'PtReweighted Up' : file_for_ptReweight_up,
     'PtReweighted Down' : file_for_ptReweight_down,
-    'EtaReweighted Up' : file_for_etaReweight_up,
-    'EtaReweighted Down' : file_for_etaReweight_down,
-    'Madgraph' : file_for_madgraph,
-    'amc@NLO' : file_for_amcatnlo
+    # 'EtaReweighted Up' : file_for_etaReweight_up,
+    # 'EtaReweighted Down' : file_for_etaReweight_down,
     }
 
-    for channel in ['combined']:
+    for channel in config.analysis_types.keys():
+        if channel is 'combined':continue
         for variable in config.variables:
         # for variable in ['ST']:
 
@@ -88,7 +85,7 @@ def main():
                 # Unfold, and set 'data' to 'measured' 
                 unfolding = Unfolding( measured,
                     truth, measured, h_response, None,
-                    method=method, k_value=-1, tau=tau_value)
+                    method=method, tau=tau_value)
                 
                 unfolded_data = unfolding.unfold()
 
@@ -166,12 +163,21 @@ def plot_bias(unfolded_and_truths, variable, channel, come, method):
     hp.x_axis_title = v_latex + unit
     # plt.ylabel( r, CMS.y_axis_title )
     hp.y_axis_title = 'Unfolded / Truth'
-    hp.y_limits = [0.92, 1.08]
+    hp.y_limits = [0.85, 1.15]
     hp.title = 'Bias for {variable}'.format(variable=v_latex)
 
     output_folder = 'plots/unfolding/bias_test/'
 
     measurements = { 'Central' : unfolded_and_truths['Central']['bias'] }
+    for bin in range(0, unfolded_and_truths['Central']['bias'].GetNbinsX() + 1 ):
+        unfolded_and_truths['Central']['bias'].SetBinError(bin,0)
+
+    # central_truth = unfolded_and_truths['Central']['truth']
+    # for label, hists in unfolded_and_truths.iteritems():
+    #     truth = hists['truth']
+    #     print label
+    #     for i,j in zip( list(truth.y()), list(central_truth.y())) :
+    #         print abs(1-i/j)*100
 
     models = {}
     for sample in unfolded_and_truths:
