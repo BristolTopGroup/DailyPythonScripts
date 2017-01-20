@@ -3,7 +3,7 @@ from __future__ import division
 from argparse import ArgumentParser
 # rootpy
 from rootpy.io import File
-from rootpy.plotting import Hist2D
+
 # DailyPythonScripts
 import dps.config.unfold as unfoldCfg
 from dps.config.variable_binning import bin_widths, bin_widths_visiblePS, reco_bin_edges_full, reco_bin_edges_vis
@@ -15,7 +15,7 @@ value_error_tuplelist_to_hist
 from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
 from dps.utils.ROOT_utils import set_root_defaults
 from dps.utils.pandas_utilities import read_tuple_from_file, write_tuple_to_df, combine_complex_df
-
+from numpy import array
 from copy import deepcopy
 
 def get_unfolding_files(measurement_config):
@@ -90,6 +90,7 @@ def get_unfolding_files(measurement_config):
 
 
 def unfold_results( results, category, channel, tau_value, h_truth, h_measured, h_response, h_fakes, method, visiblePS ):
+    from dps.utils.pandas_utilities import create_covariance_matrix    
     global variable, path_to_DF, args
 
     edges = reco_bin_edges_full[variable]
@@ -118,7 +119,16 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     # print "h_response bin edges : ", h_response
     # print "h_unfolded_data bin edges : ", h_unfolded_data
     h_data_no_fakes = h_data_no_fakes.rebinned(2)
+    if category == 'central':
+        # Return the covariance matrices (They have been normailsed)
+        covariance_matrix, correlation_matrix = unfolding.get_covariance_matrix()
 
+        # Write covariance matrices
+        table_outfile_tmp = 'tables/covariance_matrices/{ch}/{var}/{cat}_{label}_matrix.txt'
+        table_outfile=table_outfile_tmp.format( ch=channel, var=variable, label='Covariance', cat='Stat' )
+        create_covariance_matrix( covariance_matrix, table_outfile)
+        table_outfile=table_outfile_tmp.format( ch=channel, var=variable, label='Correlation', cat='Stat' )
+        create_covariance_matrix( correlation_matrix, table_outfile )
     del unfolding
     return hist_to_value_error_tuplelist( h_data_rebinned ), hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data_no_fakes )
 

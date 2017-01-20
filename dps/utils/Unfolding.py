@@ -88,6 +88,53 @@ class Unfolding:
         else:
             print("Data has not been unfolded. You cannot refold something that hasn't been first unfolded")
         return self.refolded_data
+    def get_covariance_matrix(self):
+        '''
+        Get the covariance matrix from all contributions
+        https://root.cern.ch/doc/master/classTUnfoldDensity.html#a7f9335973b3c520e2a4311d2dd6f5579
+        '''
+        import uncertainties as u
+        from numpy import array, matrix, zeros
+        from numpy import sqrt as np_sqrt
+        if self.unfolded_data is not None:
+            # Calculate the covariance from TUnfold
+            covariance = asrootpy( 
+                self.unfoldObject.GetEmatrixTotal('Covariance'))
+            # Reformat into a numpy matrix
+            xs = list(covariance.x())
+            zs = list(covariance.z())
+            cov_matrix = matrix(zs)
+            bin_widths = array(xs)
+            corr = array(zeros((cov_matrix.shape[0], cov_matrix.shape[1]) ))
+            # Create a correlation matrix
+            for i in range(0,cov_matrix.shape[0]):
+                for j in range(0,cov_matrix.shape[1]):
+                    corr[i,j] = cov_matrix[i,j] / np_sqrt( cov_matrix[i,i] * cov_matrix[j,j] )
+                    
+            # Normalising the covariance matrix
+            inputs = hist_to_value_error_tuplelist(self.unfolded_data)
+            norm_cov_matrix = cov_matrix.copy()
+            values = [u.ufloat( i[0], i[1] ) for i in inputs]
+            nominal_values = [v.nominal_value for v in values]
+            
+            normalisation = sum( values )
+            values_correlated = u.correlated_values( nominal_values, cov_matrix.tolist() )
+            # print 'Original values :',values_correlated
+            # print 'Original correlation :',u.correlation_matrix(values_correlated)
+            
+            norm = sum(values_correlated)
+            norm_values_correlated = []
+            for v,width in zip( values_correlated, bin_widths ):
+                norm_values_correlated.append( v / width / norm )
+            # Return correlations? Probably should
+            # print 'New values :',norm_values_correlated
+            # print 'New correlation :',u.correlation_matrix(norm_values_correlated)
+            norm_cov_matrix = matrix(u.covariance_matrix(norm_values_correlated) )
+            # print 'New covariance :',u.covariance_matrix(norm_values_correlated)
+            return cov_matrix, norm_cov_matrix
+        else:
+            print("Data has not been unfolded. Cannot return unfolding covariance matrix")
+        return
 
     def getBestTau(self):
         if self.method != 'TUnfold':

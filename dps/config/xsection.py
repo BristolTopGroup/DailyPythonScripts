@@ -8,33 +8,20 @@ class XSectionConfig():
     luminosities = {13:36459}
 
     parameters = [
-        'SingleTop_category_templates', 'SingleTop_category_templates_trees', 'SingleTop_file',
-        'VJets_category_templates', 'VJets_category_templates_trees', 'analysis_types',
+        'SingleTop_trees', 'SingleTop_file',
+        'VJets_trees', 'analysis_types',
         'categories_and_prefixes', 'central_general_template',
         'centre_of_mass_energy', 'current_analysis_path',
         'data_file_electron', 'data_file_muon',
-        'data_file_electron_trees', 'data_file_muon_trees',
-        'data_muon_category_templates', 'electron_QCD_MC_file',
-        'electron_control_region',
-        'electron_control_region_systematic',
-        'general_category_templates',
-        'general_category_templates_trees',
-        'generator_systematic_vjets_templates',
-        'generator_systematics',
-        'higgs_category_templates', 'higgs_file',
-        'include_higgs',
-        'tau_values_electron', 'tau_values_muon',
+        'general_trees', 'higgs_file', 'include_higgs',
+        'tau_values_electron', 'tau_values_muon', 'tau_values_combined',
         'known_centre_of_mass_energies', 'luminosities',
-        'luminosity', 'luminosity_scale', 'met_systematics',
-        'muon_QCD_MC_category_templates', 'muon_QCD_MC_file',
-        'muon_QCD_file', 'muon_control_region',
-        'muon_control_region_systematic', 'new_luminosity',
+        'luminosity', 'new_luminosity',
+        'luminosity_scale', 'met_systematics',
         'parameters', 'path_to_files', 'path_to_unfolding_histograms',
         'rate_changing_systematics',
-        'special_muon_histogram', 'translate_options',
-        'ttbar_category_templates',
-        'ttbar_category_templates_trees',
-        'ttbar_generator_category_templates_trees',
+        'translate_options',
+        'ttbar_trees',
         'ttbar_theory_systematic_prefix', 'ttbar_xsection',
         'unfolding_central', 'unfolding_central_raw',
         'unfolding_powheg_pythia8', 'unfolding_powheg_pythia8_raw',
@@ -324,16 +311,6 @@ class XSectionConfig():
         ]
         self.topMassUncertainty = 1.0 # GeV from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
 
-        # Needed?
-        self.central_general_template = path_to_files + 'central/%s' + middle + '.root'
-        self.generator_systematic_vjets_templates = {}
-        for systematic in self.generator_systematics:
-            if 'mass' in systematic or 'hadronisation' in systematic or 'NLOgenerator' in systematic:
-                continue
-            tmp = path_to_files + 'central/VJets-{0}_{1}pb_PFElectron_PFMuon_PF2PATJets_PFMET.root'
-            tmp = tmp.format(systematic, self.luminosity)
-            self.generator_systematic_vjets_templates[systematic] = tmp
-
         # categories_and_prefixes = self.categories_and_prefixes
 
         # Used in 01
@@ -371,23 +348,6 @@ class XSectionConfig():
         self.ttbar_isrdown_trees = path_to_files + '/TTJets_powhegPythia8_isrdown_tree.root'
         self.ttbar_fsrup_trees = path_to_files + '/TTJets_powhegPythia8_fsrup_tree.root'
         self.ttbar_fsrdown_trees = path_to_files + '/TTJets_powhegPythia8_fsrdown_tree.root'
-
-
-        # Needed?
-        self.data_muon_category_templates = {
-            'central': self.data_file_muon,
-            'JES_up': self.data_file_muon,
-            'JES_down': self.data_file_muon
-        }
-        self.data_muon_category_templates_trees = self.data_file_muon
-
-        self.data_electron_category_templates = {
-            'central': self.data_file_electron,
-            'JES_up': self.data_file_electron,
-            'JES_down': self.data_file_electron,
-        }
-        self.data_electron_category_templates_trees = self.data_file_electron
-
 
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -486,12 +446,6 @@ class XSectionConfig():
             'bjets_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/bjet_eta',
             'abs_bjets_eta': 'TTbar_plus_X_analysis/{channel}/{selection}/Jets/abs(bjet_eta)',
         }
-
-        # Needed?
-        self.electron_control_region = 'QCDConversions'
-        self.electron_control_region_systematic = 'QCD non iso e+jets'
-        self.muon_control_region = 'QCD non iso mu+jets 1p5to3'
-        self.muon_control_region_systematic = 'QCD non iso mu+jets 3toInf'
 
         self.include_higgs = False
 
@@ -634,5 +588,3 @@ class XSectionConfig():
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
         # self.categories_and_prefixes['PU_up'] = '_PU_72765mb'
-
-        self.special_muon_histogram = 'muon_AbsEta_0btag'

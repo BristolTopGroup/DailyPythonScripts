@@ -1,7 +1,10 @@
 from __future__ import division, print_function
 from dps.utils.file_utilities import write_data_to_JSON, deprecated
 from dps.utils.Calculation import combine_errors_in_quadrature
-from dps.utils.pandas_utilities import read_tuple_from_file, dict_to_df, list_to_series, df_to_file, divide_by_series
+from dps.utils.pandas_utilities import read_tuple_from_file, \
+dict_to_df, list_to_series, df_to_file, \
+divide_by_series, file_to_df, matrix_from_df, \
+create_covariance_matrix
 from copy import deepcopy
 from math import sqrt
 import numpy as np
@@ -463,59 +466,149 @@ def print_dictionary(title, dictionary_to_print):
     print ()
     return
 
+# ------------------------------------------------------------------------------------------------------------------
+# COVARIANCE MATRICES
+# ------------------------------------------------------------------------------------------------------------------
+
 def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
     '''
     Iterates through each group of systematics generating and plotting the covariance matrix of the systematic
     '''
-    number_of_bins=options['number_of_bins']
+    number_of_bins=options['number_of_bins']    
+    variable = options['variable']
+    channel = options['channel']
+    statistic = x_sec_with_symmetrised_systematics['central'] # [Value, Stat]
+    all_covariance_matrices = []
+    table_outfile_tmp = 'tables/covariance_matrices/{ch}/{var}/{sys}_{label}_matrix.txt'
 
-    for systematic, measurement in x_sec_with_symmetrised_systematics.iteritems():
-        if systematic == 'central': continue
-        covariance_matrix, correlation_matrix = generate_covariance_matrix(number_of_bins, systematic, measurement)
-        make_covariance_plot(options, systematic, covariance_matrix)
-        make_covariance_plot(options, systematic, correlation_matrix, label='Correlation')
+    for syst_name, measurement in x_sec_with_symmetrised_systematics.iteritems():
+        if syst_name == 'central': continue
+        # Outputfile
+
+        systematic = measurement[0]
+        sign = measurement[1]
+
+        # Create the matrices in numpy.matrix format
+        covariance_matrix, correlation_matrix = generate_covariance_matrix(number_of_bins, systematic, sign)
+        all_covariance_matrices.append(covariance_matrix)
+        all_correlation_matrices.append(correlation_matrix)
+
+        # Convert the matrices to DF format, output and plot them
+        table_outfile = table_outfile_tmp.format( ch=channel, sys=syst_name, var=variable, label='Covariance')
+        create_covariance_matrix(covariance_matrix, table_outfile)
+        make_covariance_plot(options, syst_name, covariance_matrix)
+        table_outfile = table_outfile_tmp.format( ch=channel, sys=syst_name, var=variable, label='Correlation')
+        create_covariance_matrix(correlation_matrix, table_outfile)
+        make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
+
+    generate_total_covariance(options, all_covariance_matrices, all_correlation_matrices)
+
     return
 
-def generate_covariance_matrix(number_of_bins, systematic, measurement):
+def generate_covariance_matrix(number_of_bins, systematic, sign):
     '''
-    Covariance_ij = (Sign_i*Unc_i) * (Sign_j*Unc_j)
     Variance_ii = (Unc_i) * (Unc_i)
-    Returns the matrix in the form [[Bin_i, Bin_j], Cov_ij]
+    Covariance_ij = (Sign_i*Unc_i) * (Sign_j*Unc_j)
+    Correlation_ij = (Sign_i*Unc_i) * (Sign_j*Unc_j)
+                    ---------------------------------
+                             (Unc_i * Unc_j)
+    Returns the matrices in the form of a numpy matrix    
     '''
-    covariance_matrix = []
-    correlation_matrix = []
+    cov_matrix = []
+    cor_matrix = []
     for bin_i in xrange(number_of_bins):
+        cov_matrix_row=[]
+        cor_matrix_row=[]
         for bin_j in xrange(number_of_bins):
-            if (bin_j < bin_i): continue
-            uncertainty_i = measurement[0][bin_i]
-            uncertainty_j = measurement[0][bin_j]
-            sign_i = measurement[1][bin_i]
-            sign_j = measurement[1][bin_j]
-            cov_ij = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
-            cor_ij = ( sign_i * sign_j )
-            # Bins when plotting Histogram start from 1 not 0
-            bin_and_value_covariance = [[bin_i+1, bin_j+1], cov_ij]
-            covariance_matrix.append(bin_and_value_covariance)
-            bin_and_value_correlation = [[bin_i+1, bin_j+1], cor_ij]
-            correlation_matrix.append(bin_and_value_correlation)
-            if not bin_i == bin_j:
-                bin_and_value = ([[bin_j+1, bin_i+1], cov_ij])
-                covariance_matrix.append(bin_and_value)
-                bin_and_value_correlation = [[bin_j+1, bin_i+1], cor_ij]
-                correlation_matrix.append(bin_and_value_correlation)
+            uncertainty_i   = systematic[bin_i]
+            uncertainty_j   = systematic[bin_j]
+            sign_i          = sign[bin_i]
+            sign_j          = sign[bin_j]   
+            cov_ij          = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
+            cor_ij          = cov_ij/(uncertainty_i*uncertainty_j)
+
+            cor_matrix_row.append(cor_ij)
+            cov_matrix_row.append(cov_ij)
+        cor_matrix.append(cor_matrix_row)
+        cov_matrix.append(cov_matrix_row)
+
+    covariance_matrix = np.matrix(cov_matrix)
+    correlation_matrix = np.matrix(cor_matrix)
     return covariance_matrix, correlation_matrix
 
-def make_covariance_plot( options, systematic, matrix, label='Covariance' ):
+def generate_total_covariance(options, all_covariances, all_correlations):
+    '''
+    Add covariances together for total covariance matrix
+
+    Cov_tot = Cov_stat + Cov_PDF + Cov_BJet ...
+    Similarly for Correlation
+    '''
+    # Paths to statistical Covariance/Correlation matrices.
+    filepath_tmp='tables/covariance_matrices/{ch}/{var}/Stat_{label}_matrix.txt'.
+    cov_path=filepath_tmp.format(ch=options['channel'], var=options['variable'],
+        label='Covariance')
+    cor_path=filepath_tmp.format(ch=options['channel'], var=options['variable'],
+        label='Correlation')
+
+    # Convert to numpy matrix and create total
+    cov_stat = file_to_df(cov_path)
+    cov_stat = matrix_from_df(cov_stat)
+    cov_tot = cov_stat
+    for m in all_covariances:
+        cov_tot+=m
+
+    cor_stat = file_to_df(cor_path)
+    cor_stat = matrix_from_df(cor_stat)
+    cor_tot = cor_stat
+    for m in all_correlations:
+        cor_tot+=m
+
+    # Paths to output total Covariance/Correlation matrices.
+    table_outfile_tmp = 'tables/covariance_matrices/{ch}/{var}/Total_{label}_matrix.txt'
+    cov_outfile = table_outfile_tmp.format(ch=options['channel'], var=options['variable'], 
+        label='Covariance')
+    cor_outfile = table_outfile_tmp.format(ch=options['channel'], var=options['variable'], 
+        label='Covariance')
+
+    # Save the total matrices
+    create_covariance_matrix( cov_tot, table_outfile )
+    create_covariance_matrix( cor_tot, table_outfile )
+
+    # Plot the total matrices
+    make_covariance_plot( options, 'Stat', cov_stat, label='Covariance' )
+    make_covariance_plot( options, 'Total', cov_tot, label='Covariance' )
+    make_covariance_plot( options, 'Stat', cor_stat, label='Correlation' )
+    make_covariance_plot( options, 'Total', cor_tot, label='Correlation' )
+    return
+
+def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):    
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
     Saves to plots/covariance_matrices/{PhaseSpace}/{Channel}/{Variable}/
     '''
     from dps.config.variable_binning import bin_edges_vis
     from dps.utils.file_utilities import make_folder_if_not_exists
-    from ROOT import TH2F, TCanvas, TPad, gROOT, gStyle
-    from array import array
-    gROOT.SetBatch(True)
-    gStyle.SetOptStat(0)
+    import matplotlib as mpl
+    mpl.use( 'agg' )
+
+    import matplotlib.pyplot as plt
+    import matplotlib.cm as cm
+    my_cmap = cm.get_cmap( 'jet' )
+
+    matrix_max = matrix.max()
+    matrix_min = matrix.min()
+
+    if( matrix_max == 0):
+        return
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.set_aspect('equal')
+    plt.imshow(matrix, interpolation='nearest', cmap = my_cmap )
+
+    plt.colorbar()
+    plt.tight_layout()
+    plt.show()
 
     variable = options['variable']
     channel = options['channel']
@@ -529,22 +622,4 @@ def make_covariance_plot( options, systematic, matrix, label='Covariance' ):
         phase_space = phase_space,
         )
     make_folder_if_not_exists(covariance_matrix_output_path)
-
-    x_binning = array ( 'f', bin_edges_vis[variable] )
-    y_binning = array ( 'f', bin_edges_vis[variable] )
-    n_xbins = len( x_binning ) - 1
-    n_ybins = len( y_binning ) - 1
-
-    hist = TH2F('name', 'title', n_xbins, x_binning, n_ybins, y_binning )
-    set_bin_value = hist.SetBinContent
-    for entry in matrix:
-        bin_i = entry[0][0]
-        bin_j = entry[0][1]
-        cov_ij = entry[1]
-        set_bin_value( bin_i, bin_j, cov_ij )
-    # Easy access to .pngs 
-    canvas = TCanvas("canvas_name","canvas_title", 0, 0, 1000, 800)
-    hist.SetTitle(systematic+" "+label+" matrix for "+variable+" in channel "+channel+" ; Bin_i; Bin_j")
-    hist.Draw("colz text")
-    canvas.Update()
-    canvas.SaveAs(covariance_matrix_output_path+systematic+'_'+label+'_matrix.pdf')
+    plt.savefig(covariance_matrix_output_path+syst_name+'_'+label+'_matrix.pdf')

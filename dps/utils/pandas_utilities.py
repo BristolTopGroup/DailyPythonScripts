@@ -5,7 +5,7 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.max_colwidth', 4096)
 pd.set_option('display.max_rows', 50)
 pd.set_option('display.width', 1000)
-pd.set_option('precision',12)
+pd.set_option('precision',10)
 
 def dict_to_df(d):
 	'''
@@ -45,7 +45,7 @@ def file_to_df(f):
 	if os.path.exists(f):
 		with open(f,'r') as f:
 			df = pd.read_table(f, delim_whitespace=True)    	
-			print('DataFrame read form {}'.format(f))
+			# print('DataFrame read form {}'.format(f))
 			f.close()
 	else:
 		print "Could not find {} ".format(f)
@@ -71,6 +71,22 @@ def divide_by_series(s1, s2):
 	'''
 	s = s1.div(s2)
 	return s
+
+def add_dfs(l_df):
+	'''
+	Add N dataframes together of the same format
+	'''
+	# Initialise summed dataframe to first in list
+	df_summed = l_df[0]
+	# Remove from list
+	del l_df[0]
+	if len(l_df) == 0:
+		return
+
+	for df in l_df:
+		df_summed = df_summed.add(df)
+	return df_summed
+
 
 def tupleise_cols(vals, errs):
 	'''
@@ -167,5 +183,34 @@ def combine_complex_df( df1, df2 ):
 	df = dict_to_df(combined_result)
 	return df
 
+def create_covariance_matrix( matrix, outfile ):
+	'''
+	Takes a numpy.matrix
+
+	Returns a Pandas DataFrame of the form:
+
+		|   1	 |    2   |   N   
+	1	| Cov_11 | Cov_12 | Cov_1N
+	2	| Cov_21 | Cov_22 | Cov_2N
+	N	| Cov_N1 | Cov_N2 | Cov_NN
+	'''
+
+	df = pd.DataFrame(matrix)
+	df_to_file(outfile, df)
+	return
+
+def matrix_from_df( df ):
+	'''
+	Takes a Pandas DataFrame of the form:
+
+		| 1	 | 2  | N   
+	1	| 11 | 12 | 1N
+	2	| 21 | 22 | 2N
+	N	| N1 | N2 | NN
+
+	Returns a numpy.matrix
+	'''
+	matrix = df.as_matrix()
+	return matrix
 
 
