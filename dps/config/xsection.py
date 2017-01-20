@@ -330,7 +330,7 @@ class XSectionConfig():
         self.ttbar_amc_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_trees = path_to_files + '/TTJets_madgraph_tree.root'
         self.ttbar_powhegpythia8_trees = path_to_files + '/TTJets_PowhegPythia8_tree.root'
-        self.ttbar_powhegherwigpp_trees = path_to_files + '/TTJets_powhegHerwigpp_tree.root'
+        self.ttbar_powhegherwigpp_trees = path_to_files + '/TTJets_PowhegHerwigpp_tree.root'
         self.ttbar_amcatnloherwigpp_trees = path_to_files + '/TTJets_amcatnloHerwigpp_tree.root'
 
         self.ttbar_mtop1695_trees = path_to_files + '/TTJets_PowhegPythia8_mtop1695_tree.root'
@@ -341,13 +341,13 @@ class XSectionConfig():
         self.ttbar_jerdown_trees = path_to_files + '/TTJets_PowhegPythia8_minusJER_tree.root'
 
         # Underlying Event trees
-        self.ttbar_ueup_trees = path_to_files + '/TTJets_powhegPythia8_up_tree.root'
-        self.ttbar_uedown_trees = path_to_files + '/TTJets_powhegPythia8_down_tree.root'
+        self.ttbar_ueup_trees = path_to_files + '/TTJets_PowhegPythia8_up_tree.root'
+        self.ttbar_uedown_trees = path_to_files + '/TTJets_PowhegPythia8_down_tree.root'
         # Initial(Final) State Radiation event Trees
-        self.ttbar_isrup_trees = path_to_files + '/TTJets_powhegPythia8_isrup_tree.root'
-        self.ttbar_isrdown_trees = path_to_files + '/TTJets_powhegPythia8_isrdown_tree.root'
-        self.ttbar_fsrup_trees = path_to_files + '/TTJets_powhegPythia8_fsrup_tree.root'
-        self.ttbar_fsrdown_trees = path_to_files + '/TTJets_powhegPythia8_fsrdown_tree.root'
+        self.ttbar_isrup_trees = path_to_files + '/TTJets_PowhegPythia8_isrup_tree.root'
+        self.ttbar_isrdown_trees = path_to_files + '/TTJets_PowhegPythia8_isrdown_tree.root'
+        self.ttbar_fsrup_trees = path_to_files + '/TTJets_PowhegPythia8_fsrup_tree.root'
+        self.ttbar_fsrdown_trees = path_to_files + '/TTJets_PowhegPythia8_fsrdown_tree.root'
 
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -369,6 +369,11 @@ class XSectionConfig():
         self.unfolding_central = self.unfolding_powheg_pythia8
 
         self.unfolding_ptreweight = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting.root' % self.centre_of_mass_energy
+
+        self.unfolding_ptreweight_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting_up.root' % self.centre_of_mass_energy
+        self.unfolding_ptreweight_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopPtReweighting_down.root' % self.centre_of_mass_energy
+        self.unfolding_etareweight_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopEtaReweighting_up.root' % self.centre_of_mass_energy
+        self.unfolding_etareweight_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopEtaReweighting_down.root' % self.centre_of_mass_energy
 
         self.unfolding_renormalisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_05muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_renormalisation_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_2muR1muF.root' % self.centre_of_mass_energy
@@ -523,67 +528,33 @@ class XSectionConfig():
          }
 
         self.tau_values_electron = {
-            "NJets" : 7.14289851984e-05,
-            "WPT" : 0.00412403632721,
-            "lepton_pt" : 0.0018054271566,
-            "abs_lepton_eta" : 9.24702326429e-06,
-            "ST" : 0.00831765143666,
-            "MET" : 0.00256015359682,
-            "HT" : 0.00602254137204,
-            'bjets_pt': 0.,
-            'bjets_eta': 0.,
-            'lepton_eta': 0.,
-            'abs_lepton_eta':0.,
-            "hadTopRap" : 10.0,
-            "lepTopPt" : 53.3669923121,
-            "hadTopPt" : 58.5702081806,
-            "ttbarPt" : 27.8255940221,
-            "ttbarM" : 21.0490414451,
-            "lepTopRap" : 10.0,
-            "ttbarRap" : 93.2603346883,
+            "WPT" : 0.000734194043113,
+            "NJets" : 6.21104853271e-05,
+            "lepton_pt" : 0.000249736514661,
+            "HT" : 0.000922395397766,
+            "ST" : 0.00121391064328,
+            "MET" : 0.00162389116247,
+            "abs_lepton_eta" : 1.13786391032e-06,
            }
 
         self.tau_values_muon = {
-            "NJets" : 8.00904290212e-05,
-            "WPT" : 0.00475761126845,
-            "lepton_pt" : 0.00242164061853,
-            "abs_lepton_eta" : 9.61561880023e-06,
-            "ST" : 0.00972730152042,
-            "MET" : 0.00290173731922,
-            "HT" : 0.00740965179358,
-            'bjets_pt': 0.,
-            'bjets_eta': 0.,
-            'lepton_eta': 0.,
-            'abs_lepton_eta':0.,
-            "hadTopRap" : 10.0,
-            "lepTopPt" : 546.227721768,
-            "hadTopPt" : 453.487850813,
-            "ttbarPt" : 312.571584969,
-            "ttbarM" : 196.304065004,
-            "lepTopRap" : 10.0,
-            "ttbarRap" : 236.448941265,
+            "WPT" : 0.00098661604296,
+            "NJets" : 8.04975597251e-05,
+            "lepton_pt" : 0.000376665132168,
+            "HT" : 0.00122294126756,
+            "ST" : 0.0016006595943,
+            "MET" : 0.00210796313972,
+            "abs_lepton_eta" : 1.37155127539e-06,
         }
 
         self.tau_values_combined = {
-            "WPT" : 0.00322241847459,
-            "NJets" : 5.37441937171e-05,
-            "lepton_pt" : 0.000939525715364,
-            "HT" : 0.00394515055942,
-            "ST" : 0.00621522525829,
-            "MET" : 0.00188739860157,
-            "abs_lepton_eta" : 4.55639578634e-06,
-
-            'bjets_pt': 0.,
-            'bjets_eta': 0.,
-            'lepton_eta': 0.,
-            'abs_lepton_eta':0.,
-            "hadTopRap" : 10.0,
-            "lepTopPt" : 53.3669923121,
-            "hadTopPt" : 58.5702081806,
-            "ttbarPt" : 27.8255940221,
-            "ttbarM" : 21.0490414451,
-            "lepTopRap" : 10.0,
-            "ttbarRap" : 93.2603346883,
+            "WPT" : 0,
+            "NJets" : 0,
+            "lepton_pt" : 0,
+            "HT" : 0,
+            "ST" : 0,
+            "MET" : 0,
+            "abs_lepton_eta" : 0,
            }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'
