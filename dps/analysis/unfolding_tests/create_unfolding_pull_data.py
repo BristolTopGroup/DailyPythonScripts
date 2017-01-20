@@ -27,9 +27,6 @@ def main():
     parser.add_option("-o", "--output",
                       dest="output_folder", default='data/pull_data/',
                       help="output folder for pull data files")
-    parser.add_option("-n", "--n_input_mc", type=int,
-                      dest="n_input_mc", default=100,
-                      help="number of toy MC used for the tests")
     parser.add_option("--tau", type='float',
                       dest="tau_value", default=-1.,
                       help="tau-value for SVD unfolding")
@@ -37,19 +34,13 @@ def main():
                       dest="method", default='TUnfold',
                       help="unfolding method")
     parser.add_option("-f", "--file", type='string',
-                      dest="file", default='data/toy_mc/unfolding_toy_mc.root',
+                      dest="file", default='data/toy_mc/toy_mc_powhegPythia_N_300_13TeV.root',
                       help="file with toy MC")
     parser.add_option("-v", "--variable", dest="variable", default='MET',
                       help="set the variable to analyse (defined in config/variable_binning.py)")
     parser.add_option("--com", "--centre-of-mass-energy", dest="CoM", default=13,
                       help='''set the centre of mass energy for analysis.
                       Default = 8 [TeV]''', type=int)
-    parser.add_option("-c", "--channel", type='string',
-                      dest="channel", default='combined',
-                      help="channel to be analysed: electron|muon|combined")
-    parser.add_option("-s", type='string',
-                      dest="sample", default='madgraph',
-                      help="channel to be analysed: electron|muon|combined")
 
     (options, _) = parser.parse_args()
 
@@ -57,19 +48,22 @@ def main():
     measurement_config = XSectionConfig(centre_of_mass)
     make_folder_if_not_exists(options.output_folder)
 
-    use_n_toy = options.n_input_mc
+    use_n_toy = int( options.file.split('_')[5] )
+    print (use_n_toy)
     method = options.method
     variable = options.variable
-    sample = options.sample
+    sample = str( options.file.split('_')[3] )
     tau_value = options.tau_value
 
-    create_unfolding_pull_data(options.file, method, options.channel,
-                               centre_of_mass, variable,
-                               sample,
-                               measurement_config.unfolding_central,
-                               use_n_toy,
-                               options.output_folder,
-                               tau_value)
+    for channel in measurement_config.analysis_types.keys():
+        if channel is 'combined':continue
+        create_unfolding_pull_data(options.file, method, channel,
+                                   centre_of_mass, variable,
+                                   sample,
+                                   measurement_config.unfolding_central,
+                                   use_n_toy,
+                                   options.output_folder,
+                                   tau_value)
 
 
 def create_unfolding_pull_data(input_file_name, method, channel,
@@ -182,7 +176,7 @@ def check_multiple_data_multiple_unfolding(
 
         unfolding_obj = Unfolding(
             h_data,
-            h_truth, h_data, h_response, method=method, k_value=-1,
+            h_truth, h_data, h_response, method=method,
             tau=tau_value)
         unfold, get_pull = unfolding_obj.unfold, unfolding_obj.pull
         reset = unfolding_obj.Reset
