@@ -44,7 +44,7 @@ class Condor(object):
         self._construct_jobs()
         # convert each job into a pickle file
         # construct a class ad for each job
-        with open('condor/job_template', 'r') as template:
+        with open('dps/condor/job_template', 'r') as template:
             job_template = template.read()
         condor_jobs = []
 
@@ -81,7 +81,7 @@ class Condor(object):
 
             condor_jobs.append(job_desc_file)
 
-        prepare_process = subprocess.Popen(['./condor/prepare_dps.sh',self._dps_tar_directory_on_hdfs])
+        prepare_process = subprocess.Popen(['./dps/condor/prepare_dps.sh',self._dps_tar_directory_on_hdfs])
         prepare_process.communicate()
         
         # # submit jobs

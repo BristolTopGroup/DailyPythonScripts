@@ -1,7 +1,7 @@
 '''
     Condor jobs description for src/unfolding_tests/create_toy_mc
 '''
-from .. import Job
+from dps.condor.job import Job
 
 
 class CreateToyMCJob(Job):
