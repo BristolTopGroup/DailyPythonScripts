@@ -278,17 +278,21 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     '''
     number_of_bins = options['number_of_bins']
     pdf_sym = []
+    pdf_sign = []
 
     for bin_i in xrange(number_of_bins):
         central = central_measurement[bin_i][0]
 
         # now to calculate the RMS (sigma) for all PDF variations
         rms = 0
+        mean = 0
         for pdf_variation in pdf_uncertainty_values:
             variation = pdf_variation[1][bin_i]
             rms += (variation-central)**2
+            mean += (variation-central)
         pdf_sym.append( sqrt( rms / (len(pdf_uncertainty_values)-1) ))
-    return pdf_sym  
+        pdf_sign.append( np.sign( mean / len(pdf_uncertainty_values) ) )
+    return pdf_sym, pdf_sign
 
 
 def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
@@ -311,7 +315,7 @@ def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
     for systematic, variation in norm_syst_unc_x_secs.iteritems():
         if (systematic == 'PDF'):
             # Replace all PDF weights with full PDF combination
-            pdf_sym = calculate_total_PDFuncertainty(
+            pdf_sym, pdf_sign = calculate_total_PDFuncertainty(
                 options, 
                 central_measurement, 
                 variation,
@@ -319,7 +323,7 @@ def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
             # TODO Find signs etc... i.e. do proper covariance for PDF
             normalised_x_sections_with_symmetrised_systematics[systematic] = [
                 pdf_sym, 
-                [0]*len(central_measurement),
+                pdf_sign
             ]  
         elif systematic == 'central':
             normalised_x_sections_with_symmetrised_systematics['central'] = central_measurement
