@@ -482,9 +482,11 @@ def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
     number_of_bins=options['number_of_bins']    
     variable = options['variable']
     channel = options['channel']
+    path_to_DF = options['path_to_DF']
     statistic = x_sec_with_symmetrised_systematics['central'] # [Value, Stat]
     all_covariance_matrices = []
-    table_outfile_tmp = 'tables/covariance_matrices/{ch}/{var}/{sys}_{label}_matrix.txt'
+    all_correlation_matrices = []
+    covariance_output_template = '{path_to_DF}/central/covarianceMatrices/{sys}_{label}_{channel}.txt'
 
     for syst_name, measurement in x_sec_with_symmetrised_systematics.iteritems():
         if syst_name == 'central': continue
@@ -499,10 +501,10 @@ def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
         all_correlation_matrices.append(correlation_matrix)
 
         # Convert the matrices to DF format, output and plot them
-        table_outfile = table_outfile_tmp.format( ch=channel, sys=syst_name, var=variable, label='Covariance')
+        table_outfile = covariance_output_template.format( path_to_DF=path_to_DF, sys=syst_name, channel=channel, label='Covariance')
         create_covariance_matrix(covariance_matrix, table_outfile)
         make_covariance_plot(options, syst_name, covariance_matrix)
-        table_outfile = table_outfile_tmp.format( ch=channel, sys=syst_name, var=variable, label='Correlation')
+        table_outfile = covariance_output_template.format( path_to_DF=path_to_DF, sys=syst_name, channel=channel, label='Correlation')
         create_covariance_matrix(correlation_matrix, table_outfile)
         make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
 
@@ -528,7 +530,7 @@ def generate_covariance_matrix(number_of_bins, systematic, sign):
             uncertainty_i   = systematic[bin_i]
             uncertainty_j   = systematic[bin_j]
             sign_i          = sign[bin_i]
-            sign_j          = sign[bin_j]   
+            sign_j          = sign[bin_j] 
             cov_ij          = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
             cor_ij          = cov_ij/(uncertainty_i*uncertainty_j)
 
@@ -549,11 +551,9 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     Similarly for Correlation
     '''
     # Paths to statistical Covariance/Correlation matrices.
-    filepath_tmp='tables/covariance_matrices/{ch}/{var}/Stat_{label}_matrix.txt'.
-    cov_path=filepath_tmp.format(ch=options['channel'], var=options['variable'],
-        label='Covariance')
-    cor_path=filepath_tmp.format(ch=options['channel'], var=options['variable'],
-        label='Correlation')
+    covariance_template = '{path_to_DF}/central/covarianceMatrices/Stat_normalisedXsection_{label}_{channel}.txt'
+    cov_path=covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
+    cor_path=covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
     # Convert to numpy matrix and create total
     cov_stat = file_to_df(cov_path)
@@ -564,20 +564,20 @@ def generate_total_covariance(options, all_covariances, all_correlations):
 
     cor_stat = file_to_df(cor_path)
     cor_stat = matrix_from_df(cor_stat)
-    cor_tot = cor_stat
-    for m in all_correlations:
-        cor_tot+=m
+    cor_tot = np.matrix( np.zeros( ( cov_tot.shape[0], cov_tot.shape[1] ) ) )
+    for i in range( 0, cov_tot.shape[0] ):
+        for j in range(0, cov_tot.shape[1] ):
+            cor_tot[i,j] = cov_tot[i,j] / sqrt( cov_tot[i,i] * cov_tot[j,j] )
 
     # Paths to output total Covariance/Correlation matrices.
     table_outfile_tmp = 'tables/covariance_matrices/{ch}/{var}/Total_{label}_matrix.txt'
-    cov_outfile = table_outfile_tmp.format(ch=options['channel'], var=options['variable'], 
-        label='Covariance')
-    cor_outfile = table_outfile_tmp.format(ch=options['channel'], var=options['variable'], 
-        label='Covariance')
+    covariance_template = '{path_to_DF}/central/covarianceMatrices/Total_{label}_{channel}.txt'
+    cov_outfile = covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
+    cor_outfile = covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
     # Save the total matrices
-    create_covariance_matrix( cov_tot, table_outfile )
-    create_covariance_matrix( cor_tot, table_outfile )
+    create_covariance_matrix( cov_tot, cov_outfile )
+    create_covariance_matrix( cor_tot, cor_outfile )
 
     # Plot the total matrices
     make_covariance_plot( options, 'Stat', cov_stat, label='Covariance' )
