@@ -353,11 +353,12 @@ def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
     normalised_x_sections_with_symmetrised_systematics['BJet'][0] = bJet_tot
 
     # Combine PDF with alphaS variations
-    alphaS = normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS'][0]
-    pdf = normalised_x_sections_with_symmetrised_systematics['PDF'][0]
-    pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
-    normalised_x_sections_with_symmetrised_systematics['PDF'][0] = pdf_tot
-    # TODO combine the signs....
+    if 'TTJets_alphaS' in normalised_x_sections_with_symmetrised_systematics and 'PDF' in normalised_x_sections_with_symmetrised_systematics:
+        alphaS = normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS'][0]
+        pdf = normalised_x_sections_with_symmetrised_systematics['PDF'][0]
+        pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
+        normalised_x_sections_with_symmetrised_systematics['PDF'][0] = pdf_tot
+        # TODO combine the signs....
 
     # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
     del normalised_x_sections_with_symmetrised_systematics['LightJet']
