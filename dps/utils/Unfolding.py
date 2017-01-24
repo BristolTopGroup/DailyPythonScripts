@@ -99,39 +99,21 @@ class Unfolding:
         if self.unfolded_data is not None:
             # Calculate the covariance from TUnfold
             covariance = asrootpy( 
-                self.unfoldObject.GetEmatrixTotal('Covariance'))
+                self.unfoldObject.GetEmatrixInput('Covariance'))
+
             # Reformat into a numpy matrix
-            xs = list(covariance.x())
             zs = list(covariance.z())
             cov_matrix = matrix(zs)
-            bin_widths = array(xs)
-            corr = array(zeros((cov_matrix.shape[0], cov_matrix.shape[1]) ))
-            # Create a correlation matrix
-            for i in range(0,cov_matrix.shape[0]):
-                for j in range(0,cov_matrix.shape[1]):
-                    corr[i,j] = cov_matrix[i,j] / np_sqrt( cov_matrix[i,i] * cov_matrix[j,j] )
-                    
-            # Normalising the covariance matrix
+
+            # Just the unfolded number of events         
             inputs = hist_to_value_error_tuplelist(self.unfolded_data)
-            norm_cov_matrix = cov_matrix.copy()
-            values = [u.ufloat( i[0], i[1] ) for i in inputs]
-            nominal_values = [v.nominal_value for v in values]
-            
-            normalisation = sum( values )
+            nominal_values = [i[0] for i in inputs]         
+            # # Unfolded number of events in each bin
+            # # With correlation between uncertainties
             values_correlated = u.correlated_values( nominal_values, cov_matrix.tolist() )
-            # print 'Original values :',values_correlated
-            # print 'Original correlation :',u.correlation_matrix(values_correlated)
-            
-            norm = sum(values_correlated)
-            norm_values_correlated = []
-            for v,width in zip( values_correlated, bin_widths ):
-                norm_values_correlated.append( v / width / norm )
-            # Return correlations? Probably should
-            # print 'New values :',norm_values_correlated
-            # print 'New correlation :',u.correlation_matrix(norm_values_correlated)
-            norm_cov_matrix = matrix(u.covariance_matrix(norm_values_correlated) )
-            # print 'New covariance :',u.covariance_matrix(norm_values_correlated)
-            return cov_matrix, norm_cov_matrix
+            corr_matrix = matrix(u.correlation_matrix(values_correlated) )
+
+            return cov_matrix, corr_matrix
         else:
             print("Data has not been unfolded. Cannot return unfolding covariance matrix")
         return
