@@ -1,7 +1,5 @@
 #!/bin/bash
-git clone https://github.com/BristolTopGroup/DailyPythonScripts
-cd DailyPythonScripts
-source bin/env.sh
+git_branch=master
 
 echo "Setting up DailyPythonScripts from tar file ..."
 echo "... getting ${git_branch} branch"
@@ -9,15 +7,18 @@ echo "... getting ${git_branch} branch"
 time git clone https://github.com/BristolTopGroup/DailyPythonScripts.git
 cd DailyPythonScripts/
 git checkout ${git_branch}
-echo "... copying dps.tar from hdfs"
-hadoop fs -copyToLocal $5/dps.tar ${_CONDOR_JOB_IWD}/dps.tar
+cd ../
 echo "... extracting ${_CONDOR_JOB_IWD}/dps.tar on top"
-tar -xf ${_CONDOR_JOB_IWD}/dps.tar --overwrite
+cd DailyPythonScripts/
+tar -xf ${_CONDOR_JOB_IWD}/dps.tar
+echo "... enforcing conda python environment"
+source bin/env.sh
 echo "DailyPythonScripts are set up"
+
 
 echo "Running payload"
 >&2 echo "Running payload"
-time env PATH=$PATH PYTHONPATH=$PYTHONPATH ./condor/run_job $@
+time env PATH=$PATH PYTHONPATH=$PYTHONPATH ./dps/condor/run_job $@
 
 echo "Cleaning up files"
 rm ${_CONDOR_JOB_IWD}/dps.tar

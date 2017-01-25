@@ -7,15 +7,15 @@ jobs = [
         '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
-        # '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
-        # '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
+        '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
+        '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
         # '--centreOfMassEnergy 13 -s central --topEtaReweighting 1',
         # '--centreOfMassEnergy 13 -s central --topEtaReweighting -1',
 
         # '--centreOfMassEnergy 13 -s amcatnlo',
         # '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s powhegherwigpp',
-        # # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
+        # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
         # Top pt
         '--centreOfMassEnergy 13 -s topPtSystematic',
@@ -92,7 +92,7 @@ jobs = [
         '--centreOfMassEnergy 13 -s UnclusteredEnUp',
         '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
-# # #  Add pdf variations to list of jobs
+# #  Add pdf variations to list of jobs
 nPDFPerJob = 1
 minPDF = 0
 maxPDF = 99

@@ -5,7 +5,7 @@
 '''
 import pickle
 from optparse import OptionParser
-from jobtypes import *
+from dps.condor.jobtypes import *
 import shutil
 import os
 from dps.utils.file_utilities import make_folder_if_not_exists

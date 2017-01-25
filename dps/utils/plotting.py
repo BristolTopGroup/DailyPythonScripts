@@ -614,7 +614,8 @@ def compare_measurements( models = {}, measurements = {},
                             histogram_properties = Histogram_properties(),
                             save_folder = 'plots/',
                             save_as = ['pdf', 'png'],
-                            match_models_to_measurements = False ):
+                            match_models_to_measurements = False,
+                            show_ratio_for_pairs = {} ):
     """
         This function takes one or more models and compares it to a set of measurements.
         Models and measurements are supplied as dictionaries in the form of {'label': histogram}
@@ -629,6 +630,9 @@ def compare_measurements( models = {}, measurements = {},
     # plot with matplotlib
     plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
     axes = plt.axes()
+    if len( show_ratio_for_pairs ) > 0:
+        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
+        axes = plt.subplot( gs[0] )
     # Set default color cycle to rgby
     # matplotlib
     # plt.rc( 'axes', color_cycle = ['r', 'g', 'b', 'y'] )
@@ -667,7 +671,7 @@ def compare_measurements( models = {}, measurements = {},
                        yerr = show_measurement_errors,
                        xerr = histogram_properties.xerr )
     
-    set_labels( plt, histogram_properties, axes = axes )
+    set_labels( plt, histogram_properties, axes = axes, show_x_label = len( show_ratio_for_pairs ) == 0 )
     
     l1 = axes.legend(numpoints = 1,
                      frameon = histogram_properties.legend_color,
@@ -698,6 +702,27 @@ def compare_measurements( models = {}, measurements = {},
                     del value_range[i]
             axes.set_ylim( ymin = min(value_range)/10, ymax = max(value_range)*10 )
     
+    ratios = {}
+    if len( show_ratio_for_pairs ) > 0:
+
+        for l, hists in show_ratio_for_pairs.iteritems():
+            h1 = hists[0].clone()
+            h2 = hists[1].clone()
+            h1.Divide(h2)
+            ratios[l] = h1
+        plt.setp( axes.get_xticklabels(), visible = False )
+        axes_ratio = plt.subplot( gs[1] )
+        axes_ratio.minorticks_on()
+        axes_ratio.grid( True, 'major', linewidth = 1)
+        axes_ratio.axhline(y=1, linewidth = 1, linestyle = 'dashed', color = 'black')
+        set_labels( plt, histogram_properties, show_x_label = True, show_title = False )
+        plt.ylabel(histogram_properties.ratio_y_title, fontsize=25)
+        axes_ratio.yaxis.set_label_coords(-0.115, 0.8)
+        for label, ratio in ratios.items():
+            rplt.hist( ratio, axes = axes_ratio, label = label )
+        adjust_ratio_ticks(axes_ratio.yaxis, n_ticks = 3)
+        adjust_axis_limits( axes_ratio, histogram_properties, ratios.values(), adjust_y = True, y_limits = histogram_properties.ratio_y_limits )
+
     if CMS.tight_layout:
         plt.tight_layout()
     
@@ -745,15 +770,16 @@ def set_labels( plt, histogram_properties, show_x_label = True,
               transform=axes.transAxes, fontsize=40, verticalalignment='top',
               horizontalalignment=loc)
 
-def adjust_axis_limits( axes, histogram_properties, histograms = [], adjust_y = True ):
+def adjust_axis_limits( axes, histogram_properties, histograms = [], adjust_y = True, y_limits = [] ):
     x_limits = histogram_properties.x_limits
     if len( x_limits ) == 2:
         axes.set_xlim( xmin = x_limits[0], xmax = x_limits[1] )
         
-    y_limits = histogram_properties.y_limits
     if adjust_y:
         if len( y_limits ) == 2:
             axes.set_ylim( ymin = y_limits[0], ymax = y_limits[1] )
+        elif histogram_properties.y_limits:
+            axes.set_ylim( ymin = histogram_properties.y_limits[0], ymax = histogram_properties.y_limits[1] )
         else:
             y_max = get_best_max_y(histograms, x_limits=x_limits) * histogram_properties.y_max_scale
             axes.set_ylim( ymin = 0, ymax = y_max )
@@ -887,7 +913,7 @@ def compare_histograms(plot):
                    emptybins = properties.emptybins,
                    axes = axes_ratio, elinewidth = 2 )
         adjust_ratio_ticks(axes_ratio.yaxis, n_ticks = 3)
-        adjust_axis_limits( axes_ratio, properties, ratios.values(), adjust_y = False )
+        adjust_axis_limits( axes_ratio, properties, ratios.values(), adjust_y = True )
 
     if CMS.tight_layout:
         plt.tight_layout()

@@ -8,7 +8,7 @@ if [ -f "dps.tar" ]; then
 fi
 echo "... creating tar file (dps.tar)"
 mkdir -p jobs
-tar -zcf dps.tar dps bin config jobs \
+tar -zcf dps.tar dps bin config data/toy_mc jobs \
 --exclude="*.pyc" --exclude="jobs/*/logs" \
 --exclude="*.tar" --exclude="config/unfolding" \
 --exclude="dps/legacy/*"

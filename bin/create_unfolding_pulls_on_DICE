@@ -25,10 +25,8 @@ def main():
                       help="Centre-of-mass energy to be used for submission")
     parser.add_option("-v", "--variables", dest="variables",
                       help="Variables to be analysed, separated by commas")
-    parser.add_option("-i", "--input_directory", dest="input_directory",
-                      help="Toy MC input directory", default='data/toy_mc/')
-    parser.add_option("-n", dest="n_toy_data",
-                      help="Number of toy datasets to analyse", default=3000)
+    parser.add_option("-i", "--input_file", dest="input_file",
+                      help="Toy MC input file", default='data/toy_mc/toy_mc_powhegPythia_N_300_13TeV.root')
     parser.add_option("--scan_tau", dest="scan_tau", action='store_true',
                       help="Produce unfolding pulls for a range of tau values", default=False)
     parser.add_option("--tau_min", dest="tau_min",
@@ -42,17 +40,15 @@ def main():
     parser.add_option("-m", "--method", dest="method",
                       help="Unfolding method: TUnfold (default), RooUnfoldSvd, TSVDUnfold, RooUnfoldTUnfold, RooUnfoldInvert, RooUnfoldBinByBin, RooUnfoldBayes",
                       default='TUnfold')
-    parser.add_option("-s", "--samples", dest="samples",
-                      help="Which input toy samples to run on, separated by commas: madgraph, powhegPythia, amcatnlo",
-                      default='powhegPythia')
 
     (options, _) = parser.parse_args()
 
     # first the global variables
     centre_of_mass_energy = options.com
     config = XSectionConfig(centre_of_mass_energy)
+    channels = config.analysis_types.keys()
+    channels.remove('combined')
     method = options.method
-    n_toy_data = int( options.n_toy_data )
     output_folder = 'data/pull_data'
 
     do_best_tau = options.do_best_tau
@@ -61,32 +57,32 @@ def main():
     if scan_tau:
         tau_range.extend( get_tau_values( options.tau_min, options.tau_max, options.spacing ) )
 
-    samples = options.samples.split(',')
-    channels = ['combined']
     variables = options.variables.split(',')
-    input_file_directory = options.input_directory
+    input_file = options.input_file
+    n_toy_data = int( input_file.split('_')[5] )
+    sample = str( input_file.split('_')[3] )
 
     pull_jobs = []
 
     pull_job = UnfoldingPullJob(
-        input_file_directory=input_file_directory,
+        input_file=input_file,
         method=method,
         channels=channels,
+        n_toy_data = n_toy_data,
+        sample = sample,
         centre_of_mass=centre_of_mass_energy,
         response=config.unfolding_central,
-        samples=samples,
         variables=variables,
-        n_toy_data=n_toy_data,
         output_folder=output_folder,
         do_best_tau=do_best_tau,
         tau_values=tau_range
     )
 
     # One job per variable
-    n_sub_jobs = len(samples) * len(variables) * len(channels) * len(tau_range)
+    n_sub_jobs = len(variables) * len(tau_range) * len(channels)
     if do_best_tau:
-        n_sub_jobs += len(samples) * len(variables) * len(channels)
-
+        n_sub_jobs += len(variables) * len(channels)
+    print (n_sub_jobs)
     condor_job = job.Condor(n_sub_jobs, -1, request_memory=10)
     condor_job.add_job( pull_job )
 

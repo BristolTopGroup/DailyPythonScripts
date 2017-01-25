@@ -32,7 +32,7 @@ def main():
     parser.add_option("-o", "--output",
                       dest="output_folder", default='data/toy_mc/',
                       help="output folder for toy MC")
-    parser.add_option("-s", dest="sample", default='madgraph',
+    parser.add_option("-s", dest="sample", default='powhegPythia',
                         help='set underlying sample for creating the toy MC.  Possible options : madgraph, powhegPythia, amcatnlo.  Default is madgraph')
     parser.add_option("-c", "--centre-of-mass-energy", dest="CoM", default=13,
                       help="set the centre of mass energy for analysis. Default = 13 [TeV]", type=int)
@@ -58,11 +58,11 @@ def main():
 #                   variable=variable,
                   n_toy=options.n_toy_mc,
                   centre_of_mass=options.CoM,
-                  ttbar_xsection=measurement_config.ttbar_xsection
+                  config=measurement_config
                   )
 
 
-def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttbar_xsection):
+def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, config):
     from dps.utils.file_utilities import make_folder_if_not_exists
     from dps.utils.toy_mc import generate_toy_MC_from_distribution, generate_toy_MC_from_2Ddistribution
     from dps.utils.Unfolding import get_unfold_histogram_tuple
@@ -71,7 +71,8 @@ def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttba
     output_file_name = get_output_file_name(output_folder, sample, n_toy, centre_of_mass)
     variable_bins = bin_edges_vis.copy()
     with root_open(output_file_name, 'recreate') as f_out:
-        for channel in ['combined']:
+        for channel in config.analysis_types.keys():
+            if channel is 'combined':continue
             for variable in variable_bins:
                 output_dir = f_out.mkdir(channel + '/' + variable, recurse=True)
                 cd = output_dir.cd
@@ -80,7 +81,6 @@ def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, ttba
                                                                         variable,
                                                                         channel,
                                                                         centre_of_mass = centre_of_mass,
-                                                                        ttbar_xsection = ttbar_xsection,
                                                                         visiblePS = True,
                                                                         load_fakes=False)
 

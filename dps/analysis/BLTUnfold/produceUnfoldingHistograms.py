@@ -28,11 +28,11 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
     else :
         return 1
 
- def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
+def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     if whichWayToWeight == -1 :
-        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
+        return max ( (-0.0005 * lepTopPt + 1.15 ) * (-0.0005 * hadTopPt + 1.15), 0.15 )
     elif whichWayToWeight == 1 :
-        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
+        return max ( (0.0005 * lepTopPt + 0.95 ) * (0.0005 * hadTopPt + 0.95), 0.1 )
     else :
         return 1
 
@@ -123,9 +123,9 @@ channels = [
 def parse_arguments():
     parser = ArgumentParser(__doc__)
     parser.add_argument('--topPtReweighting', 
-        action='store_true', 
         dest='applyTopPtReweighting', 
-        default=False 
+        type=int, 
+        default=0 
     )
     parser.add_argument('--topEtaReweighting', 
         dest='applyTopEtaReweighting', 
@@ -204,7 +204,7 @@ def main():
     pdfWeight    = args.pdfWeight
     muFmuRWeight = args.muFmuRWeight
     alphaSWeight = args.alphaSWeight
-    matchingWeight = options.matchingWeight
+    matchingWeight = args.matchingWeight
 
     # Output file name
     outputFileName = 'crap.root'
@@ -219,7 +219,10 @@ def main():
         elif args.applyTopEtaReweighting == -1:
             outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopEtaReweighting_down.root' % energySuffix
     elif args.applyTopPtReweighting:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting.root' % energySuffix
+        if args.applyTopPtReweighting == 1:
+            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_up.root' % energySuffix
+        elif args.applyTopPtReweighting == -1:
+            outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_withTopPtReweighting_down.root' % energySuffix
     elif muFmuRWeight == 1:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_1muR2muF.root' % ( energySuffix )
     elif muFmuRWeight == 2:
@@ -413,7 +416,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n == 100000: break
+                # if n == 10000: break
                 # # #
                 # # # Weights and selection
                 # # #
@@ -460,7 +463,8 @@ def main():
                 offlineWeight *= bjetWeight
                 # offlineWeight *= leptonWeight
                 offlineWeight *= topPtSystematicWeight
-
+                genWeight *= topPtSystematicWeight
+                
                 # Generator weight
                 # Scale up/down, pdf
                 if pdfWeight >= 0:
@@ -500,10 +504,10 @@ def main():
                     genSelectionVis = ''
                     if channel.channelName is 'muPlusJets' :
                         genSelection = event.isSemiLeptonicMuon == 1
-                        genSelectionVis = event.isSemiLeptonicMuon == 1 and event.passesGenEventSelection == 1
+                        genSelectionVis = event.passesGenEventSelection == 1
                     elif channel.channelName is 'ePlusJets' :
                         genSelection = event.isSemiLeptonicElectron == 1
-                        genSelectionVis = event.isSemiLeptonicElectron == 1 and event.passesGenEventSelection == 1
+                        genSelectionVis = event.passesGenEventSelection == 1
 
                     # Offline level selection
                     offlineSelection = 0
