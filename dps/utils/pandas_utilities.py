@@ -38,6 +38,17 @@ def df_to_file(filename, df, index=True):
 		f.close()
 	return
 
+def df_to_latexFile(filename, df):
+	'''
+	Convert data frame to latex and save to file
+	'''
+	import os
+	from dps.utils.file_utilities import make_folder_if_not_exists
+	make_folder_if_not_exists(os.path.dirname(filename))
+	f = open(filename, 'w')
+	f.write(df.to_latex())
+	f.close()
+
 def file_to_df(f):
 	'''
 	Read a dataframe from file

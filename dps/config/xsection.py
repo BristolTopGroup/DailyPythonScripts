@@ -299,6 +299,10 @@ class XSectionConfig():
             # 'Top_eta_reweight'          : ['Top_eta_reweight_up', 'Top_eta_reweight_down'],
         }
 
+        self.samplesForChi2Comparison = [
+            'powhegPythia8',
+            'powhegHerwig',
+        ]
         # now fill in the centre of mass dependent values
         self.__fill_defaults_13TeV__()
 
