@@ -4,10 +4,11 @@ Created on 20 Nov 2012
 @author: kreczko
 '''
 from __future__ import division
-from uncertainties import ufloat
+import uncertainties as u
 from math import sqrt
 from dps.config.met_systematics import metsystematics_sources
 from rootpy import asrootpy
+from numpy import matrix
 
 def calculate_xsection(inputs, luminosity, efficiency=1.):
     '''
@@ -23,7 +24,7 @@ def calculate_xsection(inputs, luminosity, efficiency=1.):
         add_result((xsection, xsection_error))        
     return result
 
-def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False):
+def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,covariance_matrix=None):
     """
         Calculates normalised average x-section for each bin: 1/N *1/bin_width sigma_i
         There are two ways to calculate this
@@ -33,15 +34,34 @@ def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False):
         @param inputs: list of value-error pairs
         @param bin_widths: bin widths of the inputs
     """
-    values = [ufloat( i[0], i[1] ) for i in inputs]
-    normalisation = 0
-    if normalise_to_one:
-        normalisation = sum( [value / bin_width for value, bin_width in zip( values, bin_widths )] )
+    values = [u.ufloat( i[0], i[1] ) for i in inputs]
+
+    norm_cov_matrix = None
+    norm_corr_matrix = None
+    if not covariance_matrix is None and not normalise_to_one:
+        values_correlated = u.correlated_values( [v.nominal_value for v in values], covariance_matrix.tolist() )
+        norm = sum(values_correlated)
+        norm_values_correlated = []
+        # Loop over unfolded number of events with correlated uncertainties
+        # And corresponding bin width
+        # Calculate normalised cross section, with correctly correlated uncertainty
+        for v,width in zip( values_correlated, bin_widths ):
+            norm_values_correlated.append( v / width / norm )
+        # Get covariance and correlation matrix for normalised cross section
+        norm_cov_matrix = matrix(u.covariance_matrix(norm_values_correlated) )
+        norm_corr_matrix = matrix(u.correlation_matrix(norm_values_correlated) )
+        result = [(v.nominal_value, v.std_dev) for v in norm_values_correlated ]
+        return result, norm_cov_matrix, norm_corr_matrix
     else:
-        normalisation = sum( values )
-    xsections = [( 1 / bin_width ) * value / normalisation for value, bin_width in zip( values, bin_widths )]
-    result = [(xsection.nominal_value, xsection.std_dev) for xsection in xsections]
-    return result
+        normalisation = 0
+        if normalise_to_one:
+            normalisation = sum( [value / bin_width for value, bin_width in zip( values, bin_widths )] )
+        else:
+            normalisation = sum( values )
+        xsections = [( 1 / bin_width ) * value / normalisation for value, bin_width in zip( values, bin_widths )]
+        result = [(xsection.nominal_value, xsection.std_dev) for xsection in xsections]
+
+        return result, norm_cov_matrix, norm_corr_matrix
 
 def decombine_result(combined_result, original_ratio):
     '''
@@ -56,7 +76,7 @@ def decombine_result(combined_result, original_ratio):
     if original_ratio == 0:
         return combined_result, (0,0)
     else:
-        combined_result = ufloat(combined_result[0], combined_result[1])
+        combined_result = u.ufloat(combined_result[0], combined_result[1])
         sample_1 = combined_result * original_ratio / (1 + original_ratio)
         sample_2 = combined_result - sample_1
         
@@ -94,8 +114,8 @@ def combine_complex_results(result1, result2):
     for sample in samples:
         results = []
         for entry1, entry2 in zip(result1[sample], result2[sample]):
-            v1 = ufloat(entry1[0], entry1[1])
-            v2 = ufloat(entry2[0], entry2[1])
+            v1 = u.ufloat(entry1[0], entry1[1])
+            v2 = u.ufloat(entry2[0], entry2[1])
             s = v1 + v2
             results.append( ( s.nominal_value, s.std_dev ) )
         combined_result[sample] = results
