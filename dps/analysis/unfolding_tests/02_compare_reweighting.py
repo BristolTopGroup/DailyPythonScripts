@@ -65,29 +65,29 @@ def main():
 			measured_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionX('px',1))
 			truth_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionY())
 
-			_, _, response_eta_reweighted_up, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_etaReweight_up,
-				variable=variable,
-				channel=channel,
-				centre_of_mass=13,
-				load_fakes=False,
-				visiblePS=True
-			)
+			# _, _, response_eta_reweighted_up, _ = get_unfold_histogram_tuple(
+			# 	inputfile=file_for_etaReweight_up,
+			# 	variable=variable,
+			# 	channel=channel,
+			# 	centre_of_mass=13,
+			# 	load_fakes=False,
+			# 	visiblePS=True
+			# )
 
-			measured_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionX('px',1))
-			truth_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionY())
+			# measured_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionX('px',1))
+			# truth_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionY())
 
-			_, _, response_eta_reweighted_down, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_etaReweight_down,
-				variable=variable,
-				channel=channel,
-				centre_of_mass=13,
-				load_fakes=False,
-				visiblePS=True
-			)
+			# _, _, response_eta_reweighted_down, _ = get_unfold_histogram_tuple(
+			# 	inputfile=file_for_etaReweight_down,
+			# 	variable=variable,
+			# 	channel=channel,
+			# 	centre_of_mass=13,
+			# 	load_fakes=False,
+			# 	visiblePS=True
+			# )
 
-			measured_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionX('px',1))
-			truth_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionY())
+			# measured_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionX('px',1))
+			# truth_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionY())
 
 			# Get the data input (data after background subtraction, and fake removal)
 			file_for_data = file_for_data_template.format( variable = variable, channel = channel )
@@ -118,15 +118,15 @@ def main():
 			measured_central.Rebin(2)
 			measured_pt_reweighted_up.Rebin(2)
 			measured_pt_reweighted_down.Rebin(2)
-			measured_eta_reweighted_up.Rebin(2)
-			measured_eta_reweighted_down.Rebin(2)
+			# measured_eta_reweighted_up.Rebin(2)
+			# measured_eta_reweighted_down.Rebin(2)
 			data.Rebin(2)
 
 			measured_central.Scale( 1 / measured_central.Integral() )
 			measured_pt_reweighted_up.Scale( 1 / measured_pt_reweighted_up.Integral() )
 			measured_pt_reweighted_down.Scale( 1 / measured_pt_reweighted_down.Integral() )
-			measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
-			measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
+			# measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
+			# measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
 
 			data.Scale( 1 / data.Integral() )
 
