@@ -35,17 +35,18 @@ from dps.utils.logger import log
 xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
 
 @xsec_04_log.trace()
-def read_xsection_measurement_results( category, channel ):
+def read_xsection_measurement_results( category, channel, unc_type ):
     '''
     Reading the unfolded xsection results from DFs into graphs
     '''
     global path_to_DF, variable, phase_space, method
 
-    file_template = '{path}/{category}/{name}_{channel}_{method}{suffix}.txt'
+    file_template = '{path}/{category}/xsection_{name}_{channel}_{method}{suffix}.txt'
+
     filename = file_template.format(
         path = path_to_DF,
         category = category,
-        name = 'xsection_normalised',
+        name = unc_type,
         channel = channel,
         method = method,
         suffix = '',
@@ -57,49 +58,39 @@ def read_xsection_measurement_results( category, channel ):
     if phase_space == 'VisiblePS':
         edges = bin_edges_vis[variable]
 
+
     # Collect the cross section measured/unfolded results from dataframes
     normalised_xsection_unfolded    = read_tuple_from_file( filename )
-    h_normalised_xsection           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], edges )
+    # h_normalised_xsection           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], edges )
     h_normalised_xsection_unfolded  = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], edges )
 
     histograms_normalised_xsection_different_generators = {
-        'measured':h_normalised_xsection,
+        # 'measured':h_normalised_xsection,
         'unfolded':h_normalised_xsection_unfolded,
     }
-    histograms_normalised_xsection_systematics_shifts = deepcopy( histograms_normalised_xsection_different_generators )
 
     if category == 'central':
 
         # Add in distributions for the different MC to be shown
         h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
+        h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
         # h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
         # h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
-        h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
-
-        h_normalised_xsection_massup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
-        h_normalised_xsection_massdown          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
 
         # And update
         histograms_normalised_xsection_different_generators.update( 
             {
                 'powhegPythia8'   : h_normalised_xsection_powhegPythia8,
+                'powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
                 # 'amcatnloPythia8' : h_normalised_xsection_amcatnlo,
                 # 'madgraphMLM'     : h_normalised_xsection_madgraphMLM,
-                'powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
-            }
-        )
-        histograms_normalised_xsection_systematics_shifts.update( 
-            {
-                'powhegPythia8'   : h_normalised_xsection_powhegPythia8,
-                'massdown'        : h_normalised_xsection_massdown,
-                'massup'          : h_normalised_xsection_massup
             }
         )
 
         filename = file_template.format(
             path = path_to_DF,
             category = category,
-            name = 'xsection_normalised',
+            name = unc_type,
             channel = channel,
             method = method,
             suffix = '_summary_absolute',
@@ -112,7 +103,6 @@ def read_xsection_measurement_results( category, channel ):
             normalised_xsection_unfolded_with_errors['systematic'],
         )
 
-
         xsec_04_log.debug('Reading file {0}'.format(filename))
 
         # Transform unfolded data into graph form
@@ -124,9 +114,8 @@ def read_xsection_measurement_results( category, channel ):
 
         # Add to list of histograms
         histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
-        histograms_normalised_xsection_systematics_shifts['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
 
-    return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
+    return histograms_normalised_xsection_different_generators
 
 @xsec_04_log.trace()
 def get_cms_labels( channel ):
@@ -579,10 +568,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.tight_layout()
 
     # Save the plots
-    path = '{output_folder}/{centre_of_mass_energy}TeV/{phaseSpace}/{variable}/'
+    path = '{output_folder}/xsections/{phaseSpace}/{variable}/'
     path = path.format(
         output_folder = output_folder,
-        centre_of_mass_energy = measurement_config.centre_of_mass_energy,
         phaseSpace = phase_space,
         variable = variable
     )
@@ -762,54 +750,53 @@ if __name__ == '__main__':
     all_measurements.extend( pdf_uncertainties )
 
     channel = [
-        # 'electron', 
-        # 'muon', 
+        'electron', 
+        'muon', 
         'combined', 
         # 'combinedBeforeUnfolding',
     ]
+
+    unc_type = [
+        'normalised',
+        'absolute',
+    ]
+
     for ch in channel:
-        for category in all_measurements:
+        for utype in unc_type:
+            for category in all_measurements:
 
-            # Show central only. TODO Add in additional systematic comparison plots
-            if not category == 'central' and not args.additional_plots: continue
-            if variable in measurement_config.variables_no_met and category in measurement_config.met_specific_systematics: continue
+                # Show central only. TODO Add in additional systematic comparison plots
+                if not category == 'central' and not args.additional_plots: continue
+                if variable in measurement_config.variables_no_met and category in measurement_config.met_specific_systematics: continue
 
-            # Read the xsection results from dataframe
-            histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts = read_xsection_measurement_results( category, ch )
-            
-            histname = '{variable}_normalised_xsection_{ch}_{phase_space}_{method}'
-            histname = histname.format(
-                variable = variable, 
-                ch = ch,
-                phase_space = phase_space,
-                method = method
-            )
+                # Read the xsection results from dataframe
+                histograms_normalised_xsection_different_generators = read_xsection_measurement_results( category, ch, utype )
+                
+                histname = '{variable}_{utype}_xsection_{ch}_{phase_space}_{method}'.format(
+                    variable = variable, 
+                    utype = utype,
+                    ch = ch,
+                    phase_space = phase_space,
+                    method = method
+                )
+                make_plots( 
+                    histograms_normalised_xsection_different_generators, 
+                    category, 
+                    output_folder, 
+                    histname + '_different_generators', 
+                    show_ratio = True,
+                    show_generator_ratio = show_generator_ratio 
+                )
 
-            make_plots( 
-                histograms_normalised_xsection_different_generators, 
-                category, 
-                output_folder, 
-                histname + '_different_generators', 
-                show_ratio = True,
-                show_generator_ratio = show_generator_ratio 
-            )
-            make_plots( 
-                histograms_normalised_xsection_systematics_shifts, 
-                category, 
-                output_folder, 
-                histname + '_systematics_shifts', 
-                show_ratio = True,
-            )
+                del histograms_normalised_xsection_different_generators
 
-            del histograms_normalised_xsection_different_generators, histograms_normalised_xsection_systematics_shifts
-
-        # if args.additional_plots:
-            # TODO
-            # Generator Only
-            # PDF Only
-            # MET Only
-            # Rate Changing Only
-            # etc...
-            # plot_central_and_systematics( ch, measurements, exclude = ttbar_generator_systematics )
-            # plot_central_and_systematics( ch, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
-            # plot_central_and_systematics( ch, rate_changing_systematics, suffix = 'rate_changing_only' )
+            # if args.additional_plots:
+                # TODO
+                # Generator Only
+                # PDF Only
+                # MET Only
+                # Rate Changing Only
+                # etc...
+                # plot_central_and_systematics( ch, measurements, exclude = ttbar_generator_systematics )
+                # plot_central_and_systematics( ch, ttbar_generator_systematics, suffix = 'ttbar_generator_only' )
+                # plot_central_and_systematics( ch, rate_changing_systematics, suffix = 'rate_changing_only' )

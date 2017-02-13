@@ -126,12 +126,7 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( covariance_matrix, table_outfile)
         table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_unfoldedNormalisation' )
-        create_covariance_matrix( correlation_matrix, table_outfile )
-        # # Normalised cross section
-        # table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_normalisedXsection' )
-        # create_covariance_matrix( norm_covariance_matrix, table_outfile)
-        # table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_normalisedXsection' )
-        # create_covariance_matrix( norm_correlation_matrix, table_outfile )
+        create_covariance_matrix( correlation_matrix, table_outfile)
 
     del unfolding
     return hist_to_value_error_tuplelist( h_data_rebinned ), hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data_no_fakes ), covariance_matrix
@@ -500,7 +495,7 @@ def calculate_xsections( normalisation, category, channel ):
         )
 
 
-    file_template = '{path_to_DF}/{category}/xsection_{channel}_{method}.txt'
+    file_template = '{path_to_DF}/{category}/xsection_absolute_{channel}_{method}.txt'
     write_02(xsection_unfolded, file_template, path_to_DF, category, channel, method)
     return
 
@@ -535,7 +530,7 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
     )
     
     if not covariance_matrix is None:
-        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/{cat}_{label}_{channel}.txt'
+        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/normalised/{cat}_{label}_{channel}.txt'
         # Unfolded number of events
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_normalisedXsection' )
         create_covariance_matrix( normalised_covariance_matrix, table_outfile)
