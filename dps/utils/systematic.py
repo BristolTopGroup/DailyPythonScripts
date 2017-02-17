@@ -555,13 +555,10 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     Cov_tot = Cov_stat + Cov_PDF + Cov_BJet ...
     Similarly for Correlation
     '''
-    norm=options['normalisation_type']
-
     # Paths to statistical Covariance/Correlation matrices.
-    # TP CHANGE WHEN GET ABSOLUTE STAT COV?COR MATRICES
-    covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Stat_normalisedXsection_{label}_{channel}.txt'
-    cov_path=covariance_template.format(norm='normalised', path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
-    cor_path=covariance_template.format(norm='normalised', path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
+    covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
+    cov_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
+    cor_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
     # Convert to numpy matrix and create total
     cov_stat = file_to_df(cov_path)
@@ -579,8 +576,8 @@ def generate_total_covariance(options, all_covariances, all_correlations):
 
     # Paths to output total Covariance/Correlation matrices.
     covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Total_{label}_{channel}.txt'
-    cov_outfile = covariance_template.format(norm=norm, path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
-    cor_outfile = covariance_template.format(norm=norm, path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
+    cov_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
+    cor_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
     # Save the total matrices
     create_covariance_matrix( cov_tot, cov_outfile )
