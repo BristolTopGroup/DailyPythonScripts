@@ -30,9 +30,9 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
 
 def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     if whichWayToWeight == -1 :
-        return max ( (-0.00075 * lepTopPt + 1.075 ) * (-0.00075 * hadTopPt + 1.075), 0.1 )
+        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
     elif whichWayToWeight == 1 :
-        return max ( (0.00075 * lepTopPt + 0.925 ) * (0.00075 * hadTopPt + 0.925), 0.1 )
+        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
     else :
         return 1
 
@@ -66,6 +66,9 @@ def getFileName( com, sample, measurementConfig ) :
     fileNames = {
         '13TeV' : {
             'central'           : measurementConfig.ttbar_trees['central'],
+
+            'central_70pc'           : measurementConfig.ttbar_trees['central'],
+            'central_30pc'           : measurementConfig.ttbar_trees['central'],
 
             'amcatnlo'          : measurementConfig.ttbar_amc_trees,
             'madgraph'          : measurementConfig.ttbar_madgraph_trees,
@@ -249,12 +252,15 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_up.root' % ( energySuffix )
     elif pdfWeight >= 0 and pdfWeight <= 99:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
-    elif args.sample != 'central':
+    elif 'central' not in args.sample:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, args.sample  )
     elif args.fineBinned :
         outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
+
+    if '70pc' in args.sample or '30pc' in args.sample:
+        outputFileName.replace('asymmetric','asymmetric_'+args.sample.split('_')[1])
 
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
 
@@ -409,13 +415,24 @@ def main():
             nOfflineSL      = {c.channelName : 0 for c in channels}
 
             n=0
+            maxEvents = -1
+            if '70pc' in args.sample or '30pc' in args.sample:
+                print 'Only processing fraction of total events for sample :',args.sample
+                totalEvents = tree.GetEntries()
+                if '70pc' in args.sample:
+                    maxEvents = int( totalEvents * 0.7 )
+                elif '30pc' in args.sample:
+                    maxEvents = int( totalEvents * 0.3 )
+                print 'Will process ',maxEvents,'out of',totalEvents,'events'
             # Event Loop
             # for event, weight in zip(tree,weightTree):
             for event in tree:
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n == 200000: break
+                # if n == 1000: break
+                if maxEvents > 0 and n > maxEvents: break
+
                 # # #
                 # # # Weights and selection
                 # # #

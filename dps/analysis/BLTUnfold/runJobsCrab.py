@@ -4,106 +4,115 @@ import os
 
 jobs = [
         # 13 TeV
-        '--centreOfMassEnergy 13 -f',
+        # '--centreOfMassEnergy 13 -f',
 
-        '--centreOfMassEnergy 13 -s central',
-        '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
-        '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
+        # '--centreOfMassEnergy 13 -s central',
+        # '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
+        # '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
         # '--centreOfMassEnergy 13 -s central --topEtaReweighting 1',
         # '--centreOfMassEnergy 13 -s central --topEtaReweighting -1',
 
+        '--centreOfMassEnergy 13 -s central_70pc',
+        '--centreOfMassEnergy 13 -s central_30pc',
+
+        '--centreOfMassEnergy 13 -s central_70pc --topPtReweighting 1',
+        '--centreOfMassEnergy 13 -s central_30pc --topPtReweighting 1',
+
+        '--centreOfMassEnergy 13 -s central_70pc --topPtReweighting -1',
+        '--centreOfMassEnergy 13 -s central_30pc --topPtReweighting -1',
+
         # '--centreOfMassEnergy 13 -s amcatnlo',
-        # '--centreOfMassEnergy 13 -s madgraph',
-        '--centreOfMassEnergy 13 -s powhegherwigpp',
-        # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
+        # # '--centreOfMassEnergy 13 -s madgraph',
+        # '--centreOfMassEnergy 13 -s powhegherwigpp',
+        # # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
-        # Top pt
-        '--centreOfMassEnergy 13 -s topPtSystematic',
+        # # Top pt
+        # '--centreOfMassEnergy 13 -s topPtSystematic',
 
-        # Underlying event samples
-        '--centreOfMassEnergy 13 -s ueup',
-        '--centreOfMassEnergy 13 -s uedown',
+        # # Underlying event samples
+        # '--centreOfMassEnergy 13 -s ueup',
+        # '--centreOfMassEnergy 13 -s uedown',
 
-        # isr/fsr variations
-        '--centreOfMassEnergy 13 -s isrup',
-        '--centreOfMassEnergy 13 -s isrdown',
-        '--centreOfMassEnergy 13 -s fsrup',
-        '--centreOfMassEnergy 13 -s fsrdown',
+        # # isr/fsr variations
+        # '--centreOfMassEnergy 13 -s isrup',
+        # '--centreOfMassEnergy 13 -s isrdown',
+        # '--centreOfMassEnergy 13 -s fsrup',
+        # '--centreOfMassEnergy 13 -s fsrdown',
 
-        # ME scale weights
-        '--centreOfMassEnergy 13 --muFmuRWeight 1',
-        '--centreOfMassEnergy 13 --muFmuRWeight 2',
-        '--centreOfMassEnergy 13 --muFmuRWeight 3',
-        '--centreOfMassEnergy 13 --muFmuRWeight 4',
-        '--centreOfMassEnergy 13 --muFmuRWeight 6',
-        '--centreOfMassEnergy 13 --muFmuRWeight 8',
+        # # ME scale weights
+        # '--centreOfMassEnergy 13 --muFmuRWeight 1',
+        # '--centreOfMassEnergy 13 --muFmuRWeight 2',
+        # '--centreOfMassEnergy 13 --muFmuRWeight 3',
+        # '--centreOfMassEnergy 13 --muFmuRWeight 4',
+        # '--centreOfMassEnergy 13 --muFmuRWeight 6',
+        # '--centreOfMassEnergy 13 --muFmuRWeight 8',
 
-        '--centreOfMassEnergy 13 --alphaSWeight 0',
-        '--centreOfMassEnergy 13 --alphaSWeight 1',
+        # '--centreOfMassEnergy 13 --alphaSWeight 0',
+        # '--centreOfMassEnergy 13 --alphaSWeight 1',
 
-        # ME-PS matching weight
-        '--centreOfMassEnergy 13 --matchingWeight 9',
-        '--centreOfMassEnergy 13 --matchingWeight 18',
+        # # ME-PS matching weight
+        # '--centreOfMassEnergy 13 --matchingWeight 9',
+        # '--centreOfMassEnergy 13 --matchingWeight 18',
 
-        # # Top mass
-        '--centreOfMassEnergy 13 -s massup',
-        '--centreOfMassEnergy 13 -s massdown',
+        # # # Top mass
+        # '--centreOfMassEnergy 13 -s massup',
+        # '--centreOfMassEnergy 13 -s massdown',
 
-        # Top pt
-        '--centreOfMassEnergy 13 -s topPtSystematic',
+        # # Top pt
+        # '--centreOfMassEnergy 13 -s topPtSystematic',
 
-        # Alpha s fsr
-        '--centreOfMassEnergy 13 -s fsrup',
-        '--centreOfMassEnergy 13 -s fsrdown',
+        # # Alpha s fsr
+        # '--centreOfMassEnergy 13 -s fsrup',
+        # '--centreOfMassEnergy 13 -s fsrdown',
 
-        # Alpha s isr
-        '--centreOfMassEnergy 13 -s isrup',
-        '--centreOfMassEnergy 13 -s isrdown',
+        # # Alpha s isr
+        # '--centreOfMassEnergy 13 -s isrup',
+        # '--centreOfMassEnergy 13 -s isrdown',
 
-        # UE
-        '--centreOfMassEnergy 13 -s ueup',
-        '--centreOfMassEnergy 13 -s uedown',
+        # # UE
+        # '--centreOfMassEnergy 13 -s ueup',
+        # '--centreOfMassEnergy 13 -s uedown',
 
-        # # # Experimental systematics
-        '--centreOfMassEnergy 13 -s jesup',
-        '--centreOfMassEnergy 13 -s jesdown',
+        # # # # Experimental systematics
+        # '--centreOfMassEnergy 13 -s jesup',
+        # '--centreOfMassEnergy 13 -s jesdown',
 
-        '--centreOfMassEnergy 13 -s jerup',
-        '--centreOfMassEnergy 13 -s jerdown',
+        # '--centreOfMassEnergy 13 -s jerup',
+        # '--centreOfMassEnergy 13 -s jerdown',
 
-        '--centreOfMassEnergy 13 -s leptonup',
-        '--centreOfMassEnergy 13 -s leptondown',
+        # '--centreOfMassEnergy 13 -s leptonup',
+        # '--centreOfMassEnergy 13 -s leptondown',
 
-        '--centreOfMassEnergy 13 -s bjetup',
-        '--centreOfMassEnergy 13 -s bjetdown',
+        # '--centreOfMassEnergy 13 -s bjetup',
+        # '--centreOfMassEnergy 13 -s bjetdown',
 
-        '--centreOfMassEnergy 13 -s lightjetup',
-        '--centreOfMassEnergy 13 -s lightjetdown',
+        # '--centreOfMassEnergy 13 -s lightjetup',
+        # '--centreOfMassEnergy 13 -s lightjetdown',
 
-        '--centreOfMassEnergy 13 -s pileupUp',
-        '--centreOfMassEnergy 13 -s pileupDown',
+        # '--centreOfMassEnergy 13 -s pileupUp',
+        # '--centreOfMassEnergy 13 -s pileupDown',
 
-        '--centreOfMassEnergy 13 -s ElectronEnUp',
-        '--centreOfMassEnergy 13 -s ElectronEnDown' ,
-        '--centreOfMassEnergy 13 -s MuonEnUp',
-        '--centreOfMassEnergy 13 -s MuonEnDown',
-        '--centreOfMassEnergy 13 -s TauEnUp',
-        '--centreOfMassEnergy 13 -s TauEnDown',
-        '--centreOfMassEnergy 13 -s UnclusteredEnUp',
-        '--centreOfMassEnergy 13 -s UnclusteredEnDown',
+        # '--centreOfMassEnergy 13 -s ElectronEnUp',
+        # '--centreOfMassEnergy 13 -s ElectronEnDown' ,
+        # '--centreOfMassEnergy 13 -s MuonEnUp',
+        # '--centreOfMassEnergy 13 -s MuonEnDown',
+        # '--centreOfMassEnergy 13 -s TauEnUp',
+        # '--centreOfMassEnergy 13 -s TauEnDown',
+        # '--centreOfMassEnergy 13 -s UnclusteredEnUp',
+        # '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
 # #  Add pdf variations to list of jobs
-nPDFPerJob = 1
-minPDF = 0
-maxPDF = 99
-variation = minPDF
-while variation <= maxPDF :
-    nForThisJob = nPDFPerJob
-    if variation + nPDFPerJob > maxPDF:
-        nForThisJob = maxPDF - variation
-    jobs.append('--centreOfMassEnergy 13 --pdfWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
-    variation += nPDFPerJob
-    pass
+# nPDFPerJob = 1
+# minPDF = 0
+# maxPDF = 99
+# variation = minPDF
+# while variation <= maxPDF :
+#     nForThisJob = nPDFPerJob
+#     if variation + nPDFPerJob > maxPDF:
+#         nForThisJob = maxPDF - variation
+#     jobs.append('--centreOfMassEnergy 13 --pdfWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
+#     variation += nPDFPerJob
+#     pass
 
 def parse_args(parameters = []):
     parser = OptionParser( __doc__ )
