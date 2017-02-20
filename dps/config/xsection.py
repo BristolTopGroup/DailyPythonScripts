@@ -328,8 +328,12 @@ class XSectionConfig():
             category: path_to_files + 'VJets_tree.root' for category in self.normalisation_systematics}
         self.electron_QCD_MC_trees  = {
             category: path_to_files + 'QCD_Electron_tree.root' for category in self.normalisation_systematics}
+            # category: path_to_files + 'QCD_Inclusive_tree.root' for category in self.normalisation_systematics}
+
         self.muon_QCD_MC_trees      = {
             category: path_to_files + 'QCD_Muon_tree.root' for category in self.normalisation_systematics}
+            # category: path_to_files + 'QCD_Inclusive_tree.root' for category in self.normalisation_systematics}
+            # category: path_to_files + 'QCD_All_tree.root' for category in self.normalisation_systematics}
 
         self.ttbar_amc_trees = path_to_files + '/TTJets_amc_tree.root'
         self.ttbar_madgraph_trees = path_to_files + '/TTJets_madgraph_tree.root'
@@ -532,23 +536,23 @@ class XSectionConfig():
          }
 
         self.tau_values_electron = {
-            "WPT" : 0.000726242749821,
-            "NJets" : 6.12479717259e-05,
-            "lepton_pt" : 0.000246933319363,
-            "HT" : 0.000909973537559,
-            "ST" : 0.00119751060799,
-            "MET" : 0.00159889242498,
-            "abs_lepton_eta" : 1.12106452882e-06,
+            "WPT" : 0.00110582408886,
+            "NJets" : 9.0867132693e-05,
+            "lepton_pt" : 0.000412971805373,
+            "HT" : 0.00135529237202,
+            "ST" : 0.00177719791974,
+            "MET" : 0.00233254396385,
+            "abs_lepton_eta" : 1.56857850825e-06,
            }
 
         self.tau_values_muon = {
-            "WPT" : 0.000964896246714,
-            "NJets" : 7.86754461453e-05,
-            "lepton_pt" : 0.000369029439123,
-            "HT" : 0.00119444269382,
-            "ST" : 0.00156468532485,
-            "MET" : 0.00206680645521,
-            "abs_lepton_eta" : 1.3379133818e-06,
+            "WPT" : 0.000859434474698,
+            "NJets" : 7.24401760469e-05,
+            "lepton_pt" : 0.000309709177654,
+            "HT" : 0.00105797217641,
+            "ST" : 0.00139197950941,
+            "MET" : 0.00182690061802,
+            "abs_lepton_eta" : 1.33090194234e-06,
         }
 
         self.tau_values_combined = {
