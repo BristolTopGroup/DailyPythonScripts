@@ -615,6 +615,7 @@ def compare_measurements( models = {}, measurements = {},
                             save_folder = 'plots/',
                             save_as = ['pdf', 'png'],
                             match_models_to_measurements = False,
+                            line_styles_for_models = None,
                             show_ratio_for_pairs = {} ):
     """
         This function takes one or more models and compares it to a set of measurements.
@@ -637,7 +638,7 @@ def compare_measurements( models = {}, measurements = {},
     # matplotlib
     # plt.rc( 'axes', color_cycle = ['r', 'g', 'b', 'y'] )
     # rootpy
-    colors = ['green', 'red', 'blue', 'magenta']
+    colors = ['green', 'red', 'blue', 'magenta', 'black']
     colorcycler = cycle( colors )
     
 #     markers = ['circle', 'triangledown', 'triangleup', 'diamond', 'square', 'star']
@@ -647,12 +648,14 @@ def compare_measurements( models = {}, measurements = {},
 #     lines = ["-", "--", "-.", ":"]
     # rootpy
     lines = ["dashed"]
+    if line_styles_for_models is not None:
+        lines = line_styles_for_models
     linecycler = cycle( lines )
     
     for label, histogram in models.iteritems():
         if not histogram: # skip empty ones
             continue
-        histogram.linewidth = 2 
+        histogram.linewidth = 4
         histogram.color = next( colorcycler )
         histogram.linestyle = next( linecycler ) 
         rplt.hist( histogram, axex = axes, label = label )
@@ -667,7 +670,7 @@ def compare_measurements( models = {}, measurements = {},
         histogram.markerstyle = next( markercycler )
         histogram.color = next( colorcycler )
         rplt.errorbar( histogram, axes = axes, label = label ,
-                        elinewidth = 2,
+                        elinewidth = 4,
                        yerr = show_measurement_errors,
                        xerr = histogram_properties.xerr )
     
@@ -709,6 +712,7 @@ def compare_measurements( models = {}, measurements = {},
             h1 = hists[0].clone()
             h2 = hists[1].clone()
             h1.Divide(h2)
+            h1.linewidth = 4
             ratios[l] = h1
         plt.setp( axes.get_xticklabels(), visible = False )
         axes_ratio = plt.subplot( gs[1] )
