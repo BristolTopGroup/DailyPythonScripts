@@ -124,3 +124,34 @@ time python -c "import ROOT; ROOT.TBrowser()"
 time python -c 'import rootpy'
 time python -c 'from ROOT import kTRUE; import rootpy'
 ```
+
+## Setting up and writing the AN
+[tdr](https://twiki.cern.ch/twiki/bin/viewauth/CMS/Internal/TdrProcessing) gives the full documentation on setting up an AN or other tdr document.
+Here are some instructions for retreiving our current AN: 
+```bash
+mkdir AnalysisNotes
+svn co -N svn+ssh://svn.cern.ch/reps/tdr2 AnalysisNotes
+cd AnalysisNotes
+svn update utils
+svn update -N notes
+svn update notes/AN-17-012
+eval `notes/tdr runtime -sh`
+cd notes/AN-17-012/trunk
+```
+You can now edit the analysis note. Make sure to add any new file created 
+```bash
+svn add FILE
+```
+and update the repository
+```bash
+svn ci
+```
+after any changes.
+To run AN Latex
+```bash
+tdr  --draft --style=an b AN-17-012
+```
+Any output pdf file produced will be sent to
+```bash
+AnalysisNotes/notes/tmp/.
+```
