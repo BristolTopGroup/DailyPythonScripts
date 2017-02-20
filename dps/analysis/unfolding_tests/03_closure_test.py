@@ -26,6 +26,8 @@ def main():
     file_for_powhegPythia  = File(config.unfolding_central, 'read')
     file_for_ptReweight_up  = File(config.unfolding_ptreweight_up, 'read')
     file_for_ptReweight_down  = File(config.unfolding_ptreweight_down, 'read')
+    file_for_amcatnlo           = File(config.unfolding_amcatnlo, 'read')
+    file_for_powhegHerwig       = File(config.unfolding_powheg_herwig, 'read')
     file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
     file_for_etaReweight_down = File(config.unfolding_etareweight_down, 'read')
 
@@ -33,6 +35,8 @@ def main():
     'Central' : file_for_powhegPythia,
     'PtReweighted Up' : file_for_ptReweight_up,
     'PtReweighted Down' : file_for_ptReweight_down,
+    'amcatnlo' : file_for_amcatnlo,
+    'powhegHerwig' : file_for_powhegHerwig,
     # 'EtaReweighted Up' : file_for_etaReweight_up,
     # 'EtaReweighted Down' : file_for_etaReweight_down,
     }
@@ -41,7 +45,7 @@ def main():
         if channel is 'combined':continue
         print 'Channel :',channel
         for variable in config.variables:
-        # for variable in ['HT']:
+        # for variable in ['ST']:
 
 
             print 'Variable :',variable
@@ -120,15 +124,14 @@ def main():
                                                             'bias' : bias_xsection
                 }
 
-            # plot_closure(unfolded_and_truth_for_sample, variable, channel,
-            #              config.centre_of_mass_energy, method, 'number_of_unfolded_events')
+            plot_closure(unfolded_and_truth_for_sample, variable, channel,
+                         config.centre_of_mass_energy, method, 'number_of_unfolded_events')
 
-            # plot_closure(unfolded_and_truth_xsection_for_sample, variable, channel,
-            #              config.centre_of_mass_energy, method, 'normalised_xsection')
+            plot_closure(unfolded_and_truth_xsection_for_sample, variable, channel,
+                         config.centre_of_mass_energy, method, 'normalised_xsection')
 
-
-            # plot_bias(unfolded_and_truth_for_sample, variable, channel,
-            #              config.centre_of_mass_energy, method, 'number_of_unfolded_events')
+            plot_bias(unfolded_and_truth_for_sample, variable, channel,
+                         config.centre_of_mass_energy, method, 'number_of_unfolded_events')
 
             plot_bias(unfolded_and_truth_xsection_for_sample, variable, channel,
                          config.centre_of_mass_energy, method, 'normalised_xsection', plot_systematics=True)
@@ -194,22 +197,27 @@ def plot_bias(unfolded_and_truths, variable, channel, come, method, prefix, plot
     hp.x_axis_title = v_latex + unit
     # plt.ylabel( r, CMS.y_axis_title )
     hp.y_axis_title = 'Unfolded / Truth'
-    hp.y_limits = [0.8, 1.2]
+    hp.y_limits = [0.7, 1.5]
     hp.title = 'Bias for {variable}'.format(variable=v_latex)
-    hp.legend_location = (0.98, 0.92)
+    hp.legend_location = (0.98, 0.95)
     output_folder = 'plots/unfolding/bias_test/'
 
-    measurements = { 'Central' : unfolded_and_truths['Central']['bias'] }
-    for bin in range(0, unfolded_and_truths['Central']['bias'].GetNbinsX() + 1 ):
-        unfolded_and_truths['Central']['bias'].SetBinError(bin,0)
+    measurements = {}
+    # measurements = { 'Central' : unfolded_and_truths['Central']['bias'] }
+    # for bin in range(0, unfolded_and_truths['Central']['bias'].GetNbinsX() + 1 ):
+    #     unfolded_and_truths['Central']['bias'].SetBinError(bin,0)
 
-    models = {}
+    models = OrderedDict()
+    lineStyles = []
     for sample in unfolded_and_truths:
         if sample == 'Central' : continue
         models[sample] = unfolded_and_truths[sample]['bias']
+        lineStyles.append('dashed')
 
     if plot_systematics:
         models['systematicsup'], models['systematicsdown'] = get_systematics(variable,channel,come,method)
+        lineStyles.append('solid')
+        lineStyles.append('solid')
 
     compare_measurements(
                          models = models,
@@ -218,6 +226,7 @@ def plot_bias(unfolded_and_truths, variable, channel, come, method, prefix, plot
                          histogram_properties=hp,
                          save_folder=output_folder,
                          save_as=['pdf'],
+                         line_styles_for_models = lineStyles,
                          match_models_to_measurements = True)
 
 def calculate_xsection( nEventsHistogram, variable ):
