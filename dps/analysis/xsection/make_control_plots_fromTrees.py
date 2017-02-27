@@ -46,7 +46,7 @@ def getHistograms( histogram_files,
         if use_qcd_data_region:
             qcd_data_region     = qcd_data_region_electron
         # No Lepton Eff in QCD CR and PU distributions
-        if not 'QCD' in channel and not 'NPU' in branchName:
+        if not 'QCD' in channel:
             weightBranchSignalRegion += ' * ElectronEfficiencyCorrection'
 
     if 'muon' in channel:
