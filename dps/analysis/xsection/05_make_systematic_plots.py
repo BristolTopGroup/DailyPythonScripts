@@ -220,44 +220,51 @@ if __name__ == '__main__':
 	# 	print keys
 	# 	print measurement_config.rate_changing_systematics_values[keys].scale
 
+    unc_type = [
+        'normalised',
+        'absolute',
+    ]
 
 	for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:  
 		if channel != 'combined':continue
-		input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_normalised_{channel}_{method}_summary_relative.txt'.format(
-			basepath = 	path,
-			com = 	com,
-			var = variable,
-			ps = phase_space,
-			channel = channel,
-			method = method,
-		)
-		output_folder = 'plots/systematics/{channel}/{ps}/'.format(
-			channel = channel,
-			ps = phase_space,
-		)
-		make_folder_if_not_exists(output_folder)
+        for utype in unc_type:
+			input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_{type}_{channel}_{method}_summary_relative.txt'.format(
+				basepath = 	path,
+				com = 	com,
+				var = variable,
+				ps = phase_space,
+				channel = channel,
+				method = method,
+				type = utype,
+			)
+			output_folder = 'plots/systematics/{channel}/{ps}/{type}/'.format(
+				channel = channel,
+				ps = phase_space,
+				type = utype,
+			)
+			make_folder_if_not_exists(output_folder)
 
-		systematic_uncertainties = pu.file_to_df(input_file)
+			systematic_uncertainties = pu.file_to_df(input_file)
 
-		# any group of systematics you want to plot
-		l_xsec = []
-		l_mc = []
-		l_weight = []
-		l_met = []
-		l_shape = []
-		for k in systematic_uncertainties.keys():
-			if 'cross_section' in k:  l_xsec.append(k)
-			elif 'TTJets_' in k:  l_mc.append(k)
-			elif ('Electron' in k or 'Muon' in k or 'PileUp' in k or 'luminosity' in k or 'BJet' in k) and 'En' not in k: l_weight.append(k) 
-			elif 'En' in k: l_met.append(k) 
-			elif 'JES' in k or 'JER' in k or 'QCD_shape' in k or 'PDF' in k: l_shape.append(k) 
-			else : print ' Not including {}'.format(k)
+			# any group of systematics you want to plot
+			l_xsec = []
+			l_mc = []
+			l_weight = []
+			l_met = []
+			l_shape = []
+			for k in systematic_uncertainties.keys():
+				if 'cross_section' in k:  l_xsec.append(k)
+				elif 'TTJets_' in k:  l_mc.append(k)
+				elif ('Electron' in k or 'Muon' in k or 'PileUp' in k or 'luminosity' in k or 'BJet' in k) and 'En' not in k: l_weight.append(k) 
+				elif 'En' in k: l_met.append(k) 
+				elif 'JES' in k or 'JER' in k or 'QCD_shape' in k or 'PDF' in k: l_shape.append(k) 
+				else : print ' Not including {}'.format(k)
 
-		# # Plot them
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder)
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder, plot_largest = True, subname = 'largest')
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_xsec, "xsection")
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_mc, "mc")
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_weight, "weight")
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_met, "met")
-		plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_shape, "shape")
+			# # Plot them
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder)
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder, plot_largest = True, subname = 'largest')
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_xsec, "xsection")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_mc, "mc")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_weight, "weight")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_met, "met")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_shape, "shape")
