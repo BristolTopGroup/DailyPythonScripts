@@ -126,12 +126,7 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( covariance_matrix, table_outfile)
         table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_unfoldedNormalisation' )
-        create_covariance_matrix( correlation_matrix, table_outfile )
-        # # Normalised cross section
-        # table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_normalisedXsection' )
-        # create_covariance_matrix( norm_covariance_matrix, table_outfile)
-        # table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_normalisedXsection' )
-        # create_covariance_matrix( norm_correlation_matrix, table_outfile )
+        create_covariance_matrix( correlation_matrix, table_outfile)
 
     del unfolding
     return hist_to_value_error_tuplelist( h_data_rebinned ), hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data_no_fakes ), covariance_matrix
@@ -160,7 +155,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
-        # 'TTJets_fsrdown'             :  unfolding_files['file_for_fsrdown'],
+        'TTJets_fsrdown'             :  unfolding_files['file_for_fsrdown'],
         'TTJets_fsrup'               :  unfolding_files['file_for_fsrup'],
         'TTJets_uedown'              :  unfolding_files['file_for_uedown'],
         'TTJets_ueup'                :  unfolding_files['file_for_ueup'],
@@ -409,98 +404,108 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
     return normalisation_unfolded, covariance_matrix
 
 
-def calculate_xsections( normalisation, category, channel ):
+def calculate_xsections( normalisation, category, channel, covariance_matrix=None ):
     '''
     Calculate the xsection
     '''
     global variable, path_to_DF
+
     # calculate the x-sections
     branching_ratio = 0.15
     if 'combined' in channel:
         branching_ratio = branching_ratio * 2
 
     xsection_unfolded = {}
-    xsection_unfolded['TTJet_measured'] = calculate_xsection( 
+    xsection_unfolded['TTJet_measured'], _, _ = calculate_xsection( 
         normalisation['TTJet_measured'], 
         luminosity,  # L in pb1
         branching_ratio 
     )  
-    xsection_unfolded['TTJet_measured_withoutFakes'] = calculate_xsection( 
+    xsection_unfolded['TTJet_measured_withoutFakes'], _, _ = calculate_xsection( 
         normalisation['TTJet_measured_withoutFakes'], 
         luminosity, 
         branching_ratio 
     ) 
-    xsection_unfolded['TTJet_unfolded'] = calculate_xsection( 
+    xsection_unfolded['TTJet_unfolded'], absolute_covariance_matrix, absolute_correlation_matrix = calculate_xsection( 
         normalisation['TTJet_unfolded'], 
         luminosity, 
-        branching_ratio
+        branching_ratio,
+        covariance_matrix
     )
 
+    if not covariance_matrix is None:
+        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/absolute/{cat}_{label}_{channel}.txt'
+        # Unfolded number of events
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_absoluteXsection' )
+        create_covariance_matrix( absolute_covariance_matrix, table_outfile)
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_absoluteXsection' )
+        create_covariance_matrix( absolute_correlation_matrix, table_outfile )
+
     if category == 'central':
-        xsection_unfolded['powhegPythia8'] = calculate_xsection( 
+        xsection_unfolded['powhegPythia8'], _, _ = calculate_xsection( 
             normalisation['powhegPythia8'], 
             luminosity, 
             branching_ratio 
         )
-        # xsection_unfolded['amcatnlo'] = calculate_xsection( 
+        # xsection_unfolded['amcatnlo'], _, _ = calculate_xsection( 
         #     normalisation['amcatnlo'], 
         #     luminosity, 
         #     branching_ratio 
         # )
-        xsection_unfolded['powhegHerwig'] = calculate_xsection( 
+        xsection_unfolded['powhegHerwig'], _, _ = calculate_xsection( 
             normalisation['powhegHerwig'], 
             luminosity, 
             branching_ratio 
         )
-        # xsection_unfolded['madgraphMLM'] = calculate_xsection( 
+        # xsection_unfolded['madgraphMLM'], _, _ = calculate_xsection( 
         #     normalisation['madgraphMLM'], 
         #     luminosity, 
         #     branching_ratio 
         # )
 
-        xsection_unfolded['massdown'] = calculate_xsection( 
+        xsection_unfolded['massdown'], _, _ = calculate_xsection( 
             normalisation['massdown'], 
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['massup'] = calculate_xsection( 
+        xsection_unfolded['massup'], _, _ = calculate_xsection( 
             normalisation['massup'], 
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['isrdown'] = calculate_xsection( 
+        xsection_unfolded['isrdown'], _, _ = calculate_xsection( 
             normalisation['isrdown'], 
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['isrup'] = calculate_xsection( 
+        xsection_unfolded['isrup'], _, _ = calculate_xsection( 
             normalisation['isrup'], 
             luminosity, 
             branching_ratio 
         )
-        # xsection_unfolded['fsrdown'] = calculate_xsection( 
+        # xsection_unfolded['fsrdown'], _, _ = calculate_xsection( 
             # normalisation['fsrdown'], 
         #     luminosity, 
         #     branching_ratio 
         # )
-        xsection_unfolded['fsrup'] = calculate_xsection( 
+        xsection_unfolded['fsrup'], _, _ = calculate_xsection( 
             normalisation['fsrup'], 
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['uedown'] = calculate_xsection( 
+        xsection_unfolded['uedown'], _, _ = calculate_xsection( 
             normalisation['uedown'], 
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['ueup'] = calculate_xsection( 
+        xsection_unfolded['ueup'], _, _ = calculate_xsection( 
             normalisation['ueup'], 
             luminosity, 
             branching_ratio 
         )
 
 
-    file_template = '{path_to_DF}/{category}/xsection_{channel}_{method}.txt'
+    file_template = '{path_to_DF}/{category}/xsection_absolute_{channel}_{method}.txt'
     write_02(xsection_unfolded, file_template, path_to_DF, category, channel, method)
     return
 
@@ -535,7 +540,7 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
     )
     
     if not covariance_matrix is None:
-        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/{cat}_{label}_{channel}.txt'
+        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/normalised/{cat}_{label}_{channel}.txt'
         # Unfolded number of events
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_normalisedXsection' )
         create_covariance_matrix( normalised_covariance_matrix, table_outfile)
@@ -749,8 +754,9 @@ if __name__ == '__main__':
             tau_value_electron, 
             visiblePS = visiblePS 
         )
+
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, channel )
+        calculate_xsections( unfolded_normalisation_electron, category, channel, covariance_matrix=covariance_electron  )
         calculate_normalised_xsections( unfolded_normalisation_electron, category, channel, covariance_matrix=covariance_electron )
         calculate_normalised_xsections( unfolded_normalisation_electron, category, channel , True )
 
@@ -764,7 +770,7 @@ if __name__ == '__main__':
             visiblePS = visiblePS 
         )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, channel )
+        calculate_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon  )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel , True )
 
@@ -778,7 +784,7 @@ if __name__ == '__main__':
             visiblePS=visiblePS,
         )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel )
+        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding  )
         calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding )
         calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
 
@@ -789,7 +795,7 @@ if __name__ == '__main__':
         if not covariance_electron is None and not covariance_muon is None:
             covariance_combined = covariance_electron + covariance_muon
         # measure xsection
-        calculate_xsections( unfolded_normalisation_combined, category, channel )
+        calculate_xsections( unfolded_normalisation_combined, category, channel, covariance_matrix=covariance_combined  )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, channel, covariance_matrix=covariance_combined )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, channel , True )
 

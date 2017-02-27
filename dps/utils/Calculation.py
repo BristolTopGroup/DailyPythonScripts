@@ -8,21 +8,31 @@ import uncertainties as u
 from math import sqrt
 from dps.config.met_systematics import metsystematics_sources
 from rootpy import asrootpy
-from numpy import matrix
+from numpy import matrix, zeros
 
-def calculate_xsection(inputs, luminosity, efficiency=1.):
+def calculate_xsection(inputs, luminosity, efficiency=1., covariance_matrix=None):
     '''
     BUG: this doesn't work unless the inputs are unfolded!
     inputs = list of value-error pairs
     luminosity = integrated luminosity of the measurement
     '''
+    abs_cov_matrix = None
+    abs_corr_matrix = None
     result = []
     add_result = result.append
     for value, error in inputs:
         xsection = value / (luminosity * efficiency)
         xsection_error = error / (luminosity * efficiency)
         add_result((xsection, xsection_error))        
-    return result
+
+    if covariance_matrix is not None:
+        abs_cov_matrix = covariance_matrix / (luminosity * efficiency)
+        abs_corr_matrix = matrix( zeros( ( abs_cov_matrix.shape[0], abs_cov_matrix.shape[1] ) ) )
+        for i in range( 0, abs_cov_matrix.shape[0] ):
+            for j in range(0, abs_cov_matrix.shape[1] ):
+                abs_corr_matrix[i,j] = abs_cov_matrix[i,j] / sqrt( abs_cov_matrix[i,i] * abs_cov_matrix[j,j] )
+
+    return result, abs_cov_matrix, abs_corr_matrix
 
 def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,covariance_matrix=None):
     """

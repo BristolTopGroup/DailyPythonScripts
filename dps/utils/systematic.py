@@ -9,7 +9,7 @@ from copy import deepcopy
 from math import sqrt
 import numpy as np
 
-def write_normalised_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
+def write_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
     '''
     Writes the list of normalised measurements and normalised unfolded measurements of the form: 
     [Central Value, Lower Systemtic, Upper Systematic] to a json. Different combinations of 
@@ -18,12 +18,14 @@ def write_normalised_xsection_measurement(options, measurement, measurement_unfo
     path_to_DF=options['path_to_DF']
     method=options['method']
     channel=options['channel']
+    norm=options['normalisation_type']
 
-    output_file = '{path_to_DF}/central/xsection_normalised_{channel}_{method}_with_errors.txt'
+    output_file = '{path_to_DF}/central/xsection_{norm}_{channel}_{method}_with_errors.txt'
     output_file = output_file.format(
         path_to_DF = path_to_DF,
         channel = channel,
         method = method,
+        norm = norm,
     )
     if not summary == '':
         output_file = output_file.replace( 'with_errors', summary + '_errors' )
@@ -42,16 +44,17 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     path_to_DF=options['path_to_DF']
     method=options['method']
     channel=options['channel']
+    norm=options['normalisation_type']
 
-    output_file = '{path_to_DF}/central/xsection_normalised_{channel}_{method}_summary_absolute.txt'
-    output_file = output_file.format(
+    output_file_temp = '{path_to_DF}/central/xsection_{norm}_{channel}_{method}_summary_{unctype}.txt'
+    output_file = output_file_temp.format(
         path_to_DF = path_to_DF,
         channel = channel,
         method = method,
+        norm = norm,
+        unctype = 'absolute',
     )
-    if not summary == '':
-        output_file = output_file.replace( 'only', summary )
-    
+ 
     stats = [stat for value, stat in systematic['central']]
     central = [value for value, stat in systematic['central']]
     syst_total = [syst1 for value, syst1, syst2 in total_syst]
@@ -70,7 +73,13 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     df_to_file(output_file, d_abs)
 
     # Create Relative Uncertainties
-    output_file = output_file.replace('absolute', 'relative')
+    output_file = output_file_temp.format(
+        path_to_DF = path_to_DF,
+        channel = channel,
+        method = method,
+        norm = norm,
+        unctype = 'relative',
+    )
     for uncertainty, vals in all_uncertainties.iteritems():
         if uncertainty == 'central': continue
         # Just divide the abs uncertainty by the central value
@@ -92,18 +101,20 @@ def append_PDF_uncertainties(all_systematics, minPdfWeight, maxPdfWeight):
     return all_systematics
 
 
-def read_normalised_xsection_measurement(options, category):
+def read_xsection_measurement(options, category):
     '''
     Returns the normalised measurement and normalised unfolded measurement for 
     the file associated with the variable under study
     '''
-    variable=options['variable']
-    variables_no_met=options['variables_no_met']
-    met_specific_systematics=options['met_specific_systematics']
-    path_to_DF=options['path_to_DF']
-    method=options['method']
-    channel=options['channel']
-    filename = '{path}/{category}/xsection_normalised_{channel}_{method}.txt'
+    variable                    = options['variable']
+    variables_no_met            = options['variables_no_met']
+    met_specific_systematics    = options['met_specific_systematics']
+    path_to_DF                  = options['path_to_DF']
+    method                      = options['method']
+    channel                     = options['channel']
+    norm                        = options['normalisation_type']
+
+    filename = '{path}/{category}/xsection_{norm}_{channel}_{method}.txt'
     # Disregarding Met Uncertainties if variable does not use MET
     if (category in met_specific_systematics) and (variable in variables_no_met):
         filename = filename.format(
@@ -111,21 +122,23 @@ def read_normalised_xsection_measurement(options, category):
             channel = channel,
             category = 'central',
             method = method,
+            norm = norm,
         )
     else:
         filename = filename.format(
             path = path_to_DF,
             channel = channel,
             category = category,
-            method = method
+            method = method,
+            norm = norm,
         )
-    normalised_xsection = read_tuple_from_file( filename )
-    measurement = normalised_xsection['TTJet_measured_withoutFakes']
-    measurement_unfolded = normalised_xsection['TTJet_unfolded']
-    return measurement, measurement_unfolded  
+    measurement = read_tuple_from_file( filename )
+    xsection = measurement['TTJet_measured_withoutFakes']
+    xsection_unfolded = measurement['TTJet_unfolded']
+    return xsection, xsection_unfolded  
 
 
-def read_normalised_xsection_systematics(options, variation, is_multiple_sources=False):
+def read_xsection_systematics(options, variation, is_multiple_sources=False):
     '''
     Returns the list of normalised measurements and normalised unfolded measurements 
     for each systematic category
@@ -138,15 +151,14 @@ def read_normalised_xsection_systematics(options, variation, is_multiple_sources
 
     if is_multiple_sources:
         for source in variation:
-            src, src_unf = read_normalised_xsection_measurement(options, source)
+            src, src_unf = read_xsection_measurement(options, source)
             systematics[source] = src
             systematics_unf[source] = src_unf  
     else:
-
         upper_variation = variation[0]
         lower_variation = variation[1]
-        systematic_up, systematic_up_unf = read_normalised_xsection_measurement(options, upper_variation)
-        systematic_down, systematic_down_unf = read_normalised_xsection_measurement(options, lower_variation)
+        systematic_up, systematic_up_unf = read_xsection_measurement(options, upper_variation)
+        systematic_down, systematic_down_unf = read_xsection_measurement(options, lower_variation)
         systematics['lower'] = systematic_down
         systematics['upper'] = systematic_up        
         systematics_unf['lower'] = systematic_down_unf
@@ -157,20 +169,20 @@ def read_normalised_xsection_systematics(options, variation, is_multiple_sources
     return systematics, systematics_unf
 
 
-def get_systematic_measured_values_only(options, syst_x_secs_and_errs):
+def get_systematic_measured_values_only(options, syst_xsecs_and_errs):
     '''
     When retreiveing systematic uncertainties they come in form [Value, Error]. 
     This strips the Errors.
     '''
     number_of_bins=options['number_of_bins']
-    for variation, x_sec_and_error in syst_x_secs_and_errs.iteritems():
+    for variation, xsec_and_error in syst_xsecs_and_errs.iteritems():
         for bin_i in xrange(number_of_bins):
-            x_sec = x_sec_and_error[bin_i][0]
-            x_sec_and_error[bin_i] = x_sec
-    return syst_x_secs_and_errs
+            x_sec = xsec_and_error[bin_i][0]
+            xsec_and_error[bin_i] = x_sec
+    return syst_xsecs_and_errs
 
 
-def get_normalised_cross_sections(options, list_of_systematics):
+def get_cross_sections(options, list_of_systematics):
     '''
     Returns the normalised cross section measurements for the given list of systematics
 
@@ -189,47 +201,47 @@ def get_normalised_cross_sections(options, list_of_systematics):
     For PDF there is an additional nest for each variation
     '''
     # Copy structure of the systmatic lists in order to replace systematic name with their normailsed x sections
-    normalised_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
-    unfolded_normalised_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
+    systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
+    unfolded_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
 
-    central_measurement, central_measurement_unfolded = read_normalised_xsection_measurement(options, 'central')
-    normalised_systematic_uncertainty_x_sections['central'] = central_measurement
-    unfolded_normalised_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
+    central_measurement, central_measurement_unfolded = read_xsection_measurement(options, 'central')
+    systematic_uncertainty_x_sections['central'] = central_measurement
+    unfolded_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
 
     for systematic, variation in list_of_systematics.iteritems():
         if (systematic == 'PDF'):
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation, is_multiple_sources=True)
-            normalised_systematic_uncertainty_x_sections[systematic] = []
-            unfolded_normalised_systematic_uncertainty_x_sections[systematic] = []
+            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
+            systematic_uncertainty_x_sections[systematic] = []
+            unfolded_systematic_uncertainty_x_sections[systematic] = []
             for weight, vals in syst_unc_x_sec.iteritems():
-                normalised_systematic_uncertainty_x_sections[systematic].append([weight, vals])
+                systematic_uncertainty_x_sections[systematic].append([weight, vals])
             for weight, vals in unf_syst_unc_x_sec.iteritems():
-                unfolded_normalised_systematic_uncertainty_x_sections[systematic].append([weight, vals])
+                unfolded_systematic_uncertainty_x_sections[systematic].append([weight, vals])
 
         elif (systematic == 'TTJets_envelope'):
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation, is_multiple_sources=True)
+            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
             env_lower, env_upper = get_scale_envelope(options, syst_unc_x_sec)
             unf_env_lower, unf_env_upper = get_scale_envelope(options, unf_syst_unc_x_sec)
-            normalised_systematic_uncertainty_x_sections[systematic] = [
+            systematic_uncertainty_x_sections[systematic] = [
                 env_lower,
                 env_upper,
             ]
-            unfolded_normalised_systematic_uncertainty_x_sections[systematic] = [
+            unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_env_lower,
                 unf_env_upper,
             ]
         else :
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_normalised_xsection_systematics(options, variation)
-            normalised_systematic_uncertainty_x_sections[systematic] = [
+            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation)
+            systematic_uncertainty_x_sections[systematic] = [
                 syst_unc_x_sec['upper'], 
                 syst_unc_x_sec['lower'],
             ]
-            unfolded_normalised_systematic_uncertainty_x_sections[systematic] = [
+            unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_syst_unc_x_sec['upper'], 
                 unf_syst_unc_x_sec['lower'],
             ]
 
-    return normalised_systematic_uncertainty_x_sections, unfolded_normalised_systematic_uncertainty_x_sections
+    return systematic_uncertainty_x_sections, unfolded_systematic_uncertainty_x_sections
 
 
 def get_scale_envelope(options, d_scale_syst):
@@ -295,7 +307,7 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     return pdf_sym, pdf_sign
 
 
-def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
+def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
     '''
     Returns the symmetrised uncertainties on the normalised cross sections.
 
@@ -310,9 +322,9 @@ def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
     Separate uncertainty calculation for PDFs. Need to think how to calc correlation matrices. (i.e. no way to get sign yet)
     Combine PDFs and alphaS systematics
     '''
-    normalised_x_sections_with_symmetrised_systematics = deepcopy(norm_syst_unc_x_secs)
-    central_measurement = norm_syst_unc_x_secs['central']
-    for systematic, variation in norm_syst_unc_x_secs.iteritems():
+    xsections_with_symmetrised_systematics = deepcopy(syst_unc_x_secs)
+    central_measurement = syst_unc_x_secs['central']
+    for systematic, variation in syst_unc_x_secs.iteritems():
         if (systematic == 'PDF'):
             # Replace all PDF weights with full PDF combination
             pdf_sym, pdf_sign = calculate_total_PDFuncertainty(
@@ -321,12 +333,12 @@ def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
                 variation,
             )
             # TODO Find signs etc... i.e. do proper covariance for PDF
-            normalised_x_sections_with_symmetrised_systematics[systematic] = [
+            xsections_with_symmetrised_systematics[systematic] = [
                 pdf_sym, 
                 pdf_sign
             ]  
         elif systematic == 'central':
-            normalised_x_sections_with_symmetrised_systematics['central'] = central_measurement
+            xsections_with_symmetrised_systematics['central'] = central_measurement
         else:
             upper_measurement = variation[0]
             lower_measurement = variation[1]
@@ -341,30 +353,30 @@ def get_symmetrised_systematic_uncertainty(options, norm_syst_unc_x_secs ):
                 isTopMassSystematic,
             )
 
-            normalised_x_sections_with_symmetrised_systematics[systematic] = [
+            xsections_with_symmetrised_systematics[systematic] = [
                 symmetrised_uncertainties, 
                 signed_uncertainties,
             ]         
 
     # Combine LightJet and BJet Systematics
-    bJet = normalised_x_sections_with_symmetrised_systematics['BJet'][0]
-    lightJet = normalised_x_sections_with_symmetrised_systematics['LightJet'][0]
+    bJet = xsections_with_symmetrised_systematics['BJet'][0]
+    lightJet = xsections_with_symmetrised_systematics['LightJet'][0]
     bJet_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(bJet, lightJet)]
-    normalised_x_sections_with_symmetrised_systematics['BJet'][0] = bJet_tot
+    xsections_with_symmetrised_systematics['BJet'][0] = bJet_tot
 
     # Combine PDF with alphaS variations
-    if 'TTJets_alphaS' in normalised_x_sections_with_symmetrised_systematics and 'PDF' in normalised_x_sections_with_symmetrised_systematics:
-        alphaS = normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS'][0]
-        pdf = normalised_x_sections_with_symmetrised_systematics['PDF'][0]
+    if 'TTJets_alphaS' in xsections_with_symmetrised_systematics and 'PDF' in xsections_with_symmetrised_systematics:
+        alphaS = xsections_with_symmetrised_systematics['TTJets_alphaS'][0]
+        pdf = xsections_with_symmetrised_systematics['PDF'][0]
         pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
-        normalised_x_sections_with_symmetrised_systematics['PDF'][0] = pdf_tot
+        xsections_with_symmetrised_systematics['PDF'][0] = pdf_tot
         # TODO combine the signs....
 
     # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
-    del normalised_x_sections_with_symmetrised_systematics['LightJet']
-    del normalised_x_sections_with_symmetrised_systematics['TTJets_alphaS']
+    del xsections_with_symmetrised_systematics['LightJet']
+    del xsections_with_symmetrised_systematics['TTJets_alphaS']
 
-    return normalised_x_sections_with_symmetrised_systematics           
+    return xsections_with_symmetrised_systematics           
 
 
 def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic=False ):
@@ -431,7 +443,7 @@ def get_sign(central, upper, lower, upper_variation, lower_variation):
     elif ((lower_variation > upper_variation) and (lower < central) ): return 1
     else: return 0
 
-def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmetrised_systematics):
+def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetrised_systematics):
     '''
     Returns the measurement with the total symmetrised systematic uncertainties 
     Of the form:
@@ -449,48 +461,36 @@ def get_measurement_with_total_systematic_uncertainty(options, x_sec_with_symmet
     measurement_with_total_uncertainty = []
     for bin_i in range( 0, number_of_bins ):
         sys_unc = 0
-        central = x_sec_with_symmetrised_systematics['central'][bin_i] # Still [Value, Error]
-        for systematic, measurement in x_sec_with_symmetrised_systematics.iteritems():
+        central = xsec_with_symmetrised_systematics['central'][bin_i] # Still [Value, Error]
+        for systematic, measurement in xsec_with_symmetrised_systematics.iteritems():
             if (systematic == 'central'): continue
             sys_unc += measurement[0][bin_i]**2
         measurement_with_total_uncertainty.append( [central[0], sqrt(sys_unc), sqrt(sys_unc)] )
     return measurement_with_total_uncertainty
 
-def print_dictionary(title, dictionary_to_print):
-    '''
-    Prints dictionaries in a nicer form
-    TODO Maybe think how pandas can be incorporated into 03...
-    '''
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4)
-    print ()
-    print ('-'*100)
-    print (title)
-    print ('-'*100)
-    pp.pprint(dictionary_to_print)
-    print ()
-    return
 
 # ------------------------------------------------------------------------------------------------------------------
 # COVARIANCE MATRICES
 # ------------------------------------------------------------------------------------------------------------------
 
-def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
+def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
     '''
     Iterates through each group of systematics generating and plotting the covariance matrix of the systematic
     '''
-    number_of_bins=options['number_of_bins']    
-    variable = options['variable']
-    channel = options['channel']
-    path_to_DF = options['path_to_DF']
-    statistic = x_sec_with_symmetrised_systematics['central'] # [Value, Stat]
-    all_covariance_matrices = []
-    all_correlation_matrices = []
-    covariance_output_template = '{path_to_DF}/central/covarianceMatrices/{sys}_{label}_{channel}.txt'
+    number_of_bins  = options['number_of_bins']    
+    variable        = options['variable']
+    channel         = options['channel']
+    path_to_DF      = options['path_to_DF']
+    norm            = options['normalisation_type']
 
-    for syst_name, measurement in x_sec_with_symmetrised_systematics.iteritems():
+    statistic       = xsec_with_symmetrised_systematics['central'] # [Value, Stat]
+
+    all_covariance_matrices     = []
+    all_correlation_matrices    = []
+    covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/{norm}/{sys}_{label}_{channel}.txt'
+
+    for syst_name, measurement in xsec_with_symmetrised_systematics.iteritems():
         if syst_name == 'central': continue
-        # Outputfile
 
         systematic = measurement[0]
         sign = measurement[1]
@@ -501,10 +501,23 @@ def generate_covariance_matrices(options, x_sec_with_symmetrised_systematics):
         all_correlation_matrices.append(correlation_matrix)
 
         # Convert the matrices to DF format, output and plot them
-        table_outfile = covariance_output_template.format( path_to_DF=path_to_DF, sys=syst_name, channel=channel, label='Covariance')
+        table_outfile = covariance_output_template.format( 
+            path_to_DF=path_to_DF, 
+            sys=syst_name, 
+            channel=channel, 
+            label='Covariance',
+            norm=norm,
+        )
         create_covariance_matrix(covariance_matrix, table_outfile)
-        make_covariance_plot(options, syst_name, covariance_matrix)
-        table_outfile = covariance_output_template.format( path_to_DF=path_to_DF, sys=syst_name, channel=channel, label='Correlation')
+        make_covariance_plot(options, syst_name, covariance_matrix, label='Covariance')
+
+        table_outfile = covariance_output_template.format( 
+            path_to_DF=path_to_DF, 
+            sys=syst_name, 
+            channel=channel, 
+            label='Correlation',
+            norm=norm,
+        )
         create_covariance_matrix(correlation_matrix, table_outfile)
         make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
 
@@ -521,26 +534,18 @@ def generate_covariance_matrix(number_of_bins, systematic, sign):
                              (Unc_i * Unc_j)
     Returns the matrices in the form of a numpy matrix    
     '''
-    cov_matrix = []
-    cor_matrix = []
-    for bin_i in xrange(number_of_bins):
-        cov_matrix_row=[]
-        cor_matrix_row=[]
-        for bin_j in xrange(number_of_bins):
-            uncertainty_i   = systematic[bin_i]
-            uncertainty_j   = systematic[bin_j]
-            sign_i          = sign[bin_i]
-            sign_j          = sign[bin_j] 
-            cov_ij          = (sign_i*uncertainty_i)*(sign_j*uncertainty_j)
-            cor_ij          = cov_ij/(uncertainty_i*uncertainty_j)
+    # Create covariance matrix from signs and uncertainties
+    covariance_matrix  = np.matrix( np.zeros( ( number_of_bins, number_of_bins ) ) )
+    for i in range( 0, number_of_bins ):
+        for j in range(0, number_of_bins ):
+            covariance_matrix[i,j] = (sign[i]*systematic[i]) *  (sign[j]*systematic[j])
 
-            cor_matrix_row.append(cor_ij)
-            cov_matrix_row.append(cov_ij)
-        cor_matrix.append(cor_matrix_row)
-        cov_matrix.append(cov_matrix_row)
+    # Create correlation matrix from covariance matrix
+    correlation_matrix = np.matrix( np.zeros( ( covariance_matrix.shape[0], covariance_matrix.shape[1] ) ) )
+    for i in range( 0, covariance_matrix.shape[0] ):
+        for j in range(0, covariance_matrix.shape[1] ):
+            correlation_matrix[i,j] = covariance_matrix[i,j] / sqrt( covariance_matrix[i,i] * covariance_matrix[j,j] )
 
-    covariance_matrix = np.matrix(cov_matrix)
-    correlation_matrix = np.matrix(cor_matrix)
     return covariance_matrix, correlation_matrix
 
 def generate_total_covariance(options, all_covariances, all_correlations):
@@ -551,9 +556,9 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     Similarly for Correlation
     '''
     # Paths to statistical Covariance/Correlation matrices.
-    covariance_template = '{path_to_DF}/central/covarianceMatrices/Stat_normalisedXsection_{label}_{channel}.txt'
-    cov_path=covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
-    cor_path=covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
+    covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
+    cov_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
+    cor_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
     # Convert to numpy matrix and create total
     cov_stat = file_to_df(cov_path)
@@ -570,10 +575,9 @@ def generate_total_covariance(options, all_covariances, all_correlations):
             cor_tot[i,j] = cov_tot[i,j] / sqrt( cov_tot[i,i] * cov_tot[j,j] )
 
     # Paths to output total Covariance/Correlation matrices.
-    table_outfile_tmp = 'tables/covariance_matrices/{ch}/{var}/Total_{label}_matrix.txt'
-    covariance_template = '{path_to_DF}/central/covarianceMatrices/Total_{label}_{channel}.txt'
-    cov_outfile = covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
-    cor_outfile = covariance_template.format(path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
+    covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Total_{label}_{channel}.txt'
+    cov_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
+    cor_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
     # Save the total matrices
     create_covariance_matrix( cov_tot, cov_outfile )
@@ -618,13 +622,35 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
     variable = options['variable']
     channel = options['channel']
     phase_space = options['phase_space']
+    norm=options['normalisation_type']
 
     # Output folder of covariance matrices
-    covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{channel}/{variable}/'
+    covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{channel}/{variable}/{norm}/'
     covariance_matrix_output_path = covariance_matrix_output_path.format(
         variable = variable,
         channel = channel,
         phase_space = phase_space,
+        norm = norm,
         )
     make_folder_if_not_exists(covariance_matrix_output_path)
     plt.savefig(covariance_matrix_output_path+syst_name+'_'+label+'_matrix.pdf')
+
+
+# ------------------------------------------------------------------------------------------------------------------
+# HELPER
+# ------------------------------------------------------------------------------------------------------------------
+
+def print_dictionary(title, dictionary_to_print):
+    '''
+    Prints dictionaries in a nicer form
+    TODO Maybe think how pandas can be incorporated into 03...
+    '''
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    print ()
+    print ('-'*100)
+    print (title)
+    print ('-'*100)
+    pp.pprint(dictionary_to_print)
+    print ()
+    return
