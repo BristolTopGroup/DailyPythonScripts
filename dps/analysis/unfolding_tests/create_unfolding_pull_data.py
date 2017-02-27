@@ -60,7 +60,7 @@ def main():
         create_unfolding_pull_data(options.file, method, channel,
                                    centre_of_mass, variable,
                                    sample,
-                                   measurement_config.unfolding_central,
+                                   measurement_config.unfolding_central_secondHalf,
                                    use_n_toy,
                                    options.output_folder,
                                    tau_value)
@@ -159,20 +159,16 @@ def check_multiple_data_multiple_unfolding(
     h_response = responseMatrix
 
 
-    # Make sure the pseudo data to be unfolded has the same integral as the response matrix
+    # Make sure the response matrix has the same normalisatio as the pseudo data to be unfolded
+    truthScale =  h_truth.integral(overflow=True) / h_response.integral(overflow=True)
+    h_response.Scale( truthScale )
     measured_from_response = asrootpy( h_response.ProjectionX('px',1) )
-    truth_from_response = asrootpy( h_response.ProjectionY() )
-    truthScale = truth_from_response.Integral() / h_truth.Integral()
-    h_truth.Scale( truthScale )
-    h_measured.Scale( truthScale )
 
     for nth_toy_data in data_range:
         if nth_toy_data % 100 == 0 :
             print(
                 'Doing data no', nth_toy_data)
         h_data = histograms[nth_toy_data]
-
-        h_data.Scale( truthScale )
 
         unfolding_obj = Unfolding(
             h_data,
@@ -183,8 +179,12 @@ def check_multiple_data_multiple_unfolding(
 
 
         unfold()
+        # print ('Measured :',list(h_data.y()))
+        # print ('Unfolded :',list( unfolding_obj.unfolded_data.y() ))
         pull = get_pull()
+        # print ('Pull :',pull)
         diff = unfolding_obj.unfolded_data - h_truth
+        # print ('Diff :',list(diff.y()))
         diff_tuple = hist_to_value_error_tuplelist(diff)
 
         truth_tuple = hist_to_value_error_tuplelist(unfolding_obj.truth)

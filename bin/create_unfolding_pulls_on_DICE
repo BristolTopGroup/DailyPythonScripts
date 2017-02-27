@@ -71,7 +71,7 @@ def main():
         n_toy_data = n_toy_data,
         sample = sample,
         centre_of_mass=centre_of_mass_energy,
-        response=config.unfolding_central,
+        response=config.unfolding_central_secondHalf,
         variables=variables,
         output_folder=output_folder,
         do_best_tau=do_best_tau,

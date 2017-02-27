@@ -383,6 +383,16 @@ class XSectionConfig():
         self.unfolding_etareweight_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopEtaReweighting_up.root' % self.centre_of_mass_energy
         self.unfolding_etareweight_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_withTopEtaReweighting_down.root' % self.centre_of_mass_energy
 
+        self.unfolding_central_firstHalf = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_firstHalf.root' % self.centre_of_mass_energy
+        self.unfolding_central_secondHalf = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_secondHalf.root' % self.centre_of_mass_energy
+
+        self.unfolding_ptreweight_up_firstHalf = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_firstHalf_withTopPtReweighting_up.root' % self.centre_of_mass_energy
+        self.unfolding_ptreweight_down_firstHalf = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_firstHalf_withTopPtReweighting_down.root' % self.centre_of_mass_energy
+
+        self.unfolding_ptreweight_up_secondHalf = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_secondHalf_withTopPtReweighting_up.root' % self.centre_of_mass_energy
+        self.unfolding_ptreweight_down_secondHalf = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_secondHalf_withTopPtReweighting_down.root' % self.centre_of_mass_energy
+
+
         self.unfolding_renormalisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_05muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_renormalisation_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_2muR1muF.root' % self.centre_of_mass_energy
         self.unfolding_factorisation_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_1muR05muF.root' % self.centre_of_mass_energy
