@@ -70,6 +70,9 @@ def getFileName( com, sample, measurementConfig ) :
             'central_70pc'           : measurementConfig.ttbar_trees['central'],
             'central_30pc'           : measurementConfig.ttbar_trees['central'],
 
+            'central_firstHalf'           : measurementConfig.ttbar_trees['central'],
+            'central_secondHalf'           : measurementConfig.ttbar_trees['central'],
+
             'amcatnlo'          : measurementConfig.ttbar_amc_trees,
             'madgraph'          : measurementConfig.ttbar_madgraph_trees,
             'powhegherwigpp'    : measurementConfig.ttbar_powhegherwigpp_trees,
@@ -262,6 +265,12 @@ def main():
     if '70pc' in args.sample or '30pc' in args.sample:
         outputFileName.replace('asymmetric','asymmetric_'+args.sample.split('_')[1])
 
+    if 'firstHalf' in args.sample:
+        outputFileName = outputFileName.replace('asymmetric','asymmetric_firstHalf')
+    elif 'secondHalf' in args.sample:
+        outputFileName = outputFileName.replace('asymmetric','asymmetric_secondHalf')
+
+
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
 
             # Get the tree
@@ -416,6 +425,7 @@ def main():
 
             n=0
             maxEvents = -1
+            halfOfEvents = 0
             if '70pc' in args.sample or '30pc' in args.sample:
                 print 'Only processing fraction of total events for sample :',args.sample
                 totalEvents = tree.GetEntries()
@@ -424,6 +434,11 @@ def main():
                 elif '30pc' in args.sample:
                     maxEvents = int( totalEvents * 0.3 )
                 print 'Will process ',maxEvents,'out of',totalEvents,'events'
+
+            if 'firstHalf' in args.sample or 'secondHalf' in args.sample:
+                totalEvents = tree.GetEntries()
+                halfOfEvents = int( totalEvents / 2 )
+
             # Event Loop
             # for event, weight in zip(tree,weightTree):
             for event in tree:
@@ -432,6 +447,9 @@ def main():
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
                 # if n == 1000: break
                 if maxEvents > 0 and n > maxEvents: break
+
+                if 'firstHalf' in args.sample and n >= halfOfEvents: break
+                elif 'secondHalf' in args.sample and n < halfOfEvents: continue
 
                 # # #
                 # # # Weights and selection
