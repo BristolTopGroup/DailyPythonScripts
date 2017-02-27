@@ -5,7 +5,7 @@ class XSectionConfig():
     current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.3/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
-    luminosities = {13:36459}
+    luminosities = {13:35900}
 
     parameters = [
         'SingleTop_trees', 'SingleTop_file',
@@ -536,33 +536,34 @@ class XSectionConfig():
         middle = self.middle
         path_to_files = self.path_to_files
 
-        self.new_luminosity = 36459
+        self.new_luminosity = 35900
+
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {#TODO check where this is used
-            'luminosity': 0.062,
+            'luminosity': 0.026,
             'SingleTop_cross_section': 0.05,  # Currently same as 8 TeV
             'V+Jets_cross_section': 0.5,
          }
 
         self.tau_values_electron = {
-            "WPT" : 0.00110582408886,
-            "NJets" : 9.0867132693e-05,
-            "lepton_pt" : 0.000412971805373,
-            "HT" : 0.00135529237202,
-            "ST" : 0.00177719791974,
-            "MET" : 0.00233254396385,
-            "abs_lepton_eta" : 1.56857850825e-06,
+            "WPT" : 0.00078750167566,
+            "NJets" : 6.80607772929e-05,
+            "lepton_pt" : 0.000284563332138,
+            "HT" : 0.00096407855037,
+            "ST" : 0.00127383972127,
+            "MET" : 0.0016618406977,
+            "abs_lepton_eta" : 1.19247962402e-06,
            }
 
         self.tau_values_muon = {
-            "WPT" : 0.000859434474698,
-            "NJets" : 7.24401760469e-05,
-            "lepton_pt" : 0.000309709177654,
-            "HT" : 0.00105797217641,
-            "ST" : 0.00139197950941,
-            "MET" : 0.00182690061802,
-            "abs_lepton_eta" : 1.33090194234e-06,
+            "WPT" : 0.00100823474842,
+            "NJets" : 8.47845992935e-05,
+            "lepton_pt" : 0.000380520854525,
+            "HT" : 0.00123169990611,
+            "ST" : 0.00163072535025,
+            "MET" : 0.00210825225495,
+            "abs_lepton_eta" : 1.37801212014e-06,
         }
 
         self.tau_values_combined = {
