@@ -88,13 +88,6 @@ def read_xsection_measurement_results( category, channel, unc_type ):
                 'powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
             }
         )
-        histograms_normalised_xsection_systematics_shifts.update( 
-            {
-                'powhegPythia8'   : h_normalised_xsection_powhegPythia8,
-                'massdown'        : h_normalised_xsection_massdown,
-                'massup'          : h_normalised_xsection_massup
-            }
-        )
 
         filename = file_template.format(
             path = path_to_DF,
