@@ -65,6 +65,7 @@ measurements_latex = {
     'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
     'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
     'amcatnloPythia8': 'aMC@NLO Pythia8',
+    'amcatnlo': 'aMC@NLO Pythia8',
     'amcatnloHerwig': 'aMC@NLO Herwig++',
     'madgraphMLM': 'Madgraph Pythia8',
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',

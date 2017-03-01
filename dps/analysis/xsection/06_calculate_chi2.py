@@ -2,6 +2,7 @@ from dps.utils.ROOT_utils import set_root_defaults
 from argparse import ArgumentParser
 from dps.config.xsection import XSectionConfig
 from dps.utils.pandas_utilities import file_to_df, matrix_from_df, read_tuple_from_file, dict_to_df, df_to_file, df_to_latexFile
+from dps.config.latex_labels import variables_latex, measurements_latex
 import numpy as np
 from ROOT import TMath
 import pandas as pd 
@@ -51,6 +52,46 @@ def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input
 	output_filename = '{input_path}/chi2OfModels_{channel}_{type}.txt'.format(input_path=path_to_input,channel=channel, type = uncertainty_type)
 	df_to_file( output_filename, chi2OfModels_df )
 	return chi2OfModels_df
+
+def makeLatexTable( chi2, outputPath, channel ):
+	models = chi2[chi2.keys()[0]]['Model']
+	model_header = '&\t'
+	label_header = '&\t'
+	for model in models:
+		model_header += ' \multicolumn{{2}}{{c|}}{{{model}}} & \t'.format(model=measurements_latex[model])
+		label_header += '$\\chi^{2}$ / ndf & p-value &\t'
+	model_header = model_header.rstrip().rstrip('&')
+	model_header += '\\\\'
+	label_header = label_header.rstrip().rstrip('&')
+	label_header += '\\\\'
+
+	fullTable = model_header
+	fullTable += '\n'
+	fullTable += '\\hline\n'
+	fullTable += label_header
+	fullTable += '\n'
+	fullTable += '\\hline\n'
+	for var in chi2:
+		lineForVar = '{var} &\t'.format(var=variables_latex[var])
+		df = chi2[var]
+		for model in models:
+			info = df.loc[df['Model'] == model].iloc[0]
+
+			pValueToPrint = info['p-Value']
+			if pValueToPrint < 0.01:
+				pValueToPrint = '$<$ 0.01'
+			else:
+				pValueToPrint = '{0:.2g}'.format(pValueToPrint)
+
+			lineForVar += '{chi2:.2g} / {ndf} &\t {pValue} &\t'.format(chi2=info['Chi2'], ndf=info['NDF'], pValue=pValueToPrint)
+		lineForVar = lineForVar.rstrip().rstrip('&')
+		lineForVar += '\\\\'
+
+		fullTable += lineForVar
+		fullTable += '\n'
+
+	fullTable += '\\hline\n'
+	print fullTable
 
 def parse_arguments():
     parser = ArgumentParser()
@@ -111,10 +152,6 @@ if __name__ == '__main__':
 				    variable = variable,
 				    phase_space = phase_space,
 				)
-				chi2ForVariables[variable] = calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input, utype )
+				chi2ForVariables[variable] = calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input )
 
-			allChi2 =  pd.concat( chi2ForVariables.values(), ignore_index=True)
-			allChi2 = pd.pivot_table( allChi2, index=['Variable','Model'])
-
-			output_table_name = '{outputPath}/chi2_{channel}_{type}.tex'.format( outputPath=outputTablePath, channel=channel, type=utype )
-			df_to_latexFile( output_table_name, allChi2)
+			makeLatexTable( chi2=chi2ForVariables, outputPath=outputTablePath, channel=channel )

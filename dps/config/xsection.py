@@ -302,6 +302,8 @@ class XSectionConfig():
         self.samplesForChi2Comparison = [
             'powhegPythia8',
             'powhegHerwig',
+            'amcatnlo',
+            'madgraphMLM'
         ]
         # now fill in the centre of mass dependent values
         self.__fill_defaults_13TeV__()
