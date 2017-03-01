@@ -227,7 +227,7 @@ if __name__ == '__main__':
 
 	for channel in ['electron', 'muon', 'combined']:  
 		if channel != 'combined':continue
-        for utype in unc_type:
+		for utype in unc_type:
 			input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_{type}_{channel}_{method}_summary_relative.txt'.format(
 				basepath = 	path,
 				com = 	com,
