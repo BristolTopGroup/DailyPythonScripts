@@ -2,7 +2,6 @@ from dps.utils.ROOT_utils import set_root_defaults
 from argparse import ArgumentParser
 from dps.config.xsection import XSectionConfig
 from dps.utils.pandas_utilities import file_to_df, matrix_from_df, read_tuple_from_file, dict_to_df, df_to_file, df_to_latexFile
-from dps.utils.systematic import get_normalised_cross_sections
 import numpy as np
 from ROOT import TMath
 import pandas as pd 
@@ -22,9 +21,9 @@ def calculateChi2(measured_xsection,model_xsection,covariance):
 
 
 
-def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input ):
+def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input, uncertainty_type ):
 	# Paths to statistical Covariance/Correlation matrices.
-	covariance_filename = '{input_path}/covarianceMatrices/Total_Covariance_{channel}.txt'.format(input_path=path_to_input,channel=channel)
+	covariance_filename = '{input_path}/covarianceMatrices/{type}/Total_Covariance_{channel}.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
 	# Convert to numpy matrix and create total
 	cov_full = matrix_from_df( file_to_df(covariance_filename) )
 
@@ -32,13 +31,13 @@ def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input
 
 	# Collect the cross section measured/unfolded results from dataframes
 	xsections = read_tuple_from_file( xsections_filename )
-	normalised_xsection_unfolded    = [ i[0] for i in xsections['TTJet_unfolded'] ]
+	xsection_unfolded    = [ i[0] for i in xsections['TTJet_unfolded'] ]
 
 	xsectionsOfmodels = {}
 	chi2OfModels = {}
 	for model in modelsForComparing:
 		xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model] ] )
-		chi2 = calculateChi2( normalised_xsection_unfolded, xsectionsOfmodels[model], cov_full)
+		chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full)
 		chi2OfModels[model] = chi2
 
 	chi2OfModels_df = pd.DataFrame( {
@@ -49,7 +48,7 @@ def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input
 		'p-Value' : np.array( [chi2OfModels[model].pValue for model in modelsForComparing] ),
 		} )
 
-	output_filename = '{input_path}/chi2OfModels_{channel}.txt'.format(input_path=path_to_input,channel=channel)
+	output_filename = '{input_path}/chi2OfModels_{channel}_{type}.txt'.format(input_path=path_to_input,channel=channel, type = uncertainty_type)
 	df_to_file( output_filename, chi2OfModels_df )
 	return chi2OfModels_df
 
@@ -80,8 +79,8 @@ if __name__ == '__main__':
 	measurement_config      = XSectionConfig( 13 )
 
 	visiblePS               = args.visiblePS
-	outputTablePath = args.outputTablePath
-	modelsForComparing = measurement_config.samplesForChi2Comparison
+	outputTablePath 		= args.outputTablePath
+	modelsForComparing 		= measurement_config.samplesForChi2Comparison
 
 	phase_space = 'FullPS'
 	if visiblePS:
@@ -93,24 +92,29 @@ if __name__ == '__main__':
 		'combined', 
 		# 'combinedBeforeUnfolding',
 	]
+	unc_type = [
+		'normalised',
+		'absolute',
+	]
 
 	for channel in channels:
 		print 'Channel :',channel
+		for utype in unc_type:
 
-		chi2ForVariables = {}
-		for variable in measurement_config.variables:
-			print variable
-			path_to_input = '{path}/{com}TeV/{variable}/{phase_space}/central/'
-			path_to_input = path_to_input.format(
-			    path = args.path, 
-			    com = 13,
-			    variable = variable,
-			    phase_space = phase_space,
-			)
-			chi2ForVariables[variable] = calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input )
+			chi2ForVariables = {}
+			for variable in measurement_config.variables:
+				print variable
+				path_to_input = '{path}/{com}TeV/{variable}/{phase_space}/central/'
+				path_to_input = path_to_input.format(
+				    path = args.path, 
+				    com = 13,
+				    variable = variable,
+				    phase_space = phase_space,
+				)
+				chi2ForVariables[variable] = calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input, utype )
 
-		allChi2 =  pd.concat( chi2ForVariables.values(), ignore_index=True)
-		allChi2 = pd.pivot_table( allChi2, index=['Variable','Model'])
+			allChi2 =  pd.concat( chi2ForVariables.values(), ignore_index=True)
+			allChi2 = pd.pivot_table( allChi2, index=['Variable','Model'])
 
-		output_table_name = '{outputPath}/chi2_{channel}.tex'.format( outputPath=outputTablePath, channel=channel )
-		df_to_latexFile( output_table_name, allChi2)
+			output_table_name = '{outputPath}/chi2_{channel}_{type}.tex'.format( outputPath=outputTablePath, channel=channel, type=utype )
+			df_to_latexFile( output_table_name, allChi2)
