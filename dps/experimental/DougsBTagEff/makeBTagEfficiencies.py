@@ -515,7 +515,6 @@ def make_eff_plots(input_files, file_path, split=''):
 		)
 		plt.tight_layout()
 		fig_eff.savefig('plots/BTagEfficiency/'+name)
-		fig_eff.close()
 
 	f.Close()
 	return
