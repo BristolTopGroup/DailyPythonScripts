@@ -121,11 +121,11 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         covariance_matrix, correlation_matrix = unfolding.get_covariance_matrix()
 
         # Write covariance matrices
-        covariance_output_tempalte = '{path_to_DF}/central/covarianceMatrices/{cat}_{label}_{channel}.txt'
+        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/unfoldedNumberOfEvents/{cat}_{label}_{channel}.txt'
         # Unfolded number of events
-        table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_unfoldedNormalisation' )
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( covariance_matrix, table_outfile)
-        table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_unfoldedNormalisation' )
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( correlation_matrix, table_outfile)
 
     del unfolding
