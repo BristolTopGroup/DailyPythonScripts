@@ -26,7 +26,7 @@ def calculate_xsection(inputs, luminosity, efficiency=1., covariance_matrix=None
         add_result((xsection, xsection_error))        
 
     if covariance_matrix is not None:
-        abs_cov_matrix = covariance_matrix / (luminosity * efficiency)
+        abs_cov_matrix = covariance_matrix / (luminosity * efficiency)**2
         abs_corr_matrix = matrix( zeros( ( abs_cov_matrix.shape[0], abs_cov_matrix.shape[1] ) ) )
         for i in range( 0, abs_cov_matrix.shape[0] ):
             for j in range(0, abs_cov_matrix.shape[1] ):
