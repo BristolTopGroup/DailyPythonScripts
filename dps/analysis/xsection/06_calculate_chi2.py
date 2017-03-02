@@ -6,6 +6,7 @@ from dps.config.latex_labels import variables_latex, measurements_latex
 import numpy as np
 from ROOT import TMath
 import pandas as pd 
+from dps.utils.file_utilities import make_folder_if_not_exists
 
 class chi2Info:
 	def __init__(self, chi2, ndf, pValue):
@@ -22,13 +23,13 @@ def calculateChi2(measured_xsection,model_xsection,covariance):
 
 
 
-def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input, uncertainty_type ):
+def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input, uncertainty_type ):
 	# Paths to statistical Covariance/Correlation matrices.
 	covariance_filename = '{input_path}/covarianceMatrices/{type}/Total_Covariance_{channel}.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
 	# Convert to numpy matrix and create total
 	cov_full = matrix_from_df( file_to_df(covariance_filename) )
 
-	xsections_filename = '{input_path}/xsection_normalised_{channel}_TUnfold.txt'.format(input_path=path_to_input, channel=channel)
+	xsections_filename = '{input_path}/xsection_{type}_{channel}_TUnfold.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
 
 	# Collect the cross section measured/unfolded results from dataframes
 	xsections = read_tuple_from_file( xsections_filename )
@@ -53,10 +54,19 @@ def calcualteChi2ForModels( modelsForComparing, variable, channel, path_to_input
 	df_to_file( output_filename, chi2OfModels_df )
 	return chi2OfModels_df
 
-def makeLatexTable( chi2, outputPath, channel ):
+def makeLatexTable( chi2, outputPath, channel, crossSectionType ):
+
 	models = chi2[chi2.keys()[0]]['Model']
-	model_header = '&\t'
-	label_header = '&\t'
+
+	latexHeader = '\\begin{table}\n'
+	latexHeader += '\t\centering\n'
+	latexHeader += '\t\\begin{tabular}{|c|'
+	for i in range(0,len(models)): latexHeader += 'cc|'
+	latexHeader += '}\n'
+	latexHeader += '\t\t\hline\n'
+
+	model_header = '\t\t&\t'
+	label_header = '\t\t&\t'
 	for model in models:
 		model_header += ' \multicolumn{{2}}{{c|}}{{{model}}} & \t'.format(model=measurements_latex[model])
 		label_header += '$\\chi^{2}$ / ndf & p-value &\t'
@@ -65,14 +75,15 @@ def makeLatexTable( chi2, outputPath, channel ):
 	label_header = label_header.rstrip().rstrip('&')
 	label_header += '\\\\'
 
-	fullTable = model_header
+	fullTable = latexHeader
+	fullTable += model_header
 	fullTable += '\n'
-	fullTable += '\\hline\n'
+	fullTable += '\t\t\\hline\n'
 	fullTable += label_header
 	fullTable += '\n'
-	fullTable += '\\hline\n'
+	fullTable += '\t\t\\hline\n'
 	for var in chi2:
-		lineForVar = '{var} &\t'.format(var=variables_latex[var])
+		lineForVar = '\t\t{var} &\t'.format(var=variables_latex[var])
 		df = chi2[var]
 		for model in models:
 			info = df.loc[df['Model'] == model].iloc[0]
@@ -90,8 +101,24 @@ def makeLatexTable( chi2, outputPath, channel ):
 		fullTable += lineForVar
 		fullTable += '\n'
 
-	fullTable += '\\hline\n'
-	print fullTable
+	fullTable += '\t\t\\hline\n'
+
+	tableFooter = '\t\end{tabular}\n'
+	if crossSectionType == 'normalised':
+		tableFooter += '\t\caption{Results of a $\chi^{2}$ test between the normalised cross sections in data and several MC models.}\n'
+		tableFooter += '\t\label{tb:Chi2_normalised}\n'
+	elif crossSectionType == 'absolute':
+		tableFooter += '\t\caption{Results of a $\chi^{2}$ test betweenthe absolute cross sections in data and several MC models.}\n'
+		tableFooter += '\t\label{tb:Chi2_absolute}\n'		
+	tableFooter += '\\end{table}\n'
+
+	fullTable += tableFooter
+
+	make_folder_if_not_exists(outputPath)
+	file_template = outputPath + '/chi2_{channel}.tex'.format(channel=channel)
+	output_file = open(file_template, 'w')
+	output_file.write(fullTable)
+	output_file.close()
 
 def parse_arguments():
     parser = ArgumentParser()
@@ -152,6 +179,8 @@ if __name__ == '__main__':
 				    variable = variable,
 				    phase_space = phase_space,
 				)
-				chi2ForVariables[variable] = calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input )
+				chi2ForVariables[variable] = calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input, utype )
 
-			makeLatexTable( chi2=chi2ForVariables, outputPath=outputTablePath, channel=channel )
+			path_to_output = '{path}/{crossSectionType}/'.format(path=outputTablePath, channel=channel,crossSectionType=utype )
+
+			makeLatexTable( chi2=chi2ForVariables, outputPath=path_to_output, channel=channel, crossSectionType=utype )
