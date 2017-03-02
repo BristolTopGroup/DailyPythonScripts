@@ -122,10 +122,13 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
 
         # Write covariance matrices
         covariance_output_template = '{path_to_DF}/central/covarianceMatrices/unfoldedNumberOfEvents/{cat}_{label}_{channel}.txt'
+        channelForOutputFile = channel
+        if channel == 'combined':
+            channelForOutputFile = 'combinedBeforeUnfolding'
         # Unfolded number of events
-        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_unfoldedNormalisation' )
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Covariance', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( covariance_matrix, table_outfile)
-        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_unfoldedNormalisation' )
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Correlation', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( correlation_matrix, table_outfile)
 
     del unfolding
@@ -400,7 +403,10 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
 
     # Write all normalisations in unfolded binning scheme to dataframes
     file_template = '{path_to_DF}/{category}/unfolded_normalisation_{channel}_{method}.txt'
-    write_02(normalisation_unfolded, file_template, path_to_DF, category, channel, method)
+    channelForOutputFile = channel
+    if channel == 'combined':
+        channelForOutputFile = 'combinedBeforeUnfolding'
+    write_02(normalisation_unfolded, file_template, path_to_DF, category, channelForOutputFile, method)
     return normalisation_unfolded, covariance_matrix
 
 
