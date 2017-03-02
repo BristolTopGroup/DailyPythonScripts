@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "This will take a while ... grab a coffee/tea/water"
+mkdir -p logs
+mkdir -p tables
+
+echo "Calculating chi2 "
+nohup time python dps/analysis/xsection/06_calculate_chi2.py  --visiblePS &> logs/06_chi2_13TeV.log &
+
+wait;
+echo "All done!"

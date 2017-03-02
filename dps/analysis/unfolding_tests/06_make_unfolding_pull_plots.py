@@ -106,9 +106,10 @@ def main():
         print('No input file specified.')
         print('Run script with "-h" for usage')
         sys.exit(-1)
-    file_name = args[0]
+    file_names = args
 
-    makeAllPlots(file_name, options.output_folder)
+    for file_name in file_names:
+        makeAllPlots(file_name, options.output_folder)
 
 def makeAllPlots(file_name, output_directory_base):
     centre_of_mass, channel, variable, sample, tau_value = get_info_from_file_name( file_name )

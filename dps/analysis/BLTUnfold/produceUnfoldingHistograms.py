@@ -30,9 +30,9 @@ def calculateTopEtaWeight( lepTopRap, hadTopRap, whichWayToWeight = 1):
 
 def calculateTopPtWeight( lepTopPt, hadTopPt, whichWayToWeight = 1 ):
     if whichWayToWeight == -1 :
-        return max ( (-0.0005 * lepTopPt + 1.15 ) * (-0.0005 * hadTopPt + 1.15), 0.15 )
+        return max ( (-0.001 * lepTopPt + 1.1 ) * (-0.001 * hadTopPt + 1.1), 0.1 )
     elif whichWayToWeight == 1 :
-        return max ( (0.0005 * lepTopPt + 0.95 ) * (0.0005 * hadTopPt + 0.95), 0.1 )
+        return max ( (0.001 * lepTopPt + 0.9 ) * (0.001 * hadTopPt + 0.9), 0.1 )
     else :
         return 1
 
@@ -66,6 +66,12 @@ def getFileName( com, sample, measurementConfig ) :
     fileNames = {
         '13TeV' : {
             'central'           : measurementConfig.ttbar_trees['central'],
+
+            'central_70pc'           : measurementConfig.ttbar_trees['central'],
+            'central_30pc'           : measurementConfig.ttbar_trees['central'],
+
+            'central_firstHalf'           : measurementConfig.ttbar_trees['central'],
+            'central_secondHalf'           : measurementConfig.ttbar_trees['central'],
 
             'amcatnlo'          : measurementConfig.ttbar_amc_trees,
             'madgraph'          : measurementConfig.ttbar_madgraph_trees,
@@ -249,12 +255,21 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_up.root' % ( energySuffix )
     elif pdfWeight >= 0 and pdfWeight <= 99:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
-    elif args.sample != 'central':
+    elif 'central' not in args.sample:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, args.sample  )
     elif args.fineBinned :
         outputFileName = outputFileDir+'/unfolding_TTJets_%s.root' % ( energySuffix  )
     else:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric.root' % energySuffix
+
+    if '70pc' in args.sample or '30pc' in args.sample:
+        outputFileName.replace('asymmetric','asymmetric_'+args.sample.split('_')[1])
+
+    if 'firstHalf' in args.sample:
+        outputFileName = outputFileName.replace('asymmetric','asymmetric_firstHalf')
+    elif 'secondHalf' in args.sample:
+        outputFileName = outputFileName.replace('asymmetric','asymmetric_secondHalf')
+
 
     with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
 
@@ -360,16 +375,16 @@ def main():
                         maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
                         nBins = int(maxVar - minVar)
                         if variable is 'lepton_eta' or variable is 'bjets_eta':
-                            maxVar = 2.5
-                            minVar = -2.5
+                            maxVar = 2.4
+                            minVar = -2.4
                             nBins = 1000
                         elif 'abs' in variable and 'eta' in variable:
-                            maxVar = 3.0
+                            maxVar = 2.4
                             minVar = 0.
                             nBins = 1000
                         elif 'Rap' in variable:
-                            maxVar = 3.0
-                            minVar = -3.0
+                            maxVar = 2.4
+                            minVar = -2.4
                             nBins = 1000
                         elif 'NJets' in variable:
                             maxVar = 20.5
@@ -397,7 +412,6 @@ def main():
                     h['eventWeightHist'] = Hist( 100, -2, 2, name='eventWeightHist')                    
                     h['genWeightHist'] = Hist( 100, -2, 2, name='genWeightHist')
                     h['offlineWeightHist'] = Hist( 100, -2, 2, name='offlineWeightHist')
- 
                     h['phaseSpaceInfoHist'] = Hist( 10, 0, 1, name='phaseSpaceInfoHist')
 
 
@@ -410,13 +424,33 @@ def main():
             nOfflineSL      = {c.channelName : 0 for c in channels}
 
             n=0
+            maxEvents = -1
+            halfOfEvents = 0
+            if '70pc' in args.sample or '30pc' in args.sample:
+                print 'Only processing fraction of total events for sample :',args.sample
+                totalEvents = tree.GetEntries()
+                if '70pc' in args.sample:
+                    maxEvents = int( totalEvents * 0.7 )
+                elif '30pc' in args.sample:
+                    maxEvents = int( totalEvents * 0.3 )
+                print 'Will process ',maxEvents,'out of',totalEvents,'events'
+
+            if 'firstHalf' in args.sample or 'secondHalf' in args.sample:
+                totalEvents = tree.GetEntries()
+                halfOfEvents = int( totalEvents / 2 )
+
             # Event Loop
             # for event, weight in zip(tree,weightTree):
             for event in tree:
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n == 10000: break
+                # if n == 1000: break
+                if maxEvents > 0 and n > maxEvents: break
+
+                if 'firstHalf' in args.sample and n >= halfOfEvents: break
+                elif 'secondHalf' in args.sample and n < halfOfEvents: continue
+
                 # # #
                 # # # Weights and selection
                 # # #
@@ -458,44 +492,37 @@ def main():
                     topPtSystematicWeight = calculateTopPtSystematicWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'))
 
                 # Offline level weights
-                offlineWeight = event.EventWeight * measurement_config.luminosity_scale
+                offlineWeight = 1
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
                 # offlineWeight *= leptonWeight
-                offlineWeight *= topPtSystematicWeight
                 genWeight *= topPtSystematicWeight
                 
                 # Generator weight
                 # Scale up/down, pdf
                 if pdfWeight >= 0:
                     genWeight *= branch('pdfWeight_%i' % pdfWeight)
-                    offlineWeight *= branch('pdfWeight_%i' % pdfWeight)
                     pass
 
 
                 if muFmuRWeight >= 0:
                     genWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
-                    offlineWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
                     pass
 
                 if alphaSWeight == 0 or alphaSWeight == 1:
                     genWeight *= branch('alphaSWeight_%i' % alphaSWeight)
-                    offlineWeight *= branch('alphaSWeight_%i' % alphaSWeight)
                     pass
 
                 if matchingWeight >= 0:
                     genWeight *= branch('matchingWeight_%i' % matchingWeight)
-                    offlineWeight *= branch('matchingWeight_%i' % matchingWeight)
                     pass
 
                 if args.applyTopPtReweighting != 0:
                     ptWeight = calculateTopPtWeight( branch('lepTopPt_parton'), branch('hadTopPt_parton'), args.applyTopPtReweighting)
-                    offlineWeight *= ptWeight
                     genWeight *= ptWeight
                 
                 if args.applyTopEtaReweighting != 0:
                     etaWeight = calculateTopEtaWeight( branch('lepTopRap_parton'), branch('hadTopRap_parton'), args.applyTopEtaReweighting)
-                    offlineWeight *= etaWeight
                     genWeight *= etaWeight
 
                 for channel in channels:
@@ -531,9 +558,9 @@ def main():
                         if not offlineSelection:
                             nVisNotOffline[channel.channelName] += genWeight
                     if offlineSelection:
-                        nOffline[channel.channelName] += offlineWeight
+                        nOffline[channel.channelName] += offlineWeight * genWeight
                         if not genSelectionVis:
-                            nOfflineNotVis[channel.channelName] += offlineWeight
+                            nOfflineNotVis[channel.channelName] += offlineWeight * genWeight
 
                     for variable in allVariablesBins:
                         if args.debug and variable != 'HT' : continue
@@ -553,9 +580,6 @@ def main():
                             recoVariable = abs(recoVariable)
 
                         # With TUnfold, reco variable never goes in the overflow (or underflow)
-                        # if recoVariable > allVariablesBins[variable][-1]:
-                        #     print 'Big reco variable : ',recoVariable
-                        #     print 'Setting to :',min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
                         if not args.fineBinned:
                             recoVariable = min( recoVariable, allVariablesBins[variable][-1] - 0.000001 )
                         genVariable_particle = branch(genVariable_particle_names[variable])
@@ -570,36 +594,41 @@ def main():
                             if genSelection:
                                 histogramsToFill['truth'].Fill( genVariable_particle, genWeight)
                             if genSelectionVis:
+                                filledTruth = True
                                 histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
                             if offlineSelection:
-                                histogramsToFill['measured'].Fill( recoVariable, offlineWeight)
-                                histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight)
+                                histogramsToFill['measured'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight * genWeight )
                                 if genSelectionVis :
-                                    histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight)
+                                    histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight * genWeight )
                                 if genSelection:
-                                    histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight)
-                                histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight )
+                                    histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight )
+                            
                             if offlineSelection and genSelection:
-                                histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight ) 
+                                histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight  ) 
+                                histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight ) * genWeight  ) 
                             elif genSelection:
                                 histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
-                                # if genVariable_particle < 0 : print recoVariable, genVariable_particle
-                                # if genVariable_particle < 0 : print genVariable_particle
+                            
                             if offlineSelection and genSelectionVis:
-                                histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight )
+                                histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight )
+                                histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight ) * genWeight )
+                                filledResponse = True
                             elif genSelectionVis:
                                 histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
+                                filledResponse = True
+                            
                             if fakeSelection:
-                                histogramsToFill['fake'].Fill( recoVariable, offlineWeight)
+                                histogramsToFill['fake'].Fill( recoVariable, offlineWeight * genWeight )
                             if fakeSelectionVis:
-                                histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight)
+                                histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight * genWeight )
 
                             if args.extraHists:
                                 if genSelection:
                                     histogramsToFill['eventWeightHist'].Fill(event.EventWeight)
                                     histogramsToFill['genWeightHist'].Fill(genWeight)
-                                    histogramsToFill['offlineWeightHist'].Fill(offlineWeight)
-
+                                    histogramsToFill['offlineWeightHist'].Fill(offlineWeight )
             #
             # Output histgorams to file
             #

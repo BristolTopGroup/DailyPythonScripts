@@ -171,7 +171,7 @@ class Measurement():
         )
         self.normalisation['TTJet']     = hist_to_value_error_tuplelist(ttjet_hist)
         self.normalisation['data']      = hist_to_value_error_tuplelist(histograms['data'])
-        # self.normalisation['TTBar']   = hist_to_value_error_tuplelist(histograms['TTBar'])
+        self.normalisation['TTJet_MC']   = hist_to_value_error_tuplelist(histograms['TTBar'])
         self.normalisation['SingleTop'] = hist_to_value_error_tuplelist(histograms['SingleTop'])
         self.normalisation['V+Jets']    = hist_to_value_error_tuplelist(histograms['V+Jets'])
         self.normalisation['QCD']       = hist_to_value_error_tuplelist(histograms['QCD'])

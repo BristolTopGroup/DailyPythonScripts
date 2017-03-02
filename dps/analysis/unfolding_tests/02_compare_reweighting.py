@@ -9,14 +9,16 @@ from dps.config.variable_binning import reco_bin_edges_vis
 from dps.utils.plotting import compare_measurements, Histogram_properties
 from dps.config import latex_labels
 from dps.utils.pandas_utilities import read_tuple_from_file
-
+from collections import OrderedDict
 def main():
 
 	config = XSectionConfig(13)
 
-	file_for_powhegPythia  		= File(config.unfolding_central, 'read')
-	file_for_ptReweight_up 		= File(config.unfolding_ptreweight_up, 'read')
-	file_for_ptReweight_down 		= File(config.unfolding_ptreweight_down, 'read')
+	file_for_powhegPythia  		= File(config.unfolding_central_firstHalf, 'read')
+	file_for_ptReweight_up 		= File(config.unfolding_ptreweight_up_firstHalf, 'read')
+	file_for_ptReweight_down 	= File(config.unfolding_ptreweight_down_firstHalf, 'read')
+	file_for_amcatnlo 			= File(config.unfolding_amcatnlo, 'read')
+	file_for_powhegHerwig 		= File(config.unfolding_powheg_herwig, 'read')
 	file_for_etaReweight_up 	= File(config.unfolding_etareweight_up, 'read')
 	file_for_etaReweight_down 	= File(config.unfolding_etareweight_down, 'read')
 	file_for_data_template 		= 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_{channel}.txt'
@@ -65,8 +67,33 @@ def main():
 			measured_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionX('px',1))
 			truth_pt_reweighted_down = asrootpy(response_pt_reweighted_down.ProjectionY())
 
-			_, _, response_eta_reweighted_up, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_etaReweight_up,
+			# _, _, response_eta_reweighted_up, _ = get_unfold_histogram_tuple(
+			# 	inputfile=file_for_etaReweight_up,
+			# 	variable=variable,
+			# 	channel=channel,
+			# 	centre_of_mass=13,
+			# 	load_fakes=False,
+			# 	visiblePS=True
+			# )
+
+			# measured_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionX('px',1))
+			# truth_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionY())
+
+			# _, _, response_eta_reweighted_down, _ = get_unfold_histogram_tuple(
+			# 	inputfile=file_for_etaReweight_down,
+			# 	variable=variable,
+			# 	channel=channel,
+			# 	centre_of_mass=13,
+			# 	load_fakes=False,
+			# 	visiblePS=True
+			# )
+
+			# measured_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionX('px',1))
+			# truth_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionY())
+
+			# Get the distributions for other MC models
+			_, _, response_amcatnlo, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_amcatnlo,
 				variable=variable,
 				channel=channel,
 				centre_of_mass=13,
@@ -74,11 +101,11 @@ def main():
 				visiblePS=True
 			)
 
-			measured_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionX('px',1))
-			truth_eta_reweighted_up = asrootpy(response_eta_reweighted_up.ProjectionY())
+			measured_amcatnlo = asrootpy(response_amcatnlo.ProjectionX('px',1))
+			truth_amcatnlo = asrootpy(response_amcatnlo.ProjectionY())
 
-			_, _, response_eta_reweighted_down, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_etaReweight_down,
+			_, _, response_powhegHerwig, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_powhegHerwig,
 				variable=variable,
 				channel=channel,
 				centre_of_mass=13,
@@ -86,8 +113,8 @@ def main():
 				visiblePS=True
 			)
 
-			measured_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionX('px',1))
-			truth_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionY())
+			measured_powhegHerwig = asrootpy(response_powhegHerwig.ProjectionX('px',1))
+			truth_powhegHerwig = asrootpy(response_powhegHerwig.ProjectionY())
 
 			# Get the data input (data after background subtraction, and fake removal)
 			file_for_data = file_for_data_template.format( variable = variable, channel = channel )
@@ -118,29 +145,39 @@ def main():
 			measured_central.Rebin(2)
 			measured_pt_reweighted_up.Rebin(2)
 			measured_pt_reweighted_down.Rebin(2)
-			measured_eta_reweighted_up.Rebin(2)
-			measured_eta_reweighted_down.Rebin(2)
+			# measured_eta_reweighted_up.Rebin(2)
+			# measured_eta_reweighted_down.Rebin(2)
+			measured_amcatnlo.Rebin(2)
+			measured_powhegHerwig.Rebin(2)
 			data.Rebin(2)
 
 			measured_central.Scale( 1 / measured_central.Integral() )
 			measured_pt_reweighted_up.Scale( 1 / measured_pt_reweighted_up.Integral() )
 			measured_pt_reweighted_down.Scale( 1 / measured_pt_reweighted_down.Integral() )
-			measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
-			measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
+			measured_amcatnlo.Scale( 1 / measured_amcatnlo.Integral() )
+			measured_powhegHerwig.Scale( 1 / measured_powhegHerwig.Integral() )
+
+			# measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
+			# measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
 
 			data.Scale( 1 / data.Integral() )
 
 			compare_measurements(
 				# models = {'Central' : measured_central, 'PtReweighted Up' : measured_pt_reweighted_up, 'PtReweighted Down' : measured_pt_reweighted_down, 'EtaReweighted Up' : measured_eta_reweighted_up, 'EtaReweighted Down' : measured_eta_reweighted_down},
-				models = {'Central' : measured_central, 'PtReweighted Up' : measured_pt_reweighted_up, 'PtReweighted Down' : measured_pt_reweighted_down},
+				models = OrderedDict([('Central' , measured_central), ('PtReweighted Up' , measured_pt_reweighted_up), ('PtReweighted Down' , measured_pt_reweighted_down), ('amc@nlo' , measured_amcatnlo), ('powhegHerwig' , measured_powhegHerwig) ] ),
 				measurements = {'Data' : data},
 				show_measurement_errors=True,
 				histogram_properties=hp,
 				save_folder='plots/unfolding/reweighting_check',
 				save_as=['pdf'],
-				show_ratio_for_pairs = { 'PtUpVsCentral' : [ measured_pt_reweighted_up, measured_central ], 
-										 'PtDownVsCentral' : [ measured_pt_reweighted_down, measured_central ],
-										 'DataVsCentral' : [data, measured_central] },
+                line_styles_for_models = ['solid','solid','solid','dashed','dashed'],
+				show_ratio_for_pairs = OrderedDict( [ 
+					('PtUpVsCentral' , [ measured_pt_reweighted_up, measured_central ] ),
+					('PtDownVsCentral' , [ measured_pt_reweighted_down, measured_central ] ),
+					('amcatnloVsCentral' , [ measured_amcatnlo, measured_central ] ),
+					('powhegHerwigVsCentral' , [ measured_powhegHerwig, measured_central ] ),
+					('DataVsCentral' , [data, measured_central] ) 
+					]),
 			)
 
 

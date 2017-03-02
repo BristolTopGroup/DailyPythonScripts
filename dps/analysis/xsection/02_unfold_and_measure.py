@@ -82,9 +82,9 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_ptreweight']          = File( measurement_config.unfolding_ptreweight, 'read' )
 
     unfolding_files['file_for_powhegPythia8']       = File( measurement_config.unfolding_powheg_pythia8, 'read')
-    # unfolding_files['file_for_amcatnlo']            = File( measurement_config.unfolding_amcatnlo, 'read')
+    unfolding_files['file_for_amcatnlo']            = File( measurement_config.unfolding_amcatnlo, 'read')
     # unfolding_files['file_for_amcatnlo_herwig']     = File( measurement_config.unfolding_amcatnlo_herwig, 'read')
-    # unfolding_files['file_for_madgraphMLM']         = File( measurement_config.unfolding_madgraphMLM, 'read')
+    unfolding_files['file_for_madgraphMLM']         = File( measurement_config.unfolding_madgraphMLM, 'read')
     unfolding_files['file_for_powheg_herwig']       = File( measurement_config.unfolding_powheg_herwig, 'read' )
     return unfolding_files
 
@@ -121,11 +121,14 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         covariance_matrix, correlation_matrix = unfolding.get_covariance_matrix()
 
         # Write covariance matrices
-        covariance_output_tempalte = '{path_to_DF}/central/covarianceMatrices/{cat}_{label}_{channel}.txt'
+        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/unfoldedNumberOfEvents/{cat}_{label}_{channel}.txt'
+        channelForOutputFile = channel
+        if channel == 'combined':
+            channelForOutputFile = 'combinedBeforeUnfolding'
         # Unfolded number of events
-        table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_unfoldedNormalisation' )
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Covariance', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( covariance_matrix, table_outfile)
-        table_outfile=covariance_output_tempalte.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_unfoldedNormalisation' )
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Correlation', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( correlation_matrix, table_outfile)
 
     del unfolding
@@ -281,16 +284,16 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
-        # h_truth_fsrdown, _, _, _ = get_unfold_histogram_tuple( 
-        #     inputfile = unfolding_files['file_for_fsrdown'],
-        #     variable = variable,
-        #     channel = channel,
-        #     centre_of_mass = com,
-        #     ttbar_xsection = ttbar_xsection,
-        #     luminosity = luminosity,
-        #     load_fakes = True,
-        #     visiblePS = visiblePS,
-        # )
+        h_truth_fsrdown, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['file_for_fsrdown'],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = com,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
         h_truth_fsrup, _, _, _ = get_unfold_histogram_tuple( 
             inputfile = unfolding_files['file_for_fsrup'],
             variable = variable,
@@ -352,26 +355,26 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
-        # h_truth_amcatnlo, _, _, _ = get_unfold_histogram_tuple( 
-        #     inputfile = unfolding_files['file_for_amcatnlo'],
-        #     variable = variable,
-        #     channel = channel,
-        #     centre_of_mass = com,
-        #     ttbar_xsection = ttbar_xsection,
-        #     luminosity = luminosity,
-        #     load_fakes = True,
-        #     visiblePS = visiblePS,
-        # )
-        # h_truth_madgraphMLM, _, _, _ = get_unfold_histogram_tuple( 
-        #     inputfile = unfolding_files['file_for_madgraphMLM'],
-        #     variable = variable,
-        #     channel = channel,
-        #     centre_of_mass = com,
-        #     ttbar_xsection = ttbar_xsection,
-        #     luminosity = luminosity,
-        #     load_fakes = True,
-        #     visiblePS = visiblePS,
-        # )
+        h_truth_amcatnlo, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['file_for_amcatnlo'],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = com,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+        h_truth_madgraphMLM, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['file_for_madgraphMLM'],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = com,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
         h_truth_powheg_herwig, _, _, _ = get_unfold_histogram_tuple( 
             inputfile = unfolding_files['file_for_powheg_herwig'],
             variable = variable,
@@ -385,22 +388,25 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
 
     
         normalisation_unfolded['powhegPythia8'] = hist_to_value_error_tuplelist( h_truth_powhegPythia8 )
-        # normalisation_unfolded['amcatnlo']      = hist_to_value_error_tuplelist( h_truth_amcatnlo )
-        # normalisation_unfolded['madgraphMLM']   = hist_to_value_error_tuplelist( h_truth_madgraphMLM )
+        normalisation_unfolded['amcatnlo']      = hist_to_value_error_tuplelist( h_truth_amcatnlo )
+        normalisation_unfolded['madgraphMLM']   = hist_to_value_error_tuplelist( h_truth_madgraphMLM )
         normalisation_unfolded['powhegHerwig']  = hist_to_value_error_tuplelist( h_truth_powheg_herwig )
 
         normalisation_unfolded['massdown']      = hist_to_value_error_tuplelist( h_truth_massdown )
         normalisation_unfolded['massup']        = hist_to_value_error_tuplelist( h_truth_massup )
         normalisation_unfolded['isrdown']       = hist_to_value_error_tuplelist( h_truth_isrdown )
         normalisation_unfolded['isrup']         = hist_to_value_error_tuplelist( h_truth_isrup )
-        # normalisation_unfolded['fsrdown']       = hist_to_value_error_tuplelist( h_truth_fsrdown )
+        normalisation_unfolded['fsrdown']       = hist_to_value_error_tuplelist( h_truth_fsrdown )
         normalisation_unfolded['fsrup']         = hist_to_value_error_tuplelist( h_truth_fsrup )
         normalisation_unfolded['uedown']        = hist_to_value_error_tuplelist( h_truth_uedown )
         normalisation_unfolded['ueup']          = hist_to_value_error_tuplelist( h_truth_ueup )
 
     # Write all normalisations in unfolded binning scheme to dataframes
     file_template = '{path_to_DF}/{category}/unfolded_normalisation_{channel}_{method}.txt'
-    write_02(normalisation_unfolded, file_template, path_to_DF, category, channel, method)
+    channelForOutputFile = channel
+    if channel == 'combined':
+        channelForOutputFile = 'combinedBeforeUnfolding'
+    write_02(normalisation_unfolded, file_template, path_to_DF, category, channelForOutputFile, method)
     return normalisation_unfolded, covariance_matrix
 
 
@@ -411,9 +417,9 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
     global variable, path_to_DF
 
     # calculate the x-sections
-    branching_ratio = 0.15
-    if 'combined' in channel:
-        branching_ratio = branching_ratio * 2
+    branching_ratio = 1
+    # if 'combined' in channel:
+    #     branching_ratio = branching_ratio * 2
 
     xsection_unfolded = {}
     xsection_unfolded['TTJet_measured'], _, _ = calculate_xsection( 
@@ -447,21 +453,24 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
             luminosity, 
             branching_ratio 
         )
-        # xsection_unfolded['amcatnlo'], _, _ = calculate_xsection( 
-        #     normalisation['amcatnlo'], 
-        #     luminosity, 
-        #     branching_ratio 
-        # )
+
+        xsection_unfolded['amcatnlo'], _, _ = calculate_xsection( 
+            normalisation['amcatnlo'], 
+            luminosity, 
+            branching_ratio 
+        )
+
         xsection_unfolded['powhegHerwig'], _, _ = calculate_xsection( 
             normalisation['powhegHerwig'], 
             luminosity, 
             branching_ratio 
         )
-        # xsection_unfolded['madgraphMLM'], _, _ = calculate_xsection( 
-        #     normalisation['madgraphMLM'], 
-        #     luminosity, 
-        #     branching_ratio 
-        # )
+
+        xsection_unfolded['madgraphMLM'], _, _ = calculate_xsection( 
+            normalisation['madgraphMLM'], 
+            luminosity, 
+            branching_ratio 
+        )
 
         xsection_unfolded['massdown'], _, _ = calculate_xsection( 
             normalisation['massdown'], 
@@ -483,11 +492,11 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
             luminosity, 
             branching_ratio 
         )
-        # xsection_unfolded['fsrdown'], _, _ = calculate_xsection( 
-            # normalisation['fsrdown'], 
-        #     luminosity, 
-        #     branching_ratio 
-        # )
+        xsection_unfolded['fsrdown'], _, _ = calculate_xsection( 
+            normalisation['fsrdown'], 
+            luminosity, 
+            branching_ratio 
+        )
         xsection_unfolded['fsrup'], _, _ = calculate_xsection( 
             normalisation['fsrup'], 
             luminosity, 
@@ -553,21 +562,21 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
             binWidths[variable], 
             normalise_to_one, 
         )
-        # normalised_xsection['amcatnlo'], _, _ = calculate_normalised_xsection( 
-        #     normalisation['amcatnlo'], 
-        #     binWidths[variable], 
-        #     normalise_to_one, 
-        # )
+        normalised_xsection['amcatnlo'], _, _ = calculate_normalised_xsection( 
+            normalisation['amcatnlo'], 
+            binWidths[variable], 
+            normalise_to_one, 
+        )
         normalised_xsection['powhegHerwig'], _, _ = calculate_normalised_xsection( 
             normalisation['powhegHerwig'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        # normalised_xsection['madgraphMLM'], _, _ = calculate_normalised_xsection( 
-        #     normalisation['madgraphMLM'], 
-        #     binWidths[variable], 
-        #     normalise_to_one, 
-        # )
+        normalised_xsection['madgraphMLM'], _, _ = calculate_normalised_xsection( 
+            normalisation['madgraphMLM'], 
+            binWidths[variable], 
+            normalise_to_one, 
+        )
 
         normalised_xsection['massdown'], _, _ = calculate_normalised_xsection( 
             normalisation['massdown'], 
@@ -589,11 +598,11 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
             binWidths[variable], 
             normalise_to_one, 
         )
-        # normalised_xsection['fsrdown'], _, _ = calculate_normalised_xsection( 
-        #     normalisation['fsrdown'], 
-        #     binWidths[variable], 
-        #     normalise_to_one, 
-        # )
+        normalised_xsection['fsrdown'], _, _ = calculate_normalised_xsection( 
+            normalisation['fsrdown'], 
+            binWidths[variable], 
+            normalise_to_one, 
+        )
         normalised_xsection['fsrup'], _, _ = calculate_normalised_xsection( 
             normalisation['fsrup'], 
             binWidths[variable], 
@@ -616,6 +625,7 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
     write_02(normalised_xsection, file_template, path_to_DF, category, channel, method)
 
 def write_02(tuple_out, f_temp, path_to_DF, category, channel, method):
+
     f = f_temp.format(
         path_to_DF = path_to_DF,
         category = category,

@@ -8,7 +8,7 @@ shallIwait() {
 }
 echo "This will take a while ... grab a coffee/tea/water"
 mkdir -p logs
-N_JOBS=4
+N_JOBS=2
 
 i=0
 

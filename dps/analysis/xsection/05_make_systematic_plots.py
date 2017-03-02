@@ -220,14 +220,14 @@ if __name__ == '__main__':
 	# 	print keys
 	# 	print measurement_config.rate_changing_systematics_values[keys].scale
 
-    unc_type = [
-        'normalised',
-        'absolute',
-    ]
+	unc_type = [
+		'normalised',
+		'absolute',
+	]
 
-	for channel in ['electron', 'muon', 'combined', 'combinedBeforeUnfolding']:  
+	for channel in ['electron', 'muon', 'combined']:  
 		if channel != 'combined':continue
-        for utype in unc_type:
+		for utype in unc_type:
 			input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_{type}_{channel}_{method}_summary_relative.txt'.format(
 				basepath = 	path,
 				com = 	com,

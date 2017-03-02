@@ -373,8 +373,10 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
         # TODO combine the signs....
 
     # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
-    del xsections_with_symmetrised_systematics['LightJet']
-    del xsections_with_symmetrised_systematics['TTJets_alphaS']
+    if 'LightJet' in xsections_with_symmetrised_systematics:
+        del xsections_with_symmetrised_systematics['LightJet']
+    if 'TTJets_alphaS' in xsections_with_symmetrised_systematics:
+        del xsections_with_symmetrised_systematics['TTJets_alphaS']
 
     return xsections_with_symmetrised_systematics           
 
@@ -602,7 +604,7 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
 
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
-    my_cmap = cm.get_cmap( 'jet' )
+    my_cmap = cm.get_cmap( 'bwr' )
 
     matrix_max = matrix.max()
     matrix_min = matrix.min()
@@ -613,7 +615,10 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     ax.set_aspect('equal')
-    plt.imshow(matrix, interpolation='nearest', cmap = my_cmap )
+    if label=='Correlation':
+        plt.imshow(matrix, interpolation='nearest', cmap = my_cmap, vmin = -1, vmax = 1 )
+    else:
+        plt.imshow(matrix, interpolation='nearest', cmap = my_cmap )
 
     plt.colorbar()
     plt.tight_layout()

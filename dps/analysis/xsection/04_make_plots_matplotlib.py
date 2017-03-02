@@ -73,17 +73,19 @@ def read_xsection_measurement_results( category, channel, unc_type ):
 
         # Add in distributions for the different MC to be shown
         h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
+        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
+        h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
         h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
-        # h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
-        # h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
+        h_normalised_xsection_massup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
+        h_normalised_xsection_massdown          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
 
         # And update
         histograms_normalised_xsection_different_generators.update( 
             {
                 'powhegPythia8'   : h_normalised_xsection_powhegPythia8,
+                'amcatnloPythia8' : h_normalised_xsection_amcatnlo,
+                'madgraphMLM'     : h_normalised_xsection_madgraphMLM,
                 'powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
-                # 'amcatnloPythia8' : h_normalised_xsection_amcatnlo,
-                # 'madgraphMLM'     : h_normalised_xsection_madgraphMLM,
             }
         )
 
@@ -165,7 +167,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         axes = plt.subplot( gs[0] )
     # Split into 2 for MC/Data ratio or generator Ratio and plot
     elif show_ratio or show_generator_ratio:
-        gs = gridspec.GridSpec( 2, 1, height_ratios = [5, 1] )
+        gs = gridspec.GridSpec( 2, 1, height_ratios = [4, 1] )
         axes = plt.subplot( gs[0] )
     # Just 1 for plot and setup x axis labels
     else:
@@ -189,7 +191,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
     # Set raw unfolded data with stat+unfolding uncertianty to be visible
     hist_data.visible = True
-
+    # axes.set_yscale('log')
     # Set raw unfolded data with systematic uncertianty to be visible
     # label = 'do_not_show' = do not show in legend
     if category == 'central':
@@ -374,10 +376,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         # Setting tick marks
         ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
         plt.tick_params( **CMS.axis_label_major )
-        if not variable in ['NJets']:
-            ax1.minorticks_on()
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
-            plt.tick_params( **CMS.axis_label_minor )
+        # if not variable in ['NJets']:
+        #     ax1.minorticks_on()
+        #     ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        #     plt.tick_params( **CMS.axis_label_minor )
 
         # x axis labels as before
         x_label = '${}$'.format(variables_latex[variable])
@@ -458,33 +460,35 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
         # Setting y limits and tick parameters
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.set_ylim( ymin = 0.4, ymax = 1.6 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
             ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'HT':
-            ax1.set_ylim( ymin = 0.8, ymax = 1.37 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.4 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.2 ) )
         elif variable == 'ST':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
+            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.3 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.5 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.125 ) )
         elif variable == 'NJets':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.5 )
+            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.125 ) )
         elif variable == 'abs_lepton_eta':
             ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
         elif variable == 'lepton_pt':
-            ax1.set_ylim( ymin = 0.8, ymax = 1.3 )
+            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 

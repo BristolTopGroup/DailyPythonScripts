@@ -1,6 +1,7 @@
 #!/bin/bash
 git_branch=master
-
+echo "Running on"
+echo `hostname`
 echo "Setting up DailyPythonScripts from tar file ..."
 echo "... getting ${git_branch} branch"
 >&2 echo "... getting ${git_branch} branch"

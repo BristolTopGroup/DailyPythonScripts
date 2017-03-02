@@ -4,6 +4,7 @@ Output = 01b.job.$(cluster).$(process).out
 Error = 01b.job.$(cluster).$(process).err
 Log = 01b.job.$(cluster).$(process).log
 arguments = $(process)
+Requirements = (!stringListMember(substr(Target.Machine, 0, 2), "sm,bs"))
 
 transfer_input_files = dps.tar
 should_transfer_files = YES

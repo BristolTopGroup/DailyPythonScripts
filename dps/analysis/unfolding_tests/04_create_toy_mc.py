@@ -47,7 +47,7 @@ def main():
     if options.sample == 'madgraph':
         input_file = measurement_config.unfolding_madgraphMLM
     elif options.sample == 'powhegPythia':
-        input_file = measurement_config.unfolding_central
+        input_file = measurement_config.unfolding_central_firstHalf
     elif options.sample == 'amcatnlo':
         input_file = measurement_config.unfolding_amcatnlo
 
