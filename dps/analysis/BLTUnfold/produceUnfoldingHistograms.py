@@ -375,16 +375,16 @@ def main():
                         maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
                         nBins = int(maxVar - minVar)
                         if variable is 'lepton_eta' or variable is 'bjets_eta':
-                            maxVar = 2.5
-                            minVar = -2.5
+                            maxVar = 2.4
+                            minVar = -2.4
                             nBins = 1000
                         elif 'abs' in variable and 'eta' in variable:
-                            maxVar = 3.0
+                            maxVar = 2.4
                             minVar = 0.
                             nBins = 1000
                         elif 'Rap' in variable:
-                            maxVar = 3.0
-                            minVar = -3.0
+                            maxVar = 2.4
+                            minVar = -2.4
                             nBins = 1000
                         elif 'NJets' in variable:
                             maxVar = 20.5
