@@ -8,7 +8,27 @@ create_covariance_matrix
 from copy import deepcopy
 from math import sqrt
 import numpy as np
+from dps.config.variable_binning import bin_edges_vis
+from dps.utils.file_utilities import make_folder_if_not_exists
+from dps.config import CMS
+from dps.config.xsection import XSectionConfig
+measurement_config = XSectionConfig( 13 )
+template = '%.1f fb$^{-1}$ (%d TeV)'
+title = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
 
+import matplotlib as mpl
+mpl.use( 'agg' )
+
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+my_cmap = cm.get_cmap( 'bwr' )
+import gc
+
+from memory_profiler import profile
+fp=open('memory_profiler.log','w+')
+
+
+@profile(stream=fp)
 def write_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
     '''
     Writes the list of normalised measurements and normalised unfolded measurements of the form: 
@@ -37,6 +57,7 @@ def write_xsection_measurement(options, measurement, measurement_unfolded, summa
     print("Data written to : ", output_file)
     return
 
+@profile(stream=fp)
 def write_systematic_xsection_measurement(options, systematic, total_syst, summary = '' ):
     '''
     Write systematics to a df.
@@ -90,6 +111,7 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     df_to_file(output_file, d_rel)
     return
 
+@profile(stream=fp)
 def append_PDF_uncertainties(all_systematics, minPdfWeight, maxPdfWeight):
     '''
     Replace 'PDF' entry in list of all systematics with actual PDF variations
@@ -100,7 +122,7 @@ def append_PDF_uncertainties(all_systematics, minPdfWeight, maxPdfWeight):
     all_systematics['PDF'] = variation
     return all_systematics
 
-
+@profile(stream=fp)
 def read_xsection_measurement(options, category):
     '''
     Returns the normalised measurement and normalised unfolded measurement for 
@@ -137,7 +159,7 @@ def read_xsection_measurement(options, category):
     xsection_unfolded = measurement['TTJet_unfolded']
     return xsection, xsection_unfolded  
 
-
+@profile(stream=fp)
 def read_xsection_systematics(options, variation, is_multiple_sources=False):
     '''
     Returns the list of normalised measurements and normalised unfolded measurements 
@@ -169,6 +191,7 @@ def read_xsection_systematics(options, variation, is_multiple_sources=False):
     return systematics, systematics_unf
 
 
+@profile(stream=fp)
 def get_systematic_measured_values_only(options, syst_xsecs_and_errs):
     '''
     When retreiveing systematic uncertainties they come in form [Value, Error]. 
@@ -181,7 +204,7 @@ def get_systematic_measured_values_only(options, syst_xsecs_and_errs):
             xsec_and_error[bin_i] = x_sec
     return syst_xsecs_and_errs
 
-
+@profile(stream=fp)
 def get_cross_sections(options, list_of_systematics):
     '''
     Returns the normalised cross section measurements for the given list of systematics
@@ -244,6 +267,7 @@ def get_cross_sections(options, list_of_systematics):
     return systematic_uncertainty_x_sections, unfolded_systematic_uncertainty_x_sections
 
 
+@profile(stream=fp)
 def get_scale_envelope(options, d_scale_syst):
     '''
     Calculate the scale envelope for the renormalisation/factorisation/combined systematic uncertainties
@@ -273,6 +297,7 @@ def get_scale_envelope(options, d_scale_syst):
     return envelope_down, envelope_up
 
 
+@profile(stream=fp)
 def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values):
     '''
     Returns the symmetrised PDF uncertainty. Finds the max of RMS 
@@ -307,6 +332,7 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     return pdf_sym, pdf_sign
 
 
+@profile(stream=fp)
 def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
     '''
     Returns the symmetrised uncertainties on the normalised cross sections.
@@ -381,6 +407,7 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
     return xsections_with_symmetrised_systematics           
 
 
+@profile(stream=fp)
 def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic=False ):
     '''
     Returns the symmetric error in each bin for a specific systematic and also the sign of the systematic.
@@ -419,6 +446,7 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
         sign_uncerts.append(sign)
     return symm_uncerts, sign_uncerts
 
+@profile(stream=fp)
 def scaleTopMassSystematic( upper_uncertainty, lower_uncertainty, topMasses, topMassUncertainty ):
     '''
     For the top mass systematic, scale the uncertainties to the actual top mass uncertainty.
@@ -445,6 +473,7 @@ def get_sign(central, upper, lower, upper_variation, lower_variation):
     elif ((lower_variation > upper_variation) and (lower < central) ): return 1
     else: return 0
 
+@profile(stream=fp)
 def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetrised_systematics):
     '''
     Returns the measurement with the total symmetrised systematic uncertainties 
@@ -475,6 +504,7 @@ def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetr
 # COVARIANCE MATRICES
 # ------------------------------------------------------------------------------------------------------------------
 
+@profile(stream=fp)
 def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
     '''
     Iterates through each group of systematics generating and plotting the covariance matrix of the systematic
@@ -527,6 +557,7 @@ def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
 
     return
 
+@profile(stream=fp)
 def generate_covariance_matrix(number_of_bins, systematic, sign):
     '''
     Variance_ii = (Unc_i) * (Unc_i)
@@ -550,6 +581,7 @@ def generate_covariance_matrix(number_of_bins, systematic, sign):
 
     return covariance_matrix, correlation_matrix
 
+@profile(stream=fp)
 def generate_total_covariance(options, all_covariances, all_correlations):
     '''
     Add covariances together for total covariance matrix
@@ -592,27 +624,20 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     make_covariance_plot( options, 'Total', cor_tot, label='Correlation' )
     return
 
+@profile(stream=fp)
 def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):    
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
     Saves to plots/covariance_matrices/{PhaseSpace}/{Channel}/{Variable}/
     '''
-    from dps.config.variable_binning import bin_edges_vis
-    from dps.utils.file_utilities import make_folder_if_not_exists
-    import matplotlib as mpl
-    mpl.use( 'agg' )
-
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
-    my_cmap = cm.get_cmap( 'bwr' )
-
     matrix_max = matrix.max()
     matrix_min = matrix.min()
 
     if( matrix_max == 0):
         return
 
-    fig = plt.figure()
+    # fig = plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    fig = plt.figure( )
     ax = fig.add_subplot(1,1,1)
     ax.set_aspect('equal')
     if label=='Correlation':
@@ -620,9 +645,13 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
     else:
         plt.imshow(matrix, interpolation='nearest', cmap = my_cmap )
 
+    # plt.title( title,loc='right', **CMS.title )
+    # plt.xlabel( '$Bin_{i}$', CMS.x_axis_title )
+    # plt.ylabel( '$Bin_{j}$', CMS.x_axis_title )
+    # plt.tick_params( **CMS.axis_label_major )
+    # plt.tick_params( **CMS.axis_label_minor ) 
     plt.colorbar()
     plt.tight_layout()
-    plt.show()
 
     variable = options['variable']
     channel = options['channel']
@@ -639,12 +668,16 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
         )
     make_folder_if_not_exists(covariance_matrix_output_path)
     plt.savefig(covariance_matrix_output_path+syst_name+'_'+label+'_matrix.pdf')
+    fig.clf()
+    plt.close()
+    gc.collect()
 
 
 # ------------------------------------------------------------------------------------------------------------------
 # HELPER
 # ------------------------------------------------------------------------------------------------------------------
 
+@profile(stream=fp)
 def print_dictionary(title, dictionary_to_print):
     '''
     Prints dictionaries in a nicer form
