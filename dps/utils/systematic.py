@@ -373,8 +373,10 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
         # TODO combine the signs....
 
     # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
-    del xsections_with_symmetrised_systematics['LightJet']
-    del xsections_with_symmetrised_systematics['TTJets_alphaS']
+    if 'LightJet' in xsections_with_symmetrised_systematics:
+        del xsections_with_symmetrised_systematics['LightJet']
+    if 'TTJets_alphaS' in xsections_with_symmetrised_systematics:
+        del xsections_with_symmetrised_systematics['TTJets_alphaS']
 
     return xsections_with_symmetrised_systematics           
 
