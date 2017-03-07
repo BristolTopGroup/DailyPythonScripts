@@ -19,7 +19,12 @@ def make_folder_if_not_exists(folder):
             os.makedirs(folder)
         except:
             print "Could not create a folder ", folder
-        
+
+def get_filename_without_extension(filename_with_path):
+    filename = os.path.basename(filename_with_path)
+    filename_without_extension = os.path.splitext(filename)[0]
+    return filename_without_extension
+
 def write_string_to_file(string, filename):
     path = get_path(filename)
     make_folder_if_not_exists(path)
@@ -56,7 +61,6 @@ def get_files_in_path(path, file_ending = '.root'):
     Return the files for a given path
     '''
     input_files=[]
-    print path
     if os.path.exists(path):
         for root, dirs, files in os.walk(path):
             for name in files:
