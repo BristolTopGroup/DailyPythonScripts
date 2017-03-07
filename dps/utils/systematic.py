@@ -37,44 +37,44 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     '''
     Write systematics to a df.
     '''
-    path_to_DF=options['path_to_DF']
-    method=options['method']
-    channel=options['channel']
-    norm=options['normalisation_type']
+    path_to_DF  = options['path_to_DF']
+    method      = options['method']
+    channel     = options['channel']
+    norm        = options['normalisation_type']
 
     output_file_temp = '{path_to_DF}/central/xsection_{norm}_{channel}_{method}_summary_{unctype}.txt'
     output_file = output_file_temp.format(
-        path_to_DF = path_to_DF,
-        channel = channel,
-        method = method,
-        norm = norm,
-        unctype = 'absolute',
+        path_to_DF  = path_to_DF,
+        channel     = channel,
+        method      = method,
+        norm        = norm,
+        unctype     = 'absolute',
     )
  
-    stats = [stat for value, stat in systematic['central']]
-    central = [value for value, stat in systematic['central']]
-    syst_total = [syst1 for value, syst1, syst2 in total_syst]
+    stats       = [stat  for value, stat in systematic['central']]
+    central     = [value for value, stat in systematic['central']]
+    syst_total  = [syst1 for value, syst1, syst2 in total_syst]
     del systematic['central']
 
     # Strip signs from dictionary and create dict of Series
     all_uncertainties = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
     # Add the statistical uncertainties
-    all_uncertainties['statistical'] = list_to_series( stats )
+    all_uncertainties['statistical']    = list_to_series( stats )
     # Add the central measurement
-    all_uncertainties['central'] = list_to_series( central )
+    all_uncertainties['central']        = list_to_series( central )
     # Add the total systematic
-    all_uncertainties['systematic'] = list_to_series( syst_total )
+    all_uncertainties['systematic']     = list_to_series( syst_total )
     # Output to absolute file
     d_abs = dict_to_df(all_uncertainties)
     df_to_file(output_file, d_abs)
 
     # Create Relative Uncertainties
     output_file = output_file_temp.format(
-        path_to_DF = path_to_DF,
-        channel = channel,
-        method = method,
-        norm = norm,
-        unctype = 'relative',
+        path_to_DF  = path_to_DF,
+        channel     = channel,
+        method      = method,
+        norm        = norm,
+        unctype     = 'relative',
     )
     for uncertainty, vals in all_uncertainties.iteritems():
         if uncertainty == 'central': continue
@@ -115,24 +115,23 @@ def read_xsection_measurement(options, category):
     # Disregarding Met Uncertainties if variable does not use MET
     if (category in met_specific_systematics) and (variable in variables_no_met):
         filename = filename.format(
-            path = path_to_DF,
-            channel = channel,
-            category = 'central',
-            method = method,
-            norm = norm,
+            path        = path_to_DF,
+            channel     = channel,
+            category    = 'central',
+            method      = method,
+            norm        = norm,
         )
     else:
         filename = filename.format(
-            path = path_to_DF,
-            channel = channel,
-            category = category,
-            method = method,
-            norm = norm,
+            path        = path_to_DF,
+            channel     = channel,
+            category    = category,
+            method      = method,
+            norm        = norm,
         )
     measurement = read_tuple_from_file( filename )
-    xsection = measurement['TTJet_measured_withoutFakes']
     xsection_unfolded = measurement['TTJet_unfolded']
-    return xsection, xsection_unfolded  
+    return xsection_unfolded  
 
 # @profile(stream=fp)
 def read_xsection_systematics(options, variation, is_multiple_sources=False):
@@ -143,27 +142,22 @@ def read_xsection_systematics(options, variation, is_multiple_sources=False):
     variation: current systematic (BJet, PDF etc)
     is_multiple_sources: is variation composed of multiple sources? (PDF : PDFWeight1, ...)
     '''
-    systematics = {}
     systematics_unf = {}
 
     if is_multiple_sources:
         for source in variation:
-            src, src_unf = read_xsection_measurement(options, source)
-            systematics[source] = src
+            src_unf = read_xsection_measurement(options, source)
             systematics_unf[source] = src_unf  
     else:
         upper_variation = variation[0]
         lower_variation = variation[1]
-        systematic_up, systematic_up_unf = read_xsection_measurement(options, upper_variation)
-        systematic_down, systematic_down_unf = read_xsection_measurement(options, lower_variation)
-        systematics['lower'] = systematic_down
-        systematics['upper'] = systematic_up        
+        systematic_up_unf = read_xsection_measurement(options, upper_variation)
+        systematic_down_unf = read_xsection_measurement(options, lower_variation)     
         systematics_unf['lower'] = systematic_down_unf
         systematics_unf['upper'] = systematic_up_unf
 
-    systematics = get_systematic_measured_values_only(options, systematics)   
     systematics_unf = get_systematic_measured_values_only(options, systematics_unf)   
-    return systematics, systematics_unf
+    return systematics_unf
 
 
 # @profile(stream=fp)
@@ -199,47 +193,32 @@ def get_cross_sections(options, list_of_systematics):
     For PDF there is an additional nest for each variation
     '''
     # Copy structure of the systmatic lists in order to replace systematic name with their normailsed x sections
-    systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
     unfolded_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
-
-    central_measurement, central_measurement_unfolded = read_xsection_measurement(options, 'central')
-    systematic_uncertainty_x_sections['central'] = central_measurement
+    central_measurement_unfolded = read_xsection_measurement(options, 'central')
     unfolded_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
 
     for systematic, variation in list_of_systematics.iteritems():
         if (systematic == 'PDF'):
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
-            systematic_uncertainty_x_sections[systematic] = []
+            unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
             unfolded_systematic_uncertainty_x_sections[systematic] = []
-            for weight, vals in syst_unc_x_sec.iteritems():
-                systematic_uncertainty_x_sections[systematic].append([weight, vals])
             for weight, vals in unf_syst_unc_x_sec.iteritems():
                 unfolded_systematic_uncertainty_x_sections[systematic].append([weight, vals])
 
-        elif (systematic == 'TTJets_envelope'):
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
-            env_lower, env_upper = get_scale_envelope(options, syst_unc_x_sec)
+        elif (systematic == 'TTJets_scale'):
+            unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
             unf_env_lower, unf_env_upper = get_scale_envelope(options, unf_syst_unc_x_sec)
-            systematic_uncertainty_x_sections[systematic] = [
-                env_lower,
-                env_upper,
-            ]
             unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_env_lower,
                 unf_env_upper,
             ]
         else :
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation)
-            systematic_uncertainty_x_sections[systematic] = [
-                syst_unc_x_sec['upper'], 
-                syst_unc_x_sec['lower'],
-            ]
+            unf_syst_unc_x_sec = read_xsection_systematics(options, variation)
             unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_syst_unc_x_sec['upper'], 
                 unf_syst_unc_x_sec['lower'],
             ]
 
-    return systematic_uncertainty_x_sections, unfolded_systematic_uncertainty_x_sections
+    return unfolded_systematic_uncertainty_x_sections
 
 
 # @profile(stream=fp)

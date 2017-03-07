@@ -127,7 +127,7 @@ if __name__ == '__main__':
             args['channel'] = ch
             args['normalisation_type'] = utype
             # Retreive the normalised cross sections, for all groups in list_of_systematics.
-            systematic_uncertainty, unfolded_systematic_uncertainty = get_cross_sections(
+            unfolded_systematic_uncertainty = get_cross_sections(
                 args, 
                 list_of_systematics
             )
