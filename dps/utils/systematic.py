@@ -8,77 +8,73 @@ create_covariance_matrix
 from copy import deepcopy
 from math import sqrt
 import numpy as np
+from dps.config.variable_binning import bin_edges_vis
+from dps.utils.file_utilities import make_folder_if_not_exists
+from dps.config import CMS
+from dps.config.latex_labels import variables_latex, variables_NonLatex
+from dps.config.xsection import XSectionConfig
+measurement_config = XSectionConfig( 13 )
+template = '%.1f fb$^{-1}$ (%d TeV)'
+title = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
 
-def write_xsection_measurement(options, measurement, measurement_unfolded, summary = '' ):
-    '''
-    Writes the list of normalised measurements and normalised unfolded measurements of the form: 
-    [Central Value, Lower Systemtic, Upper Systematic] to a json. Different combinations of 
-    systematic uncertainty are stored as different json by appending different 'summary'
-    '''
-    path_to_DF=options['path_to_DF']
-    method=options['method']
-    channel=options['channel']
-    norm=options['normalisation_type']
+import matplotlib as mpl
+mpl.use( 'agg' )
 
-    output_file = '{path_to_DF}/central/xsection_{norm}_{channel}_{method}_with_errors.txt'
-    output_file = output_file.format(
-        path_to_DF = path_to_DF,
-        channel = channel,
-        method = method,
-        norm = norm,
-    )
-    if not summary == '':
-        output_file = output_file.replace( 'with_errors', summary + '_errors' )
-    
-    output = {'TTJet_measured':measurement, 'TTJet_unfolded': measurement_unfolded}
-    
-    write_data_to_JSON( output, output_file )
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+my_cmap = cm.get_cmap( 'bwr' )
+import gc
 
-    print("Data written to : ", output_file)
-    return
+from matplotlib import rc
+rc( 'font', **CMS.font )
+rc( 'text', usetex = True )
 
+# from memory_profiler import profile
+# fp=open('memory_profiler.log','w')
+
+# @profile(stream=fp)
 def write_systematic_xsection_measurement(options, systematic, total_syst, summary = '' ):
     '''
     Write systematics to a df.
     '''
-    path_to_DF=options['path_to_DF']
-    method=options['method']
-    channel=options['channel']
-    norm=options['normalisation_type']
+    path_to_DF  = options['path_to_DF']
+    method      = options['method']
+    channel     = options['channel']
+    norm        = options['normalisation_type']
 
     output_file_temp = '{path_to_DF}/central/xsection_{norm}_{channel}_{method}_summary_{unctype}.txt'
     output_file = output_file_temp.format(
-        path_to_DF = path_to_DF,
-        channel = channel,
-        method = method,
-        norm = norm,
-        unctype = 'absolute',
+        path_to_DF  = path_to_DF,
+        channel     = channel,
+        method      = method,
+        norm        = norm,
+        unctype     = 'absolute',
     )
  
-    stats = [stat for value, stat in systematic['central']]
-    central = [value for value, stat in systematic['central']]
-    syst_total = [syst1 for value, syst1, syst2 in total_syst]
+    stats       = [stat  for value, stat in systematic['central']]
+    central     = [value for value, stat in systematic['central']]
+    syst_total  = [syst1 for value, syst1, syst2 in total_syst]
     del systematic['central']
 
     # Strip signs from dictionary and create dict of Series
     all_uncertainties = {syst : list_to_series( vals[0] ) for syst, vals in systematic.iteritems()}
     # Add the statistical uncertainties
-    all_uncertainties['statistical'] = list_to_series( stats )
+    all_uncertainties['statistical']    = list_to_series( stats )
     # Add the central measurement
-    all_uncertainties['central'] = list_to_series( central )
+    all_uncertainties['central']        = list_to_series( central )
     # Add the total systematic
-    all_uncertainties['systematic'] = list_to_series( syst_total )
+    all_uncertainties['systematic']     = list_to_series( syst_total )
     # Output to absolute file
     d_abs = dict_to_df(all_uncertainties)
     df_to_file(output_file, d_abs)
 
     # Create Relative Uncertainties
     output_file = output_file_temp.format(
-        path_to_DF = path_to_DF,
-        channel = channel,
-        method = method,
-        norm = norm,
-        unctype = 'relative',
+        path_to_DF  = path_to_DF,
+        channel     = channel,
+        method      = method,
+        norm        = norm,
+        unctype     = 'relative',
     )
     for uncertainty, vals in all_uncertainties.iteritems():
         if uncertainty == 'central': continue
@@ -90,6 +86,7 @@ def write_systematic_xsection_measurement(options, systematic, total_syst, summa
     df_to_file(output_file, d_rel)
     return
 
+# @profile(stream=fp)
 def append_PDF_uncertainties(all_systematics, minPdfWeight, maxPdfWeight):
     '''
     Replace 'PDF' entry in list of all systematics with actual PDF variations
@@ -100,7 +97,7 @@ def append_PDF_uncertainties(all_systematics, minPdfWeight, maxPdfWeight):
     all_systematics['PDF'] = variation
     return all_systematics
 
-
+# @profile(stream=fp)
 def read_xsection_measurement(options, category):
     '''
     Returns the normalised measurement and normalised unfolded measurement for 
@@ -118,26 +115,25 @@ def read_xsection_measurement(options, category):
     # Disregarding Met Uncertainties if variable does not use MET
     if (category in met_specific_systematics) and (variable in variables_no_met):
         filename = filename.format(
-            path = path_to_DF,
-            channel = channel,
-            category = 'central',
-            method = method,
-            norm = norm,
+            path        = path_to_DF,
+            channel     = channel,
+            category    = 'central',
+            method      = method,
+            norm        = norm,
         )
     else:
         filename = filename.format(
-            path = path_to_DF,
-            channel = channel,
-            category = category,
-            method = method,
-            norm = norm,
+            path        = path_to_DF,
+            channel     = channel,
+            category    = category,
+            method      = method,
+            norm        = norm,
         )
     measurement = read_tuple_from_file( filename )
-    xsection = measurement['TTJet_measured_withoutFakes']
     xsection_unfolded = measurement['TTJet_unfolded']
-    return xsection, xsection_unfolded  
+    return xsection_unfolded  
 
-
+# @profile(stream=fp)
 def read_xsection_systematics(options, variation, is_multiple_sources=False):
     '''
     Returns the list of normalised measurements and normalised unfolded measurements 
@@ -146,29 +142,25 @@ def read_xsection_systematics(options, variation, is_multiple_sources=False):
     variation: current systematic (BJet, PDF etc)
     is_multiple_sources: is variation composed of multiple sources? (PDF : PDFWeight1, ...)
     '''
-    systematics = {}
     systematics_unf = {}
 
     if is_multiple_sources:
         for source in variation:
-            src, src_unf = read_xsection_measurement(options, source)
-            systematics[source] = src
+            src_unf = read_xsection_measurement(options, source)
             systematics_unf[source] = src_unf  
     else:
         upper_variation = variation[0]
         lower_variation = variation[1]
-        systematic_up, systematic_up_unf = read_xsection_measurement(options, upper_variation)
-        systematic_down, systematic_down_unf = read_xsection_measurement(options, lower_variation)
-        systematics['lower'] = systematic_down
-        systematics['upper'] = systematic_up        
+        systematic_up_unf = read_xsection_measurement(options, upper_variation)
+        systematic_down_unf = read_xsection_measurement(options, lower_variation)     
         systematics_unf['lower'] = systematic_down_unf
         systematics_unf['upper'] = systematic_up_unf
 
-    systematics = get_systematic_measured_values_only(options, systematics)   
     systematics_unf = get_systematic_measured_values_only(options, systematics_unf)   
-    return systematics, systematics_unf
+    return systematics_unf
 
 
+# @profile(stream=fp)
 def get_systematic_measured_values_only(options, syst_xsecs_and_errs):
     '''
     When retreiveing systematic uncertainties they come in form [Value, Error]. 
@@ -181,7 +173,7 @@ def get_systematic_measured_values_only(options, syst_xsecs_and_errs):
             xsec_and_error[bin_i] = x_sec
     return syst_xsecs_and_errs
 
-
+# @profile(stream=fp)
 def get_cross_sections(options, list_of_systematics):
     '''
     Returns the normalised cross section measurements for the given list of systematics
@@ -201,49 +193,35 @@ def get_cross_sections(options, list_of_systematics):
     For PDF there is an additional nest for each variation
     '''
     # Copy structure of the systmatic lists in order to replace systematic name with their normailsed x sections
-    systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
     unfolded_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
-
-    central_measurement, central_measurement_unfolded = read_xsection_measurement(options, 'central')
-    systematic_uncertainty_x_sections['central'] = central_measurement
+    central_measurement_unfolded = read_xsection_measurement(options, 'central')
     unfolded_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
 
     for systematic, variation in list_of_systematics.iteritems():
         if (systematic == 'PDF'):
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
-            systematic_uncertainty_x_sections[systematic] = []
+            unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
             unfolded_systematic_uncertainty_x_sections[systematic] = []
-            for weight, vals in syst_unc_x_sec.iteritems():
-                systematic_uncertainty_x_sections[systematic].append([weight, vals])
             for weight, vals in unf_syst_unc_x_sec.iteritems():
                 unfolded_systematic_uncertainty_x_sections[systematic].append([weight, vals])
 
-        elif (systematic == 'TTJets_envelope'):
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
-            env_lower, env_upper = get_scale_envelope(options, syst_unc_x_sec)
+        elif (systematic == 'TTJets_scale'):
+            unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
             unf_env_lower, unf_env_upper = get_scale_envelope(options, unf_syst_unc_x_sec)
-            systematic_uncertainty_x_sections[systematic] = [
-                env_lower,
-                env_upper,
-            ]
             unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_env_lower,
                 unf_env_upper,
             ]
         else :
-            syst_unc_x_sec, unf_syst_unc_x_sec = read_xsection_systematics(options, variation)
-            systematic_uncertainty_x_sections[systematic] = [
-                syst_unc_x_sec['upper'], 
-                syst_unc_x_sec['lower'],
-            ]
+            unf_syst_unc_x_sec = read_xsection_systematics(options, variation)
             unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_syst_unc_x_sec['upper'], 
                 unf_syst_unc_x_sec['lower'],
             ]
 
-    return systematic_uncertainty_x_sections, unfolded_systematic_uncertainty_x_sections
+    return unfolded_systematic_uncertainty_x_sections
 
 
+# @profile(stream=fp)
 def get_scale_envelope(options, d_scale_syst):
     '''
     Calculate the scale envelope for the renormalisation/factorisation/combined systematic uncertainties
@@ -273,6 +251,7 @@ def get_scale_envelope(options, d_scale_syst):
     return envelope_down, envelope_up
 
 
+# @profile(stream=fp)
 def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values):
     '''
     Returns the symmetrised PDF uncertainty. Finds the max of RMS 
@@ -307,6 +286,7 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
     return pdf_sym, pdf_sign
 
 
+# @profile(stream=fp)
 def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
     '''
     Returns the symmetrised uncertainties on the normalised cross sections.
@@ -381,6 +361,7 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
     return xsections_with_symmetrised_systematics           
 
 
+# @profile(stream=fp)
 def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic=False ):
     '''
     Returns the symmetric error in each bin for a specific systematic and also the sign of the systematic.
@@ -419,6 +400,7 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
         sign_uncerts.append(sign)
     return symm_uncerts, sign_uncerts
 
+# @profile(stream=fp)
 def scaleTopMassSystematic( upper_uncertainty, lower_uncertainty, topMasses, topMassUncertainty ):
     '''
     For the top mass systematic, scale the uncertainties to the actual top mass uncertainty.
@@ -445,6 +427,7 @@ def get_sign(central, upper, lower, upper_variation, lower_variation):
     elif ((lower_variation > upper_variation) and (lower < central) ): return 1
     else: return 0
 
+# @profile(stream=fp)
 def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetrised_systematics):
     '''
     Returns the measurement with the total symmetrised systematic uncertainties 
@@ -475,6 +458,7 @@ def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetr
 # COVARIANCE MATRICES
 # ------------------------------------------------------------------------------------------------------------------
 
+# @profile(stream=fp)
 def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
     '''
     Iterates through each group of systematics generating and plotting the covariance matrix of the systematic
@@ -527,6 +511,7 @@ def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
 
     return
 
+# @profile(stream=fp)
 def generate_covariance_matrix(number_of_bins, systematic, sign):
     '''
     Variance_ii = (Unc_i) * (Unc_i)
@@ -550,6 +535,7 @@ def generate_covariance_matrix(number_of_bins, systematic, sign):
 
     return covariance_matrix, correlation_matrix
 
+# @profile(stream=fp)
 def generate_total_covariance(options, all_covariances, all_correlations):
     '''
     Add covariances together for total covariance matrix
@@ -592,19 +578,16 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     make_covariance_plot( options, 'Total', cor_tot, label='Correlation' )
     return
 
+# @profile(stream=fp)
 def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):    
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
     Saves to plots/covariance_matrices/{PhaseSpace}/{Channel}/{Variable}/
     '''
-    from dps.config.variable_binning import bin_edges_vis
-    from dps.utils.file_utilities import make_folder_if_not_exists
-    import matplotlib as mpl
-    mpl.use( 'agg' )
-
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
-    my_cmap = cm.get_cmap( 'bwr' )
+    variable = options['variable']
+    channel = options['channel']
+    phase_space = options['phase_space']
+    norm=options['normalisation_type']
 
     matrix_max = matrix.max()
     matrix_min = matrix.min()
@@ -612,22 +595,30 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
     if( matrix_max == 0):
         return
 
-    fig = plt.figure()
+    fig = plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    # fig = plt.figure( )
     ax = fig.add_subplot(1,1,1)
     ax.set_aspect('equal')
     if label=='Correlation':
-        plt.imshow(matrix, interpolation='nearest', cmap = my_cmap, vmin = -1, vmax = 1 )
+        im=plt.imshow(matrix, interpolation='nearest', cmap = my_cmap, vmin = -1, vmax = 1 )
     else:
-        plt.imshow(matrix, interpolation='nearest', cmap = my_cmap )
+        im=plt.imshow(matrix, interpolation='nearest', cmap = my_cmap )
 
-    plt.colorbar()
+    plt_title = variables_latex[variable]+' '+title
+    if variable in ['HT', 'MET', 'WPT', 'ST', 'lepton_pt']:
+        plt_title += ' [GeV]'
+
+    ax.invert_yaxis()
+
+    x_title = 'Bin i'
+    y_title = 'Bin j'
+    plt.title( plt_title,loc='right', **CMS.title )
+    plt.xlabel( x_title, CMS.x_axis_title )
+    plt.ylabel( y_title, CMS.y_axis_title )
+    plt.tick_params( **CMS.axis_label_major )
+    plt.tick_params( **CMS.axis_label_minor ) 
+    plt.colorbar(im,fraction=0.046, pad=0.04)
     plt.tight_layout()
-    plt.show()
-
-    variable = options['variable']
-    channel = options['channel']
-    phase_space = options['phase_space']
-    norm=options['normalisation_type']
 
     # Output folder of covariance matrices
     covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{channel}/{variable}/{norm}/'
@@ -639,12 +630,16 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
         )
     make_folder_if_not_exists(covariance_matrix_output_path)
     plt.savefig(covariance_matrix_output_path+syst_name+'_'+label+'_matrix.pdf')
+    fig.clf()
+    plt.close()
+    gc.collect()
 
 
 # ------------------------------------------------------------------------------------------------------------------
 # HELPER
 # ------------------------------------------------------------------------------------------------------------------
 
+# @profile(stream=fp)
 def print_dictionary(title, dictionary_to_print):
     '''
     Prints dictionaries in a nicer form

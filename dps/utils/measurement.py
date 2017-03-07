@@ -25,8 +25,10 @@ class Measurement():
         self.com            = None
         self.channel        = None
         self.name           = None
+        self.t_factor       = None
         self.is_normalised  = False
         self.central        = False
+        self.output_folder  = 'data/normalisation/background_subtraction/{com}TeV/{var}/{ps}/{cat}/'
         self.samples        = {}
         self.__setFromConfig()
 
@@ -101,6 +103,7 @@ class Measurement():
 
         # Replace QCD histogram with datadriven one
         self.histograms['QCD'] = data_driven_qcd
+        self.t_factor = transfer_factor
         return
 
     def __return_histogram(self, d_hist_info, ignoreUnderflow=True, useQCDControl=False, useQCDSystematicControl=False):
@@ -205,13 +208,12 @@ class Measurement():
         # If normalisation hasnt been calculated  - then go calculate it!
         if not self.is_normalised: self.calculate_normalisation()
 
-        output_folder = 'data/normalisation/background_subtraction/{com}TeV/{var}/{ps}/{cat}/'
-        output_folder = output_folder.format(
+        output_folder = self.output_folder.format(
             com = self.com,
             var = self.variable,
             ps  = phase_space,
             cat = self.name,
-            )
+        )
         make_folder_if_not_exists(output_folder)
 
         file_template = '{type}_{channel}.txt'
@@ -226,17 +228,3 @@ class Measurement():
         )
         return 
 
-    def combine(self, other):
-        '''
-        Combines the electron and muon measurements
-        '''
-        from dps.utils.Calculation import combine_complex_results
-        if not self.is_normalised or not other.is_normalised:
-            mylog.warn(
-                'One of the TTJetNormalisations does not have a normalisation, aborting.')
-            return
-
-        self.normalisation = combine_complex_results(
-            self.normalisation, other.normalisation)
-        self.channel = 'combined'
-        return

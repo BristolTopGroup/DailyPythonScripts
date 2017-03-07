@@ -269,7 +269,7 @@ class XSectionConfig():
             'TTJets_hadronisation'      : ['TTJets_hadronisation', 'TTJets_hadronisation'],
             'TTJets_ue'                 : ['TTJets_ueup', 'TTJets_uedown'],
             'TTJets_topPt'              : ['TTJets_topPt', 'TTJets_topPt'],
-            'TTJets_envelope'           : ['TTJets_factorisationup', 'TTJets_factorisationdown',
+            'TTJets_scale'              : ['TTJets_factorisationup', 'TTJets_factorisationdown',
                                             'TTJets_renormalisationup', 'TTJets_renormalisationdown',
                                             'TTJets_combinedup', 'TTJets_combineddown',
                                             'TTJets_fsrup', 'TTJets_fsrdown',
