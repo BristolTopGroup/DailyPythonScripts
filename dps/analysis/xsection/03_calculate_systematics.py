@@ -22,7 +22,6 @@ from dps.utils.systematic import append_PDF_uncertainties, print_dictionary,\
     get_cross_sections, get_symmetrised_systematic_uncertainty,\
     generate_covariance_matrices,\
     get_measurement_with_total_systematic_uncertainty,\
-    write_xsection_measurement,\
     write_systematic_xsection_measurement
 
 def parse_arguments():
