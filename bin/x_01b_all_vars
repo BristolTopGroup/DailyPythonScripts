@@ -6,23 +6,8 @@ N_JOBS=4
 
 i=0
 for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
-	echo "Fitting distribution: $var"
-	nohup time python dps/analysis/xsection/01_get_ttjet_normalisation.py -v $var -i config/measurements/background_subtraction &> logs/01_${var}_bgs_13TeV_fullPS.log &
-	let i+=1
-	if (( $i % N_JOBS == 0 ))
-	then
-		echo "Waiting on the above to finish."
-    	wait;
-	fi
-done
-
-wait;
-for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
-	echo "Fitting distribution: $var"
-	# since we use the same bins in both full and visible phase space, the normalisation result will be identical
-	mkdir -p data/normalisation/background_subtraction/13TeV/$var/VisiblePS
-	cp -r data/normalisation/background_subtraction/13TeV/$var/FullPS/* data/normalisation/background_subtraction/13TeV/$var/VisiblePS/.
-	#nohup time python dps/analysis/xsection/01_get_ttjet_normalisation.py -v $var -i config/measurements/background_subtraction --visiblePS &> logs/01_${var}_bgs_13TeV_visiblePS.log &
+	echo "Getting ttbar normalisation: $var"
+	nohup time python dps/analysis/xsection/01_get_ttjet_normalisation.py -v $var --visiblePS &> logs/01_${var}_bgs_13TeV_fullPS.log &
 	let i+=1
 	if (( $i % N_JOBS == 0 ))
 	then
