@@ -2,7 +2,7 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.3/atOutput/combined/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.4/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:35900}
@@ -148,10 +148,8 @@ class XSectionConfig():
         self.middle = '_' + str( self.luminosity ) + 'pb_PFElectron_PFMuon_PF2PATJets_PFMET'
         middle = self.middle
 
-        # self.data_file_muon = path_to_files + 'data_muon_tree.root'
-        # self.data_file_electron = path_to_files + 'data_electron_tree.root'
-        self.data_file_muon = '/hdfs/TopQuarkGroup/ec6821/1.0.0/atOutput/combined/data_muon_tree.root'
-        self.data_file_electron = '/hdfs/TopQuarkGroup/ec6821/1.0.0/atOutput/combined/data_electron_tree.root'
+        self.data_file_muon = path_to_files + 'data_muon_tree.root'
+        self.data_file_electron = path_to_files + 'data_electron_tree.root'
 
         self.higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
@@ -228,6 +226,9 @@ class XSectionConfig():
 
             'QCD_cross_section', 
             'QCD_shape',
+
+            'QCD_other_control_region',
+            'QCD_signal_MC'
         ]
 
         # Rename to generator_measurements?
