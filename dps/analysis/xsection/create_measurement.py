@@ -216,20 +216,20 @@ def get_sample_info(options, xsec_config, sample):
         # Lepton Weights
         # Lepton weights for nonisolated leptons are removed in measurement.py
         # The lepton sf are not derived for non isolated leptons
-        # if options['channel'] == 'muon':
-        #     if options['category'] == 'Muon_down':
-        #         weight_branches.append('MuonDown')
-        #     elif options['category'] == 'Muon_up':
-        #         weight_branches.append('MuonUp')
-        #     else:
-        #         weight_branches.append('MuonEfficiencyCorrection')
-        # elif options['channel'] == 'electron':
-        #     if options['category'] == 'Electron_down':
-        #         weight_branches.append('ElectronDown')
-        #     elif options['category'] == 'Electron_up':
-        #         weight_branches.append('ElectronUp')
-        #     else:
-        #         weight_branches.append('ElectronEfficiencyCorrection')
+        if options['channel'] == 'muon':
+            if options['category'] == 'Muon_down':
+                weight_branches.append('MuonDown')
+            elif options['category'] == 'Muon_up':
+                weight_branches.append('MuonUp')
+            else:
+                weight_branches.append('MuonEfficiencyCorrection')
+        elif options['channel'] == 'electron':
+            if options['category'] == 'Electron_down':
+                weight_branches.append('ElectronDown')
+            elif options['category'] == 'Electron_up':
+                weight_branches.append('ElectronUp')
+            else:
+                weight_branches.append('ElectronEfficiencyCorrection')
     sample_info["weight_branches"] = weight_branches
 
     # Input File and Tree
