@@ -334,8 +334,6 @@ def make_data_mc_comparison_plot( histograms = [],
         if systematics_for_ratio != None:
             plusErrors = [x+1 for x in systematics_for_ratio]
             minusErrors = [1-x for x in systematics_for_ratio]
-            print plusErrors
-            print minusErrors
 
             ratioPlusError = ratio.Clone( 'plus' )
             ratioMinusError = ratio.Clone( 'minus' )
