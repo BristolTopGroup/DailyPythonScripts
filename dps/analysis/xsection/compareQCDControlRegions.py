@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     measurement_config  = XSectionConfig( 13 )
 
-    channel =  'muon'
+    channel =  'electron'
 
     for variable in measurement_config.variables:
         print variable
@@ -38,16 +38,15 @@ if __name__ == '__main__':
             maxY = max([maxY]+list(hists[f].y() ) )
 
         # print normalisations
-        print hists
-        print maxY
         hists['central'].SetLineColor(2)
         hists['central'].SetLineWidth(3)
+        hists['central'].SetLineStyle(3)
         hists['central'].GetYaxis().SetRangeUser(0.01,maxY*1.2)
         hists['central'].Draw('HIST')
 
         hists['QCD_signal_MC'].SetLineColor(4)
         hists['QCD_signal_MC'].SetLineWidth(3)
-        hists['QCD_signal_MC'].SetLineStyle(2)
+        hists['QCD_signal_MC'].SetLineStyle(1)
         hists['QCD_signal_MC'].Draw('SAME HIST')
 
         # hists['QCD_shape'].SetLineColor(4)
