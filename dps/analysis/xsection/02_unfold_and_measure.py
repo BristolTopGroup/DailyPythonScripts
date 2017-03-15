@@ -104,6 +104,14 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     # Remove fakes before unfolding
     h_data_no_fakes = removeFakes( h_measured, h_fakes, h_data )
 
+    print 'Integral of data and response matrix'
+    print category
+    print h_data_no_fakes.Integral()
+    print h_response.ProjectionX('px',1).Integral()
+    print 'Ratio : ', h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral()
+    h_response.Scale( h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral() )
+    print 'New ratio : ', h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral()
+
     # unfold
     unfolding = Unfolding( h_data_no_fakes, h_truth, h_measured, h_response, h_fakes, method = method, tau = tau_value )
 
@@ -632,6 +640,9 @@ def write_02(tuple_out, f_temp, path_to_DF, category, channel, method):
         channel = channel,
         method = method,
     )
+
+    for i, j in tuple_out.iteritems():
+        print i,len(j)
     write_tuple_to_df( tuple_out, f )
     return f
 
@@ -697,7 +708,6 @@ if __name__ == '__main__':
     # Core Systematics
     all_measurements    = deepcopy( measurement_config.measurements )
     # Adding PDF Systematics
-    # pdf_uncertainties = []
     pdf_uncertainties   = ['PDFWeights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.pdfWeightMax )]
     all_measurements.extend( pdf_uncertainties )
     # # TTBar Reweighting Systematics
