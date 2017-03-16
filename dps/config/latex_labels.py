@@ -60,17 +60,20 @@ control_plots_latex = {
 }
 
 measurements_latex = {
+    'data' : 'Unfolded data',
     'unfolded': 'unfolded',
     'measured': 'measured',
     'MADGRAPH': '$t\\bar{t}$ (MADGRAPH+Pythia)',
     'MADGRAPH_ptreweight': '$t\\bar{t}$ (MADGRAPH+$p_\mathrm{T}^\mathrm{reweight}$)',
-    'amcatnloPythia8': 'aMC@NLO Pythia8',
     'amcatnlo': 'aMC@NLO Pythia8',
     'amcatnloHerwig': 'aMC@NLO Herwig++',
-    'madgraphMLM': 'Madgraph Pythia8',
+
+    'madgraphMLM': r'\textsc{Madgraph \raisebox{.2ex}{+} Pythia8}',
+    'powhegPythia8': r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
+    'powhegHerwig': r'\textsc{Powheg \raisebox{.2ex}{+} Herwig\raisebox{.2ex}{++}}',
+    'amcatnloPythia8': r'a\textsc{MC@NLO \raisebox{.2ex}{+} Pythia8}',
+
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
-    'powhegHerwig': 'Powheg Herwig++',
-    'powhegPythia8': 'Powheg Pythia8',
     'pythia8': '$t\\bar{t}$ (Pythia8)',
     'matchingdown': '$t\\bar{t}$ (matching down)',
     'matchingup': '$t\\bar{t}$ (matching up)',
@@ -153,7 +156,7 @@ met_systematics_latex = {
 }
 
 samples_latex = {
-    'data': 'data',
+    'data': 'Unfolded data',
     'QCD': 'QCD',
     'WJets': 'W $\\rightarrow \ell\\nu$',
     'ZJets': 'Z/$\gamma^*$ + jets',
