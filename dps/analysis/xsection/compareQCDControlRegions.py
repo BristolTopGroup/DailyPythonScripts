@@ -4,6 +4,7 @@ from dps.utils.ROOT_utils import set_root_defaults
 import matplotlib.pyplot as plt
 from dps.config.variable_binning import reco_bin_edges_vis
 from dps.utils.hist_utilities import value_error_tuplelist_to_hist
+import ROOT as r
 
 if __name__ == '__main__':
     # set_root_defaults( msg_ignore_level = 3001 )
@@ -32,22 +33,26 @@ if __name__ == '__main__':
         hists = {
         }
         maxY = 0
+        minY = 99999999
         for f in files:
             normalisations[f] = read_tuple_from_file( files[f] )['QCD']
             hists[f] = value_error_tuplelist_to_hist( normalisations[f], reco_bin_edges_vis[variable] ).Rebin(2)
             maxY = max([maxY]+list(hists[f].y() ) )
+            minY = min([minY]+list(hists[f].y() ) )
 
+        if minY <= 0 : minY = 0.1
         # print normalisations
         hists['central'].SetLineColor(2)
         hists['central'].SetLineWidth(3)
         hists['central'].SetLineStyle(3)
-        hists['central'].GetYaxis().SetRangeUser(0.01,maxY*1.2)
-        hists['central'].Draw('HIST')
+        hists['central'].GetYaxis().SetRangeUser(minY*0.9,maxY*1.2)
+        hists['central'].Draw('HIST E')
+        r.gPad.SetLogy()
 
         hists['QCD_signal_MC'].SetLineColor(4)
         hists['QCD_signal_MC'].SetLineWidth(3)
         hists['QCD_signal_MC'].SetLineStyle(1)
-        hists['QCD_signal_MC'].Draw('SAME HIST')
+        hists['QCD_signal_MC'].Draw('SAME HIST E')
 
         # hists['QCD_shape'].SetLineColor(4)
         # hists['QCD_shape'].SetLineWidth(3)
@@ -62,7 +67,6 @@ if __name__ == '__main__':
         hists['QCD_other_control_region'].SetLineColor(8)
         hists['QCD_other_control_region'].SetLineWidth(3)
         hists['QCD_other_control_region'].SetLineStyle(2)
-        hists['QCD_other_control_region'].Draw('SAME HIST')
-
+        hists['QCD_other_control_region'].Draw('SAME HIST E')
 
         raw_input('...')
