@@ -449,11 +449,11 @@ class XSectionConfig():
             'muon' : 'TTbar_plus_X_analysis/MuPlusJets/Ref selection/FitVariables',
         }
         self.qcd_control_region = {
-            'electron'  : 'QCDConversions',
+            'electron'  : 'QCD non iso e+jets',
             'muon'      : 'QCD non iso mu+jets 1p5to3',
         }
         self.qcd_shape_syst_region = {
-            'electron'  : 'QCD non iso e+jets',
+            'electron'  : 'QCDConversions',
             'muon'      : 'QCD non iso mu+jets 3toInf',
         }
 

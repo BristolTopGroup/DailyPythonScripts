@@ -35,7 +35,7 @@ def getHistograms( histogram_files,
 
     # Names of QCD regions to use
     qcd_data_region             = ''
-    qcd_data_region_electron    = 'QCDConversions'
+    qcd_data_region_electron    = 'QCD non iso e+jets'
     qcd_data_region_muon        = 'QCD non iso mu+jets 1p5to3'
     
     # Channel specific files and weights
