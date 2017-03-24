@@ -641,8 +641,6 @@ def write_02(tuple_out, f_temp, path_to_DF, category, channel, method):
         method = method,
     )
 
-    for i, j in tuple_out.iteritems():
-        print i,len(j)
     write_tuple_to_df( tuple_out, f )
     return f
 
