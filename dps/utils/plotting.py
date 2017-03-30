@@ -30,6 +30,7 @@ class Histogram_properties:
     x_limits = [] #[min, max]
     y_limits = [] #[min, max]
     mc_error = 0.
+    mc_relative_errors = []
     mc_errors_label = 'MC uncertainty'
     normalise = False
     legend_location = (0.98, 0.88)
@@ -234,27 +235,50 @@ def make_data_mc_comparison_plot( histograms = [],
     if histogram_properties.set_log_y:
         axes.set_yscale( 'log', nonposy = "clip" )
         axes.set_ylim( ymin = 1e-2 )
-    mc_error = histogram_properties.mc_error
 
-    if mc_error > 0:
-        stack_lower = sum( stack.GetHists() )
-        stack_upper = stack_lower.Clone( 'upper' )
-        stack_lower.Scale( 1 - mc_error )
-        stack_upper.Scale( 1 + mc_error )
-        rplt.fill_between( stack_upper, 
-                           stack_lower, axes, facecolor = '0.75', 
-                           alpha = 0.5, hatch = '/', 
-                           zorder = len(histograms_) + 1 )
-    if not mc_error > 0 and show_stat_errors_on_mc:
-        stack_lower = sum( stack.GetHists() )
-        mc_errors = list( stack_lower.yerravg() )
-        stack_upper = stack_lower.Clone( 'upper' )
-        for bin_i in range( 1, stack_lower.GetNbinsX() ):
-            stack_lower.SetBinContent( bin_i, stack_lower.GetBinContent( bin_i ) - mc_errors[bin_i - 1] )
-            stack_upper.SetBinContent( bin_i, stack_upper.GetBinContent( bin_i ) + mc_errors[bin_i - 1] )
-        rplt.fill_between( stack_upper, stack_lower, axes, facecolor = '0.75', 
-                           alpha = 0.5, hatch = '/', 
-                           zorder = len(histograms_) + 1 )
+    mc_error = histogram_properties.mc_error
+    mc_relative_errors = histogram_properties.mc_relative_errors
+
+    if mc_relative_errors:
+        stack_lower = sum(stack.GetHists())
+        stack_upper = stack_lower.Clone('upper')
+        for bin_i in range(1, stack_lower.GetNbinsX()):
+            central_value = stack_lower.GetBinContent(bin_i)
+            relative_error = mc_relative_errors[bin_i - 1]
+
+            error_upper_bound = central_value * (1 + relative_error)
+            error_lower_bound = central_value * (1 - relative_error)
+
+            stack_lower.SetBinContent(bin_i, error_upper_bound)
+            stack_upper.SetBinContent(bin_i, error_lower_bound)
+        rplt.fill_between(
+            stack_upper, stack_lower, axes, facecolor='0.75',
+            alpha=0.5, hatch='/',
+            zorder=len(histograms_) + 1)
+    else:
+        if mc_error > 0:
+            stack_lower = sum(stack.GetHists())
+            stack_upper = stack_lower.Clone('upper')
+            stack_lower.Scale(1 - mc_error)
+            stack_upper.Scale(1 + mc_error)
+            rplt.fill_between(stack_upper,
+                              stack_lower, axes, facecolor='0.75',
+                              alpha=0.5, hatch='/',
+                              zorder=len(histograms_) + 1)
+        if not mc_error > 0 and show_stat_errors_on_mc:
+            stack_lower = sum(stack.GetHists())
+            mc_errors = list(stack_lower.yerravg())
+            stack_upper = stack_lower.Clone('upper')
+            for bin_i in range(1, stack_lower.GetNbinsX()):
+                central_value = stack_lower.GetBinContent(bin_i)
+                error = mc_errors[bin_i - 1]
+                error_upper_bound = central_value + error
+                error_lower_bound = central_value - error
+                stack_lower.SetBinContent(bin_i, error_lower_bound)
+                stack_upper.SetBinContent(bin_i, error_upper_bound)
+            rplt.fill_between(stack_upper, stack_lower, axes, facecolor='0.75',
+                              alpha=0.5, hatch='/',
+                              zorder=len(histograms_) + 1)
 
     # a comment on zorder: the MC stack should be always at the very back (z = 1), 
     # then the MC error (z = len(histograms_) + 1) and finally the data 
