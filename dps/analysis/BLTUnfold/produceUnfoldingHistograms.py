@@ -445,7 +445,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n == 1000: break
+                # if n > 100000: break
                 if maxEvents > 0 and n > maxEvents: break
 
                 if 'firstHalf' in args.sample and n >= halfOfEvents: break
@@ -495,7 +495,7 @@ def main():
                 offlineWeight = 1
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
-                # offlineWeight *= leptonWeight
+                offlineWeight *= leptonWeight
                 genWeight *= topPtSystematicWeight
                 
                 # Generator weight

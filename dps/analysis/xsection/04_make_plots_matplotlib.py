@@ -178,9 +178,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.xlabel( x_label, CMS.x_axis_title )
 
     # set y axis x-section labels
-    y_label = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}$'
+    y_label = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}'
     if variable in ['HT', 'ST', 'MET', 'WPT']:
-        y_label.replace('}$', ' \left[\mathrm{GeV}^{-1}\\right]$')
+        y_label += '\scriptstyle(\mathrm{GeV}^{-1})$'
+    else:
+        y_label += '$'
     plt.ylabel( y_label, CMS.y_axis_title )
 
     # Set up ticks on axis. Minor ticks on axis for non NJet variables
@@ -222,6 +224,8 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         label = 'data', 
         xerr = None, 
         yerr = False, 
+        capsize = 0, 
+        elinewidth = 2, 
         zorder = len( histograms ) + 3 
     )
 
@@ -292,10 +296,13 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     for label in labelOrder:
         if label in labels:
             new_handles.append(zipped[label])
-            new_labels.append(label)
+            if label == 'data':
+                new_labels.append(measurements_latex['data'])
+            else:
+                new_labels.append(label)
 
     # Location of the legend
-    legend_location = (0.97, 0.82)
+    legend_location = (0.95, 0.82)
     if variable == 'MT':
         legend_location = (0.05, 0.82)
     elif variable == 'ST':
@@ -303,7 +310,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     elif variable == 'WPT':
         legend_location = (1.0, 0.84)
     elif variable == 'abs_lepton_eta':
-        legend_location = (1.0, 0.94)
+        legend_location = (0.7, 0.62)
 
     # Add legend to plot
     plt.legend( new_handles, new_labels, 
@@ -319,17 +326,17 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     label, channel_label = get_cms_labels( channel )
     plt.title( label,loc='right', **CMS.title )
     # Locations of labels
-    logo_location = (0.05, 0.98)
-    prelim_location = (0.05, 0.92)
-    channel_location = ( 0.05, 0.86)
+    logo_location = (0.05, 0.97)
+    prelim_location = (0.05, 0.9)
+    channel_location = ( 0.5, 0.97)
     if variable == 'WPT':
-        logo_location = (0.03, 0.98)
-        prelim_location = (0.03, 0.92)
-        channel_location = (0.03, 0.86)
+        logo_location = (0.05, 0.97)
+        prelim_location = (0.05, 0.9)
+        channel_location = (0.5, 0.97)
     elif variable == 'abs_lepton_eta':
-        logo_location = (0.03, 0.98)
-        prelim_location = (0.03, 0.92)
-        channel_location = (0.03, 0.86)
+        logo_location = (0.05, 0.97)
+        prelim_location = (0.05, 0.9)
+        channel_location = ( 0.5, 0.97)
 
     # Add labels to plot
     plt.text(logo_location[0], logo_location[1], 
@@ -349,7 +356,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     )
     # channel text
     plt.text(channel_location[0], channel_location[1], 
-        r"\emph{%s}"%channel_label, 
+        r"%s"%channel_label, 
         transform=axes.transAxes, 
         fontsize=40,
         verticalalignment='top',
@@ -360,7 +367,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     ylim = axes.get_ylim()
     if ylim[0] < 0:
         axes.set_ylim( ymin = 0.)
-    axes.set_ylim(ymax = ylim[1]*1.3)
+    axes.set_ylim(ymax = ylim[1]*1.1)
+    if variable == 'abs_lepton_eta':
+        axes.set_ylim(ymax = ylim[1]*1.25)
 
     # Now to show either of the ratio plots
     if show_ratio:
@@ -384,14 +393,14 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         # x axis labels as before
         x_label = '${}$'.format(variables_latex[variable])
         if variable in ['HT', 'ST', 'MET', 'WPT']:
-            x_label += ' [GeV]'
+            x_label += ' (GeV)'
 
         if not show_generator_ratio:
             plt.xlabel( x_label, CMS.x_axis_title )
 
-        y_label = '$\\frac{\\textrm{pred.}}{\\textrm{data}}$'
-        plt.ylabel( y_label, CMS.y_axis_title )
-        ax1.yaxis.set_label_coords(-0.115, 0.8)
+        y_label = '$\\displaystyle\\frac{\\mathrm{pred.}}{\\mathrm{data}}$'
+        plt.ylabel( y_label, CMS.y_axis_title_small )
+        ax1.yaxis.set_label_coords(-0.115, 0.7)
 
         # Draw a horizontal line at y=1 for data
         plt.axhline(y = 1, color = 'black', linewidth = 2)
@@ -435,7 +444,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
                 syst_lower, 
                 syst_upper, 
                 ax1,
-                color = 'yellow' 
+                color = 'gold' 
             )
         rplt.fill_between(
             stat_upper, 
@@ -448,7 +457,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         loc = 'upper left'
         # legend for ratio plot
         p_stat = mpatches.Patch(facecolor='0.75', label='Stat.', edgecolor='black' )
-        p_stat_and_syst = mpatches.Patch(facecolor='yellow', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
+        p_stat_and_syst = mpatches.Patch(facecolor='gold', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
         l1 = ax1.legend(
             handles = [p_stat, p_stat_and_syst], 
             loc = loc,
@@ -460,7 +469,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
         # Setting y limits and tick parameters
         if variable == 'MET':
-            ax1.set_ylim( ymin = 0.4, ymax = 1.6 )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         if variable == 'MT':
@@ -469,26 +478,26 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'HT':
             ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.4 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.2 ) )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'ST':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.3 ) )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'WPT':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.125 ) )
-        elif variable == 'NJets':
-            ax1.set_ylim( ymin = 0.5, ymax = 1.5 )
-            ax1.yaxis.set_major_locator( MultipleLocator( 0.25 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.125 ) )
-        elif variable == 'abs_lepton_eta':
-            ax1.set_ylim( ymin = 0.8, ymax = 1.2 )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
-            ax1.yaxis.set_minor_locator( MultipleLocator( 0.05 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'NJets':
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
+        elif variable == 'abs_lepton_eta':
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
+            ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
+            ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'lepton_pt':
-            ax1.set_ylim( ymin = 0.7, ymax = 1.3 )
+            ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
 

@@ -10,7 +10,6 @@ from dps.utils.hist_utilities import prepare_histograms, clean_control_region
 from dps.utils.ROOT_utils import get_histograms_from_trees, set_root_defaults
 from dps.utils.latex import setup_matplotlib
 from uncertainties import ufloat
-from dps.analysis.xsection.compareQCDControlRegions import getPUWeights
 
 # latex, font, etc
 setup_matplotlib()
@@ -36,7 +35,7 @@ def getHistograms( histogram_files,
 
     # Names of QCD regions to use
     qcd_data_region             = ''
-    qcd_data_region_electron    = 'QCDConversions'
+    qcd_data_region_electron    = 'QCD non iso e+jets'
     qcd_data_region_muon        = 'QCD non iso mu+jets 1p5to3'
     
     # Channel specific files and weights
@@ -473,8 +472,13 @@ if __name__ == '__main__':
         'NBJets_LightUp',
         'NBJets_LightDown',
         'JetPt',
+        'sigmaietaieta',
+
         'RelIso',
-        'sigmaietaieta'
+        'hltECALIso',
+        'hltHCALIso',
+        'hltTrackerIso',
+
     ]
 
     additional_qcd_plots = [
@@ -486,9 +490,11 @@ if __name__ == '__main__':
         'QCDLeptonPt',
         'QCDNJets',
 
-        # 'QCDsigmaietaieta',
         'QCDRelIso',
-        # 'QCDHT_dataControl_mcSignal',
+        'QCDHLTECALIso',
+        'QCDHLTHCALIso',
+        'QCDHLTTrackerIso',
+
     ]
 
     if make_additional_QCD_plots:
@@ -1002,7 +1008,72 @@ if __name__ == '__main__':
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
                       use_qcd_data_region = useQCDControl,
+                      log_y = True,
                       )
+
+        ###################################################
+        # HLT ECAL iso
+        ###################################################
+        if 'hltECALIso' in include_plots:
+            print '---> hltECALIso'
+            make_plot( channel,
+                      x_axis_title = 'HLT ECAL isolation',
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
+                      branchName = 'lepton_hltECALisolation',
+                      name_prefix = '%s_hltECALIso_' % channel,
+                      x_limits = control_plots_bins['relIso'],
+                      nBins = len(control_plots_bins['relIso'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
+                      log_y = True,
+                      )
+
+        ###################################################
+        # HLT HCAL iso
+        ###################################################
+        if 'hltHCALIso' in include_plots:
+            print '---> hltHCALIso'
+            make_plot( channel,
+                      x_axis_title = 'HLT HCAL isolation',
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
+                      branchName = 'lepton_hltHCALisolation',
+                      name_prefix = '%s_hltHCALIso_' % channel,
+                      x_limits = control_plots_bins['relIso'],
+                      nBins = len(control_plots_bins['relIso'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
+                      log_y = True,
+                      )
+
+        ###################################################
+        # HLT Tracker iso
+        ###################################################
+        if 'hltTrackerIso' in include_plots:
+            print '---> hltTrackerIso'
+            make_plot( channel,
+                      x_axis_title = 'HLT Tracker isolation',
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
+                      branchName = 'lepton_hltTrackerisolation_overPt',
+                      name_prefix = '%s_hltTrackerIso_' % channel,
+                      x_limits = control_plots_bins['relIso'],
+                      nBins = len(control_plots_bins['relIso'])-1,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      use_qcd_data_region = useQCDControl,
+                      log_y = True,
+                      )
+            
 
         ###################################################
         # Sigma ieta ieta
@@ -1228,13 +1299,74 @@ if __name__ == '__main__':
                       control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
                       branchName = '%s' % 'lepton_isolation',
                       name_prefix = '%s_relIso_' % channel,
-                      x_limits = [0,2],
+                      x_limits = [0,0.5],
                       nBins = 40,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
                       cms_logo_location = 'right',
-                      # log_y = True,
+                      log_y = True,
                       )
+
+        # ###################################################
+        # # HLT ECAL iso
+        # ###################################################
+        if 'QCDHLTECALIso' in include_plots:
+            print '---> QCD HLT ECAL iso'
+            make_plot( channel,
+                      x_axis_title = 'HLT ECAL isolation',
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
+                      branchName = 'lepton_hltECALisolation',
+                      name_prefix = '%s_hltECALIso_' % channel,
+                      x_limits = [0,0.5],
+                      nBins = 40,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      log_y = True,
+                      )
+
+        # ###################################################
+        # # HLT HCAL iso
+        # ###################################################
+        if 'QCDHLTHCALIso' in include_plots:
+            print '---> QCD HLT HCAL iso'
+            make_plot( channel,
+                      x_axis_title = 'HLT HCAL isolation',
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
+                      branchName = 'lepton_hltHCALisolation',
+                      name_prefix = '%s_hltHCALIso_' % channel,
+                      x_limits = [0,0.5],
+                      nBins = 40,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      log_y = True,
+                      )
+
+        # ###################################################
+        # # HLT Tracker iso
+        # ###################################################
+        if 'QCDHLTTrackerIso' in include_plots:
+            print '---> QCD HLT Tracker iso'
+            make_plot( channel,
+                      x_axis_title = 'HLT Tracker isolation',
+                      y_axis_title = 'Events',
+                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
+                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
+                      branchName = 'lepton_hltTrackerisolation_overPt',
+                      name_prefix = '%s_hltTrackerIso_' % channel,
+                      x_limits = [0,0.5],
+                      nBins = 40,
+                      rebin = 1,
+                      legend_location = ( 0.95, 0.78 ),
+                      cms_logo_location = 'right',
+                      log_y = True,
+                      )
+
         # ###################################################
         # # Sigma ieta ieta
         # ###################################################

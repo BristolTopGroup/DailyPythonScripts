@@ -23,7 +23,6 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	'''
 	Plot the systematic uncertainties
 	'''
-	print subcategories
 	if not subcategories: subcategories = systematic_uncertainties.keys()
 
 	x_limits = [bin_edges[0], bin_edges[-1]]
@@ -76,9 +75,9 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	plt.tick_params( **CMS.axis_label_major )
 	plt.tick_params( **CMS.axis_label_minor )
 
-	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'gold', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink', 'deepskyblue' ]
-	# if len(colours) < len(error_hists.keys()):
-	# 	print '---> Need to add more colours!!!'
+	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'gold', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink', 'deepskyblue' ] * 2
+	if len(colours) < len(error_hists_up.keys()):
+		print '---> Need to add more colours!!!'
 
 	for error_hists in [error_hists_up, error_hists_down]:
 		for i, source, in enumerate(error_hists.keys()):

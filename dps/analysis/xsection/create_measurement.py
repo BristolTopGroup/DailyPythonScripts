@@ -100,6 +100,9 @@ def create_measurement(options, norm_method):
     measurement["name"]             =   options['category']
     measurement["data_driven_qcd"]  =   options['data_driven_qcd']
 
+    if 'QCD_signal_MC' in options['category']:
+        measurement["data_driven_qcd"] = False
+
     # Add specific samples to config
     measurement["samples"]          =   get_samples(options, xsec_config)
     return measurement
@@ -213,20 +216,20 @@ def get_sample_info(options, xsec_config, sample):
         # Lepton Weights
         # Lepton weights for nonisolated leptons are removed in measurement.py
         # The lepton sf are not derived for non isolated leptons
-        # if options['channel'] == 'muon':
-        #     if options['category'] == 'Muon_down':
-        #         weight_branches.append('MuonDown')
-        #     elif options['category'] == 'Muon_up':
-        #         weight_branches.append('MuonUp')
-        #     else:
-        #         weight_branches.append('MuonEfficiencyCorrection')
-        # elif options['channel'] == 'electron':
-        #     if options['category'] == 'Electron_down':
-        #         weight_branches.append('ElectronDown')
-        #     elif options['category'] == 'Electron_up':
-        #         weight_branches.append('ElectronUp')
-        #     else:
-        #         weight_branches.append('ElectronEfficiencyCorrection')
+        if options['channel'] == 'muon':
+            if options['category'] == 'Muon_down':
+                weight_branches.append('MuonDown')
+            elif options['category'] == 'Muon_up':
+                weight_branches.append('MuonUp')
+            else:
+                weight_branches.append('MuonEfficiencyCorrection')
+        elif options['channel'] == 'electron':
+            if options['category'] == 'Electron_down':
+                weight_branches.append('ElectronDown')
+            elif options['category'] == 'Electron_up':
+                weight_branches.append('ElectronUp')
+            else:
+                weight_branches.append('ElectronEfficiencyCorrection')
     sample_info["weight_branches"] = weight_branches
 
     # Input File and Tree
@@ -237,19 +240,23 @@ def get_sample_info(options, xsec_config, sample):
         if options['category'] == 'JES_up':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'plusJES_tree')
             sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JESUp')
-            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JESUp')
+            if sample_info['qcd_control_region'] != None:
+                sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JESUp')
         elif options['category'] == 'JES_down':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'minusJES_tree')
             sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JESDown')
-            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JESDown')
+            if sample_info['qcd_control_region'] != None:
+                sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JESDown')
         elif options['category'] == 'JER_up':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'plusJER_tree')
             sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JERUp')
-            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERUp')
+            if sample_info['qcd_control_region'] != None:
+                sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERUp')
         elif options['category'] == 'JER_down':
             sample_info["input_file"] = sample_info["input_file"].replace('tree', 'minusJER_tree')
             sample_info["tree"] = sample_info["tree"].replace('FitVariables', 'FitVariables_JERDown')
-            sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERDown')
+            if sample_info['qcd_control_region'] != None:
+                sample_info["qcd_control_region"] = sample_info["qcd_control_region"].replace('FitVariables', 'FitVariables_JERDown')
 
     if sample_info["qcd_normalisation_region"] is None:
         sample_info["qcd_normalisation_region"] = sample_info["qcd_control_region"]
@@ -309,6 +316,11 @@ def get_tree(config, options):
         elif "QCD_cross_section" in options['category']:
             qcd_tree = tree.replace(
                 "Ref selection", config.qcd_control_region[options['channel']])
+            qcd_normalisation_tree = tree.replace(
+                "Ref selection", config.qcd_shape_syst_region[options['channel']])
+        elif 'QCD_other_control_region' in options['category']:
+            qcd_tree = tree.replace(
+                "Ref selection", config.qcd_shape_syst_region[options['channel']])
             qcd_normalisation_tree = tree.replace(
                 "Ref selection", config.qcd_shape_syst_region[options['channel']])
 
