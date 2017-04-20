@@ -206,3 +206,31 @@ fit_variables_units_latex = {
     'M_bl': 'GeV',
     'angle_bl': '',
 }
+
+systematics_latex = {
+    'ElectronEn'                : 'Electron energy',
+    'MuonEn'                    : 'Muon energy',
+    'TauEn'                     : 'Tau energy',
+    'UnclusteredEn'             : 'Unclustered energy',
+    'PileUp'                    : 'Pile-up',
+    'BJet'                      : 'b-tagging efficiency',
+    'JES'                       : 'JES',
+    'JER'                       : 'JER',
+    'luminosity'                : 'Luminosity',
+    'V+Jets_cross_section'      : 'V+jets cross section',
+    'SingleTop_cross_section'   : 'Single top cross section',
+    'QCD_cross_section'         : 'QCD cross section',
+    'QCD_shape'                 : 'QCD shape ',
+    'PDF'                       : 'PDF ',
+    'TTJets_topPt'              : 'Top \ensuremath{\pt}',
+    'TTJets_mass'               : 'Top mass',
+    'TTJets_scale'              : '\ensuremath{Q^{2}}',
+    'TTJets_matching'           : 'Matrix-element parton-shower matching',
+    'TTJets_ue'                 : 'Underlying event',
+    'TTJets_hadronisation'      : 'Hadronisation',
+    'central'                   : '',
+    'systematic'                : '',
+    'statistical'               : '',
+}
+
+
