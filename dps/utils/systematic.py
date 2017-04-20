@@ -206,7 +206,7 @@ def get_cross_sections(options, list_of_systematics):
 
         elif (systematic == 'TTJets_scale'):
             unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
-            unf_env_lower, unf_env_upper = get_scale_envelope(options, unf_syst_unc_x_sec)
+            unf_env_lower, unf_env_upper = get_scale_envelope(options, unf_syst_unc_x_sec, central_measurement_unfolded)
             unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_env_lower,
                 unf_env_upper,
@@ -222,14 +222,16 @@ def get_cross_sections(options, list_of_systematics):
 
 
 # @profile(stream=fp)
-def get_scale_envelope(options, d_scale_syst):
+def get_scale_envelope(options, d_scale_syst, central):
     '''
     Calculate the scale envelope for the renormalisation/factorisation/combined systematic uncertainties
     For all up variations in a bin keep the highest
     For all down variations in a bin keep the lowest
 
-    d_scale_syst is a dictionary containing all the Q2 scale variations
-    Retrieve the 3 up(down) variations from d_scale_syst and choose max(min) value as the envelope for each bin
+    Also scale fsr variations in PS down from * or / 2 to * or / sqrt(2)
+
+    d_scale_syst is a dictionary containing all the scale variations
+    Retrieve the up(down) variations from d_scale_syst and choose max(min) value as the envelope for each bin
     '''
     down_variations = []
     up_variations = []
@@ -238,17 +240,32 @@ def get_scale_envelope(options, d_scale_syst):
 
     # Separate into up/down scale variations
     for scale_variation in d_scale_syst:
+
+        scaleToAppend = []
+        # Scale fsr in PS systematic
+        if 'TTJets_fsrdown' in scale_variation or 'TTJets_fsrup' in scale_variation:
+            scale = 1
+            if 'TTJets_fsrdown' in scale_variation:
+                scale = 1 / ( 2 * sqrt(2) )
+            elif 'TTJets_fsrup' in scale_variation:
+                scale = sqrt(2) / 2
+
+            for variation, c in zip( d_scale_syst[scale_variation], central ):
+                diff = ( variation - c[0] ) * scale
+                scaleToAppend.append(c[0] + diff)
+        else:
+            scaleToAppend = d_scale_syst[scale_variation]
+
         if 'down' in scale_variation:
-            down_variations.append(d_scale_syst[scale_variation])
+            down_variations.append(scaleToAppend)
         elif 'up' in scale_variation:
-            up_variations.append(d_scale_syst[scale_variation])
+            up_variations.append(scaleToAppend)
 
     # find min/max
-    for v1, v2, v3 in zip (up_variations[0], up_variations[1], up_variations[2]):
-        envelope_up.append(max(v1, v2, v3))
-    for v1, v2, v3 in zip (down_variations[0], down_variations[1], down_variations[2]):
-        envelope_down.append(min(v1, v2, v3))
-    return envelope_down, envelope_up
+    envelope_up.append( list( np.amax(up_variations,axis=0) ) )
+    envelope_down.append( list( np.amin(down_variations,axis=0) ) )
+
+    return envelope_down[0], envelope_up[0]
 
 
 # @profile(stream=fp)
