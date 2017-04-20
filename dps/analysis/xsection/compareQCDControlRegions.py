@@ -34,6 +34,7 @@ if __name__ == '__main__':
         }
         maxY = 0
         minY = 99999999
+
         for f in files:
             normalisations[f] = read_tuple_from_file( files[f] )['QCD']
             hists[f] = value_error_tuplelist_to_hist( normalisations[f], reco_bin_edges_vis[variable] ).Rebin(2)
@@ -49,10 +50,12 @@ if __name__ == '__main__':
         hists['central'].Draw('HIST E')
         r.gPad.SetLogy()
 
+
         hists['QCD_signal_MC'].SetLineColor(4)
         hists['QCD_signal_MC'].SetLineWidth(3)
         hists['QCD_signal_MC'].SetLineStyle(1)
         hists['QCD_signal_MC'].Draw('SAME HIST E')
+
 
         # hists['QCD_shape'].SetLineColor(4)
         # hists['QCD_shape'].SetLineWidth(3)
@@ -68,5 +71,6 @@ if __name__ == '__main__':
         hists['QCD_other_control_region'].SetLineWidth(3)
         hists['QCD_other_control_region'].SetLineStyle(2)
         hists['QCD_other_control_region'].Draw('SAME HIST E')
+
 
         raw_input('...')

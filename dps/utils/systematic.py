@@ -245,7 +245,6 @@ def get_scale_envelope(options, d_scale_syst, central):
         # Scale fsr in PS systematic
         if 'TTJets_fsrdown' in scale_variation or 'TTJets_fsrup' in scale_variation:
             scale = sqrt(2) / 2
-
             for variation, c in zip( d_scale_syst[scale_variation], central ):
                 diff = ( variation - c[0] ) * scale
                 scaleToAppend.append(c[0] + diff)

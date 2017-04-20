@@ -53,7 +53,6 @@ jobs = [
         '--centreOfMassEnergy 13 -s erdOn',
         '--centreOfMassEnergy 13 -s QCDbased_erdOn',
 
-
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
         '--centreOfMassEnergy 13 --muFmuRWeight 2',
