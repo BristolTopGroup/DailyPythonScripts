@@ -85,6 +85,9 @@ def getFileName( com, sample, measurementConfig ) :
             'fsrup'             : measurementConfig.ttbar_fsrup_trees,
             'fsrdown'           : measurementConfig.ttbar_fsrdown_trees,
 
+            'hdampup'             : measurementConfig.ttbar_hdampup_trees,
+            'hdampdown'           : measurementConfig.ttbar_hdampdown_trees,
+
             'massdown'          : measurementConfig.ttbar_mtop1695_trees,
             'massup'            : measurementConfig.ttbar_mtop1755_trees,
 
@@ -158,10 +161,15 @@ def parse_arguments():
         dest='alphaSWeight', 
         default=-1 
     )
-    parser.add_argument('--matchingWeight', 
+    parser.add_argument('--semiLepBrWeight', 
         type=int, 
-        dest='matchingWeight', 
-        default=-1 
+        dest='semiLepBrWeight', 
+        default=0
+    )
+    parser.add_argument('--fragWeight', 
+        type=int, 
+        dest='fragWeight', 
+        default=-1
     )
     parser.add_argument('--nGeneratorWeights', 
         type=int, 
@@ -210,7 +218,8 @@ def main():
     pdfWeight    = args.pdfWeight
     muFmuRWeight = args.muFmuRWeight
     alphaSWeight = args.alphaSWeight
-    matchingWeight = args.matchingWeight
+    semiLepBrWeight = args.semiLepBrWeight
+    fragWeight = args.fragWeight
 
     # Output file name
     outputFileName = 'crap.root'
@@ -241,18 +250,22 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR1muF.root' % ( energySuffix )
     elif muFmuRWeight == 8:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_05muR05muF.root' % ( energySuffix )
-
-    elif matchingWeight == 9:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_down.root' % ( energySuffix )
-    elif matchingWeight == 18:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matching_up.root' % ( energySuffix )
-    elif matchingWeight >= 0:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_matchingWeight_%i.root' % ( energySuffix, matchingWeight )
-
     elif alphaSWeight == 0:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_down.root' % ( energySuffix )
     elif alphaSWeight == 1:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_alphaS_up.root' % ( energySuffix )
+    elif semiLepBrWeight == -1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_semiLepBr_down.root' % ( energySuffix )
+    elif semiLepBrWeight == 1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_semiLepBr_up.root' % ( energySuffix )
+    elif fragWeight == 1:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_frag_down.root' % ( energySuffix )
+    elif fragWeight == 2:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_frag_central.root' % ( energySuffix )
+    elif fragWeight == 3:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_frag_up.root' % ( energySuffix )
+    elif fragWeight == 4:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_frag_peterson.root' % ( energySuffix )
     elif pdfWeight >= 0 and pdfWeight <= 99:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
     elif 'central' not in args.sample:
@@ -513,8 +526,20 @@ def main():
                     genWeight *= branch('alphaSWeight_%i' % alphaSWeight)
                     pass
 
-                if matchingWeight >= 0:
-                    genWeight *= branch('matchingWeight_%i' % matchingWeight)
+                if semiLepBrWeight == -1:
+                    genWeight *= branch('semilepbrDown')
+                elif semiLepBrWeight == 1:
+                    genWeight *= branch('semilepbrUp')
+                    pass
+
+                if fragWeight == 1:
+                    genWeight *= branch('downFrag')
+                elif fragWeight == 2:
+                    genWeight *= branch('centralFrag')
+                elif fragWeight == 3:
+                    genWeight *= branch('upFrag')
+                elif fragWeight == 4:
+                    genWeight *= branch('petersonFrag')
                     pass
 
                 if args.applyTopPtReweighting != 0:

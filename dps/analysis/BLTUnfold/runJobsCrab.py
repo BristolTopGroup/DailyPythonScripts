@@ -46,6 +46,10 @@ jobs = [
         '--centreOfMassEnergy 13 -s fsrup',
         '--centreOfMassEnergy 13 -s fsrdown',
 
+        # hdamp up/down
+        '--centreOfMassEnergy 13 -s hdampup',
+        '--centreOfMassEnergy 13 -s hdampdown',
+
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
         '--centreOfMassEnergy 13 --muFmuRWeight 2',
@@ -56,10 +60,6 @@ jobs = [
 
         '--centreOfMassEnergy 13 --alphaSWeight 0',
         '--centreOfMassEnergy 13 --alphaSWeight 1',
-
-        # ME-PS matching weight
-        '--centreOfMassEnergy 13 --matchingWeight 9',
-        '--centreOfMassEnergy 13 --matchingWeight 18',
 
         # # Top mass
         '--centreOfMassEnergy 13 -s massup',

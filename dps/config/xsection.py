@@ -2,7 +2,7 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.4/atOutput/combined/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.6/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:35900}
@@ -27,8 +27,8 @@ class XSectionConfig():
         'unfolding_powheg_pythia8', 'unfolding_powheg_pythia8_raw',
         'unfolding_amcatnlo', 'unfolding_amcatnlo_raw', 
         'unfolding_madgraphMLM', 'unfolding_madgraphMLM_raw',
-        'unfolding_matching_down', 'unfolding_matching_down_raw',
-        'unfolding_matching_up', 'unfolding_matching_up_raw',
+        'unfolding_hdamp_down', 'unfolding_hdamp_down_raw',
+        'unfolding_hdamp_up', 'unfolding_hdamp_up_raw',
         'unfolding_mass_down', 'unfolding_mass_up',
         'unfolding_powheg_herwig', 'unfolding_powheg_herwig_raw',
         'unfolding_pdfweights',
@@ -245,8 +245,8 @@ class XSectionConfig():
             'TTJets_renormalisationdown',
             'TTJets_combinedup',
             'TTJets_combineddown',
-            'TTJets_matchingup', 
-            'TTJets_matchingdown',
+            'TTJets_hdampup', 
+            'TTJets_hdampdown',
             'TTJets_fsrup', 
             'TTJets_fsrdown',
             'TTJets_isrup', 
@@ -277,7 +277,7 @@ class XSectionConfig():
                                             'TTJets_isrup', 'TTJets_isrdown'],
 
             'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
-            'TTJets_matching'           : ['TTJets_matchingup', 'TTJets_matchingdown'],
+            'TTJets_hdamp'           : ['TTJets_hdampup', 'TTJets_hdampdown'],
 
             # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
@@ -359,6 +359,9 @@ class XSectionConfig():
         self.ttbar_isrdown_trees = path_to_files + '/TTJets_PowhegPythia8_isrdown_tree.root'
         self.ttbar_fsrup_trees = path_to_files + '/TTJets_PowhegPythia8_fsrup_tree.root'
         self.ttbar_fsrdown_trees = path_to_files + '/TTJets_PowhegPythia8_fsrdown_tree.root'
+        # hdamp up/down
+        self.ttbar_hdampup_trees = path_to_files + '/TTJets_PowhegPythia8_hdampup_tree.root'
+        self.ttbar_hdampdown_trees = path_to_files + '/TTJets_PowhegPythia8_hdampdown_tree.root'
 
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -411,8 +414,8 @@ class XSectionConfig():
         self.unfolding_topPtSystematic = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_topPtSystematic_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_alphaS_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaS_down.root' % self.centre_of_mass_energy
         self.unfolding_alphaS_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaS_up.root' % self.centre_of_mass_energy
-        self.unfolding_matching_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_matching_down.root' % self.centre_of_mass_energy
-        self.unfolding_matching_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_matching_up.root' % self.centre_of_mass_energy
+        self.unfolding_hdamp_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_hdamp_down.root' % self.centre_of_mass_energy
+        self.unfolding_hdamp_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_hdamp_up.root' % self.centre_of_mass_energy
      
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy

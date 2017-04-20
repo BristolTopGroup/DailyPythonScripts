@@ -39,8 +39,8 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_alphaSdown']          = File( measurement_config.unfolding_alphaS_down, 'read' )
     unfolding_files['file_for_alphaSup']            = File( measurement_config.unfolding_alphaS_up, 'read' )
 
-    unfolding_files['file_for_matchingdown']          = File( measurement_config.unfolding_matching_down, 'read' )
-    unfolding_files['file_for_matchingup']            = File( measurement_config.unfolding_matching_up, 'read' )
+    unfolding_files['file_for_hdampdown']          = File( measurement_config.unfolding_hdamp_down, 'read' )
+    unfolding_files['file_for_hdampup']            = File( measurement_config.unfolding_hdamp_up, 'read' )
 
     unfolding_files['file_for_isrdown']             = File( measurement_config.unfolding_isr_down, 'read' )
     unfolding_files['file_for_isrup']               = File( measurement_config.unfolding_isr_up, 'read' )
@@ -161,8 +161,8 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_alphaSdown'			 :  unfolding_files['file_for_alphaSdown'],
         'TTJets_alphaSup'   	     :  unfolding_files['file_for_alphaSup'],
 
-        'TTJets_matchingdown'        :  unfolding_files['file_for_matchingdown'],
-        'TTJets_matchingup'          :  unfolding_files['file_for_matchingup'],
+        'TTJets_hdampdown'        :  unfolding_files['file_for_hdampdown'],
+        'TTJets_hdampup'          :  unfolding_files['file_for_hdampup'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
