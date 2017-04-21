@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
 from dps.config import CMS
 import matplotlib.cm as cm
+import numpy as np
+import gc
 # from itertools import cycle
 from dps.config.latex_labels import b_tag_bins_latex, variables_latex
 from dps.config.variable_binning import bin_edges_full, bin_edges_vis
@@ -30,116 +32,111 @@ my_cmap = cm.get_cmap( 'jet' )
 my_cmap.set_under( 'w' )
 
 def make_scatter_plot( input_file, histogram, bin_edges, channel, variable, title ):
-    global output_folder, output_formats, options
+    global output_folder
     scatter_plot = get_histogram_from_file( histogram, input_file )
 
+    response_hist = rebin_2d( scatter_plot, bin_edges[variable], bin_edges[variable] ).Clone( 'response' )
+
     # Finding max value in scatterplot for colourmap normalisation
-    max_bin = scatter_plot.GetMaximumBin()
-    max_bin_content = scatter_plot.GetBinContent(max_bin)
+    max_bin = response_hist.GetMaximumBin()
+    max_bin_content = response_hist.GetBinContent(max_bin)
     norm = mpl.colors.LogNorm(vmin = 1, vmax = int(max_bin_content+1))
 
-#     scatter_plot.Rebin2D( 5, 5 )
+    # Axis Titles
+    x_title = 'Reconstructed $' + variables_latex[variable] + '$ [GeV]'
+    y_title = 'Generated $' + variables_latex[variable] + '$ [GeV]'
+    save_as_name = 'response_'+channel + '_' + variable
 
     x_limits = [bin_edges[variable][0], bin_edges[variable][-1]]
     y_limits = x_limits
 
-    x_title = 'Reconstructed $' + variables_latex[variable] + '$ [GeV]'
-    y_title = 'Generated $' + variables_latex[variable] + '$ [GeV]'
-    save_as_name = channel + '_' + variable + '_' + str(options.CoM) + 'TeV'
+    fig = plt.figure()
+    ax0 = fig.add_subplot(1, 1, 1)
 
-    plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
+    # fig.subplots_adjust(bottom = 0)
+    # fig.subplots_adjust(top = 1)
+    # fig.subplots_adjust(right = 1)
+    # fig.subplots_adjust(left = 0)
 
-    ax0 = plt.axes()
-    ax0.minorticks_on()
-#     ax0.grid( True, 'major', linewidth = 2 )
-#     ax0.grid( True, 'minor' )
-    plt.tick_params( **CMS.axis_label_major )
-    plt.tick_params( **CMS.axis_label_minor )
-    ax0.xaxis.labelpad = 12
-    ax0.yaxis.labelpad = 12
-
-    im = rplt.imshow( scatter_plot, axes = ax0, cmap = my_cmap, norm=norm )
-
-    colorbar = plt.colorbar( im )
-    colorbar.ax.tick_params( **CMS.axis_label_major )
-
-    # draw lines at bin edges values
-    for edge in bin_edges[variable]:
-        # do not inclue first and last values
-        if ( edge != bin_edges[variable][0] ) and ( edge != bin_edges[variable][-1] ):
-            plt.axvline( x = edge, color = 'red', linewidth = 4, alpha = 0.5 )
-            plt.axhline( y = edge, color = 'red', linewidth = 4, alpha = 0.5 )
-
-    ax0.set_xlim( x_limits )
-    ax0.set_ylim( y_limits )
-
-    plt.tick_params( **CMS.axis_label_major )
-    plt.tick_params( **CMS.axis_label_minor )
+    h = rplt.hist2d( response_hist, axes = ax0, colorbar=True, cmap = my_cmap, norm=norm )
 
     plt.xlabel( x_title, CMS.x_axis_title )
     plt.ylabel( y_title, CMS.y_axis_title )
-    plt.title( title, CMS.title )
+    # plt.title( title, CMS.title )
 
-    plt.tight_layout()
-
-    for output_format in output_formats:
-        plt.savefig( output_folder + save_as_name + '.' + output_format )
-
-def makePurityStabilityPlots(input_file, histogram, bin_edges, channel, variable, isVisiblePhaseSpace):
-    global output_folder, output_formats
- 
-    hist = get_histogram_from_file( histogram, input_file )
-    print "bin edges contents   : ", bin_edges
-    new_hist = rebin_2d( hist, bin_edges, bin_edges ).Clone()
-
-    # get_bin_content = hist.ProjectionX().GetBinContent
-    purities = calculate_purities( new_hist.Clone() )
-    stabilities = calculate_stabilities( new_hist.Clone() )
-    # n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
-    print "purities contents    : ", purities
-    print "stabilities contents : ", stabilities
-
-    hist_stability = value_tuplelist_to_hist(stabilities, bin_edges)
-    hist_purity = value_tuplelist_to_hist(purities, bin_edges)
-
-    hist_purity.color = 'red'
-    hist_stability.color = 'blue'
-
-    hist_stability.linewidth = 4
-    hist_purity.linewidth = 4
-
-    x_limits = [bin_edges[0], bin_edges[-1]]
-    y_limits = [0,1]
-    plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
-
-    ax0 = plt.axes()
     ax0.minorticks_on()
-#     ax0.grid( True, 'major', linewidth = 2 )
-#     ax0.grid( True, 'minor' )
-    plt.tick_params( **CMS.axis_label_major )
-    plt.tick_params( **CMS.axis_label_minor )
     ax0.xaxis.labelpad = 12
     ax0.yaxis.labelpad = 12
-    rplt.hist( hist_stability , stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'Stability' )
-    rplt.hist( hist_purity, stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'Purity' )
-
     ax0.set_xlim( x_limits )
     ax0.set_ylim( y_limits )
 
     plt.tick_params( **CMS.axis_label_major )
     plt.tick_params( **CMS.axis_label_minor )
 
-    x_title = '$' + variables_latex[variable] + '$ [GeV]'
-    plt.xlabel( x_title, CMS.x_axis_title )
-
-    leg = plt.legend(loc=4,prop={'size':40})
-
     plt.tight_layout()
 
-    plt.savefig('test.pdf')
-    save_as_name = 'purityStability_'+channel + '_' + variable + '_' + str(options.CoM) + 'TeV'
-    for output_format in output_formats:
-        plt.savefig( output_folder + save_as_name + '.' + output_format )
+    # Save and release memory
+    plt.savefig( output_folder + save_as_name + '.pdf' )
+    fig.clf()
+    plt.close()
+    gc.collect()
+    return
+
+# def makePurityStabilityPlots(input_file, histogram, bin_edges, channel, variable, isVisiblePhaseSpace):
+#     global output_folder, output_formats
+ 
+#     hist = get_histogram_from_file( histogram, input_file )
+#     print "bin edges contents   : ", bin_edges
+#     new_hist = rebin_2d( hist, bin_edges, bin_edges ).Clone()
+
+#     # get_bin_content = hist.ProjectionX().GetBinContent
+#     purities = calculate_purities( new_hist.Clone() )
+#     stabilities = calculate_stabilities( new_hist.Clone() )
+#     # n_events = [int( get_bin_content( i ) ) for i in range( 1, len( bin_edges ) )]
+#     print "purities contents    : ", purities
+#     print "stabilities contents : ", stabilities
+
+#     hist_stability = value_tuplelist_to_hist(stabilities, bin_edges)
+#     hist_purity = value_tuplelist_to_hist(purities, bin_edges)
+
+#     hist_purity.color = 'red'
+#     hist_stability.color = 'blue'
+
+#     hist_stability.linewidth = 4
+#     hist_purity.linewidth = 4
+
+#     x_limits = [bin_edges[0], bin_edges[-1]]
+#     y_limits = [0,1]
+#     plt.figure( figsize = ( 20, 16 ), dpi = 200, facecolor = 'white' )
+
+#     ax0 = plt.axes()
+#     ax0.minorticks_on()
+# #     ax0.grid( True, 'major', linewidth = 2 )
+# #     ax0.grid( True, 'minor' )
+#     plt.tick_params( **CMS.axis_label_major )
+#     plt.tick_params( **CMS.axis_label_minor )
+#     ax0.xaxis.labelpad = 12
+#     ax0.yaxis.labelpad = 12
+#     rplt.hist( hist_stability , stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'Stability' )
+#     rplt.hist( hist_purity, stacked=False, axes = ax0, cmap = my_cmap, vmin = 1, label = 'Purity' )
+
+#     ax0.set_xlim( x_limits )
+#     ax0.set_ylim( y_limits )
+
+#     plt.tick_params( **CMS.axis_label_major )
+#     plt.tick_params( **CMS.axis_label_minor )
+
+#     x_title = '$' + variables_latex[variable] + '$ [GeV]'
+#     plt.xlabel( x_title, CMS.x_axis_title )
+
+#     leg = plt.legend(loc=4,prop={'size':40})
+
+#     plt.tight_layout()
+
+#     plt.savefig('test.pdf')
+#     save_as_name = 'purityStability_'+channel + '_' + variable + '_' + str(options.CoM) + 'TeV'
+#     for output_format in output_formats:
+#         plt.savefig( output_folder + save_as_name + '.' + output_format )
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -188,4 +185,4 @@ if __name__ == '__main__':
             
             make_scatter_plot( hist_file, histogram_path, bin_edges_to_use, channel, variable, title )
 
-            makePurityStabilityPlots( measurement_config.unfolding_central_raw, histogram_path, bin_edges_to_use[variable], channel, variable, options.visiblePhaseSpace)
+            # makePurityStabilityPlots( measurement_config.unfolding_central_raw, histogram_path, bin_edges_to_use[variable], channel, variable, options.visiblePhaseSpace)

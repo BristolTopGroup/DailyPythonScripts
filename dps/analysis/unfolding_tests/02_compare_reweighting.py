@@ -19,12 +19,14 @@ def main():
 	file_for_ptReweight_down 	= File(config.unfolding_ptreweight_down_firstHalf, 'read')
 	file_for_amcatnlo 			= File(config.unfolding_amcatnlo, 'read')
 	file_for_powhegHerwig 		= File(config.unfolding_powheg_herwig, 'read')
+	file_for_madgraphMLM 		= File(config.unfolding_madgraphMLM, 'read')
 	file_for_etaReweight_up 	= File(config.unfolding_etareweight_up, 'read')
 	file_for_etaReweight_down 	= File(config.unfolding_etareweight_down, 'read')
 	file_for_data_template 		= 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/central/normalisation_{channel}.txt'
 
 	for channel in config.analysis_types.keys():
 		if channel is 'combined':continue
+		print channel
 		for variable in config.variables:
 			print variable
 		# for variable in ['HT']:
@@ -116,6 +118,18 @@ def main():
 			measured_powhegHerwig = asrootpy(response_powhegHerwig.ProjectionX('px',1))
 			truth_powhegHerwig = asrootpy(response_powhegHerwig.ProjectionY())
 
+			_, _, response_madgraphMLM, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_madgraphMLM,
+				variable=variable,
+				channel=channel,
+				centre_of_mass=13,
+				load_fakes=False,
+				visiblePS=True
+			)
+
+			measured_madgraphMLM = asrootpy(response_madgraphMLM.ProjectionX('px',1))
+			truth_madgraphMLM = asrootpy(response_madgraphMLM.ProjectionY())
+
 			# Get the data input (data after background subtraction, and fake removal)
 			file_for_data = file_for_data_template.format( variable = variable, channel = channel )
 			data = read_tuple_from_file(file_for_data)['TTJet']
@@ -149,6 +163,7 @@ def main():
 			# measured_eta_reweighted_down.Rebin(2)
 			measured_amcatnlo.Rebin(2)
 			measured_powhegHerwig.Rebin(2)
+			measured_madgraphMLM.Rebin(2)
 			data.Rebin(2)
 
 			measured_central.Scale( 1 / measured_central.Integral() )
@@ -156,6 +171,7 @@ def main():
 			measured_pt_reweighted_down.Scale( 1 / measured_pt_reweighted_down.Integral() )
 			measured_amcatnlo.Scale( 1 / measured_amcatnlo.Integral() )
 			measured_powhegHerwig.Scale( 1 / measured_powhegHerwig.Integral() )
+			measured_madgraphMLM.Scale( 1 / measured_madgraphMLM.Integral() )
 
 			# measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
 			# measured_eta_reweighted_down.Scale( 1/ measured_eta_reweighted_down.Integral() )
@@ -164,18 +180,19 @@ def main():
 
 			compare_measurements(
 				# models = {'Central' : measured_central, 'PtReweighted Up' : measured_pt_reweighted_up, 'PtReweighted Down' : measured_pt_reweighted_down, 'EtaReweighted Up' : measured_eta_reweighted_up, 'EtaReweighted Down' : measured_eta_reweighted_down},
-				models = OrderedDict([('Central' , measured_central), ('PtReweighted Up' , measured_pt_reweighted_up), ('PtReweighted Down' , measured_pt_reweighted_down), ('amc@nlo' , measured_amcatnlo), ('powhegHerwig' , measured_powhegHerwig) ] ),
+				models = OrderedDict([('Central' , measured_central), ('PtReweighted Up' , measured_pt_reweighted_up), ('PtReweighted Down' , measured_pt_reweighted_down), ('amc@nlo' , measured_amcatnlo), ('powhegHerwig' , measured_powhegHerwig), ('madgraphMLM', measured_madgraphMLM) ] ),
 				measurements = {'Data' : data},
 				show_measurement_errors=True,
 				histogram_properties=hp,
 				save_folder='plots/unfolding/reweighting_check',
 				save_as=['pdf'],
-                line_styles_for_models = ['solid','solid','solid','dashed','dashed'],
+                line_styles_for_models = ['solid','solid','solid','dashed','dashed','dashed'],
 				show_ratio_for_pairs = OrderedDict( [ 
 					('PtUpVsCentral' , [ measured_pt_reweighted_up, measured_central ] ),
 					('PtDownVsCentral' , [ measured_pt_reweighted_down, measured_central ] ),
 					('amcatnloVsCentral' , [ measured_amcatnlo, measured_central ] ),
 					('powhegHerwigVsCentral' , [ measured_powhegHerwig, measured_central ] ),
+					('madgraphMLMVsCentral' , [ measured_madgraphMLM, measured_central ] ),
 					('DataVsCentral' , [data, measured_central] ) 
 					]),
 			)

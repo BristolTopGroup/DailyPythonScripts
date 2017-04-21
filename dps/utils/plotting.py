@@ -636,7 +636,7 @@ def compare_measurements( models = {}, measurements = {},
     # matplotlib
     # plt.rc( 'axes', color_cycle = ['r', 'g', 'b', 'y'] )
     # rootpy
-    colors = ['green', 'red', 'blue', 'magenta', 'black']
+    colors = ['green', 'red', 'blue', 'magenta', 'cyan', 'orange']
     colorcycler = cycle( colors )
     
 #     markers = ['circle', 'triangledown', 'triangleup', 'diamond', 'square', 'star']

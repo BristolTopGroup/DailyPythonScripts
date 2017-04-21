@@ -356,13 +356,17 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # adjust legend location as it is relative to canvas!
     histogram_properties.legend_location = ( loc[0], loc[1] + 0.05 )
 
+    show_ratio=True
+    if 'QCD' in channel:
+    	show_ratio=False
+
     make_data_mc_comparison_plot( 
         histograms_to_draw, 
         histogram_lables, 
         histogram_colors,
         histogram_properties, 
         save_folder = output_folder_to_use,
-        show_ratio = True, 
+        show_ratio = show_ratio, 
         normalise = normalise
     )
     print ("Plot written to : ", output_folder_to_use)
@@ -458,7 +462,7 @@ if __name__ == '__main__':
         'ST',
         'WPT',
         'NVertex',
-        'NVertexNoWeight',
+        # 'NVertexNoWeight',
         'NVertexUp',
         'NVertexDown',
         'LeptonPt',

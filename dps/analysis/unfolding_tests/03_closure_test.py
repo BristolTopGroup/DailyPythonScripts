@@ -22,14 +22,15 @@ def main():
     config = XSectionConfig(13)
     method = 'TUnfold'
 
-    file_for_response = File(config.unfolding_central_secondHalf, 'read')
-    file_for_powhegPythia  = File(config.unfolding_central_firstHalf, 'read')
-    file_for_ptReweight_up  = File(config.unfolding_ptreweight_up_firstHalf, 'read')
-    file_for_ptReweight_down  = File(config.unfolding_ptreweight_down_firstHalf, 'read')
+    file_for_response           = File(config.unfolding_central_secondHalf, 'read')
+    file_for_powhegPythia       = File(config.unfolding_central_firstHalf, 'read')
+    file_for_ptReweight_up      = File(config.unfolding_ptreweight_up_firstHalf, 'read')
+    file_for_ptReweight_down    = File(config.unfolding_ptreweight_down_firstHalf, 'read')
     file_for_amcatnlo           = File(config.unfolding_amcatnlo, 'read')
     file_for_powhegHerwig       = File(config.unfolding_powheg_herwig, 'read')
-    file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
-    file_for_etaReweight_down = File(config.unfolding_etareweight_down, 'read')
+    file_for_madgraphMLM        = File(config.unfolding_madgraphMLM, 'read')
+    file_for_etaReweight_up     = File(config.unfolding_etareweight_up, 'read')
+    file_for_etaReweight_down   = File(config.unfolding_etareweight_down, 'read')
 
     samples_and_files_to_compare = {
     'Central' : file_for_powhegPythia,
@@ -37,6 +38,7 @@ def main():
     'PtReweighted Down' : file_for_ptReweight_down,
     'amcatnlo' : file_for_amcatnlo,
     'powhegHerwig' : file_for_powhegHerwig,
+    'madgraphMLM' : file_for_madgraphMLM,
     # 'EtaReweighted Up' : file_for_etaReweight_up,
     # 'EtaReweighted Down' : file_for_etaReweight_down,
     }
@@ -46,8 +48,6 @@ def main():
         print 'Channel :',channel
         for variable in config.variables:
         # for variable in ['ST']:
-
-
             print 'Variable :',variable
 
             # Always unfold with the same response matrix and tau value
