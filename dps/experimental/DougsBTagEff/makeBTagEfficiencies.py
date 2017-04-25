@@ -62,6 +62,8 @@ def main():
 		"TTJets_PowhegPythia8_down_tree.root" 		: "PowhegPythia8_down", 
 		"TTJets_PowhegPythia8_mtop1755_tree.root" 	: "PowhegPythia8_mtop1755", 
 		"TTJets_PowhegPythia8_mtop1695_tree.root" 	: "PowhegPythia8_mtop1695", 
+		"TTJets_PowhegPythia8_hdampup_tree.root" 	: "PowhegPythia8_hdampup", 
+		"TTJets_PowhegPythia8_hdampdown_tree.root" 	: "PowhegPythia8_hdampdown", 
 
 		"TTJets_PowhegPythia8_plusJES_tree.root" 	: "PowhegPythia8_plusJES", 
 		"TTJets_PowhegPythia8_minusJES_tree.root" 	: "PowhegPythia8_minusJES", 
@@ -94,7 +96,8 @@ def main():
 	#################################################################################################################################
 	# INITIALISE THE INPUT AND OUTPUT PATHS
 	#################################################################################################################################
-	basepath = "/hdfs/TopQuarkGroup/ec6821/1.0.3/atOutput/combined/"
+	basepath = measurement_config.current_analysis_path
+
 	file_path = 'dps/experimental/DougsBTagEff/BTagEfficiency.root'
 
 	if options.only_plots:
