@@ -2,7 +2,7 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.6/atOutput/combined/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.7/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:35900}
