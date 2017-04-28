@@ -169,7 +169,7 @@ def parse_arguments():
     parser.add_argument('--fragWeight', 
         type=int, 
         dest='fragWeight', 
-        default=-1
+        default=0
     )
     parser.add_argument('--nGeneratorWeights', 
         type=int, 
