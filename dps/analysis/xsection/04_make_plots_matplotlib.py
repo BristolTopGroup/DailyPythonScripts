@@ -763,15 +763,15 @@ if __name__ == '__main__':
     all_measurements.extend( pdf_uncertainties )
 
     channel = [
-        'electron', 
-        'muon', 
+        # 'electron', 
+        # 'muon', 
         'combined', 
         # 'combinedBeforeUnfolding',
     ]
 
     unc_type = [
         'normalised',
-        'absolute',
+        # 'absolute',
     ]
 
     for ch in channel:

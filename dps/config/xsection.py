@@ -202,10 +202,10 @@ class XSectionConfig():
             'PileUp_up',
             'PileUp_down',
 
-            'Electron_up',
-            'Electron_down',
-            'Muon_up',
-            'Muon_down',
+            # 'Electron_up',
+            # 'Electron_down',
+            # 'Muon_up',
+            # 'Muon_down',
 
             'ElectronEnUp',
             'ElectronEnDown',
@@ -237,7 +237,6 @@ class XSectionConfig():
             'TTJets_massdown',
             'TTJets_alphaSup', 
             'TTJets_alphaSdown',
-            'TTJets_hadronisation',
             'TTJets_topPt',
             'TTJets_factorisationup',
             'TTJets_factorisationdown',
@@ -247,6 +246,11 @@ class XSectionConfig():
             'TTJets_combineddown',
             'TTJets_hdampup', 
             'TTJets_hdampdown',
+            'TTJets_semiLepBrup', 
+            'TTJets_semiLepBrdown',
+            'TTJets_fragup', 
+            'TTJets_fragdown',
+            'TTJets_petersonFrag',
             'TTJets_fsrup', 
             'TTJets_fsrdown',
             'TTJets_isrup', 
@@ -267,7 +271,6 @@ class XSectionConfig():
             'QCD_shape'                 : ['QCD_shape', 'QCD_shape'],
             # Generator Uncertainties
             'TTJets_mass'               : ['TTJets_massup', 'TTJets_massdown'],
-            'TTJets_hadronisation'      : ['TTJets_hadronisation', 'TTJets_hadronisation'],
             'TTJets_ue'                 : ['TTJets_ueup', 'TTJets_uedown'],
             'TTJets_topPt'              : ['TTJets_topPt', 'TTJets_topPt'],
             'TTJets_scale'              : ['TTJets_factorisationup', 'TTJets_factorisationdown',
@@ -278,6 +281,10 @@ class XSectionConfig():
 
             'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
             'TTJets_hdamp'           : ['TTJets_hdampup', 'TTJets_hdampdown'],
+            'TTJets_semiLepBr'           : ['TTJets_semiLepBrup', 'TTJets_semiLepBrdown'],
+            'TTJets_frag'           : ['TTJets_fragup', 'TTJets_fragdown'],
+            'TTJets_petersonFrag'           : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
+
 
             # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
@@ -286,8 +293,8 @@ class XSectionConfig():
             'BJet'                      : ['BJet_up', 'BJet_down'],
             'LightJet'                  : ['LightJet_up', 'LightJet_down'],
             # Lepton Uncertainties (Id/Iso/Trig Eff)
-            'Electron'                  : ['Electron_up', 'Electron_down'],
-            'Muon'                      : ['Muon_up', 'Muon_down'],
+            # 'Electron'                  : ['Electron_up', 'Electron_down'],
+            # 'Muon'                      : ['Muon_up', 'Muon_down'],
             # PDF Uncertainties
             'PDF'                       : ['PDF', 'PDF'],
             # MET Uncertainties
@@ -299,6 +306,44 @@ class XSectionConfig():
             # 'Top_pt_reweight'           : ['Top_pt_reweight', 'Top_pt_reweight'],
             # 'Top_eta_reweight'          : ['Top_eta_reweight_up', 'Top_eta_reweight_down'],
         }
+
+        self.systematic_group_bkg = [
+            'V+Jets_cross_section',
+            'SingleTop_cross_section', 
+            'QCD_cross_section', 
+            'QCD_shape',
+        ]
+        self.systematic_group_met = [
+            'ElectronEn',
+            'MuonEn',
+            'TauEn',
+            'UnclusteredEn',
+        ]
+        self.systematic_group_experimental = [
+            'JES',
+            'JER',
+            'BJet',
+            'LightJet',
+            'PileUp',
+            'Electron',
+            'Muon',
+            'luminosity', 
+        ]
+        self.systematic_group_partonShower = [
+            'TTJets_scale',
+            'TTJets_ue',
+            'TTJets_hdamp',
+            'TTJets_semiLepBr',
+            'TTJets_frag',
+            'TTJets_petersonFrag',
+            'JES',
+        ]
+        self.systematic_group_otherTheoretical = [
+            'PDF',
+            'TTJets_alphaS',
+            'TTJets_mass',
+            'TTJets_topPt'
+        ]
 
         self.samplesForChi2Comparison = [
             'powhegPythia8',
@@ -414,9 +459,15 @@ class XSectionConfig():
         self.unfolding_topPtSystematic = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_topPtSystematic_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_alphaS_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaS_down.root' % self.centre_of_mass_energy
         self.unfolding_alphaS_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_alphaS_up.root' % self.centre_of_mass_energy
-        self.unfolding_hdamp_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_hdamp_down.root' % self.centre_of_mass_energy
-        self.unfolding_hdamp_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_hdamp_up.root' % self.centre_of_mass_energy
-     
+        self.unfolding_hdamp_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_hdampdown_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_hdamp_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_hdampup_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_semiLepBr_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_semiLepBr_down.root' % self.centre_of_mass_energy
+        self.unfolding_semiLepBr_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_semiLepBr_up.root' % self.centre_of_mass_energy
+        self.unfolding_frag_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_down.root' % self.centre_of_mass_energy
+        self.unfolding_frag_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_up.root' % self.centre_of_mass_energy
+        self.unfolding_petersonFrag = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_peterson.root' % self.centre_of_mass_energy
+    
+
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_Lepton_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptondown_asymmetric.root' % self.centre_of_mass_energy
@@ -515,9 +566,6 @@ class XSectionConfig():
             'Theory': [
                 ('TTJets_scaledown', 'TTJets_scaleup'),
                 ('TTJets_massdown', 'TTJets_massup')
-            ],
-            'Hadronisation': [
-                ('TTJets_hadronisation', 'TTJets_hadronisation')
             ],
             'NLO generator': [
                 ('TTJets_NLOgenerator', 'TTJets_NLOgenerator')
