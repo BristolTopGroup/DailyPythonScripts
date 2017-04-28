@@ -5,6 +5,8 @@ from ROOT import gPad, gROOT, gStyle, TFile, TTree, TH1F, TH2F, TCanvas, TPad, T
 from array import array
 import math
 import os
+import os.path
+import sys
 import time
 
 from optparse import OptionParser
@@ -99,6 +101,15 @@ def main():
 	basepath = measurement_config.current_analysis_path
 
 	file_path = 'dps/experimental/DougsBTagEff/BTagEfficiency.root'
+
+	print 'Calculating efficiencies for following files:'
+	for in_file, sample in input_files.iteritems():
+		input_file = basepath+in_file
+		print input_file
+		if not os.path.isfile(input_file):
+			print "---> File doesn't exist, exiting"
+			sys.exit()
+
 
 	if options.only_plots:
 	 	make_eff_plots(input_files, file_path)
