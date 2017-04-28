@@ -124,7 +124,7 @@ for variable in measurement_config.variables:
 		transferFactorHist.SetBinContent(i,transfer_from_central_to_other.nominal_value)
 		transferFactorHist.SetBinError(i, transfer_from_central_to_other.std_dev)
 
-	# qcd_estimate_from_central.Scale(transfer_from_central_to_other.nominal_value)
+	qcd_estimate_from_central.Scale(transfer_from_central_to_other.nominal_value)
 	qcd_estimate_from_central.Multiply( transferFactorHist )
 
 	can = Canvas()

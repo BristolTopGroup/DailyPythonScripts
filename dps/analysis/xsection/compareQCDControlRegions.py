@@ -127,20 +127,20 @@ if __name__ == '__main__':
         hists['QCD_signal_MC'].Draw('SAME HIST E')
 
 
-        # hists['QCD_shape'].SetLineColor(4)
-        # hists['QCD_shape'].SetLineWidth(3)
-        # hists['QCD_shape'].SetLineStyle(2)
-        # hists['QCD_shape'].Draw('SAME HIST E')
+        hists['QCD_shape'].SetLineColor(4)
+        hists['QCD_shape'].SetLineWidth(3)
+        hists['QCD_shape'].SetLineStyle(2)
+        hists['QCD_shape'].Draw('SAME HIST E')
 
-        # hists['QCD_normalisation'].SetLineColor(8)
-        # hists['QCD_normalisation'].SetLineWidth(3)
-        # hists['QCD_normalisation'].SetLineStyle(2)
-        # hists['QCD_normalisation'].Draw('SAME HIST E')
+        hists['QCD_normalisation'].SetLineColor(8)
+        hists['QCD_normalisation'].SetLineWidth(3)
+        hists['QCD_normalisation'].SetLineStyle(2)
+        hists['QCD_normalisation'].Draw('SAME HIST E')
 
-        hists['QCD_other_control_region'].SetLineColor(9)
-        hists['QCD_other_control_region'].SetLineWidth(3)
-        hists['QCD_other_control_region'].SetLineStyle(2)
-        hists['QCD_other_control_region'].Draw('SAME HIST E')
+        # hists['QCD_other_control_region'].SetLineColor(9)
+        # hists['QCD_other_control_region'].SetLineWidth(3)
+        # hists['QCD_other_control_region'].SetLineStyle(2)
+        # hists['QCD_other_control_region'].Draw('SAME HIST E')
 
         # print hists['QCD_signal_MC'].Integral()
         # print hists['central'].Integral()
@@ -154,9 +154,9 @@ if __name__ == '__main__':
 
         pad2.cd()
         # pad2.SetGridy()
-        ratio1 = hists['central'] / hists['QCD_signal_MC']
-        ratio2 = hists['QCD_other_control_region'] / hists['QCD_signal_MC']
-        ratio3 = hists['QCD_other_control_region'] / hists['QCD_signal_MC']
+        ratio1 = hists['QCD_shape'] / hists['central']
+        ratio2 = hists['QCD_normalisation'] / hists['central']
+        # ratio3 = hists['QCD_other_control_region'] / hists['QCD_signal_MC']
 
         print list( ratio1.y() )
         ratio1.GetYaxis().SetRangeUser(0,2)
