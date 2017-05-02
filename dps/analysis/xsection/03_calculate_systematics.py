@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     unc_type = [
         'normalised',
-        # 'absolute',
+        'absolute',
     ]
 
     for ch in channel:

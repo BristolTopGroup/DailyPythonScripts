@@ -221,11 +221,11 @@ if __name__ == '__main__':
 
 	unc_type = [
 		'normalised',
-		# 'absolute',
+		'absolute',
 	]
 
-	for channel in ['electron', 'muon', 'combined']:  
-		if channel != 'combined':continue
+	# for channel in ['electron', 'muon', 'combined']:  
+	for channel in ['combined']:  
 		for utype in unc_type:
 			input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_{type}_{channel}_{method}_summary_relative.txt'.format(
 				basepath = 	path,
