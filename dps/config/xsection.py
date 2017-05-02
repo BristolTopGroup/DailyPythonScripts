@@ -202,10 +202,10 @@ class XSectionConfig():
             'PileUp_up',
             'PileUp_down',
 
-            # 'Electron_up',
-            # 'Electron_down',
-            # 'Muon_up',
-            # 'Muon_down',
+            'Electron_up',
+            'Electron_down',
+            'Muon_up',
+            'Muon_down',
 
             'ElectronEnUp',
             'ElectronEnDown',
@@ -293,8 +293,8 @@ class XSectionConfig():
             'BJet'                      : ['BJet_up', 'BJet_down'],
             'LightJet'                  : ['LightJet_up', 'LightJet_down'],
             # Lepton Uncertainties (Id/Iso/Trig Eff)
-            # 'Electron'                  : ['Electron_up', 'Electron_down'],
-            # 'Muon'                      : ['Muon_up', 'Muon_down'],
+            'Electron'                  : ['Electron_up', 'Electron_down'],
+            'Muon'                      : ['Muon_up', 'Muon_down'],
             # PDF Uncertainties
             'PDF'                       : ['PDF', 'PDF'],
             # MET Uncertainties
