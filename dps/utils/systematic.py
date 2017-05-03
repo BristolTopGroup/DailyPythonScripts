@@ -244,11 +244,7 @@ def get_scale_envelope(options, d_scale_syst, central):
         scaleToAppend = []
         # Scale fsr in PS systematic
         if 'TTJets_fsrdown' in scale_variation or 'TTJets_fsrup' in scale_variation:
-            scale = 1
-            if 'TTJets_fsrdown' in scale_variation:
-                scale = 1 / ( 2 * sqrt(2) )
-            elif 'TTJets_fsrup' in scale_variation:
-                scale = sqrt(2) / 2
+            scale = sqrt(2) / 2
 
             for variation, c in zip( d_scale_syst[scale_variation], central ):
                 diff = ( variation - c[0] ) * scale
@@ -512,7 +508,7 @@ def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
             norm=norm,
         )
         create_covariance_matrix(covariance_matrix, table_outfile)
-        make_covariance_plot(options, syst_name, covariance_matrix, label='Covariance')
+        # make_covariance_plot(options, syst_name, covariance_matrix, label='Covariance')
 
         table_outfile = covariance_output_template.format( 
             path_to_DF=path_to_DF, 
@@ -522,7 +518,7 @@ def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
             norm=norm,
         )
         create_covariance_matrix(correlation_matrix, table_outfile)
-        make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
+        # make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
 
     generate_total_covariance(options, all_covariance_matrices, all_correlation_matrices)
 
