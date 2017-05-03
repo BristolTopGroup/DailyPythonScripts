@@ -88,6 +88,8 @@ def getFileName( com, sample, measurementConfig ) :
             'hdampup'             : measurementConfig.ttbar_hdampup_trees,
             'hdampdown'           : measurementConfig.ttbar_hdampdown_trees,
 
+            'erdOn'           : measurementConfig.ttbar_erdOn_trees,
+
             'massdown'          : measurementConfig.ttbar_mtop1695_trees,
             'massup'            : measurementConfig.ttbar_mtop1755_trees,
 

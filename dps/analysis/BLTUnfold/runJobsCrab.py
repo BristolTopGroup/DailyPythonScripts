@@ -49,6 +49,10 @@ jobs = [
         '--centreOfMassEnergy 13 -s hdampup',
         '--centreOfMassEnergy 13 -s hdampdown',
 
+        # erdOn
+        '--centreOfMassEnergy 13 -s erdOn',
+
+
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
         '--centreOfMassEnergy 13 --muFmuRWeight 2',

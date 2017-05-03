@@ -42,6 +42,8 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_hdampdown']          = File( measurement_config.unfolding_hdamp_down, 'read' )
     unfolding_files['file_for_hdampup']            = File( measurement_config.unfolding_hdamp_up, 'read' )
 
+    unfolding_files['file_for_erdOn']            = File( measurement_config.unfolding_erdOn, 'read' )
+
     unfolding_files['file_for_semiLepBrdown']          = File( measurement_config.unfolding_semiLepBr_down, 'read' )
     unfolding_files['file_for_semiLepBrup']            = File( measurement_config.unfolding_semiLepBr_up, 'read' )
 
@@ -175,6 +177,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_fragdown'        :  unfolding_files['file_for_fragdown'],
         'TTJets_fragup'          :  unfolding_files['file_for_fragup'],
         'TTJets_petersonFrag'          :  unfolding_files['file_for_petersonFrag'],
+        'TTJets_erdOn'          :  unfolding_files['file_for_erdOn'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],

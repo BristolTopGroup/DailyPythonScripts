@@ -246,6 +246,7 @@ class XSectionConfig():
             'TTJets_combineddown',
             'TTJets_hdampup', 
             'TTJets_hdampdown',
+            'TTJets_erdOn',
             'TTJets_semiLepBrup', 
             'TTJets_semiLepBrdown',
             'TTJets_fragup', 
@@ -277,13 +278,18 @@ class XSectionConfig():
                                             'TTJets_renormalisationup', 'TTJets_renormalisationdown',
                                             'TTJets_combinedup', 'TTJets_combineddown',
                                             'TTJets_fsrup', 'TTJets_fsrdown',
-                                            'TTJets_isrup', 'TTJets_isrdown'],
+                                            'TTJets_isrup', 'TTJets_isrdown'
+                                            ],
+            # 'TTJets_fsr'                   :    ['TTJets_fsrup', 'TTJets_fsrdown'],
+            # 'TTJets_isr'                   :    ['TTJets_isrup', 'TTJets_isrdown'],
+
 
             'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
             'TTJets_hdamp'           : ['TTJets_hdampup', 'TTJets_hdampdown'],
             'TTJets_semiLepBr'           : ['TTJets_semiLepBrup', 'TTJets_semiLepBrdown'],
             'TTJets_frag'           : ['TTJets_fragup', 'TTJets_fragdown'],
             'TTJets_petersonFrag'           : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
+            'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
 
 
             # Event Reweighting
@@ -331,11 +337,14 @@ class XSectionConfig():
         ]
         self.systematic_group_partonShower = [
             'TTJets_scale',
+            # 'TTJets_fsr',
+            # 'TTJets_isr',
             'TTJets_ue',
             'TTJets_hdamp',
             'TTJets_semiLepBr',
             'TTJets_frag',
             'TTJets_petersonFrag',
+            'TTJets_CR_erdOn',
             'JES',
         ]
         self.systematic_group_otherTheoretical = [
@@ -408,6 +417,9 @@ class XSectionConfig():
         self.ttbar_hdampup_trees = path_to_files + '/TTJets_PowhegPythia8_hdampup_tree.root'
         self.ttbar_hdampdown_trees = path_to_files + '/TTJets_PowhegPythia8_hdampdown_tree.root'
 
+        # erdOn
+        self.ttbar_erdOn_trees = path_to_files + '/TTJets_PowhegPythia8_erdOn_tree.root'
+
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
         self.unfolding_amcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnlo.root' % self.centre_of_mass_energy
@@ -466,6 +478,7 @@ class XSectionConfig():
         self.unfolding_frag_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_down.root' % self.centre_of_mass_energy
         self.unfolding_frag_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_up.root' % self.centre_of_mass_energy
         self.unfolding_petersonFrag = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_peterson.root' % self.centre_of_mass_energy
+        self.unfolding_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_erdOn_asymmetric.root' % self.centre_of_mass_energy
     
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
