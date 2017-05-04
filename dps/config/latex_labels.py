@@ -234,6 +234,7 @@ systematics_latex = {
     'TTJets_hdamp'              : '\hdamp',
     'TTJets_semiLepBr'          : 'B hadron decay semileptonic branching fraction',
     'TTJets_CR_erdOn'              : 'Colour reconnection (erdOn)',
+    'TTJets_CR_QCDbased_erdOn'              : 'Colour reconnection (QCD based)',
     'central'                   : '',
     'systematic'                : '',
     'statistical'               : '',

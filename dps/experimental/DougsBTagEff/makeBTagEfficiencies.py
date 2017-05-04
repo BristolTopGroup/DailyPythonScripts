@@ -67,6 +67,7 @@ def main():
 		"TTJets_PowhegPythia8_hdampup_tree.root" 	: "PowhegPythia8_hdampup", 
 		"TTJets_PowhegPythia8_hdampdown_tree.root" 	: "PowhegPythia8_hdampdown", 
 		"TTJets_PowhegPythia8_erdOn_tree.root" 		: "PowhegPythia8_erdOn", 
+		"TTJets_PowhegPythia8_QCDbased_erdOn_tree.root" 		: "PowhegPythia8_QCDbased_erdOn", 
 
 		"TTJets_PowhegPythia8_plusJES_tree.root" 	: "PowhegPythia8_plusJES", 
 		"TTJets_PowhegPythia8_minusJES_tree.root" 	: "PowhegPythia8_minusJES", 

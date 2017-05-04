@@ -247,6 +247,7 @@ class XSectionConfig():
             'TTJets_hdampup', 
             'TTJets_hdampdown',
             'TTJets_erdOn',
+            'TTJets_QCDbased_erdOn',
             'TTJets_semiLepBrup', 
             'TTJets_semiLepBrdown',
             'TTJets_fragup', 
@@ -290,6 +291,7 @@ class XSectionConfig():
             'TTJets_frag'           : ['TTJets_fragup', 'TTJets_fragdown'],
             'TTJets_petersonFrag'           : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
             'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
+            'TTJets_CR_QCDbased_erdOn'           : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
 
 
             # Event Reweighting
@@ -345,6 +347,7 @@ class XSectionConfig():
             'TTJets_frag',
             'TTJets_petersonFrag',
             'TTJets_CR_erdOn',
+            'TTJets_CR_QCDbased_erdOn',
             'JES',
         ]
         self.systematic_group_otherTheoretical = [
@@ -419,6 +422,7 @@ class XSectionConfig():
 
         # erdOn
         self.ttbar_erdOn_trees = path_to_files + '/TTJets_PowhegPythia8_erdOn_tree.root'
+        self.ttbar_QCDbased_erdOn_trees = path_to_files + '/TTJets_PowhegPythia8_QCDbased_erdOn_tree.root'
 
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -479,6 +483,7 @@ class XSectionConfig():
         self.unfolding_frag_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_up.root' % self.centre_of_mass_energy
         self.unfolding_petersonFrag = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_peterson.root' % self.centre_of_mass_energy
         self.unfolding_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_erdOn_asymmetric.root' % self.centre_of_mass_energy
+        self.unfolding_QCDbased_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_QCDbased_erdOn_asymmetric.root' % self.centre_of_mass_energy
     
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
