@@ -69,8 +69,8 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 			elif high[1][0] not in largest_syst: largest_syst.append(high[1][0])
 			else: continue
 
-	rplt.fill_between( syst_hist_up, syst_hist_down, color = 'yellow', label='Syst.' )
-	rplt.fill_between( stat_hist_down, stat_hist_up, color = 'grey', label='Stat.' )
+	rplt.fill_between( syst_hist_up, syst_hist_down, color = 'gold', label='Syst.' )
+	rplt.fill_between( stat_hist_down, stat_hist_up, color = '0.75', label='Stat.' )
 
 	plt.tick_params( **CMS.axis_label_major )
 	plt.tick_params( **CMS.axis_label_minor )
