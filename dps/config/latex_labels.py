@@ -72,6 +72,7 @@ measurements_latex = {
     'powhegPythia8': r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
     'powhegHerwig': r'\textsc{Powheg \raisebox{.2ex}{+} Herwig\raisebox{.2ex}{++}}',
     'amcatnloPythia8': r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
+    'amcatnlo': r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
 
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
     'pythia8': '$t\\bar{t}$ (Pythia8)',
