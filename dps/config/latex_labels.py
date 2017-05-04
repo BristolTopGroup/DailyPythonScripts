@@ -68,10 +68,10 @@ measurements_latex = {
     'amcatnlo': 'aMC@NLO Pythia8',
     'amcatnloHerwig': 'aMC@NLO Herwig++',
 
-    'madgraphMLM': r'\textsc{Madgraph \raisebox{.2ex}{+} Pythia8}',
+    'madgraphMLM': r'\textsc{MG5}\_a\textsc{MC@NLO (MLM) \raisebox{.2ex}{+} Pythia8}',
     'powhegPythia8': r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
     'powhegHerwig': r'\textsc{Powheg \raisebox{.2ex}{+} Herwig\raisebox{.2ex}{++}}',
-    'amcatnloPythia8': r'a\textsc{MC@NLO \raisebox{.2ex}{+} Pythia8}',
+    'amcatnloPythia8': r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
 
     'POWHEG_PYTHIA': '$t\\bar{t}$ (POWHEG+Pythia)',
     'pythia8': '$t\\bar{t}$ (Pythia8)',

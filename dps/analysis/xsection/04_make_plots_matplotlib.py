@@ -310,7 +310,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     elif variable == 'WPT':
         legend_location = (1.0, 0.84)
     elif variable == 'abs_lepton_eta':
-        legend_location = (0.7, 0.62)
+        legend_location = (0.97, 0.87)
 
     # Add legend to plot
     plt.legend( new_handles, new_labels, 
@@ -369,7 +369,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         axes.set_ylim( ymin = 0.)
     axes.set_ylim(ymax = ylim[1]*1.1)
     if variable == 'abs_lepton_eta':
-        axes.set_ylim(ymax = ylim[1]*1.25)
+        axes.set_ylim(ymax = ylim[1]*1.6)
 
     # Now to show either of the ratio plots
     if show_ratio:
