@@ -82,7 +82,7 @@ set_root_defaults( set_batch=True)
 
 measurement_config  = XSectionConfig( 13 )
 
-channel =  'muon'
+channel =  'electron'
 
 for variable in measurement_config.variables:
 	print variable
@@ -119,13 +119,13 @@ for variable in measurement_config.variables:
 
 	qcd_estimate_from_central = qcd_from_data_in_central.Clone('estimate')
 
-	transferFactorHist = qcd_estimate_from_central.Clone('transferFactor')
-	for i in range(0,transferFactorHist.GetNbinsX()+1):
-		transferFactorHist.SetBinContent(i,transfer_from_central_to_other.nominal_value)
-		transferFactorHist.SetBinError(i, transfer_from_central_to_other.std_dev)
+	# transferFactorHist = qcd_estimate_from_central.Clone('transferFactor')
+	# for i in range(0,transferFactorHist.GetNbinsX()+1):
+	# 	transferFactorHist.SetBinContent(i,transfer_from_central_to_other.nominal_value)
+	# 	transferFactorHist.SetBinError(i, transfer_from_central_to_other.std_dev)
 
 	qcd_estimate_from_central.Scale(transfer_from_central_to_other.nominal_value)
-	qcd_estimate_from_central.Multiply( transferFactorHist )
+	# qcd_estimate_from_central.Multiply( transferFactorHist )
 
 	can = Canvas()
 	pad1 = Pad( 0, 0.3, 1, 1)
@@ -140,19 +140,23 @@ for variable in measurement_config.variables:
 	qcd_from_data_in_other.SetLineWidth(3)
 	qcd_from_data_in_other.SetLineStyle(1)
 
-	qcd_from_data_in_other.Scale( 1 / qcd_from_data_in_other.integral(overflow=True))
+	# qcd_from_data_in_other.Scale( 1 / qcd_from_data_in_other.integral(overflow=True))
 
 	qcd_from_data_in_other.GetYaxis().SetTitle('Events')
 	qcd_from_data_in_other.GetXaxis().SetTitle(variables_latex[variable])
 
 	qcd_from_data_in_other.Draw('HIST E')
+
+	maxValue = max( [ qcd_from_data_in_other.GetMaximum(), qcd_estimate_from_central.GetMaximum(), other_control_histograms['QCD'].GetMaximum() ] )
+
+	qcd_from_data_in_other.GetYaxis().SetRangeUser(0, maxValue * 1.5)
 	leg.AddEntry( qcd_from_data_in_other, "Data in alternative control region", 'l')
 
 	qcd_estimate_from_central.SetLineColor(2)
 	qcd_estimate_from_central.SetLineWidth(3)
 	qcd_estimate_from_central.SetLineStyle(3)
 
-	qcd_estimate_from_central.Scale( 1 / qcd_estimate_from_central.integral(overflow=True))
+	# qcd_estimate_from_central.Scale( 1 / qcd_estimate_from_central.integral(overflow=True))
 
 	qcd_estimate_from_central.Draw('HIST E SAME')
 	leg.AddEntry( qcd_estimate_from_central, "QCD estimate from nominal control region", 'l')
@@ -161,7 +165,7 @@ for variable in measurement_config.variables:
 	other_control_histograms['QCD'].SetLineWidth(3)
 	other_control_histograms['QCD'].SetLineStyle(2)
 
-	other_control_histograms['QCD'].Scale( 1 / other_control_histograms['QCD'].integral(overflow=True))
+	# other_control_histograms['QCD'].Scale( 1 / other_control_histograms['QCD'].integral(overflow=True))
 
 	other_control_histograms['QCD'].Draw('HIST E SAME')
 	leg.AddEntry( other_control_histograms['QCD'], "QCD MC in alternative control region", 'l')
@@ -169,10 +173,11 @@ for variable in measurement_config.variables:
 
 	pad2.cd()
 	pad2.SetGridy()
-	ratio = qcd_estimate_from_central / qcd_from_data_in_other
+	ratio = qcd_from_data_in_other / qcd_estimate_from_central
 	ratio.GetYaxis().SetRangeUser(0,2)
 	ratio.GetXaxis().SetTitle( variables_latex[variable] )
-	ratio.GetYaxis().SetTitle( '#frac{QCD estimate}{Data}')
+	# ratio.GetYaxis().SetTitle( '#frac{QCD estimate}{Data}')
+	ratio.GetYaxis().SetTitle( 'Ratio')
 	ratio.GetYaxis().SetTitleSize(0.08)
 	ratio.GetYaxis().SetTitleSize(0.1)
 	ratio.GetYaxis().SetTitleOffset(0.7)
