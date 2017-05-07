@@ -69,8 +69,8 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 			elif high[1][0] not in largest_syst: largest_syst.append(high[1][0])
 			else: continue
 
-	rplt.fill_between( syst_hist_up, syst_hist_down, color = 'yellow', label='Syst.' )
-	rplt.fill_between( stat_hist_down, stat_hist_up, color = 'grey', label='Stat.' )
+	rplt.fill_between( syst_hist_up, syst_hist_down, color = 'gold', label='Syst.' )
+	rplt.fill_between( stat_hist_down, stat_hist_up, color = '0.75', label='Stat.' )
 
 	plt.tick_params( **CMS.axis_label_major )
 	plt.tick_params( **CMS.axis_label_minor )
@@ -224,8 +224,8 @@ if __name__ == '__main__':
 		'absolute',
 	]
 
-	for channel in ['electron', 'muon', 'combined']:  
-		if channel != 'combined':continue
+	# for channel in ['electron', 'muon', 'combined']:  
+	for channel in ['combined']:  
 		for utype in unc_type:
 			input_file = '{basepath}/{com}TeV/{var}/{ps}/central/xsection_{type}_{channel}_{method}_summary_relative.txt'.format(
 				basepath = 	path,
@@ -246,24 +246,17 @@ if __name__ == '__main__':
 			systematic_uncertainties = pu.file_to_df(input_file)
 
 			# any group of systematics you want to plot
-			l_xsec = []
-			l_mc = []
-			l_weight = []
-			l_met = []
-			l_shape = []
-			for k in systematic_uncertainties.keys():
-				if 'cross_section' in k:  l_xsec.append(k)
-				elif 'TTJets_' in k:  l_mc.append(k)
-				elif ('Electron' in k or 'Muon' in k or 'PileUp' in k or 'luminosity' in k or 'BJet' in k) and 'En' not in k: l_weight.append(k) 
-				elif 'En' in k: l_met.append(k) 
-				elif 'JES' in k or 'JER' in k or 'QCD_shape' in k or 'PDF' in k: l_shape.append(k) 
-				else : print ' Not including {}'.format(k)
+			l_bkg = measurement_config.systematic_group_bkg
+			l_met = measurement_config.systematic_group_met
+			l_exp = measurement_config.systematic_group_experimental
+			l_ps = measurement_config.systematic_group_partonShower
+			l_otherTheoretical = measurement_config.systematic_group_otherTheoretical
 
 			# # Plot them
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder)
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder, plot_largest = True, subname = 'largest')
-			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_xsec, "xsection")
-			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_mc, "mc")
-			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_weight, "weight")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_bkg, "background")
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_met, "met")
-			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_shape, "shape")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_exp, "experimental")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_ps, "partonShower")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_otherTheoretical, "otherTheoretical")

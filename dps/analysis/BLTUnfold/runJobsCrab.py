@@ -31,7 +31,6 @@ jobs = [
         '--centreOfMassEnergy 13 -s amcatnlo',
         '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s powhegherwigpp',
-        # # '--centreOfMassEnergy 13 -s amcatnloherwigpp',
 
         # Top pt
         '--centreOfMassEnergy 13 -s topPtSystematic',
@@ -46,6 +45,15 @@ jobs = [
         '--centreOfMassEnergy 13 -s fsrup',
         '--centreOfMassEnergy 13 -s fsrdown',
 
+        # hdamp up/down
+        '--centreOfMassEnergy 13 -s hdampup',
+        '--centreOfMassEnergy 13 -s hdampdown',
+
+        # erdOn
+        '--centreOfMassEnergy 13 -s erdOn',
+        '--centreOfMassEnergy 13 -s QCDbased_erdOn',
+
+
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
         '--centreOfMassEnergy 13 --muFmuRWeight 2',
@@ -57,30 +65,21 @@ jobs = [
         '--centreOfMassEnergy 13 --alphaSWeight 0',
         '--centreOfMassEnergy 13 --alphaSWeight 1',
 
-        # ME-PS matching weight
-        '--centreOfMassEnergy 13 --matchingWeight 9',
-        '--centreOfMassEnergy 13 --matchingWeight 18',
+        # B fragmentation weights
+        '--centreOfMassEnergy 13 --fragWeight 1',
+        '--centreOfMassEnergy 13 --fragWeight 2',
+        '--centreOfMassEnergy 13 --fragWeight 3',
+        '--centreOfMassEnergy 13 --fragWeight 4',
+
+        # Semileptonic BR
+        '--centreOfMassEnergy 13 --semiLepBrWeight -1',
+        '--centreOfMassEnergy 13 --semiLepBrWeight 1',
 
         # # Top mass
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
 
-        # Top pt
-        '--centreOfMassEnergy 13 -s topPtSystematic',
-
-        # Alpha s fsr
-        '--centreOfMassEnergy 13 -s fsrup',
-        '--centreOfMassEnergy 13 -s fsrdown',
-
-        # Alpha s isr
-        '--centreOfMassEnergy 13 -s isrup',
-        '--centreOfMassEnergy 13 -s isrdown',
-
-        # UE
-        '--centreOfMassEnergy 13 -s ueup',
-        '--centreOfMassEnergy 13 -s uedown',
-
-        # # # Experimental systematics
+        # Experimental systematics
         '--centreOfMassEnergy 13 -s jesup',
         '--centreOfMassEnergy 13 -s jesdown',
 

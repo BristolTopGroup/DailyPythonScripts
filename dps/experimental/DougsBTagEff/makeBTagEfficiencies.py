@@ -5,6 +5,8 @@ from ROOT import gPad, gROOT, gStyle, TFile, TTree, TH1F, TH2F, TCanvas, TPad, T
 from array import array
 import math
 import os
+import os.path
+import sys
 import time
 
 from optparse import OptionParser
@@ -62,6 +64,10 @@ def main():
 		"TTJets_PowhegPythia8_down_tree.root" 		: "PowhegPythia8_down", 
 		"TTJets_PowhegPythia8_mtop1755_tree.root" 	: "PowhegPythia8_mtop1755", 
 		"TTJets_PowhegPythia8_mtop1695_tree.root" 	: "PowhegPythia8_mtop1695", 
+		"TTJets_PowhegPythia8_hdampup_tree.root" 	: "PowhegPythia8_hdampup", 
+		"TTJets_PowhegPythia8_hdampdown_tree.root" 	: "PowhegPythia8_hdampdown", 
+		"TTJets_PowhegPythia8_erdOn_tree.root" 		: "PowhegPythia8_erdOn", 
+		"TTJets_PowhegPythia8_QCDbased_erdOn_tree.root" 		: "PowhegPythia8_QCDbased_erdOn", 
 
 		"TTJets_PowhegPythia8_plusJES_tree.root" 	: "PowhegPythia8_plusJES", 
 		"TTJets_PowhegPythia8_minusJES_tree.root" 	: "PowhegPythia8_minusJES", 
@@ -94,8 +100,18 @@ def main():
 	#################################################################################################################################
 	# INITIALISE THE INPUT AND OUTPUT PATHS
 	#################################################################################################################################
-	basepath = "/hdfs/TopQuarkGroup/ec6821/1.0.3/atOutput/combined/"
+	basepath = measurement_config.current_analysis_path
+
 	file_path = 'dps/experimental/DougsBTagEff/BTagEfficiency.root'
+
+	print 'Calculating efficiencies for following files:'
+	for in_file, sample in input_files.iteritems():
+		input_file = basepath+in_file
+		print input_file
+		if not os.path.isfile(input_file):
+			print "---> File doesn't exist, exiting"
+			sys.exit()
+
 
 	if options.only_plots:
 	 	make_eff_plots(input_files, file_path)

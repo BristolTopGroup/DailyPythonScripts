@@ -307,7 +307,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
 
     # Find maximum y of samples
     maxData = max( list(signal_region_hists['data'].y()) )
-    y_limits = [0, maxData * 1.4]
+    y_limits = [0, maxData * 1.5]
     if log_y:
         y_limits = [0.1, maxData * 100 ]
 
@@ -471,13 +471,13 @@ if __name__ == '__main__':
         'NBJetsDown',
         'NBJets_LightUp',
         'NBJets_LightDown',
-        'JetPt',
-        'sigmaietaieta',
+        # 'JetPt',
+        # 'sigmaietaieta',
 
-        'RelIso',
-        'hltECALIso',
-        'hltHCALIso',
-        'hltTrackerIso',
+        # 'RelIso',
+        # 'hltECALIso',
+        # 'hltHCALIso',
+        # 'hltTrackerIso',
 
     ]
 
@@ -490,10 +490,10 @@ if __name__ == '__main__':
         'QCDLeptonPt',
         'QCDNJets',
 
-        'QCDRelIso',
-        'QCDHLTECALIso',
-        'QCDHLTHCALIso',
-        'QCDHLTTrackerIso',
+        # 'QCDRelIso',
+        # 'QCDHLTECALIso',
+        # 'QCDHLTHCALIso',
+        # 'QCDHLTTrackerIso',
 
     ]
 
@@ -1143,6 +1143,7 @@ if __name__ == '__main__':
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 
@@ -1179,6 +1180,7 @@ if __name__ == '__main__':
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 
@@ -1199,6 +1201,7 @@ if __name__ == '__main__':
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 
@@ -1219,6 +1222,7 @@ if __name__ == '__main__':
                       nBins = 20,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 
@@ -1238,6 +1242,7 @@ if __name__ == '__main__':
                       nBins = len(control_plots_bins['AbsLeptonEtaQCD'])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 
@@ -1261,6 +1266,7 @@ if __name__ == '__main__':
                       nBins = len(control_plots_bins[binsLabel])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 
@@ -1280,6 +1286,7 @@ if __name__ == '__main__':
                       nBins = len(control_plots_bins['NJets'])-1,
                       rebin = 1,
                       legend_location = ( 0.95, 0.78 ),
+                      ratio_y_limits = [0.1,1.9],
                       cms_logo_location = 'right',
                       )
 

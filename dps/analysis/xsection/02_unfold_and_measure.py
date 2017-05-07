@@ -39,8 +39,18 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_alphaSdown']          = File( measurement_config.unfolding_alphaS_down, 'read' )
     unfolding_files['file_for_alphaSup']            = File( measurement_config.unfolding_alphaS_up, 'read' )
 
-    unfolding_files['file_for_matchingdown']          = File( measurement_config.unfolding_matching_down, 'read' )
-    unfolding_files['file_for_matchingup']            = File( measurement_config.unfolding_matching_up, 'read' )
+    unfolding_files['file_for_hdampdown']          = File( measurement_config.unfolding_hdamp_down, 'read' )
+    unfolding_files['file_for_hdampup']            = File( measurement_config.unfolding_hdamp_up, 'read' )
+
+    unfolding_files['file_for_erdOn']            = File( measurement_config.unfolding_erdOn, 'read' )
+    unfolding_files['file_for_QCDbased_erdOn']            = File( measurement_config.unfolding_QCDbased_erdOn, 'read' )
+
+    unfolding_files['file_for_semiLepBrdown']          = File( measurement_config.unfolding_semiLepBr_down, 'read' )
+    unfolding_files['file_for_semiLepBrup']            = File( measurement_config.unfolding_semiLepBr_up, 'read' )
+
+    unfolding_files['file_for_fragdown']          = File( measurement_config.unfolding_frag_down, 'read' )
+    unfolding_files['file_for_fragup']            = File( measurement_config.unfolding_frag_up, 'read' )
+    unfolding_files['file_for_petersonFrag']            = File( measurement_config.unfolding_petersonFrag, 'read' )
 
     unfolding_files['file_for_isrdown']             = File( measurement_config.unfolding_isr_down, 'read' )
     unfolding_files['file_for_isrup']               = File( measurement_config.unfolding_isr_up, 'read' )
@@ -104,13 +114,13 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     # Remove fakes before unfolding
     h_data_no_fakes = removeFakes( h_measured, h_fakes, h_data )
 
-    print 'Integral of data and response matrix'
-    print category
-    print h_data_no_fakes.Integral()
-    print h_response.ProjectionX('px',1).Integral()
-    print 'Ratio : ', h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral()
+    # print 'Integral of data and response matrix'
+    # print category
+    # print h_data_no_fakes.Integral()
+    # print h_response.ProjectionX('px',1).Integral()
+    # print 'Ratio : ', h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral()
     h_response.Scale( h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral() )
-    print 'New ratio : ', h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral()
+    # print 'New ratio : ', h_data_no_fakes.Integral() / h_response.ProjectionX('px',1).Integral()
 
     # unfold
     unfolding = Unfolding( h_data_no_fakes, h_truth, h_measured, h_response, h_fakes, method = method, tau = tau_value )
@@ -161,8 +171,15 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_alphaSdown'			 :  unfolding_files['file_for_alphaSdown'],
         'TTJets_alphaSup'   	     :  unfolding_files['file_for_alphaSup'],
 
-        'TTJets_matchingdown'        :  unfolding_files['file_for_matchingdown'],
-        'TTJets_matchingup'          :  unfolding_files['file_for_matchingup'],
+        'TTJets_hdampdown'        :  unfolding_files['file_for_hdampdown'],
+        'TTJets_hdampup'          :  unfolding_files['file_for_hdampup'],
+        'TTJets_semiLepBrdown'        :  unfolding_files['file_for_semiLepBrdown'],
+        'TTJets_semiLepBrup'          :  unfolding_files['file_for_semiLepBrup'],
+        'TTJets_fragdown'        :  unfolding_files['file_for_fragdown'],
+        'TTJets_fragup'          :  unfolding_files['file_for_fragup'],
+        'TTJets_petersonFrag'          :  unfolding_files['file_for_petersonFrag'],
+        'TTJets_erdOn'          :  unfolding_files['file_for_erdOn'],
+        'TTJets_QCDbased_erdOn'          :  unfolding_files['file_for_QCDbased_erdOn'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
