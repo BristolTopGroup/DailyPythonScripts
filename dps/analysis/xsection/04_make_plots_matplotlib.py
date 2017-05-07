@@ -130,7 +130,7 @@ def get_cms_labels( channel ):
         lepton = 'e, $\mu$ + jets combined'
     channel_label = lepton
     template = '%.1f fb$^{-1}$ (%d TeV)'
-    label = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
+    label = template % ( measurement_config.new_luminosity/1000., measurement_config.centre_of_mass_energy)
     return label, channel_label
 
 @xsec_04_log.trace()

@@ -14,7 +14,7 @@ from uncertainties import ufloat
 # latex, font, etc
 setup_matplotlib()
 
-title_template = '$%.1f$ fb$^{-1}$ (%d TeV)'
+title_template = '%.1f fb$^{-1}$ (%d TeV)'
 
 def binWidth(binning):
     return  ( binning[-1] - binning[0] ) / ( len(binning)-1 )
@@ -243,7 +243,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     global preliminary, norm_variable, b_tag_bin, histogram_files
 
     # Lumi title of plots
-    title = title_template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy )
+    title = title_template % ( measurement_config.new_luminosity/1000., measurement_config.centre_of_mass_energy )
     normalisation = None
 
     # Define weights
@@ -328,8 +328,8 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # workaround for rootpy issue #638
     histogram_properties.emptybins              = True
     histogram_properties.additional_text        = channel_latex[channel]
-    if b_tag_bin:
-        histogram_properties.additional_text    += b_tag_bins_latex[b_tag_bin]
+    # if b_tag_bin:
+    #     histogram_properties.additional_text    += b_tag_bins_latex[b_tag_bin]
     histogram_properties.legend_location        = legend_location
     histogram_properties.cms_logo_location      = cms_logo_location
     histogram_properties.preliminary            = preliminary
@@ -443,6 +443,7 @@ if __name__ == '__main__':
             'QCD'       : measurement_config.electron_QCD_MC_trees[category],
             'SingleTop' : measurement_config.SingleTop_trees[category],
     }
+
     if 'PowhegPythia8' not in generator:
         histogram_files['TTJet'] = measurement_config.ttbar_trees[category].replace('PowhegPythia8', generator)
 
@@ -510,6 +511,10 @@ if __name__ == '__main__':
         # Set folder for this batch of plots
         b_tag_bin = '2orMoreBtags'
         output_folder = output_folder_base + "/Variables/" + selection + "/"
+        if args.generator != '':
+            output_folder += "/"
+            output_folder += generator
+            output_folder += "/"
         make_folder_if_not_exists(output_folder)
         print '--->', channel
         ###################################################
