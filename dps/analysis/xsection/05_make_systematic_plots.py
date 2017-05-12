@@ -109,7 +109,7 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	plt.ylabel( 'Relative Uncertainty', CMS.y_axis_title)
 
 	template = '%.1f fb$^{-1}$ (%d TeV)'
-	label = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
+	label = template % ( measurement_config.new_luminosity/1000., measurement_config.centre_of_mass_energy)
 	plt.title( label,loc='right', **CMS.title )
 
 	logo_location = (0.05, 0.98)
