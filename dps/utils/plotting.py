@@ -365,9 +365,15 @@ def make_data_mc_comparison_plot( histograms = [],
                 ratioPlusError.SetBinContent( bin_i, plusErrors[bin_i-1] )
                 ratioMinusError.SetBinContent( bin_i, minusErrors[bin_i-1] )
             rplt.fill_between( ratioPlusError, ratioMinusError, axes,
-                               alpha = 0.3, hatch = '//',
-                               facecolor = 'Black',
-                               zorder = len(histograms_) + 1 )
+                               hatch = '//',
+                               # facecolor = 'Black',
+                               facecolor = 'None',
+                               edgecolor='Grey',
+                               alpha = 1.,
+                               linewidth = 0.,
+                               # zorder = len(histograms_) + 1
+                               zorder = 0
+                                )
 
     if CMS.tight_layout:
         plt.tight_layout()
