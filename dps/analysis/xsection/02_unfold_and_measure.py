@@ -446,19 +446,28 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
     # if 'combined' in channel:
     #     branching_ratio = branching_ratio * 2
 
+    binWidths = None
+    if phase_space == 'VisiblePS':
+        binWidths = bin_widths_visiblePS
+    elif phase_space == 'FullPS':
+        binWidths = bin_widths
+    
     xsection_unfolded = {}
     xsection_unfolded['TTJet_measured'], _, _ = calculate_xsection( 
-        normalisation['TTJet_measured'], 
+        normalisation['TTJet_measured'],
+        binWidths[variable],
         luminosity,  # L in pb1
         branching_ratio 
     )  
     xsection_unfolded['TTJet_measured_withoutFakes'], _, _ = calculate_xsection( 
-        normalisation['TTJet_measured_withoutFakes'], 
+        normalisation['TTJet_measured_withoutFakes'],
+        binWidths[variable],
         luminosity, 
         branching_ratio 
     ) 
     xsection_unfolded['TTJet_unfolded'], absolute_covariance_matrix, absolute_correlation_matrix = calculate_xsection( 
-        normalisation['TTJet_unfolded'], 
+        normalisation['TTJet_unfolded'],
+        binWidths[variable],
         luminosity, 
         branching_ratio,
         covariance_matrix
@@ -474,66 +483,78 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
 
     if category == 'central':
         xsection_unfolded['powhegPythia8'], _, _ = calculate_xsection( 
-            normalisation['powhegPythia8'], 
+            normalisation['powhegPythia8'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
         xsection_unfolded['amcatnlo'], _, _ = calculate_xsection( 
-            normalisation['amcatnlo'], 
+            normalisation['amcatnlo'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
         xsection_unfolded['powhegHerwig'], _, _ = calculate_xsection( 
-            normalisation['powhegHerwig'], 
+            normalisation['powhegHerwig'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
         xsection_unfolded['madgraphMLM'], _, _ = calculate_xsection( 
-            normalisation['madgraphMLM'], 
+            normalisation['madgraphMLM'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
         xsection_unfolded['massdown'], _, _ = calculate_xsection( 
-            normalisation['massdown'], 
+            normalisation['massdown'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['massup'], _, _ = calculate_xsection( 
-            normalisation['massup'], 
+            normalisation['massup'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['isrdown'], _, _ = calculate_xsection( 
-            normalisation['isrdown'], 
+            normalisation['isrdown'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['isrup'], _, _ = calculate_xsection( 
-            normalisation['isrup'], 
+            normalisation['isrup'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['fsrdown'], _, _ = calculate_xsection( 
-            normalisation['fsrdown'], 
+            normalisation['fsrdown'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['fsrup'], _, _ = calculate_xsection( 
-            normalisation['fsrup'], 
+            normalisation['fsrup'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['uedown'], _, _ = calculate_xsection( 
-            normalisation['uedown'], 
+            normalisation['uedown'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
         xsection_unfolded['ueup'], _, _ = calculate_xsection( 
-            normalisation['ueup'], 
+            normalisation['ueup'],
+            binWidths[variable],
             luminosity, 
             branching_ratio 
         )
