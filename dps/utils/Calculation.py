@@ -10,7 +10,7 @@ from dps.config.met_systematics import metsystematics_sources
 from rootpy import asrootpy
 from numpy import matrix, zeros
 
-def calculate_xsection(inputs, luminosity, efficiency=1., covariance_matrix=None):
+def calculate_xsection(inputs, bin_widths, luminosity, efficiency=1., covariance_matrix=None):
     '''
     BUG: this doesn't work unless the inputs are unfolded!
     inputs = list of value-error pairs
@@ -20,19 +20,39 @@ def calculate_xsection(inputs, luminosity, efficiency=1., covariance_matrix=None
     abs_corr_matrix = None
     result = []
     add_result = result.append
-    for value, error in inputs:
-        xsection = value / (luminosity * efficiency)
-        xsection_error = error / (luminosity * efficiency)
-        add_result((xsection, xsection_error))        
 
-    if covariance_matrix is not None:
-        abs_cov_matrix = covariance_matrix / (luminosity * efficiency)**2
-        abs_corr_matrix = matrix( zeros( ( abs_cov_matrix.shape[0], abs_cov_matrix.shape[1] ) ) )
-        for i in range( 0, abs_cov_matrix.shape[0] ):
-            for j in range(0, abs_cov_matrix.shape[1] ):
-                abs_corr_matrix[i,j] = abs_cov_matrix[i,j] / sqrt( abs_cov_matrix[i,i] * abs_cov_matrix[j,j] )
+    values = [u.ufloat( i[0], i[1] ) for i in inputs]
 
-    return result, abs_cov_matrix, abs_corr_matrix
+    if not covariance_matrix is None:
+        values_correlated = u.correlated_values( [v.nominal_value for v in values], covariance_matrix.tolist() )
+        abs_values_correlated = []
+        # Loop over unfolded number of events with correlated uncertainties
+        # And corresponding bin width
+        # Calculate absolute cross section, with correctly correlated uncertainty
+        for v,width in zip( values_correlated, bin_widths ):
+            abs_values_correlated.append( v / width / luminosity / efficiency )
+        # Get covariance and correlation matrix for absolute cross section
+        abs_cov_matrix = matrix(u.covariance_matrix(abs_values_correlated) )
+        abs_corr_matrix = matrix(u.correlation_matrix(abs_values_correlated) )
+        result = [(v.nominal_value, v.std_dev) for v in abs_values_correlated ]
+        return result, abs_cov_matrix, abs_corr_matrix
+    else:
+        for valueAndErrors, binWidth in zip( inputs, bin_widths ):
+            value = valueAndErrors[0]
+            error = valueAndErrors[1]
+            xsection = value / (luminosity * efficiency * binWidth)
+            xsection_error = error / (luminosity * efficiency * binWidth)
+            add_result((xsection, xsection_error))        
+        return result, None, None
+
+    # if covariance_matrix is not None:
+    #     abs_cov_matrix = covariance_matrix / (luminosity * efficiency)**2
+    #     abs_corr_matrix = matrix( zeros( ( abs_cov_matrix.shape[0], abs_cov_matrix.shape[1] ) ) )
+    #     for i in range( 0, abs_cov_matrix.shape[0] ):
+    #         for j in range(0, abs_cov_matrix.shape[1] ):
+    #             abs_corr_matrix[i,j] = abs_cov_matrix[i,j] / sqrt( abs_cov_matrix[i,i] * abs_cov_matrix[j,j] )
+
+    # return result, abs_cov_matrix, abs_corr_matrix
 
 def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,covariance_matrix=None):
     """

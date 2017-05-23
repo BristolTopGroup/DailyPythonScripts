@@ -130,11 +130,11 @@ def get_cms_labels( channel ):
         lepton = 'e, $\mu$ + jets combined'
     channel_label = lepton
     template = '%.1f fb$^{-1}$ (%d TeV)'
-    label = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
+    label = template % ( measurement_config.new_luminosity/1000., measurement_config.centre_of_mass_energy)
     return label, channel_label
 
 @xsec_04_log.trace()
-def make_plots( histograms, category, output_folder, histname, show_ratio = False, show_generator_ratio = False, show_before_unfolding = False ):
+def make_plots( histograms, category, output_folder, histname, show_ratio = False, show_generator_ratio = False, show_before_unfolding = False, utype = 'normalised' ):
     global variable, phase_space
 
     if show_generator_ratio and not show_ratio:
@@ -178,11 +178,22 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.xlabel( x_label, CMS.x_axis_title )
 
     # set y axis x-section labels
-    y_label = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}'
+    y_label = ''
+    xsectionUnit = ''
+    if utype == 'absolute':
+        y_label = r'$\frac{d\sigma}{d' + variables_latex[variable] + '}\ '
+        xsectionUnit = 'pb'
+    else :
+        y_label = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}\ '
+
     if variable in ['HT', 'ST', 'MET', 'WPT']:
-        y_label += '\scriptstyle(\mathrm{GeV}^{-1})$'
-    else:
-        y_label += '$'
+        y_label += '\scriptstyle(\mathrm{'
+        y_label += xsectionUnit
+        y_label += '}\ \mathrm{GeV}^{-1})$'
+    elif xsectionUnit is not '':
+        y_label += '\scriptstyle(\mathrm{'
+        y_label += xsectionUnit
+        y_label += '})$'
     plt.ylabel( y_label, CMS.y_axis_title )
 
     # Set up ticks on axis. Minor ticks on axis for non NJet variables
@@ -763,8 +774,8 @@ if __name__ == '__main__':
     all_measurements.extend( pdf_uncertainties )
 
     channel = [
-        # 'electron', 
-        # 'muon', 
+        'electron', 
+        'muon', 
         'combined', 
         # 'combinedBeforeUnfolding',
     ]
@@ -798,7 +809,8 @@ if __name__ == '__main__':
                     output_folder, 
                     histname + '_different_generators', 
                     show_ratio = True,
-                    show_generator_ratio = show_generator_ratio 
+                    show_generator_ratio = show_generator_ratio ,
+                    utype = utype
                 )
 
                 del histograms_normalised_xsection_different_generators

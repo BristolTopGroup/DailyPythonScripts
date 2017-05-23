@@ -77,6 +77,7 @@ control_plots_bins = {
   'WPT' : [i * 25  for i in range ( 0, 35 )],
   'HT' : [i * 50  for i in range ( 0, 40 )],
   'ST' : [i * 50  for i in range ( 2, 40 )],
+  'MT' : [i * 25  for i in range ( 0, 35 )],
   'sigmaietaieta' : [i * 0.002  for i in range ( 0, 20 )],
 }
 

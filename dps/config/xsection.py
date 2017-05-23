@@ -293,7 +293,6 @@ class XSectionConfig():
             'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
             'TTJets_CR_QCDbased_erdOn'           : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
 
-
             # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
             'JES'                       : ['JES_up', 'JES_down'],
@@ -339,8 +338,10 @@ class XSectionConfig():
         ]
         self.systematic_group_partonShower = [
             'TTJets_scale',
+
             # 'TTJets_fsr',
             # 'TTJets_isr',
+
             'TTJets_ue',
             'TTJets_hdamp',
             'TTJets_semiLepBr',
@@ -484,7 +485,6 @@ class XSectionConfig():
         self.unfolding_petersonFrag = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_frag_peterson.root' % self.centre_of_mass_energy
         self.unfolding_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_erdOn_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_QCDbased_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_QCDbased_erdOn_asymmetric.root' % self.centre_of_mass_energy
-    
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric.root' % self.centre_of_mass_energy
