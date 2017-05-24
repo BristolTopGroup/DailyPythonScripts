@@ -1,3 +1,4 @@
+from __future__ import division
 from rootpy.plotting import Hist, Hist2D
 from rootpy.io import root_open
 #from rootpy.interactive import wait
@@ -7,6 +8,7 @@ from dps.config.variable_binning import bin_edges_vis, reco_bin_edges_vis
 from dps.config.variableBranchNames import branchNames, genBranchNames_particle, genBranchNames_parton
 from dps.utils.file_utilities import make_folder_if_not_exists
 from math import trunc, exp, sqrt
+import numpy as np
 
 import ROOT as ROOT
 ROOT.gROOT.SetBatch(True)
@@ -312,8 +314,11 @@ def main():
             recoVariableNames = {}
             genVariable_particle_names = {}
             genVariable_parton_names = {}
-            histograms = {}
-            outputDirs = {}
+            histograms      = {}
+            residuals       = {}
+            residual_options= {}
+            outputDirs      = {}
+            outputDirsRes   = {}
 
             for variable in allVariablesBins:
                 if args.debug and variable != 'HT' : continue
@@ -321,8 +326,11 @@ def main():
                 and variable in measurement_config.variables_no_met:
                     continue
 
-                outputDirs[variable] = {}
-                histograms[variable] = {}
+                outputDirs[variable]        = {}
+                outputDirsRes[variable]     = {}
+                histograms[variable]        = {}
+                residuals[variable]         = {}
+                residual_options[variable]  = {}
 
                 #
                 # Variable names
@@ -364,27 +372,32 @@ def main():
                     outputDir = out.mkdir(outputDirName)
                     outputDirs[variable][channel.channelName] = outputDir
 
+                    if args.fineBinned:
+                        outputDirResName = outputDirName + '/residuals/'
+                        outputDirRes = out.mkdir(outputDirResName)
+                        outputDirsRes[variable][channel.channelName] = outputDirRes
+
                     #
                     # Book histograms
                     #
                     # 1D histograms
                     histograms[variable][channel.channelName] = {}
                     h = histograms[variable][channel.channelName]
-                    h['truth'] = Hist( allVariablesBins[variable], name='truth')
-                    h['truthVis'] = Hist( allVariablesBins[variable], name='truthVis')
-                    h['truth_parton'] = Hist( allVariablesBins[variable], name='truth_parton')                
-                    h['measured'] = Hist( reco_bin_edges_vis[variable], name='measured')
-                    h['measuredVis'] = Hist( reco_bin_edges_vis[variable], name='measuredVis')
-                    h['measured_without_fakes'] = Hist( reco_bin_edges_vis[variable], name='measured_without_fakes')
-                    h['measuredVis_without_fakes'] = Hist( reco_bin_edges_vis[variable], name='measuredVis_without_fakes')
-                    h['fake'] = Hist( reco_bin_edges_vis[variable], name='fake')
-                    h['fakeVis'] = Hist( reco_bin_edges_vis[variable], name='fakeVis')
+                    h['truth']                          = Hist( allVariablesBins[variable], name='truth')
+                    h['truthVis']                       = Hist( allVariablesBins[variable], name='truthVis')
+                    h['truth_parton']                   = Hist( allVariablesBins[variable], name='truth_parton')                
+                    h['measured']                       = Hist( reco_bin_edges_vis[variable], name='measured')
+                    h['measuredVis']                    = Hist( reco_bin_edges_vis[variable], name='measuredVis')
+                    h['measured_without_fakes']         = Hist( reco_bin_edges_vis[variable], name='measured_without_fakes')
+                    h['measuredVis_without_fakes']      = Hist( reco_bin_edges_vis[variable], name='measuredVis_without_fakes')
+                    h['fake']                           = Hist( reco_bin_edges_vis[variable], name='fake')
+                    h['fakeVis']                        = Hist( reco_bin_edges_vis[variable], name='fakeVis')
                     # 2D histograms
-                    h['response'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response')
-                    h['response_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes')
-                    h['responseVis_without_fakes'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='responseVis_without_fakes')
-                    h['response_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
-                    h['response_without_fakes_parton'] = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
+                    h['response']                       = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response')
+                    h['response_without_fakes']         = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes')
+                    h['responseVis_without_fakes']      = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='responseVis_without_fakes')
+                    h['response_parton']                = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
+                    h['response_without_fakes_parton']  = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
 
                     if args.fineBinned:
                         minVar = trunc( allVariablesBins[variable][0] )
@@ -394,10 +407,11 @@ def main():
                             maxVar = 2.4
                             minVar = -2.4
                             nBins = 1000
+                        # nBins = 960 so that small bin width is usable in 00. [0.0025]
                         elif 'abs' in variable and 'eta' in variable:
                             maxVar = 2.4
                             minVar = 0.
-                            nBins = 1000
+                            nBins = 960
                         elif 'Rap' in variable:
                             maxVar = 2.4
                             minVar = -2.4
@@ -407,29 +421,43 @@ def main():
                             minVar = 3.5
                             nBins = 17
 
-                        h['truth'] = Hist( nBins, minVar, maxVar, name='truth')
-                        h['truthVis'] = Hist( nBins, minVar, maxVar, name='truthVis')
-                        h['truth_parton'] = Hist( nBins, minVar, maxVar, name='truth_parton')
-                        h['measured'] = Hist( nBins, minVar, maxVar, name='measured')
-                        h['measuredVis'] = Hist( nBins, minVar, maxVar, name='measuredVis')
-                        h['measured_without_fakes'] = Hist( nBins, minVar, maxVar, name='measured_without_fakes')
-                        h['measuredVis_without_fakes'] = Hist( nBins, minVar, maxVar, name='measuredVis_without_fakes')
-                        h['fake'] = Hist( nBins, minVar, maxVar, name='fake')
-                        h['fakeVis'] = Hist( nBins, minVar, maxVar, name='fakeVis')
-                        h['response'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
-                        h['response_without_fakes'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
-                        h['responseVis_without_fakes'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_without_fakes')
+                        h['truth']                          = Hist( nBins, minVar, maxVar, name='truth')
+                        h['truthVis']                       = Hist( nBins, minVar, maxVar, name='truthVis')
+                        h['truth_parton']                   = Hist( nBins, minVar, maxVar, name='truth_parton')
+                        h['measured']                       = Hist( nBins, minVar, maxVar, name='measured')
+                        h['measuredVis']                    = Hist( nBins, minVar, maxVar, name='measuredVis')
+                        h['measured_without_fakes']         = Hist( nBins, minVar, maxVar, name='measured_without_fakes')
+                        h['measuredVis_without_fakes']      = Hist( nBins, minVar, maxVar, name='measuredVis_without_fakes')
+                        h['fake']                           = Hist( nBins, minVar, maxVar, name='fake')
+                        h['fakeVis']                        = Hist( nBins, minVar, maxVar, name='fakeVis')
+                        h['response']                       = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response')
+                        h['response_without_fakes']         = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes')
+                        h['responseVis_without_fakes']      = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='responseVis_without_fakes')
 
-                        h['response_parton'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_parton')
-                        h['response_without_fakes_parton'] = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes_parton')
+                        h['response_parton']                = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_parton')
+                        h['response_without_fakes_parton']  = Hist2D( nBins, minVar, maxVar, nBins, minVar, maxVar, name='response_without_fakes_parton')
+
+                        residuals[variable][channel.channelName] = {}
+                        r = residuals[variable][channel.channelName]
+                        for i in range (1, nBins+1):
+                            r[i] = Hist(100, 0, maxVar*0.1, name='Residuals_Bin_'+str(i))
+
+                        residual_options[variable][channel.channelName] = {}
+                        o = residual_options[variable][channel.channelName]
+                        o['min']        = minVar
+                        o['max']        = maxVar
+                        o['nbins']      = nBins
+                        o['step']       = (maxVar-minVar)/nBins
+                        o['bin_edges']  = np.arange(minVar, maxVar, (maxVar-minVar)/nBins)
 
                     # Some interesting histograms
-                    h['puOffline'] = Hist( 20, 0, 2, name='puWeights_offline')
-                    h['eventWeightHist'] = Hist( 100, -2, 2, name='eventWeightHist')                    
-                    h['genWeightHist'] = Hist( 100, -2, 2, name='genWeightHist')
-                    h['offlineWeightHist'] = Hist( 100, -2, 2, name='offlineWeightHist')
+                    h['puOffline']          = Hist( 20, 0, 2, name='puWeights_offline')
+                    h['eventWeightHist']    = Hist( 100, -2, 2, name='eventWeightHist')                    
+                    h['genWeightHist']      = Hist( 100, -2, 2, name='genWeightHist')
+                    h['offlineWeightHist']  = Hist( 100, -2, 2, name='offlineWeightHist')
                     h['phaseSpaceInfoHist'] = Hist( 10, 0, 1, name='phaseSpaceInfoHist')
 
+            print("Initialisation of Histograms Complete")
 
             # Counters for studying phase space
             nVis            = {c.channelName : 0 for c in channels}
@@ -462,6 +490,7 @@ def main():
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
                 # if n > 100000: break
+
                 if maxEvents > 0 and n > maxEvents: break
 
                 if 'firstHalf' in args.sample and n >= halfOfEvents: break
@@ -657,6 +686,19 @@ def main():
                                     histogramsToFill['eventWeightHist'].Fill(event.EventWeight)
                                     histogramsToFill['genWeightHist'].Fill(genWeight)
                                     histogramsToFill['offlineWeightHist'].Fill(offlineWeight )
+
+                            if args.fineBinned:
+                                # Bin reco var is in
+                                options = residual_options[variable][channel.channelName]
+                                if offlineSelection and genSelection:
+                                    # i will be fine bin number the reco var resides in
+                                    for i, edge in enumerate(options['bin_edges']):
+                                        if recoVariable > edge: continue
+                                        else: break
+                                    residual = abs(recoVariable - genVariable_particle)                                 
+                                    if not residual > options['max']*0.1: 
+                                        residuals[variable][channel.channelName][i].Fill(residual, offlineWeight*genWeight)
+
             #
             # Output histgorams to file
             #
@@ -686,9 +728,15 @@ def main():
                         h.SetBinContent(5, nOfflineSL[channel.channelName] / nOffline[channel.channelName])
                         # h.GetXaxis().SetBinLabel(5, "nOfflineSL/nOffline")
 
+
                     outputDirs[variable][channel.channelName].cd()
                     for h in histograms[variable][channel.channelName]:
                         histograms[variable][channel.channelName][h].Write()
+                    if args.fineBinned:
+                        outputDirsRes[variable][channel.channelName].cd()
+                        for r in residuals[variable][channel.channelName]:
+                            residuals[variable][channel.channelName][r].Write()
+
 
 
     with root_open( outputFileName, 'update') as out:
