@@ -13,6 +13,7 @@ from dps.utils.file_utilities import write_data_to_JSON, make_folder_if_not_exis
 from dps.utils.Timer import Timer
 from time import time
 from dps.utils.ROOT_utils import set_root_defaults
+from dps.utils.toy_mc import generate_toy_MC_from_distribution, generate_toy_MC_from_2Ddistribution
 
 from dps.config.xsection import XSectionConfig
 
@@ -60,7 +61,8 @@ def main():
         create_unfolding_pull_data(options.file, method, channel,
                                    centre_of_mass, variable,
                                    sample,
-                                   measurement_config.unfolding_central_secondHalf,
+                                   measurement_config.unfolding_central_firstHalf,
+                                   # measurement_config.unfolding_central,
                                    use_n_toy,
                                    options.output_folder,
                                    tau_value)
@@ -135,79 +137,87 @@ def check_multiple_data_multiple_unfolding(
     add_pull = pulls.append
     histograms = []
     add_histograms = histograms.append
+    truth_histograms = []
+    dirs = None
+    for path, dir, objects in input_file.walk(maxdepth=0):
+        dirs = dir
 
-    print('Reading toy MC')
-    start1 = time()
-    data_range = range(0, n_toy_data)
-    for nth_toy_data in range(0, n_toy_data + 1):  # read all of them (easier)
-        if nth_toy_data in data_range:
-            tpl = '{channel}/{variable}/toy_{nth}'
-            folder_mc = tpl.format(channel=channel, variable=variable,
-                                   nth=nth_toy_data+1)
-            folder_mc = get_folder(folder_mc)
-            add_histograms(get_measured_histogram(folder_mc))
-        else:
-            add_histograms(0)
-    print('Done reading toy MC in', time() - start1, 's')
-
-
-    # Get truth and measured histograms
-    h_truth = get_truth_histogram( get_folder('{channel}/{variable}/Original'.format(channel=channel, variable=variable) ) )
-    h_measured = get_measured_histogram( get_folder('{channel}/{variable}/Original'.format(channel=channel, variable=variable) ) )
-
-    # Set response matrix
-    h_response = responseMatrix
+    for dir in dirs:
+        print('Reading toy MC')
+        start1 = time()
+        data_range = range(0, n_toy_data)
+        for nth_toy_data in range(0, n_toy_data + 1):  # read all of them (easier)
+            if nth_toy_data in data_range:
+                tpl = '{dir}/{channel}/{variable}/toy_{nth}'
+                folder_mc = tpl.format(dir=dir,channel=channel, variable=variable,
+                                       nth=nth_toy_data+1)
+                folder_mc = get_folder(folder_mc)
+                add_histograms(get_measured_histogram(folder_mc))
+                truth_histograms.append(get_truth_histogram(folder_mc))
+            else:
+                add_histograms(0)
+        print('Done reading toy MC in', time() - start1, 's')
 
 
-    # Make sure the response matrix has the same normalisatio as the pseudo data to be unfolded
-    truthScale =  h_truth.integral(overflow=True) / h_response.integral(overflow=True)
-    h_response.Scale( truthScale )
-    measured_from_response = asrootpy( h_response.ProjectionX('px',1) )
+        # Get truth and measured histograms
+        h_truth = get_truth_histogram( get_folder('{dir}/{channel}/{variable}/Original'.format(dir=dir,channel=channel, variable=variable) ) )
+        h_measured = get_measured_histogram( get_folder('{dir}/{channel}/{variable}/Original'.format(dir=dir,channel=channel, variable=variable) ) )
 
-    for nth_toy_data in data_range:
-        if nth_toy_data % 100 == 0 :
-            print(
-                'Doing data no', nth_toy_data)
-        h_data = histograms[nth_toy_data]
-
-        unfolding_obj = Unfolding(
-            h_data,
-            h_truth, h_data, h_response, method=method,
-            tau=tau_value)
-        unfold, get_pull = unfolding_obj.unfold, unfolding_obj.pull
-        reset = unfolding_obj.Reset
+        # Set response matrix
+        h_response = generate_toy_MC_from_2Ddistribution(responseMatrix)
 
 
-        unfold()
-        # print ('Measured :',list(h_data.y()))
-        # print ('Unfolded :',list( unfolding_obj.unfolded_data.y() ))
-        pull = get_pull()
-        # print ('Pull :',pull)
-        diff = unfolding_obj.unfolded_data - h_truth
-        # print ('Diff :',list(diff.y()))
-        diff_tuple = hist_to_value_error_tuplelist(diff)
+        # Make sure the response matrix has the same normalisatio as the pseudo data to be unfolded
+        truthScale =  h_truth.integral(overflow=True) / h_response.integral(overflow=True)
+        h_response.Scale( truthScale )
+        # measured_from_response = asrootpy( h_response.ProjectionX('px',1) )
+        # truth_from_response = asrootpy( h_response.ProjectionY() )
 
-        truth_tuple = hist_to_value_error_tuplelist(unfolding_obj.truth)
+        for nth_toy_data in data_range:
+            if nth_toy_data % 100 == 0 :
+                print(
+                    'Doing data no', nth_toy_data)
+            h_data = histograms[nth_toy_data]
+            # h_truth = truth_histograms[nth_toy_data]
 
-        bias = []
-        sumBias2 = 0
-        for d, t in zip(diff_tuple, truth_tuple):
-            b = d[0] / t[0]
-            bias.append(b)
+            unfolding_obj = Unfolding(
+                h_data,
+                h_truth, h_data, h_response, method=method,
+                tau=tau_value)
+            unfold, get_pull = unfolding_obj.unfold, unfolding_obj.pull
+            reset = unfolding_obj.Reset
 
-        unfolded = unfolding_obj.unfolded_data
-        unfolded_tuple = hist_to_value_error_tuplelist(unfolded)
 
-        all_data = {'unfolded': unfolded_tuple,
-                    'difference': diff_tuple,
-                    'truth': truth_tuple,
-                    'bias':bias,
-                    'pull': pull,
-                    'nth_toy_data': nth_toy_data
-                    }
+            unfold()
+            # print ('Measured :',list(h_data.y()))
+            # print ('Unfolded :',list( unfolding_obj.unfolded_data.y() ))
+            pull = get_pull()
+            # print ('Pull :',pull)
+            diff = unfolding_obj.unfolded_data - h_truth
+            # print ('Diff :',list(diff.y()))
+            diff_tuple = hist_to_value_error_tuplelist(diff)
 
-        add_pull(all_data)
-        reset()
+            truth_tuple = hist_to_value_error_tuplelist(unfolding_obj.truth)
+
+            bias = []
+            sumBias2 = 0
+            for d, t in zip(diff_tuple, truth_tuple):
+                b = d[0] / t[0]
+                bias.append(b)
+
+            unfolded = unfolding_obj.unfolded_data
+            unfolded_tuple = hist_to_value_error_tuplelist(unfolded)
+
+            all_data = {'unfolded': unfolded_tuple,
+                        'difference': diff_tuple,
+                        'truth': truth_tuple,
+                        'bias':bias,
+                        'pull': pull,
+                        'nth_toy_data': nth_toy_data
+                        }
+
+            add_pull(all_data)
+            reset()
 
     output_file_name = save_pulls(pulls, method,
                                 channel, tau_value, output_folder)

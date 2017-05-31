@@ -78,6 +78,37 @@ class Unfolding:
 #         else:
 #             self.unfoldObject.SetVerbose( self.verbose )
 #             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
+
+        # cov = self.unfoldObject.GetEmatrixInput('Covariance')
+        # cov_MC = self.unfoldObject.GetEmatrixSysUncorr('Covariance_response')
+
+        # for i in range(0,cov.GetNbinsX()+2):
+        #     for j in range(0,cov.GetNbinsX()+2):
+        #         print (i,j,cov.GetBinContent(i,j),cov_MC.GetBinContent(i,j))
+        # covariance = asrootpy( 
+        #     self.unfoldObject.GetEmatrixInput('Covariance'))
+
+        # covariance_responseMatrix = asrootpy(
+        #     self.unfoldObject.GetEmatrixSysUncorr('Covariance_response')
+        # )
+
+        # print 'Unfolded data :',list( self.unfolded_data.y() )
+        # for i in range(0,covariance.GetNbinsX()+2 ):
+        #     if covariance.GetBinContent(i,i) < 0: covariance.SetBinContent(i,i,0)
+        #     if covariance_responseMatrix.GetBinContent(i,i) < 0: 
+        #         covariance_responseMatrix.SetBinContent(i,i,0)
+
+        # total_statistical_covariance = covariance + covariance_responseMatrix
+        # total_statistical_covariance = asrootpy(
+        #     self.unfoldObject.GetEmatrixTotal('Covariance_total')
+        #     )
+        # print (list(total_statistical_covariance.z()))
+        # print (list(covariance.z()))
+        # print (list(covariance_responseMatrix.z()))
+        # for i in range(0,covariance.GetNbinsX()+2 ):
+        #     self.unfolded_data.SetBinError(i, sqrt( total_statistical_covariance.GetBinContent(i,i) ) )
+            # print self.unfolded_data.GetBinError(i), sqrt( covariance.GetBinContent(i,i) ), sqrt( covariance_responseMatrix.GetBinContent(i,i) ), sqrt( total_statistical_covariance.GetBinContent(i,i) )
+
         return self.unfolded_data
 
     def refold(self):
@@ -115,6 +146,10 @@ class Unfolding:
             # Get the statistical data covariance from TUnfold
             covariance = asrootpy( 
                 self.unfoldObject.GetEmatrixInput('Covariance'))
+
+            # covariance_responseMatrix = asrootpy(
+            #     self.unfoldObject.GetEmatrixSysUncorr('Covariance_response')
+            # )
 
             # Reformat into a numpy matrix
             zs = list(covariance.z())

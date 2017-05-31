@@ -32,8 +32,8 @@ def generate_toy_MC_from_2Ddistribution( distribution ):
     set_bin_content = new_distribution.SetBinContent
     set_bin_error = new_distribution.SetBinError
     
-    for bin_x in range(1, n_bins_x + 1):
-        for bin_y in range(1, n_bins_y + 1):
+    for bin_x in range(0, n_bins_x + 2):
+        for bin_y in range(0, n_bins_y + 2):
             value = get_bin_content(bin_x, bin_y)
             if value < 0 : value = 0
             new_value = poisson(value)

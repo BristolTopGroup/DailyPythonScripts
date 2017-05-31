@@ -43,16 +43,22 @@ def main():
 
     measurement_config = XSectionConfig(options.CoM)
 
-    input_file = None
-    if options.sample == 'madgraph':
-        input_file = measurement_config.unfolding_madgraphMLM
-    elif options.sample == 'powhegPythia':
-        input_file = measurement_config.unfolding_central_firstHalf
-    elif options.sample == 'amcatnlo':
-        input_file = measurement_config.unfolding_amcatnlo
 
-
-    create_toy_mc(input_file=input_file,
+    # baseDir = '/storage/ec6821/DailyPythonScripts/new/DailyPythonScripts/unfolding/13TeV/'
+    # input_files = [
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_50pc_tp_55pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_95pc_tp_100pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_55pc_tp_60pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_60pc_tp_65pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_65pc_tp_70pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_70pc_tp_75pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_80pc_tp_85pc.root',
+        # baseDir + 'unfolding_TTJets_13TeV_asymmetric_75pc_tp_80pc.root',
+    # ]
+    input_files = [
+        measurement_config.unfolding_central_secondHalf
+    ]
+    create_toy_mc(input_files=input_files,
                   sample=options.sample,
                   output_folder=options.output_folder,
 #                   variable=variable,
@@ -62,53 +68,59 @@ def main():
                   )
 
 
-def create_toy_mc(input_file, sample, output_folder, n_toy, centre_of_mass, config):
+def create_toy_mc(input_files, sample, output_folder, n_toy, centre_of_mass, config):
     from dps.utils.file_utilities import make_folder_if_not_exists
     from dps.utils.toy_mc import generate_toy_MC_from_distribution, generate_toy_MC_from_2Ddistribution
     from dps.utils.Unfolding import get_unfold_histogram_tuple
     make_folder_if_not_exists(output_folder)
-    input_file_hists = File(input_file)
     output_file_name = get_output_file_name(output_folder, sample, n_toy, centre_of_mass)
     variable_bins = bin_edges_vis.copy()
     with root_open(output_file_name, 'recreate') as f_out:
-        for channel in config.analysis_types.keys():
-            if channel is 'combined':continue
-            for variable in variable_bins:
-                output_dir = f_out.mkdir(channel + '/' + variable, recurse=True)
-                cd = output_dir.cd
-                mkdir = output_dir.mkdir
-                h_truth, h_measured, h_response, _ = get_unfold_histogram_tuple(input_file_hists,
-                                                                        variable,
-                                                                        channel,
-                                                                        centre_of_mass = centre_of_mass,
-                                                                        visiblePS = True,
-                                                                        load_fakes=False)
 
-                cd()
+        input_file_index = 0
+        for input_file in input_files:
 
-                mkdir('Original')
-                cd ('Original')
-                h_truth.Write('truth')
-                h_measured.Write('measured')
-                h_response.Write('response')
+            input_file_hists = File(input_file)
 
-                for i in range(1, n_toy+1):
-                    toy_id = 'toy_{0}'.format(i)
-                    mkdir(toy_id)
-                    cd(toy_id)
-                    # create histograms
-                    # add tuples (truth, measured, response) of histograms
-                    truth = generate_toy_MC_from_distribution(h_truth)
-                    measured = generate_toy_MC_from_distribution(h_measured)
-                    response = generate_toy_MC_from_2Ddistribution(h_response)
+            for channel in config.analysis_types.keys():
+                if channel is 'combined':continue
+                for variable in variable_bins:
+                    output_dir = f_out.mkdir(str(input_file_index) + '/' + channel + '/' + variable, recurse=True)
+                    cd = output_dir.cd
+                    mkdir = output_dir.mkdir
+                    h_truth, h_measured, h_response, _ = get_unfold_histogram_tuple(input_file_hists,
+                                                                            variable,
+                                                                            channel,
+                                                                            centre_of_mass = centre_of_mass,
+                                                                            visiblePS = True,
+                                                                            load_fakes=False)
 
-                    truth.SetName('truth')
-                    measured.SetName('measured')
-                    response.SetName('response')
+                    cd()
 
-                    truth.Write()
-                    measured.Write()
-                    response.Write()
+                    mkdir('Original')
+                    cd ('Original')
+                    h_truth.Write('truth')
+                    h_measured.Write('measured')
+                    h_response.Write('response')
+
+                    for i in range(1, n_toy+1):
+                        toy_id = 'toy_{0}'.format(i)
+                        mkdir(toy_id)
+                        cd(toy_id)
+                        # create histograms
+                        # add tuples (truth, measured, response) of histograms
+                        truth = generate_toy_MC_from_distribution(h_truth)
+                        measured = generate_toy_MC_from_distribution(h_measured)
+                        response = generate_toy_MC_from_2Ddistribution(h_response)
+
+                        truth.SetName('truth')
+                        measured.SetName('measured')
+                        response.SetName('response')
+
+                        truth.Write()
+                        measured.Write()
+                        response.Write()
+            input_file_index += 1
 
 def get_output_file_name(output_folder, sample, n_toy, centre_of_mass):
     # define output file
