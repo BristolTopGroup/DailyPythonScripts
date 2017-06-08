@@ -62,24 +62,51 @@ nice_bin_width = {
 }
 
 control_plots_bins = {
-  'NJets' : [i + 0.5 for i in range ( 3, 16 + 1 )],
+  # 'NJets' : [i + 0.5 for i in range ( 3, 16 + 1 )],
+  'NJets' : [3.5,16.5],
+
   'JetPt' : [i * 5  for i in range ( 5, 40 )],  
   'MuonPt' : [i * 10 for i in range ( 1, 40 )],
   'ElectronPt' : [i * 10 for i in range ( 1, 40 )],
+
+  'lepton_pt' : [10, 390],
+
+
   'LeptonEta' : [i*0.5 for i in range( -25, 25 )],  
   'AbsLeptonEta' : [i*0.1 for i in range( 0, 25 )],  
+  'abs_lepton_eta' : [0,2.4],  
+
   'NBJets' : [i - 0.5 for i in range ( 0, 6 + 1 )],
   'NVertex' : [i for i in range ( 0,40 + 1 )],
   'relIso' : [i*0.01 for i in range(0,20)],
   'relIsoQCD' : [i*0.025 for i in range(0,40)],
   'AbsLeptonEtaQCD' : [i*0.2 for i in range( 0, 24 )],
-  'MET' : [i * 15  for i in range ( 0, 40 )],
-  'WPT' : [i * 25  for i in range ( 0, 35 )],
-  'HT' : [i * 50  for i in range ( 0, 40 )],
-  'ST' : [i * 50  for i in range ( 2, 40 )],
+
+  # 'MET' : [i * 15  for i in range ( 0, 40 )],
+  # 'WPT' : [i * 25  for i in range ( 0, 35 )],
+  # 'HT' : [i * 50  for i in range ( 0, 40 )],
+  # 'ST' : [i * 50  for i in range ( 2, 40 )],
+
+  'MET' : [0,585],
+  'WPT' : [0,864],
+  'HT' : [0,2000],
+  'ST' : [100,2000],
+
   'MT' : [i * 25  for i in range ( 0, 35 )],
   'sigmaietaieta' : [i * 0.002  for i in range ( 0, 20 )],
 }
+
+control_plot_nbins = {
+  'NJets' : 13,
+  'lepton_pt' : 38,
+  'abs_lepton_eta' : 24,  
+  'MET' : 39,
+  'WPT' : 16,
+  'HT' : 20,
+  'ST' : 20,
+  'MT' : [i * 25  for i in range ( 0, 35 )],
+}
+
 
 # should we want separate binning for different centre of mass energies
 # we can put the logic here, maybe as a function:
