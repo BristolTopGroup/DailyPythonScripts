@@ -144,6 +144,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
     histogram_properties.y_axis_title           = 'Events'
     if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
         histogram_properties.y_axis_title       = 'Events / {binWidth} GeV'.format( binWidth=binWidth )
+        histogram_properties.x_axis_title           = '{variable} (GeV)'.format( variable = variables_latex[variable] )
 
 
     histogram_properties.x_limits               = [ reco_bin_edges[0], reco_bin_edges[-1] ]
@@ -196,7 +197,7 @@ config = XSectionConfig(13)
 
 
 for variable in config.variables:
-    if not 'HT' in variable: continue
+    # if not 'HT' in variable: continue
     print variable
 
     histogramsForEachChannel = {}
