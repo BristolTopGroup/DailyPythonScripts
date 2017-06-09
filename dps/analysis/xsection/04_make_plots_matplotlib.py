@@ -173,7 +173,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     else:
         axes = plt.axes()
         x_label = '${}$'.format(variables_latex[variable])
-        if variable in ['HT', 'ST', 'MET', 'WPT']:
+        if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
             x_label += ' [GeV]'
         plt.xlabel( x_label, CMS.x_axis_title )
 
@@ -186,10 +186,14 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     else :
         y_label = r'$\frac{1}{\sigma}  \frac{d\sigma}{d' + variables_latex[variable] + '}\ '
 
-    if variable in ['HT', 'ST', 'MET', 'WPT']:
-        y_label += '\scriptstyle(\mathrm{'
-        y_label += xsectionUnit
-        y_label += '}\ \mathrm{GeV}^{-1})$'
+    if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
+        if xsectionUnit is '':
+            y_label += '\scriptstyle(\mathrm{GeV}^{-1})$'
+            pass
+        else:
+            y_label += '\scriptstyle(\mathrm{'
+            y_label += xsectionUnit
+            y_label += '}\ \mathrm{GeV}^{-1})$'
     elif xsectionUnit is not '':
         y_label += '\scriptstyle(\mathrm{'
         y_label += xsectionUnit
@@ -403,7 +407,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
         # x axis labels as before
         x_label = '${}$'.format(variables_latex[variable])
-        if variable in ['HT', 'ST', 'MET', 'WPT']:
+        if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
             x_label += ' (GeV)'
 
         if not show_generator_ratio:
@@ -466,6 +470,21 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
         # Add legend
         loc = 'upper left'
+        if variable == 'MET':
+            loc = 'lower left'
+        elif variable == 'HT':
+            loc = 'lower center'
+        elif variable == 'ST':
+            loc = 'lower center'
+        elif variable == 'WPT':
+            loc = 'lower left'
+        elif variable == 'NJets':
+            loc = 'lower left'
+        elif variable == 'abs_lepton_eta':
+            loc = 'upper left'
+        elif variable == 'lepton_pt':
+            loc = 'lower left'
+
         # legend for ratio plot
         p_stat = mpatches.Patch(facecolor='0.75', label='Stat.', edgecolor='black' )
         p_stat_and_syst = mpatches.Patch(facecolor='gold', label=r'Stat. $\oplus$ Syst.', edgecolor='black' )
@@ -534,7 +553,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
         # x axis labels as before
         x_label = '${}$'.format(variables_latex[variable])
-        if variable in ['HT', 'ST', 'MET', 'WPT']:
+        if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
             x_label += ' [GeV]'
         plt.xlabel( x_label, CMS.x_axis_title )
 
