@@ -15,7 +15,7 @@ b_tag_bins_latex = {'0btag': '0 b-tags',
                     }
 
 variables_latex = {
-    'MET': '\ensuremath{E_{\mathrm{T}}^{\mathrm{miss}}}',
+    'MET': '\ensuremath{p_{\mathrm{T}}^{\mathrm{miss}}}',
     'HT': '\ensuremath{H_{\mathrm{T}}}',
     'ST': '\ensuremath{S_{\mathrm{T}}}',
     'MT': '\ensuremath{M^{\mathrm{W}}_{\mathrm{T}}}',

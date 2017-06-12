@@ -559,10 +559,10 @@ def main():
                     genSelectionVis = ''
                     if channel.channelName is 'muPlusJets' :
                         genSelection = event.isSemiLeptonicMuon == 1
-                        genSelectionVis = event.passesGenEventSelection == 1
+                        genSelectionVis = event.passesGenEventSelection == 1 and event.pseudoLepton_pdgId == 13
                     elif channel.channelName is 'ePlusJets' :
                         genSelection = event.isSemiLeptonicElectron == 1
-                        genSelectionVis = event.passesGenEventSelection == 1
+                        genSelectionVis = event.passesGenEventSelection == 1 and event.pseudoLepton_pdgId == 11
 
                     # Offline level selection
                     offlineSelection = 0
