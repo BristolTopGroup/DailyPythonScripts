@@ -107,16 +107,26 @@ jobs = [
         '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
 #  Add pdf variations to list of jobs
-nPDFPerJob = 1
 minPDF = 0
 maxPDF = 99
 variation = minPDF
 while variation <= maxPDF :
-    nForThisJob = nPDFPerJob
-    if variation + nPDFPerJob > maxPDF:
-        nForThisJob = maxPDF - variation
-    jobs.append('--centreOfMassEnergy 13 --pdfWeight %i --nGeneratorWeights %i' % (variation, nForThisJob) )
-    variation += nPDFPerJob
+    jobs.append('--centreOfMassEnergy 13 --pdfWeight {} '.format(variation) )
+    variation += 1
+    pass
+
+maxPDF = 54
+variation = minPDF
+while variation <= maxPDF :
+    jobs.append('--centreOfMassEnergy 13 --CT14Weight {} '.format(variation) )
+    variation += 1
+    pass
+
+maxPDF = 55
+variation = minPDF
+while variation <= maxPDF :
+    jobs.append('--centreOfMassEnergy 13 --MMHT14Weight {} '.format(variation) )
+    variation += 1
     pass
 
 def parse_args(parameters = []):

@@ -33,10 +33,11 @@ def main():
 
     samples_and_files_to_compare = {
     'Central' : file_for_powhegPythia,
+    'Nominal' : file_for_response,
     'PtReweighted Up' : file_for_ptReweight_up,
     'PtReweighted Down' : file_for_ptReweight_down,
-    'amcatnlo' : file_for_amcatnlo,
-    'powhegHerwig' : file_for_powhegHerwig,
+    # 'amcatnlo' : file_for_amcatnlo,
+    # 'powhegHerwig' : file_for_powhegHerwig,
     # 'EtaReweighted Up' : file_for_etaReweight_up,
     # 'EtaReweighted Down' : file_for_etaReweight_down,
     }
@@ -164,7 +165,7 @@ def plot_closure(unfolded_and_truths, variable, channel, come, method, quantity)
         hp.y_axis_title = 'Normalised Cross Section'        
     hp.title = 'Closure tests for {variable}'.format(variable=v_latex)
 
-    output_folder = 'plots/unfolding/closure_test/{0}/'.format(method)
+    output_folder = 'plots/unfolding/closure_test/'
 
     models = OrderedDict()
     measurements = OrderedDict()
@@ -174,13 +175,14 @@ def plot_closure(unfolded_and_truths, variable, channel, come, method, quantity)
 
 
     compare_measurements(
-                         models = models,
-                         measurements = measurements,
-                         show_measurement_errors=True,
-                         histogram_properties=hp,
-                         save_folder=output_folder,
-                         save_as=['pdf'],
-                         match_models_to_measurements = True)
+        models = models,
+        measurements = measurements,
+        show_measurement_errors=True,
+        histogram_properties=hp,
+        save_folder=output_folder,
+        save_as=['pdf'],
+        match_models_to_measurements = True
+    )
 
 def plot_bias(unfolded_and_truths, variable, channel, come, method, prefix, plot_systematics=False):
     hp = Histogram_properties()
@@ -210,9 +212,11 @@ def plot_bias(unfolded_and_truths, variable, channel, come, method, prefix, plot
     models = OrderedDict()
     lineStyles = []
     for sample in unfolded_and_truths:
-        if sample == 'Central' : continue
+        if sample == 'Central' or sample == 'Nominal': 
+            lineStyles.append('dashed')
+        else:
+            lineStyles.append('dotted')
         models[sample] = unfolded_and_truths[sample]['bias']
-        lineStyles.append('dashed')
 
     if plot_systematics:
         models['systematicsup'], models['systematicsdown'] = get_systematics(variable,channel,come,method)
@@ -220,14 +224,15 @@ def plot_bias(unfolded_and_truths, variable, channel, come, method, prefix, plot
         lineStyles.append('solid')
 
     compare_measurements(
-                         models = models,
-                         measurements = measurements,
-                         show_measurement_errors=True,
-                         histogram_properties=hp,
-                         save_folder=output_folder,
-                         save_as=['pdf'],
-                         line_styles_for_models = lineStyles,
-                         match_models_to_measurements = True)
+        models = models,
+        measurements = measurements,
+        show_measurement_errors=True,
+        histogram_properties=hp,
+        save_folder=output_folder,
+        save_as=['pdf'],
+        line_styles_for_models = lineStyles,
+        match_models_to_measurements = True
+    )
 
 def calculate_xsection( nEventsHistogram, variable ):
     resultsAsTuple = hist_to_value_error_tuplelist( nEventsHistogram )

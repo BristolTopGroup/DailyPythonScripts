@@ -10,7 +10,7 @@ from dps.config.met_systematics import metsystematics_sources
 from rootpy import asrootpy
 from numpy import matrix, zeros
 
-def calculate_xsection(inputs, bin_widths, luminosity, efficiency=1., covariance_matrix=None):
+def calculate_xsection(inputs, bin_widths, luminosity, efficiency=1., covariance_matrix=None, inputMC_covariance_matrix=None):
     '''
     BUG: this doesn't work unless the inputs are unfolded!
     inputs = list of value-error pairs
@@ -18,6 +18,7 @@ def calculate_xsection(inputs, bin_widths, luminosity, efficiency=1., covariance
     '''
     abs_cov_matrix = None
     abs_corr_matrix = None
+    inputMC_abs_cov_matrix = None
     result = []
     add_result = result.append
 
@@ -35,7 +36,13 @@ def calculate_xsection(inputs, bin_widths, luminosity, efficiency=1., covariance
         abs_cov_matrix = matrix(u.covariance_matrix(abs_values_correlated) )
         abs_corr_matrix = matrix(u.correlation_matrix(abs_values_correlated) )
         result = [(v.nominal_value, v.std_dev) for v in abs_values_correlated ]
-        return result, abs_cov_matrix, abs_corr_matrix
+        # Get Covariance Matrix for input MC
+        if not inputMC_covariance_matrix is None:
+            inputMC_values_correlated = u.correlated_values( [v.nominal_value for v in values], inputMC_covariance_matrix.tolist() )
+            inputMC_abs_values_correlated = []
+            for v,width in zip( inputMC_values_correlated, bin_widths ):
+                inputMC_abs_values_correlated.append( v / width / luminosity / efficiency )
+            inputMC_abs_cov_matrix = matrix(u.covariance_matrix(inputMC_abs_values_correlated) )
     else:
         for valueAndErrors, binWidth in zip( inputs, bin_widths ):
             value = valueAndErrors[0]
@@ -43,18 +50,9 @@ def calculate_xsection(inputs, bin_widths, luminosity, efficiency=1., covariance
             xsection = value / (luminosity * efficiency * binWidth)
             xsection_error = error / (luminosity * efficiency * binWidth)
             add_result((xsection, xsection_error))        
-        return result, None, None
+    return result, abs_cov_matrix, abs_corr_matrix, inputMC_abs_cov_matrix
 
-    # if covariance_matrix is not None:
-    #     abs_cov_matrix = covariance_matrix / (luminosity * efficiency)**2
-    #     abs_corr_matrix = matrix( zeros( ( abs_cov_matrix.shape[0], abs_cov_matrix.shape[1] ) ) )
-    #     for i in range( 0, abs_cov_matrix.shape[0] ):
-    #         for j in range(0, abs_cov_matrix.shape[1] ):
-    #             abs_corr_matrix[i,j] = abs_cov_matrix[i,j] / sqrt( abs_cov_matrix[i,i] * abs_cov_matrix[j,j] )
-
-    # return result, abs_cov_matrix, abs_corr_matrix
-
-def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,covariance_matrix=None):
+def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,covariance_matrix=None, inputMC_covariance_matrix=None):
     """
         Calculates normalised average x-section for each bin: 1/N *1/bin_width sigma_i
         There are two ways to calculate this
@@ -68,6 +66,7 @@ def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,cov
 
     norm_cov_matrix = None
     norm_corr_matrix = None
+    inputMC_norm_cov_matrix = None
     if not covariance_matrix is None and not normalise_to_one:
         values_correlated = u.correlated_values( [v.nominal_value for v in values], covariance_matrix.tolist() )
         norm = sum(values_correlated)
@@ -81,7 +80,14 @@ def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,cov
         norm_cov_matrix = matrix(u.covariance_matrix(norm_values_correlated) )
         norm_corr_matrix = matrix(u.correlation_matrix(norm_values_correlated) )
         result = [(v.nominal_value, v.std_dev) for v in norm_values_correlated ]
-        return result, norm_cov_matrix, norm_corr_matrix
+        # Get Covariance Matrix for input MC
+        if not inputMC_covariance_matrix is None:
+            inputMC_values_correlated = u.correlated_values( [v.nominal_value for v in values], inputMC_covariance_matrix.tolist() )
+            inputMC_norm = sum(inputMC_values_correlated)
+            inputMC_norm_values_correlated = []
+            for v,width in zip( inputMC_values_correlated, bin_widths ):
+                inputMC_norm_values_correlated.append( v / width / inputMC_norm )
+            inputMC_norm_cov_matrix = matrix(u.covariance_matrix(inputMC_norm_values_correlated) )
     else:
         normalisation = 0
         if normalise_to_one:
@@ -90,8 +96,7 @@ def calculate_normalised_xsection(inputs, bin_widths, normalise_to_one=False,cov
             normalisation = sum( values )
         xsections = [( 1 / bin_width ) * value / normalisation for value, bin_width in zip( values, bin_widths )]
         result = [(xsection.nominal_value, xsection.std_dev) for xsection in xsections]
-
-        return result, norm_cov_matrix, norm_corr_matrix
+    return result, norm_cov_matrix, norm_corr_matrix, inputMC_norm_cov_matrix
 
 def decombine_result(combined_result, original_ratio):
     '''

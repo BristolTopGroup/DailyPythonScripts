@@ -251,6 +251,8 @@ if __name__ == '__main__':
 			l_exp = measurement_config.systematic_group_experimental
 			l_ps = measurement_config.systematic_group_partonShower
 			l_otherTheoretical = measurement_config.systematic_group_otherTheoretical
+			l_pdf = measurement_config.systematic_group_pdf
+			l_other = measurement_config.systematic_other
 
 			# # Plot them
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder)
@@ -260,3 +262,5 @@ if __name__ == '__main__':
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_exp, "experimental")
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_ps, "partonShower")
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_otherTheoretical, "otherTheoretical")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_pdf, "pdf")
+			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_other, "other")

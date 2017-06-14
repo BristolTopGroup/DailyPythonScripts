@@ -8,12 +8,13 @@ from dps.utils.file_utilities import make_folder_if_not_exists
 from dps.utils.plotting import make_data_mc_comparison_plot, Histogram_properties
 from dps.utils.hist_utilities import prepare_histograms, clean_control_region
 from dps.utils.ROOT_utils import get_histograms_from_trees, set_root_defaults
+from dps.utils.pandas_utilities import dict_to_df, df_to_file
 from dps.utils.latex import setup_matplotlib
 from uncertainties import ufloat
+import pandas as pd 
 
 # latex, font, etc
 setup_matplotlib()
-
 title_template = '%.1f fb$^{-1}$ (%d TeV)'
 
 def binWidth(binning):
@@ -25,6 +26,7 @@ def getHistograms( histogram_files,
                    channel,
                    branchName,
                    weightBranchSignalRegion,
+                   selectionSignalRegion,
                    nBins,
                    rebin,
                    x_limits ):
@@ -37,7 +39,7 @@ def getHistograms( histogram_files,
     qcd_data_region             = ''
     qcd_data_region_electron    = 'QCD non iso e+jets'
     qcd_data_region_muon        = 'QCD non iso mu+jets 1p5to3'
-    
+
     # Channel specific files and weights
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron
@@ -57,13 +59,11 @@ def getHistograms( histogram_files,
             weightBranchSignalRegion += ' * MuonEfficiencyCorrection'
     
     # Print all the weights applied to this plot 
-    print weightBranchSignalRegion
+    print "Weight applied : {}".format(weightBranchSignalRegion)
+    print "Selection applied : {}".format(selectionSignalRegion)
 
     # Apply selection to avoid non-physical values
-    if branchName == 'abs(lepton_eta)' :
-        selection = 'lepton_eta > -10'
-    else:
-        selection = '%s >= 0' % branchName
+    selection = selectionSignalRegion
 
     histograms = {}
     histograms_QCDControlRegion = {}
@@ -261,7 +261,15 @@ def make_plot( channel, x_axis_title, y_axis_title,
         elif '_NBJets_LightUp' in name_prefix: weightBranchSignalRegion += ' * LightJetUpWeight'
         elif '_NBJets_LightDown' in name_prefix: weightBranchSignalRegion += ' * LightJetDownWeight'
         else: weightBranchSignalRegion += ' * BJetWeight'
-    
+
+    # Selections
+    if branchName == 'abs(lepton_eta)' :
+        selectionSignalRegion = 'lepton_eta > -10'
+    else:
+        selectionSignalRegion = '%s >= 0' % branchName
+    if "_JetPtAdd" in name_prefix:
+        selectionSignalRegion += "&& Iteration$>3"
+
     # Get all histograms
     signal_region_hists, control_region_hists, qcd_from_data = getHistograms( 
         histogram_files, 
@@ -270,6 +278,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
         channel, 
         branchName, 
         weightBranchSignalRegion, 
+        selectionSignalRegion,
         nBins, 
         rebin, 
         x_limits 
@@ -301,9 +310,6 @@ def make_plot( channel, x_axis_title, y_axis_title,
         colours['Single-Top'], 
         colours['TTJet'],
     ]
-
-    # Print sample event yields
-    print_output(signal_region_hists, qcd_from_data)
 
     # Find maximum y of samples
     maxData = max( list(signal_region_hists['data'].y()) )
@@ -365,11 +371,13 @@ def make_plot( channel, x_axis_title, y_axis_title,
         show_ratio = True, 
         normalise = normalise
     )
-    print ("Plot written to : ", output_folder_to_use)
+    # Print output and sample event yields
+    print "Plot written to : {}".format(output_folder_to_use)
+    print_output(signal_region_hists, qcd_from_data, output_folder_to_use, branchName, channel)
     return
 
-def print_output(signal_region_hists, qcd_from_data):
-    '''Printout on normalisation of different samples'''
+def print_output(signal_region_hists, qcd_from_data, output_folder_to_use, branchName, channel):
+    '''Printout on normalisation of different samples to screen and table'''
     print 'Normalisation after selection'
     print 'Data       :', signal_region_hists['data'].integral(overflow=True)
     print 'TTJet      :', signal_region_hists['TTJet'].integral(overflow=True)
@@ -381,6 +389,24 @@ def print_output(signal_region_hists, qcd_from_data):
     print 'Total DATA :', signal_region_hists['data'].integral(overflow=True)
     print 'Total MC   :', mcSum
     print '='*60
+
+    output_folder = output_folder_to_use + 'tables/'
+    make_folder_if_not_exists(output_folder)
+
+    summary = {}
+    summary['Data']         = [signal_region_hists['data'].integral(overflow=True)]
+    summary['TTJet']        = [signal_region_hists['TTJet'].integral(overflow=True)]
+    summary['SingleTop']    = [signal_region_hists['SingleTop'].integral(overflow=True)]
+    summary['V+Jets']       = [signal_region_hists['V+Jets'].integral(overflow=True)]
+    summary['QCD']          = [qcd_from_data.integral(overflow=True)]
+    summary['TotalData']    = [signal_region_hists['data'].integral(overflow=True)]
+    summary['TotalMC']      = [mcSum]
+    summary['DataToMC']     = [signal_region_hists['data'].integral(overflow=True) / mcSum]
+    order=['Data', 'TTJet', 'SingleTop', 'V+Jets', 'QCD', 'TotalData', 'TotalMC', 'DataToMC']
+
+    d = dict_to_df(summary)
+    d = d[order]
+    df_to_file(output_folder+channel+'_'+branchName+'.txt', d)
     return
 
 def parse_arguments():
@@ -401,10 +427,15 @@ def parse_arguments():
         default = 'central',
         help = "set the category to take the fit results from (default: central)" 
     )
-    parser.add_argument( "--generator", 
+    parser.add_argument( "-g", "--generator", 
         dest = "generator", 
         default = 'PowhegPythia8',
-        help = "set the generator (PowhegPythia8, powhegHerwigpp, amc, amcatnloHerwigpp, madgraph)" 
+        help = "set the generator (PowhegPythia8, powhegHerwigpp, amc, madgraph)" 
+    )
+    parser.add_argument( "-m", "--mode", 
+        dest = "mode", 
+        default = 'central',
+        help = "JES_up|JES_down|JER_up|JER_down" 
     )
     parser.add_argument( "-d", "--normalise_to_data", 
         dest = "normalise_to_data", 
@@ -428,24 +459,35 @@ if __name__ == '__main__':
     
     normalise_to_data = args.normalise_to_data
     
-    output_folder = '{o}/'.format( o = args.output_folder )
-    output_folder_base = output_folder
-    make_folder_if_not_exists( output_folder_base )
 
     category = args.category
     generator = args.generator
+    mode = args.mode
     make_additional_QCD_plots = args.additional_QCD_plots
     
     # Retreive the appropriate sample histograms
     histogram_files = {
-            'TTJet'     : measurement_config.ttbar_trees[category],
-            'V+Jets'    : measurement_config.VJets_trees[category],
-            'QCD'       : measurement_config.electron_QCD_MC_trees[category],
-            'SingleTop' : measurement_config.SingleTop_trees[category],
+        'TTJet'     : measurement_config.ttbar_trees[category],
+        'V+Jets'    : measurement_config.VJets_trees[category],
+        'QCD'       : measurement_config.electron_QCD_MC_trees[category],
+        'SingleTop' : measurement_config.SingleTop_trees[category],
     }
 
+    # Swap between plotting different generators
     if 'PowhegPythia8' not in generator:
         histogram_files['TTJet'] = measurement_config.ttbar_trees[category].replace('PowhegPythia8', generator)
+
+    # Swap between different analysis modes
+    if 'central' not in mode:
+        modeToReplace = ''
+        if 'JES_up' in mode: modeToReplace = '_plusJES'
+        elif 'JES_down' in mode: modeToReplace = '_minusJES'
+        elif 'JER_up' in mode: modeToReplace = '_plusJER'
+        elif 'JER_down' in mode: modeToReplace = '_minusJER'
+        else: print('Unrecognised mode, Please try again (JES_up|JES_down|JER_up|JER_down)')
+        histogram_files['V+Jets'] = histogram_files['V+Jets'].replace('_tree', modeToReplace+'_tree')
+        histogram_files['QCD'] = histogram_files['QCD'].replace('_tree', modeToReplace+'_tree')
+        histogram_files['SingleTop'] = histogram_files['SingleTop'].replace('_tree', modeToReplace+'_tree')
 
     preliminary = True
     useQCDControl = True
@@ -472,7 +514,8 @@ if __name__ == '__main__':
         'NBJetsDown',
         'NBJets_LightUp',
         'NBJets_LightDown',
-        # 'JetPt',
+        'JetPt',
+        
         # 'sigmaietaieta',
 
         # 'RelIso',
@@ -491,7 +534,7 @@ if __name__ == '__main__':
         'QCDLeptonPt',
         'QCDNJets',
 
-        # 'QCDRelIso',
+        'QCDRelIso',
         # 'QCDHLTECALIso',
         # 'QCDHLTHCALIso',
         # 'QCDHLTTrackerIso',
@@ -502,20 +545,32 @@ if __name__ == '__main__':
         include_plots.extend( additional_qcd_plots )
 
     selection = 'Ref selection' # also 'Ref selection NoBSelection'
+    
+    # Special directories for other generators or modes (and tree name changes)
+    special = 'Nominal'
+    if 'PowhegPythia8' not in generator:
+        special = generator
+    modeToReplace = ''
+    if 'central' not in mode: 
+        special = mode
+
+    output_folder_tmp = '{base}/{special}/Variables/{sel}/'.format(
+        base = args.output_folder,
+        special = special,
+        sel = selection.replace(" ", "_"),
+    )
+    output_folder = output_folder_tmp
+    make_folder_if_not_exists(output_folder)
+
     for channel, label in {
-        'electron' : 'EPlusJets', 
-        'muon'     : 'MuPlusJets',
+        # 'electron' : 'EPlusJets', 
+        # 'muon'     : 'MuPlusJets',
         'combined' : 'COMBINED'
         }.iteritems() : 
 
         # Set folder for this batch of plots
         b_tag_bin = '2orMoreBtags'
-        output_folder = output_folder_base + "/Variables/" + selection + "/"
-        if args.generator != '':
-            output_folder += "/"
-            output_folder += generator
-            output_folder += "/"
-        make_folder_if_not_exists(output_folder)
+
         print '--->', channel
         ###################################################
         # HT
@@ -523,20 +578,21 @@ if __name__ == '__main__':
         norm_variable = 'HT'
         if 'HT' in include_plots:
             print '---> HT'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['HT']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'HT',
-                      name_prefix = '%s_HT_' % label,
-                      x_limits = control_plots_bins['HT'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['HT']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'HT',
+                name_prefix = '%s_HT_' % label,
+                x_limits = control_plots_bins['HT'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+                )
 
         ###################################################
         # MET
@@ -544,20 +600,21 @@ if __name__ == '__main__':
         norm_variable = 'MET'
         if 'MET' in include_plots:
             print '---> MET'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'MET',
-                      name_prefix = '%s_MET_' % label,
-                      x_limits = control_plots_bins['MET'],
-                      nBins = len(control_plots_bins['MET'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'MET',
+                name_prefix = '%s_MET_' % label,
+                x_limits = control_plots_bins['MET'],
+                nBins = len(control_plots_bins['MET'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
 
         ###################################################
         # ST
@@ -565,20 +622,21 @@ if __name__ == '__main__':
         norm_variable = 'ST'
         if 'ST' in include_plots:
             print '---> ST'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['ST']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'ST',
-                      name_prefix = '%s_ST_' % label,
-                      x_limits = control_plots_bins['ST'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['ST']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'ST',
+                name_prefix = '%s_ST_' % label,
+                x_limits = control_plots_bins['ST'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
 
         ###################################################
         # WPT
@@ -586,21 +644,22 @@ if __name__ == '__main__':
         norm_variable = 'WPT'
         if 'WPT' in include_plots:
             print '---> WPT'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['WPT']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'WPT',
-                      name_prefix = '%s_WPT_' % label,
-                      x_limits = control_plots_bins['WPT'],
-                      y_max_scale = 1.4,
-                      nBins = 16,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['WPT']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'WPT',
+                name_prefix = '%s_WPT_' % label,
+                x_limits = control_plots_bins['WPT'],
+                y_max_scale = 1.4,
+                nBins = 16,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
 
         ###################################################
         # Lepton Pt
@@ -610,20 +669,21 @@ if __name__ == '__main__':
             binsLabel = 'ElectronPt'
             if channel == 'muon':
                 binsLabel = 'MuonPt'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins[binsLabel]),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' %  (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'lepton_pt',
-                      name_prefix = '%s_LeptonPt_' % label,
-                      x_limits = control_plots_bins[binsLabel],
-                      nBins = len(control_plots_bins[binsLabel])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['pt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins[binsLabel]),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'lepton_pt',
+                name_prefix = '%s_LeptonPt_' % label,
+                x_limits = control_plots_bins[binsLabel],
+                nBins = len(control_plots_bins[binsLabel])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
         ###################################################
         # Lepton Eta
         ###################################################
@@ -633,20 +693,21 @@ if __name__ == '__main__':
             if channel == 'muon':
                 treeName = 'Muon/Muons'
 
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['eta'],
-                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['LeptonEta']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % ( label, treeName),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/%s' % (label, treeName),
-                      branchName = 'lepton_eta',
-                      name_prefix = '%s_LeptonEta_' % label,
-                      x_limits = control_plots_bins['LeptonEta'],
-                      nBins = len(control_plots_bins['LeptonEta'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['eta'],
+                y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['LeptonEta']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'lepton_eta',
+                name_prefix = '%s_LeptonEta_' % label,
+                x_limits = control_plots_bins['LeptonEta'],
+                nBins = len(control_plots_bins['LeptonEta'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
 
         ###################################################
         # AbsLepton Eta
@@ -654,456 +715,508 @@ if __name__ == '__main__':
         if 'AbsLeptonEta' in include_plots:
             print '---> Abs Lepton Eta'
             print output_folder
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['eta'],
-                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['AbsLeptonEta']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' %  (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'abs(lepton_eta)',
-                      name_prefix = '%s_AbsLeptonEta_' % label,
-                      x_limits = control_plots_bins['AbsLeptonEta'],
-                      y_max_scale = 1.4,
-                      nBins = len(control_plots_bins['AbsLeptonEta'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.99, 0.79 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['eta'],
+                y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['AbsLeptonEta']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'abs(lepton_eta)',
+                name_prefix = '%s_AbsLeptonEta_' % label,
+                x_limits = control_plots_bins['AbsLeptonEta'],
+                y_max_scale = 1.4,
+                nBins = len(control_plots_bins['AbsLeptonEta'])-1,
+                rebin = 1,
+                legend_location = ( 0.99, 0.79 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
 
         ###################################################
         # NJets
         ###################################################
         if 'NJets' in include_plots:
             print '---> NJets'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
-                      y_axis_title = 'Events / 1',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'NJets',
-                      name_prefix = '%s_NJets_' % label,
-                      x_limits = control_plots_bins['NJets'],
-                      y_max_scale = 1.4,
-                      nBins = len(control_plots_bins['NJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                y_axis_title = 'Events / 1',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'NJets',
+                name_prefix = '%s_NJets_' % label,
+                x_limits = control_plots_bins['NJets'],
+                y_max_scale = 1.4,
+                nBins = len(control_plots_bins['NJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
 
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
-                      y_axis_title = 'Events / 1',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'NJets',
-                      name_prefix = '%s_NJets_logY_' % label,
-                      x_limits = control_plots_bins['NJets'],
-                      nBins = len(control_plots_bins['NJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 1.0, 0.78 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      log_y = True,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                y_axis_title = 'Events / 1',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'NJets',
+                name_prefix = '%s_NJets_logY_' % label,
+                x_limits = control_plots_bins['NJets'],
+                nBins = len(control_plots_bins['NJets'])-1,
+                rebin = 1,
+                legend_location = ( 1.0, 0.78 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+                log_y = True,
+            )
 
-        # Set folder for this batch of plots
-        output_folder =  output_folder_base + "/FitVariables/" + selection + "/"
-        make_folder_if_not_exists(output_folder)
-
-        ###################################################
-        # Mjj
-        ###################################################
-        if 'Mjj' in include_plots:
-            print '---> Mjj'
-            make_plot( channel,
-                      x_axis_title = 'M(jj) [GeV]',
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
-                      branchName = 'mjj',
-                      name_prefix = '%s_mjj_' % label,
-                      x_limits = fit_variable_bin_edges['Mjj'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.78 ),
-                      cms_logo_location = 'right',
-                      )
+        # ###################################################
+        # # Mjj
+        # ###################################################
+        # if 'Mjj' in include_plots:
+        #     print '---> Mjj'
+        #     make_plot( channel,
+        #               x_axis_title = 'M(jj) [GeV]',
+        #               y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
+        #               signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
+        #               control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection/W Bosons/W Bosons' % label,
+        #               branchName = 'mjj',
+        #               name_prefix = '%s_mjj_' % label,
+        #               x_limits = fit_variable_bin_edges['Mjj'],
+        #               nBins = 20,
+        #               rebin = 1,
+        #               legend_location = ( 0.9, 0.78 ),
+        #               cms_logo_location = 'right',
+        #     )
 
         ###################################################
         # M3
         ###################################################
         if 'M3' in include_plots:
             print '---> M3'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % fit_variables_latex['M3'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['M3']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'M3',
-                      name_prefix = '%s_M3_' % label,
-                      x_limits = fit_variable_bin_edges['M3'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % fit_variables_latex['M3'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['M3']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'M3',
+                name_prefix = '%s_M3_' % label,
+                x_limits = fit_variable_bin_edges['M3'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.9, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
 
         ###################################################
         # angle_bl
         ###################################################
         if 'angle_bl' in include_plots:
             print '---> angle_bl'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % fit_variables_latex['angle_bl'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'angle_bl',
-                      name_prefix = '%s_angle_bl_' % label,
-                      x_limits = fit_variable_bin_edges['angle_bl'],
-                      nBins = 10,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % fit_variables_latex['angle_bl'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'angle_bl',
+                name_prefix = '%s_angle_bl_' % label,
+                x_limits = fit_variable_bin_edges['angle_bl'],
+                nBins = 10,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
 
-        # Set folder for this batch of plots
-        output_folder =  output_folder_base + "/Control/"
+
+        output_folder = output_folder_tmp.replace("Variables", "Control")
         make_folder_if_not_exists(output_folder)
-
         ###################################################
         # NBJets
         ###################################################
         if 'NBJets' in include_plots:
             print '---> NBJets'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      branchName = 'NBJets',
-                      name_prefix = '%s_NBJets_' % label,
-                      x_limits = control_plots_bins['NBJets'],
-                      nBins = len(control_plots_bins['NBJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-
-            # make_plot( channel,
-            #           x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-            #           y_axis_title = 'Events',
-            #           signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-            #           control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-            #           branchName = 'NBJets',
-            #           name_prefix = '%s_NBJets_logY_' % label,
-            #           x_limits = control_plots_bins['NBJets'],
-            #           nBins = len(control_plots_bins['NBJets'])-1,
-            #           rebin = 1,
-            #           legend_location = ( 0.95, 0.83 ),
-            #           cms_logo_location = 'right',
-            #           log_y = True,
-            #           use_qcd_data_region = False,
-            #           )
-        ###################################################
-        # NBJets NoWeight
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                branchName = 'NBJets',
+                name_prefix = '%s_NBJets_' % label,
+                x_limits = control_plots_bins['NBJets'],
+                nBins = len(control_plots_bins['NBJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+                log_y = False,
+            )
         if 'NBJetsNoWeight' in include_plots:
             print '---> NBJetsNoWeight'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      branchName = 'NBJets',
-                      name_prefix = '%s_NBJetsNoWeight_' % label,
-                      x_limits = control_plots_bins['NBJets'],
-                      nBins = len(control_plots_bins['NBJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-        ###################################################
-        # NBJetsUp
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                branchName = 'NBJets',
+                name_prefix = '%s_NBJetsNoWeight_' % label,
+                x_limits = control_plots_bins['NBJets'],
+                nBins = len(control_plots_bins['NBJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
         if 'NBJetsUp' in include_plots:
             print '---> NBJetsUp'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      branchName = 'NBJets',
-                      name_prefix = '%s_NBJetsUp_' % label,
-                      x_limits = control_plots_bins['NBJets'],
-                      nBins = len(control_plots_bins['NBJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-        ###################################################
-        # NBJetsDown
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                branchName = 'NBJets',
+                name_prefix = '%s_NBJetsUp_' % label,
+                x_limits = control_plots_bins['NBJets'],
+                nBins = len(control_plots_bins['NBJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
         if 'NBJetsDown' in include_plots:
             print '---> NBJetsDown'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      branchName = 'NBJets',
-                      name_prefix = '%s_NBJetsDown_' % label,
-                      x_limits = control_plots_bins['NBJets'],
-                      nBins = len(control_plots_bins['NBJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-
-        ###################################################
-        # NLightJetsUp
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                branchName = 'NBJets',
+                name_prefix = '%s_NBJetsDown_' % label,
+                x_limits = control_plots_bins['NBJets'],
+                nBins = len(control_plots_bins['NBJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+                )
         if 'NBJets_LightUp' in include_plots:
             print '---> NBJets_LightUp'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      branchName = 'NBJets',
-                      name_prefix = '%s_NBJets_LightUp_' % label,
-                      x_limits = control_plots_bins['NBJets'],
-                      nBins = len(control_plots_bins['NBJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-        ###################################################
-        # NLightJetsDown
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                branchName = 'NBJets',
+                name_prefix = '%s_NBJets_LightUp_' % label,
+                x_limits = control_plots_bins['NBJets'],
+                nBins = len(control_plots_bins['NBJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
         if 'NBJets_LightDown' in include_plots:
             print '---> NBJets_LightDown'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NBJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/Ref selection NoBSelection/FitVariables' % (label),
-                      branchName = 'NBJets',
-                      name_prefix = '%s_NBJets_LightDown_' % label,
-                      x_limits = control_plots_bins['NBJets'],
-                      nBins = len(control_plots_bins['NBJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.73 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NBJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/Ref selection NoBSelection/AnalysisVariables'.format(ch=label),
+                branchName = 'NBJets',
+                name_prefix = '%s_NBJets_LightDown_' % label,
+                x_limits = control_plots_bins['NBJets'],
+                nBins = len(control_plots_bins['NBJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.73 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
+
+        ###################################################
+        # NVertex
+        ###################################################
+        if 'NVertex' in include_plots:
+            print '---> NVertex'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'NVertices',
+                name_prefix = '%s_NPU_' % label,
+                x_limits = control_plots_bins['NVertex'],
+                nBins = len(control_plots_bins['NVertex'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
+        if 'NVertexNoWeight' in include_plots:
+            print '---> NVertexNoWeight'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'NVertices',
+                name_prefix = '%s_NPUNoWeight_' % label,
+                x_limits = control_plots_bins['NVertex'],
+                nBins = len(control_plots_bins['NVertex'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
+        if 'NVertexUp' in include_plots:
+            print '---> NVertexUp'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'NVertices',
+                name_prefix = '%s_NPUUp_' % label,
+                x_limits = control_plots_bins['NVertex'],
+                nBins = len(control_plots_bins['NVertex'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
+        if 'NVertexDown' in include_plots:
+            print '---> NVertexDown'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NVertex'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'NVertices',
+                name_prefix = '%s_NPUDown_' % label,
+                x_limits = control_plots_bins['NVertex'],
+                nBins = len(control_plots_bins['NVertex'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = False,
+            )
 
         ###################################################
         # Jet Pt
         ###################################################
         if 'JetPt' in include_plots:
             print '---> Jet Pt'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' %  (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'jet_pt',
-                      name_prefix = '%s_JetPt_' % label,
-                      x_limits = control_plots_bins['JetPt'],
-                      nBins = len(control_plots_bins['JetPt'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      )
-        ###################################################
-        # NVertex
-        ###################################################
-        if 'NVertex' in include_plots:
-            print '---> NVertex'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'NVertices',
-                      name_prefix = '%s_NPU_' % label,
-                      x_limits = control_plots_bins['NVertex'],
-                      nBins = len(control_plots_bins['NVertex'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['jpt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'jet_pt',
+                name_prefix = '%s_JetPt_' % label,
+                x_limits = control_plots_bins['JetPt'],
+                nBins = len(control_plots_bins['JetPt'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> Leading Jet Pt'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['jpt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'jet_pt[0]',
+                name_prefix = '%s_JetPt0_' % label,
+                x_limits = control_plots_bins['JetPt'],
+                nBins = len(control_plots_bins['JetPt'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> Sub Leading Jet Pt'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['jpt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'jet_pt[1]',
+                name_prefix = '%s_JetPt1_' % label,
+                x_limits = control_plots_bins['JetPt'],
+                nBins = len(control_plots_bins['JetPt'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> 3rd Jet Pt'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['jpt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'jet_pt[2]',
+                name_prefix = '%s_JetPt2_' % label,
+                x_limits = control_plots_bins['JetPt'],
+                nBins = len(control_plots_bins['JetPt'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> 4th Jet Pt'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['jpt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'jet_pt[3]',
+                name_prefix = '%s_JetPt3_' % label,
+                x_limits = control_plots_bins['JetPt'],
+                nBins = len(control_plots_bins['JetPt'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> All Additional Jet Pt'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['jpt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['JetPt']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'jet_pt',
+                name_prefix = '%s_JetPtAdd_' % label,
+                x_limits = control_plots_bins['JetPt'],
+                nBins = len(control_plots_bins['JetPt'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
 
-        if 'NVertexNoWeight' in include_plots:
-            print '---> NVertexNoWeight'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'NVertices',
-                      name_prefix = '%s_NPUNoWeight_' % label,
-                      x_limits = control_plots_bins['NVertex'],
-                      nBins = len(control_plots_bins['NVertex'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-        
-        if 'NVertexUp' in include_plots:
-            print '---> NVertexUp'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'NVertices',
-                      name_prefix = '%s_NPUUp_' % label,
-                      x_limits = control_plots_bins['NVertex'],
-                      nBins = len(control_plots_bins['NVertex'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
-
-        if 'NVertexDown' in include_plots:
-            print '---> NVertexDown'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NVertex'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'NVertices',
-                      name_prefix = '%s_NPUDown_' % label,
-                      x_limits = control_plots_bins['NVertex'],
-                      nBins = len(control_plots_bins['NVertex'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = False,
-                      )
         ###################################################
-        # Rel iso
+        # Isolation
         ###################################################
         if 'RelIso' in include_plots:
             print '---> Rel iso'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['relIso'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = '%s' % 'lepton_isolation',
-                      name_prefix = '%s_relIso_' % channel,
-                      x_limits = control_plots_bins['relIso'],
-                      nBins = len(control_plots_bins['relIso'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      log_y = True,
-                      )
-
-        ###################################################
-        # HLT ECAL iso
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['relIso'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = '%s' % 'lepton_isolation',
+                name_prefix = '%s_relIso_' % channel,
+                x_limits = control_plots_bins['relIso'],
+                nBins = len(control_plots_bins['relIso'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+                log_y = True,
+            )
         if 'hltECALIso' in include_plots:
             print '---> hltECALIso'
-            make_plot( channel,
-                      x_axis_title = 'HLT ECAL isolation',
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'lepton_hltECALisolation',
-                      name_prefix = '%s_hltECALIso_' % channel,
-                      x_limits = control_plots_bins['relIso'],
-                      nBins = len(control_plots_bins['relIso'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      log_y = True,
-                      )
-
-        ###################################################
-        # HLT HCAL iso
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = 'HLT ECAL isolation',
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'lepton_hltECALisolation',
+                name_prefix = '%s_hltECALIso_' % channel,
+                x_limits = control_plots_bins['relIso'],
+                nBins = len(control_plots_bins['relIso'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+                log_y = True,
+            )
         if 'hltHCALIso' in include_plots:
             print '---> hltHCALIso'
-            make_plot( channel,
-                      x_axis_title = 'HLT HCAL isolation',
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'lepton_hltHCALisolation',
-                      name_prefix = '%s_hltHCALIso_' % channel,
-                      x_limits = control_plots_bins['relIso'],
-                      nBins = len(control_plots_bins['relIso'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      log_y = True,
-                      )
-
-        ###################################################
-        # HLT Tracker iso
-        ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = 'HLT HCAL isolation',
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'lepton_hltHCALisolation',
+                name_prefix = '%s_hltHCALIso_' % channel,
+                x_limits = control_plots_bins['relIso'],
+                nBins = len(control_plots_bins['relIso'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+                log_y = True,
+            )
         if 'hltTrackerIso' in include_plots:
             print '---> hltTrackerIso'
-            make_plot( channel,
-                      x_axis_title = 'HLT Tracker isolation',
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'lepton_hltTrackerisolation_overPt',
-                      name_prefix = '%s_hltTrackerIso_' % channel,
-                      x_limits = control_plots_bins['relIso'],
-                      nBins = len(control_plots_bins['relIso'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      use_qcd_data_region = useQCDControl,
-                      log_y = True,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = 'HLT Tracker isolation',
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'lepton_hltTrackerisolation_overPt',
+                name_prefix = '%s_hltTrackerIso_' % channel,
+                x_limits = control_plots_bins['relIso'],
+                nBins = len(control_plots_bins['relIso'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+                log_y = True,
+            )
             
-
         ###################################################
         # Sigma ieta ieta
         ###################################################
-
         norm_variable = 'sigmaietaieta'
         if 'sigmaietaieta' in include_plots and channel == 'electron':
             print '---> sigmaietaieta'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/%s/FitVariables' % (label, selection),
-                      branchName = 'sigmaIetaIeta',
-                      name_prefix = '%s_sigmaIetaIeta_' % label,
-                      x_limits = control_plots_bins['sigmaietaieta'],
-                      nBins = len(control_plots_bins['sigmaietaieta'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.9, 0.83 ),
-                      cms_logo_location = 'left',
-                      use_qcd_data_region = useQCDControl,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'sigmaIetaIeta',
+                name_prefix = '%s_sigmaIetaIeta_' % label,
+                x_limits = control_plots_bins['sigmaietaieta'],
+                nBins = len(control_plots_bins['sigmaietaieta'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.83 ),
+                cms_logo_location = 'left',
+                use_qcd_data_region = useQCDControl,
+            )
 
     ###################################################
-    # QCD Control Region
+    ###################################################
+    ### QCD Control Region
+    ###################################################
     ###################################################
     for channel, label in {
                             'electronQCDNonIso' : 'EPlusJets/QCD non iso e+jets',
@@ -1114,22 +1227,19 @@ if __name__ == '__main__':
         b_tag_bin = '0btag'
 
         # Set folder for this batch of plots
-        output_folder = output_folder_base + "QCDControl/Variables/%s/" % channel
-        # output_folder = output_folder_base + "QCDControl/Variables/%s/TightElectron/" % channel
+        output_folder = output_folder_tmp.replace("Variables", "QCDControl")
+        output_folder = output_folder.replace("Ref_selection", channel)
         make_folder_if_not_exists(output_folder)
 
         print 'Control region :',label
 
         treeName = 'EPlusJets/QCD non iso e+jets'
-        signalTreeName = 'EPlusJets/Ref selection'
         if channel == 'electronQCDConversions':
             treeName = 'EPlusJets/QCDConversions'
         elif channel == 'muonQCDNonIso':
             treeName = 'MuPlusJets/QCD non iso mu+jets 3toInf'
-            signalTreeName = 'MuPlusJets/Ref selection'
         elif channel == 'muonQCDNonIso2':
             treeName = 'MuPlusJets/QCD non iso mu+jets 1p5to3'
-            signalTreeName = 'MuPlusJets/Ref selection'
 
         ###################################################
         # HT
@@ -1137,36 +1247,21 @@ if __name__ == '__main__':
         norm_variable = 'HT'
         if 'QCDHT' in include_plots:
             print '---> QCD HT'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['HT']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'HT',
-                      name_prefix = '%s_HT_' % channel,
-                      x_limits = control_plots_bins['HT'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
-
-        if 'QCDHT_dataControl_mcSignal' in include_plots:
-            print '---> QCD HT data to signal QCD'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['HT']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % signalTreeName,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'HT',
-                      name_prefix = '%s_HT_' % channel,
-                      x_limits = control_plots_bins['HT'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['HT'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['HT']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'HT',
+                name_prefix = '%s_HT_' % channel,
+                x_limits = control_plots_bins['HT'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
         ###################################################
         # MET
@@ -1174,20 +1269,21 @@ if __name__ == '__main__':
         norm_variable = 'MET'
         if 'QCDMET' in include_plots:
             print '---> QCD MET'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'MET',
-                      name_prefix = '%s_MET_' % channel,
-                      x_limits = control_plots_bins['MET'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['MET'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['MET']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'MET',
+                name_prefix = '%s_MET_' % channel,
+                x_limits = control_plots_bins['MET'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
         ###################################################
         # ST
@@ -1195,20 +1291,21 @@ if __name__ == '__main__':
         norm_variable = 'ST'
         if 'QCDST' in include_plots:
             print '---> QCD ST'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['ST']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'ST',
-                      name_prefix = '%s_ST_' % channel,
-                      x_limits = control_plots_bins['ST'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['ST'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['ST']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'ST',
+                name_prefix = '%s_ST_' % channel,
+                x_limits = control_plots_bins['ST'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
         ###################################################
         # WPT
@@ -1216,40 +1313,42 @@ if __name__ == '__main__':
         norm_variable = 'WPT'
         if 'QCDWPT' in include_plots:
             print '---> QCD WPT'
-            make_plot( channel,
-                      x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['WPT']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % treeName,
-                      branchName = 'WPT',
-                      name_prefix = '%s_WPT_' % channel,
-                      x_limits = control_plots_bins['WPT'],
-                      nBins = 20,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$ [GeV]' % variables_latex['WPT'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['WPT']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'WPT',
+                name_prefix = '%s_WPT_' % channel,
+                x_limits = control_plots_bins['WPT'],
+                nBins = 20,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
         ###################################################
         # Abs Lepton Eta
         ###################################################
         if 'QCDAbsLeptonEta' in include_plots:
             print '---> QCD Abs Lepton Eta'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['eta'],
-                      y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['AbsLeptonEtaQCD']),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      branchName = 'abs(lepton_eta)',
-                      name_prefix = '%s_AbsLeptonEta_' % channel,
-                      x_limits = control_plots_bins['AbsLeptonEtaQCD'],
-                      nBins = len(control_plots_bins['AbsLeptonEtaQCD'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['eta'],
+                y_axis_title = 'Events/(%.1f)' % binWidth(control_plots_bins['AbsLeptonEtaQCD']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'abs(lepton_eta)',
+                name_prefix = '%s_AbsLeptonEta_' % channel,
+                x_limits = control_plots_bins['AbsLeptonEtaQCD'],
+                nBins = len(control_plots_bins['AbsLeptonEtaQCD'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
         ###################################################
         # Lepton Pt
@@ -1260,143 +1359,133 @@ if __name__ == '__main__':
             if channel == 'muon':
                 binsLabel = 'MuonPt'
 
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['pt'],
-                      y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins[binsLabel]),
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      branchName = 'lepton_pt',
-                      name_prefix = '%s_LeptonPt_' % channel,
-                      x_limits = control_plots_bins[binsLabel],
-                      nBins = len(control_plots_bins[binsLabel])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['pt'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins[binsLabel]),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'lepton_pt',
+                name_prefix = '%s_LeptonPt_' % channel,
+                x_limits = control_plots_bins[binsLabel],
+                nBins = len(control_plots_bins[binsLabel])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
         ###################################################
         # NJets
         ###################################################
         if 'QCDNJets' in include_plots:
             print '---> QCD NJets'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['NJets'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-                      branchName = 'NJets',
-                      name_prefix = '%s_NJets_' % channel,
-                      x_limits = control_plots_bins['NJets'],
-                      nBins = len(control_plots_bins['NJets'])-1,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      ratio_y_limits = [0.1,1.9],
-                      cms_logo_location = 'right',
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'NJets',
+                name_prefix = '%s_NJets_' % channel,
+                x_limits = control_plots_bins['NJets'],
+                nBins = len(control_plots_bins['NJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+            )
 
-        # # Set folder for this batch of plots
-        # output_folder =  output_folder_base + "QCDControl/Control/%s/" % channel
-        # # output_folder =  output_folder_base + "QCDControl/Control/%s/TightElectron/" % channel
-        # make_folder_if_not_exists(output_folder)
-        # ###################################################
-        # # Rel iso
-        # ###################################################
+        ###################################################
+        # Isolation
+        ###################################################
         if 'QCDRelIso' in include_plots:
             print '---> QCD Rel iso'
-            make_plot( channel,
-                      x_axis_title = '$%s$' % control_plots_latex['relIso'],
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      branchName = '%s' % 'lepton_isolation',
-                      name_prefix = '%s_relIso_' % channel,
-                      x_limits = [0,0.5],
-                      nBins = 40,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      log_y = True,
-                      )
-
-        # ###################################################
-        # # HLT ECAL iso
-        # ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['relIso'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = '%s' % 'lepton_isolation',
+                name_prefix = '%s_relIso_' % channel,
+                x_limits = [0,0.5],
+                nBins = 40,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                log_y = True,
+            )
         if 'QCDHLTECALIso' in include_plots:
             print '---> QCD HLT ECAL iso'
-            make_plot( channel,
-                      x_axis_title = 'HLT ECAL isolation',
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      branchName = 'lepton_hltECALisolation',
-                      name_prefix = '%s_hltECALIso_' % channel,
-                      x_limits = [0,0.5],
-                      nBins = 40,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      log_y = True,
-                      )
-
-        # ###################################################
-        # # HLT HCAL iso
-        # ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = 'HLT ECAL isolation',
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'lepton_hltECALisolation',
+                name_prefix = '%s_hltECALIso_' % channel,
+                x_limits = [0,0.5],
+                nBins = 40,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                log_y = True,
+            )
         if 'QCDHLTHCALIso' in include_plots:
             print '---> QCD HLT HCAL iso'
-            make_plot( channel,
-                      x_axis_title = 'HLT HCAL isolation',
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      branchName = 'lepton_hltHCALisolation',
-                      name_prefix = '%s_hltHCALIso_' % channel,
-                      x_limits = [0,0.5],
-                      nBins = 40,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      log_y = True,
-                      )
-
-        # ###################################################
-        # # HLT Tracker iso
-        # ###################################################
+            make_plot( 
+                channel,
+                x_axis_title = 'HLT HCAL isolation',
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'lepton_hltHCALisolation',
+                name_prefix = '%s_hltHCALIso_' % channel,
+                x_limits = [0,0.5],
+                nBins = 40,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                log_y = True,
+            )
         if 'QCDHLTTrackerIso' in include_plots:
             print '---> QCD HLT Tracker iso'
-            make_plot( channel,
-                      x_axis_title = 'HLT Tracker isolation',
-                      y_axis_title = 'Events',
-                      signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % label,
-                      branchName = 'lepton_hltTrackerisolation_overPt',
-                      name_prefix = '%s_hltTrackerIso_' % channel,
-                      x_limits = [0,0.5],
-                      nBins = 40,
-                      rebin = 1,
-                      legend_location = ( 0.95, 0.78 ),
-                      cms_logo_location = 'right',
-                      log_y = True,
-                      )
+            make_plot( 
+                channel,
+                x_axis_title = 'HLT Tracker isolation',
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'lepton_hltTrackerisolation_overPt',
+                name_prefix = '%s_hltTrackerIso_' % channel,
+                x_limits = [0,0.5],
+                nBins = 40,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                cms_logo_location = 'right',
+                log_y = True,
+            )
 
-        # ###################################################
-        # # Sigma ieta ieta
-        # ###################################################
-
-        # norm_variable = 'sigmaietaieta'
-        # if 'QCDsigmaietaieta' in include_plots and not 'MuPlusJets' in treeName:
-        #     print '---> sigmaietaieta'
-        #     make_plot( channel,
-        #               x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
-        #               y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
-        #               signal_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-        #               control_region_tree = 'TTbar_plus_X_analysis/%s/FitVariables' % ( treeName ),
-        #               branchName = 'sigmaIetaIeta',
-        #               name_prefix = '%s_sigmaIetaIeta_' % channel,
-        #               x_limits = control_plots_bins['sigmaietaieta'],
-        #               y_max_scale = 1.5,
-        #               nBins = len(control_plots_bins['sigmaietaieta'])-1,
-        #               rebin = 1,
-        #               legend_location = ( 0.95, 0.85 ),
-        #               cms_logo_location = 'left',
-        #               )
+        ###################################################
+        # Sigma ieta ieta
+        ###################################################
+        norm_variable = 'sigmaietaieta'
+        if 'QCDsigmaietaieta' in include_plots and not 'MuPlusJets' in treeName:
+            print '---> sigmaietaieta'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % variables_latex['sigmaietaieta'],
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['sigmaietaieta']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'sigmaIetaIeta',
+                name_prefix = '%s_sigmaIetaIeta_' % channel,
+                x_limits = control_plots_bins['sigmaietaieta'],
+                y_max_scale = 1.5,
+                nBins = len(control_plots_bins['sigmaietaieta'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.85 ),
+                cms_logo_location = 'left',
+            )

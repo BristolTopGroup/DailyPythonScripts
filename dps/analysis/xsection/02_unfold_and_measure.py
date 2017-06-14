@@ -12,9 +12,12 @@ from dps.utils.Calculation import calculate_xsection, calculate_normalised_xsect
 combine_complex_results
 from dps.utils.hist_utilities import hist_to_value_error_tuplelist, \
 value_error_tuplelist_to_hist
-from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes
+from dps.utils.Unfolding import Unfolding, get_unfold_histogram_tuple, removeFakes, \
+plot_probability_matrix
 from dps.utils.ROOT_utils import set_root_defaults
-from dps.utils.pandas_utilities import read_tuple_from_file, write_tuple_to_df, combine_complex_df, create_covariance_matrix
+from dps.utils.pandas_utilities import read_tuple_from_file, write_tuple_to_df, combine_complex_df, \
+create_covariance_matrix
+
 from numpy import array, sqrt
 from copy import deepcopy
 
@@ -27,7 +30,13 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_unfolding']           = File( measurement_config.unfolding_central, 'read' )
 
     unfolding_files['files_for_pdfs']               = { 
-        'PDFWeights_%d' % (index) : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( 0, 100 ) 
+        'PDFWeights_%d' % (index) : File ( measurement_config.unfolding_pdfweights[index] ) for index in range( measurement_config.pdfWeightMin, measurement_config.pdfWeightMax ) 
+    }
+    unfolding_files['files_for_ct14pdfs']           = { 
+        'CT14Weights_%d' % (index) : File ( measurement_config.unfolding_CT14weights[index] ) for index in range( measurement_config.pdfWeightMin, measurement_config.ct14WeightMax ) 
+    }
+    unfolding_files['files_for_mmht14pdfs']         = { 
+        'MMHT14Weights_%d' % (index) : File ( measurement_config.unfolding_MMHT14weights[index] ) for index in range( measurement_config.pdfWeightMin, measurement_config.mmht14WeightMax ) 
     }
 
     unfolding_files['file_for_renormalisationdown'] = File( measurement_config.unfolding_renormalisation_down, 'read' )
@@ -44,6 +53,7 @@ def get_unfolding_files(measurement_config):
 
     unfolding_files['file_for_erdOn']            = File( measurement_config.unfolding_erdOn, 'read' )
     unfolding_files['file_for_QCDbased_erdOn']            = File( measurement_config.unfolding_QCDbased_erdOn, 'read' )
+    # unfolding_files['file_for_GluonMove']            = File( measurement_config.unfolding_GluonMove, 'read' )
 
     unfolding_files['file_for_semiLepBrdown']          = File( measurement_config.unfolding_semiLepBr_down, 'read' )
     unfolding_files['file_for_semiLepBrup']            = File( measurement_config.unfolding_semiLepBr_up, 'read' )
@@ -93,7 +103,6 @@ def get_unfolding_files(measurement_config):
 
     unfolding_files['file_for_powhegPythia8']       = File( measurement_config.unfolding_powheg_pythia8, 'read')
     unfolding_files['file_for_amcatnlo']            = File( measurement_config.unfolding_amcatnlo, 'read')
-    # unfolding_files['file_for_amcatnlo_herwig']     = File( measurement_config.unfolding_amcatnlo_herwig, 'read')
     unfolding_files['file_for_madgraphMLM']         = File( measurement_config.unfolding_madgraphMLM, 'read')
     unfolding_files['file_for_powheg_herwig']       = File( measurement_config.unfolding_powheg_herwig, 'read' )
     return unfolding_files
@@ -134,11 +143,16 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
     h_unfolded_data = unfolding.unfold()
     h_data_no_fakes = h_data_no_fakes.rebinned(2)
     covariance_matrix = None
+    inputMC_covariance_matrix = None
     if category == 'central':
-        # Return the covariance matrices (They have been normailsed)
-        covariance_matrix, correlation_matrix = unfolding.get_covariance_matrix()
+        # Return the Probabiliy Matrix
+        probability_matrix = unfolding.return_probability_matrix()
+        plot_probability_matrix(probability_matrix, variable, channel )
 
-        # Write covariance matrices
+        # Return the covariance matrices (They have been normailsed)
+        covariance_matrix, correlation_matrix, inputMC_covariance_matrix = unfolding.get_covariance_matrix()
+
+        # Write data statistical covariance matrices
         covariance_output_template = '{path_to_DF}/central/covarianceMatrices/unfoldedNumberOfEvents/{cat}_{label}_{channel}.txt'
         channelForOutputFile = channel
         if channel == 'combined':
@@ -148,14 +162,14 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         create_covariance_matrix( covariance_matrix, table_outfile)
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Correlation', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( correlation_matrix, table_outfile)
-
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Covariance', cat='Stat_inputMC' )
+        create_covariance_matrix( covariance_matrix, table_outfile)
     del unfolding
-    return hist_to_value_error_tuplelist( h_data_rebinned ), hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data_no_fakes ), covariance_matrix
-
+    return hist_to_value_error_tuplelist( h_data_rebinned ), hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data_no_fakes ), covariance_matrix, inputMC_covariance_matrix
 
 def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, tau_value, visiblePS ):
     global com, luminosity, ttbar_xsection, method, variable, path_to_DF
-    global unfolding_files
+    global unfolding_files, additionalPDFSets
 
     files_for_systematics = {
 
@@ -180,6 +194,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_petersonFrag'          :  unfolding_files['file_for_petersonFrag'],
         'TTJets_erdOn'          :  unfolding_files['file_for_erdOn'],
         'TTJets_QCDbased_erdOn'          :  unfolding_files['file_for_QCDbased_erdOn'],
+        # 'TTJets_GluonMove'          :  unfolding_files['file_for_GluonMove'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
@@ -253,6 +268,30 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
+    elif additionalPDFSets and category in ct14_uncertainties :
+        print 'Doing category',category,'by changing response matrix'
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['files_for_ct14pdfs'][category],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = com,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
+    elif additionalPDFSets and category in mmht14_uncertainties :
+        print 'Doing category',category,'by changing response matrix'
+        h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['files_for_mmht14pdfs'][category],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = com,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )         
     # Central and systematics where you just change input MC
     else:
         h_truth, h_measured, h_response, h_fakes = get_unfold_histogram_tuple( 
@@ -267,7 +306,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         )
 
     # Unfold current normalisation measurements  
-    TTJet_normalisation_results, TTJet_normalisation_results_unfolded, TTJet_normalisation_results_withoutFakes, covariance_matrix = unfold_results( 
+    TTJet_normalisation_results, TTJet_normalisation_results_unfolded, TTJet_normalisation_results_withoutFakes, covariance_matrix, inputMC_covariance_matrix = unfold_results( 
         TTJet_normalisation_results,
         category,
         channel,
@@ -410,7 +449,6 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
-
     
         normalisation_unfolded['powhegPythia8'] = hist_to_value_error_tuplelist( h_truth_powhegPythia8 )
         normalisation_unfolded['amcatnlo']      = hist_to_value_error_tuplelist( h_truth_amcatnlo )
@@ -432,10 +470,10 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
     if channel == 'combined':
         channelForOutputFile = 'combinedBeforeUnfolding'
     write_02(normalisation_unfolded, file_template, path_to_DF, category, channelForOutputFile, method)
-    return normalisation_unfolded, covariance_matrix
+    return normalisation_unfolded, covariance_matrix, inputMC_covariance_matrix
 
 
-def calculate_xsections( normalisation, category, channel, covariance_matrix=None ):
+def calculate_xsections( normalisation, category, channel, covariance_matrix=None, input_mc_covariance_matrix=None ):
     '''
     Calculate the xsection
     '''
@@ -453,106 +491,109 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
         binWidths = bin_widths
     
     xsection_unfolded = {}
-    xsection_unfolded['TTJet_measured'], _, _ = calculate_xsection( 
+    xsection_unfolded['TTJet_measured'], _, _, _ = calculate_xsection( 
         normalisation['TTJet_measured'],
         binWidths[variable],
         luminosity,  # L in pb1
         branching_ratio 
     )  
-    xsection_unfolded['TTJet_measured_withoutFakes'], _, _ = calculate_xsection( 
+    xsection_unfolded['TTJet_measured_withoutFakes'], _, _, _ = calculate_xsection( 
         normalisation['TTJet_measured_withoutFakes'],
         binWidths[variable],
         luminosity, 
         branching_ratio 
     ) 
-    xsection_unfolded['TTJet_unfolded'], absolute_covariance_matrix, absolute_correlation_matrix = calculate_xsection( 
+    xsection_unfolded['TTJet_unfolded'], absolute_covariance_matrix, absolute_correlation_matrix, absolute_inputMC_covariance_matrix = calculate_xsection( 
         normalisation['TTJet_unfolded'],
         binWidths[variable],
         luminosity, 
         branching_ratio,
-        covariance_matrix
+        covariance_matrix,
+        input_mc_covariance_matrix, 
     )
 
+    covariance_output_template = '{path_to_DF}/central/covarianceMatrices/absolute/{cat}_{label}_{channel}.txt'
     if not covariance_matrix is None:
-        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/absolute/{cat}_{label}_{channel}.txt'
         # Unfolded number of events
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_absoluteXsection' )
         create_covariance_matrix( absolute_covariance_matrix, table_outfile)
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_absoluteXsection' )
         create_covariance_matrix( absolute_correlation_matrix, table_outfile )
-
+    if not input_mc_covariance_matrix is None:
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_absoluteXsection_inputMC' )
+        create_covariance_matrix( absolute_inputMC_covariance_matrix, table_outfile )
     if category == 'central':
-        xsection_unfolded['powhegPythia8'], _, _ = calculate_xsection( 
+        xsection_unfolded['powhegPythia8'], _, _, _ = calculate_xsection( 
             normalisation['powhegPythia8'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
-        xsection_unfolded['amcatnlo'], _, _ = calculate_xsection( 
+        xsection_unfolded['amcatnlo'], _, _, _ = calculate_xsection( 
             normalisation['amcatnlo'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
-        xsection_unfolded['powhegHerwig'], _, _ = calculate_xsection( 
+        xsection_unfolded['powhegHerwig'], _, _, _ = calculate_xsection( 
             normalisation['powhegHerwig'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
-        xsection_unfolded['madgraphMLM'], _, _ = calculate_xsection( 
+        xsection_unfolded['madgraphMLM'], _, _, _ = calculate_xsection( 
             normalisation['madgraphMLM'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
 
-        xsection_unfolded['massdown'], _, _ = calculate_xsection( 
+        xsection_unfolded['massdown'], _, _, _ = calculate_xsection( 
             normalisation['massdown'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['massup'], _, _ = calculate_xsection( 
+        xsection_unfolded['massup'], _, _, _ = calculate_xsection( 
             normalisation['massup'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['isrdown'], _, _ = calculate_xsection( 
+        xsection_unfolded['isrdown'], _, _, _ = calculate_xsection( 
             normalisation['isrdown'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['isrup'], _, _ = calculate_xsection( 
+        xsection_unfolded['isrup'], _, _, _ = calculate_xsection( 
             normalisation['isrup'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['fsrdown'], _, _ = calculate_xsection( 
+        xsection_unfolded['fsrdown'], _, _, _ = calculate_xsection( 
             normalisation['fsrdown'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['fsrup'], _, _ = calculate_xsection( 
+        xsection_unfolded['fsrup'], _, _, _ = calculate_xsection( 
             normalisation['fsrup'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['uedown'], _, _ = calculate_xsection( 
+        xsection_unfolded['uedown'], _, _, _ = calculate_xsection( 
             normalisation['uedown'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['ueup'], _, _ = calculate_xsection( 
+        xsection_unfolded['ueup'], _, _, _ = calculate_xsection( 
             normalisation['ueup'],
             binWidths[variable],
             luminosity, 
@@ -564,7 +605,7 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
     write_02(xsection_unfolded, file_template, path_to_DF, category, channel, method)
     return
 
-def calculate_normalised_xsections( normalisation, category, channel, normalise_to_one = False, covariance_matrix=None ):
+def calculate_normalised_xsections( normalisation, category, channel, normalise_to_one = False, covariance_matrix=None, input_mc_covariance_matrix=None ):
     '''
     Calculate the normalised cross sections
     '''
@@ -577,89 +618,93 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
         binWidths = bin_widths
     
     normalised_xsection = {}
-    normalised_xsection['TTJet_measured'], _, _ = calculate_normalised_xsection( 
+    normalised_xsection['TTJet_measured'], _, _, _ = calculate_normalised_xsection( 
         normalisation['TTJet_measured'], 
         binWidths[variable], 
         normalise_to_one 
     )
-    normalised_xsection['TTJet_measured_withoutFakes'], _, _ = calculate_normalised_xsection( 
+    normalised_xsection['TTJet_measured_withoutFakes'], _, _, _ = calculate_normalised_xsection( 
         normalisation['TTJet_measured_withoutFakes'], 
         binWidths[variable], 
         normalise_to_one 
     )
-    normalised_xsection['TTJet_unfolded'], normalised_covariance_matrix, normalised_correlation_matrix = calculate_normalised_xsection( 
+    normalised_xsection['TTJet_unfolded'], normalised_covariance_matrix, normalised_correlation_matrix, normalised_inputMC_covariance_matrix = calculate_normalised_xsection( 
         normalisation['TTJet_unfolded'], 
         binWidths[variable], 
         normalise_to_one,
-        covariance_matrix 
+        covariance_matrix, 
+        input_mc_covariance_matrix, 
     )
     
+    covariance_output_template = '{path_to_DF}/central/covarianceMatrices/normalised/{cat}_{label}_{channel}.txt'
     if not covariance_matrix is None:
-        covariance_output_template = '{path_to_DF}/central/covarianceMatrices/normalised/{cat}_{label}_{channel}.txt'
         # Unfolded number of events
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_normalisedXsection' )
         create_covariance_matrix( normalised_covariance_matrix, table_outfile)
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Correlation', cat='Stat_normalisedXsection' )
         create_covariance_matrix( normalised_correlation_matrix, table_outfile )
+    if not input_mc_covariance_matrix is None:
+        table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channel, label='Covariance', cat='Stat_normalisedXsection_inputMC' )
+        create_covariance_matrix( normalised_inputMC_covariance_matrix, table_outfile )
 
     if category == 'central':
-        normalised_xsection['powhegPythia8'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['powhegPythia8'], _, _, _ = calculate_normalised_xsection( 
             normalisation['powhegPythia8'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['amcatnlo'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['amcatnlo'], _, _, _ = calculate_normalised_xsection( 
             normalisation['amcatnlo'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['powhegHerwig'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['powhegHerwig'], _, _, _ = calculate_normalised_xsection( 
             normalisation['powhegHerwig'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['madgraphMLM'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['madgraphMLM'], _, _, _ = calculate_normalised_xsection( 
             normalisation['madgraphMLM'], 
             binWidths[variable], 
             normalise_to_one, 
         )
 
-        normalised_xsection['massdown'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['massdown'], _, _, _ = calculate_normalised_xsection( 
             normalisation['massdown'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['massup'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['massup'], _, _, _ = calculate_normalised_xsection( 
             normalisation['massup'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['isrdown'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['isrdown'], _, _, _ = calculate_normalised_xsection( 
             normalisation['isrdown'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['isrup'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['isrup'], _, _, _ = calculate_normalised_xsection( 
             normalisation['isrup'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['fsrdown'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['fsrdown'], _, _, _ = calculate_normalised_xsection( 
             normalisation['fsrdown'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['fsrup'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['fsrup'], _, _, _ = calculate_normalised_xsection( 
             normalisation['fsrup'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['uedown'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['uedown'], _, _, _ = calculate_normalised_xsection( 
             normalisation['uedown'], 
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['ueup'], _, _ = calculate_normalised_xsection( 
+        normalised_xsection['ueup'], _, _, _ = calculate_normalised_xsection( 
             normalisation['ueup'], 
             binWidths[variable], 
             normalise_to_one, 
@@ -703,6 +748,8 @@ def parse_arguments():
                       help = "Use pt-reweighted MadGraph for the measurement" )
     parser.add_argument( '--visiblePS', dest = "visiblePS", action = "store_true",
                       help = "Unfold to visible phase space" )
+    parser.add_argument( '-a', dest = "additionalPDFSets", action = "store_true",
+                      help = "Add the CT14 and MMHT14 PDF sets" )
     args = parser.parse_args()
     return args
 
@@ -720,6 +767,7 @@ if __name__ == '__main__':
     method                      = args.unfolding_method
     combine_before_unfolding    = args.combine_before_unfolding
     visiblePS                   = args.visiblePS
+    additionalPDFSets           = args.additionalPDFSets
 
     # Cache arguments from xsection config
     measurement_config  = XSectionConfig( com )
@@ -746,6 +794,11 @@ if __name__ == '__main__':
     # Adding PDF Systematics
     pdf_uncertainties   = ['PDFWeights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.pdfWeightMax )]
     all_measurements.extend( pdf_uncertainties )
+    if additionalPDFSets:
+        ct14_uncertainties   = ['CT14Weights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.ct14WeightMax )]
+        mmht14_uncertainties   = ['MMHT14Weights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.mmht14WeightMax )]
+        all_measurements.extend( ct14_uncertainties )
+        all_measurements.extend( mmht14_uncertainties )
     # # TTBar Reweighting Systematics
     # ttbar_theory_systematics = [ 'TTJets_ptreweight', 'TTJets_etareweight' ]
     # all_measurements.extend( ttbar_theory_systematics )
@@ -800,10 +853,9 @@ if __name__ == '__main__':
         unfolded_normalisation_combined                 = {}
         unfolded_normalisation_combinedBeforeUnfolding  = {}
 
-
         # Electron channel
         channel = 'electron'
-        unfolded_normalisation_electron, covariance_electron = get_unfolded_normalisation( 
+        unfolded_normalisation_electron, covariance_electron, inputMC_covariance_electron = get_unfolded_normalisation( 
             TTJet_normalisation_results_electron, 
             category, 
             channel, 
@@ -812,13 +864,13 @@ if __name__ == '__main__':
         )
 
         # measure xsection
-        calculate_xsections( unfolded_normalisation_electron, category, channel, covariance_matrix=covariance_electron  )
-        calculate_normalised_xsections( unfolded_normalisation_electron, category, channel, covariance_matrix=covariance_electron )
+        calculate_xsections( unfolded_normalisation_electron, category, channel, covariance_matrix=covariance_electron, input_mc_covariance_matrix = inputMC_covariance_electron  )
+        calculate_normalised_xsections( unfolded_normalisation_electron, category, channel, covariance_matrix=covariance_electron, input_mc_covariance_matrix = inputMC_covariance_electron )
         calculate_normalised_xsections( unfolded_normalisation_electron, category, channel , True )
 
         # Muon channel
         channel = 'muon'
-        unfolded_normalisation_muon, covariance_muon = get_unfolded_normalisation( 
+        unfolded_normalisation_muon, covariance_muon, inputMC_covariance_muon = get_unfolded_normalisation( 
             TTJet_normalisation_results_muon, 
             category, 
             channel, 
@@ -826,13 +878,13 @@ if __name__ == '__main__':
             visiblePS = visiblePS 
         )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon  )
-        calculate_normalised_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon )
+        calculate_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon, input_mc_covariance_matrix = inputMC_covariance_muon  )
+        calculate_normalised_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon, input_mc_covariance_matrix = inputMC_covariance_muon )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel , True )
 
         # Results where the channels are combined before unfolding (the 'combined in the response matrix')
         channel = 'combinedBeforeUnfolding'
-        unfolded_normalisation_combinedBeforeUnfolding, covariance_combinedBeforeUnfolding = get_unfolded_normalisation(
+        unfolded_normalisation_combinedBeforeUnfolding, covariance_combinedBeforeUnfolding, inputMC_covariance_combinedBeforeUnfolding = get_unfolded_normalisation(
             TTJet_normalisation_results_combined,
             category,
             'combined', 
@@ -840,19 +892,22 @@ if __name__ == '__main__':
             visiblePS=visiblePS,
         )
         # measure xsection
-        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding  )
-        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding )
+        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding  )
+        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding )
         calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
 
         # Results where the channels are combined after unfolding
         channel = 'combined'
         unfolded_normalisation_combined = combine_complex_results( unfolded_normalisation_electron, unfolded_normalisation_muon )
         covariance_combined = None
+        inputMC_covariance_combined = None
         if not covariance_electron is None and not covariance_muon is None:
             covariance_combined = covariance_electron + covariance_muon
+        if not inputMC_covariance_electron is None and not inputMC_covariance_muon is None:
+            inputMC_covariance_combined = inputMC_covariance_electron + inputMC_covariance_muon
         # measure xsection
-        calculate_xsections( unfolded_normalisation_combined, category, channel, covariance_matrix=covariance_combined  )
-        calculate_normalised_xsections( unfolded_normalisation_combined, category, channel, covariance_matrix=covariance_combined )
+        calculate_xsections( unfolded_normalisation_combined, category, channel, covariance_matrix=covariance_combined, input_mc_covariance_matrix = inputMC_covariance_combined  )
+        calculate_normalised_xsections( unfolded_normalisation_combined, category, channel, covariance_matrix=covariance_combined, input_mc_covariance_matrix = inputMC_covariance_combined )
         calculate_normalised_xsections( unfolded_normalisation_combined, category, channel , True )
 
 

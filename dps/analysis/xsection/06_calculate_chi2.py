@@ -21,7 +21,25 @@ def calculateChi2(measured_xsection,model_xsection,covariance):
 	prob = TMath.Prob( chi2, len(measured_xsection) )
 	return chi2Info( chi2, ndf, prob )
 
-
+def calculateGlobalChi2(modelsForComparing, chi2_Models):
+	'''							  2
+	(a, b, c).( . . . ).(a) = Chi
+			  ( .COV. ) (b) 
+			  ( . . . ) (c)
+	Between variables assumed to be uncorrelated I think you can just add the chi2 of the correlated bins 
+	and increase the NDF.
+	'''
+	gChi2 = {}
+	for model in modelsForComparing:
+		chi2_all, ndf_all = 0, 0
+		for var, chi2_Info in chi2_Models.iteritems():
+			for m, c, n in zip(chi2_Info['Model'], chi2_Info['Chi2'], chi2_Info['NDF']):
+				if model in m:
+					chi2_all += c
+					ndf_all += n
+		prob_all = TMath.Prob( chi2_all, ndf_all )
+		gChi2[model] = chi2Info( chi2_all, ndf_all, prob_all )
+	return gChi2
 
 def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input, uncertainty_type ):
 	# Paths to statistical Covariance/Correlation matrices.
@@ -52,23 +70,32 @@ def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input
 
 	output_filename = '{input_path}/chi2OfModels_{channel}_{type}.txt'.format(input_path=path_to_input,channel=channel, type = uncertainty_type)
 	df_to_file( output_filename, chi2OfModels_df )
+
 	return chi2OfModels_df
 
-def makeLatexTable( chi2, outputPath, channel, crossSectionType ):
+def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
 
 	models = chi2[chi2.keys()[0]]['Model']
 
 	latexHeader = '\\begin{table}\n'
+	if crossSectionType == 'normalised':
+		latexHeader += '\t\caption{Results of a $\chi^{2}$ test between the normalised cross sections in data and several MC models.}\n'
+		latexHeader += '\t\label{tb:Chi2_normalised}\n'
+	elif crossSectionType == 'absolute':
+		latexHeader += '\t\caption{Results of a $\chi^{2}$ test betweenthe absolute cross sections in data and several MC models.}\n'
+		latexHeader += '\t\label{tb:Chi2_absolute}\n'	
 	latexHeader += '\t\centering\n'
-	latexHeader += '\t\\begin{tabular}{|c|'
-	for i in range(0,len(models)): latexHeader += 'cc|'
+	latexHeader += '\t\\scriptsize\n'
+	latexHeader += '\t\\begin{tabular}{c'
+	for i in range(0,len(models)): latexHeader += 'cc'
 	latexHeader += '}\n'
+	latexHeader += '\t\t\hline\n'
 	latexHeader += '\t\t\hline\n'
 
 	model_header = '\t\t&\t'
 	label_header = '\t\t&\t'
 	for model in models:
-		model_header += ' \multicolumn{{2}}{{c|}}{{{model}}} & \t'.format(model=measurements_latex[model])
+		model_header += ' \multicolumn{{2}}{{c}}{{{model}}} & \t'.format(model=measurements_latex[model])
 		label_header += '$\\chi^{2}$ / ndf & p-value &\t'
 	model_header = model_header.rstrip().rstrip('&')
 	model_header += '\\\\'
@@ -78,7 +105,6 @@ def makeLatexTable( chi2, outputPath, channel, crossSectionType ):
 	fullTable = latexHeader
 	fullTable += model_header
 	fullTable += '\n'
-	fullTable += '\t\t\\hline\n'
 	fullTable += label_header
 	fullTable += '\n'
 	fullTable += '\t\t\\hline\n'
@@ -100,16 +126,23 @@ def makeLatexTable( chi2, outputPath, channel, crossSectionType ):
 
 		fullTable += lineForVar
 		fullTable += '\n'
-
 	fullTable += '\t\t\\hline\n'
+	
+	lineForGChi2 = '\t\t All &\t'
+	for model in models:
+		pValueToPrint = gChi2[model].pValue
+		if pValueToPrint < 0.01:
+			pValueToPrint = '$<$ 0.01'
+		else:
+			pValueToPrint = '{0:.2g}'.format(pValueToPrint)
+		lineForGChi2 += '{chi2:.3g} / {ndf} &\t {pValue} &\t'.format(chi2=gChi2[model].chi2, ndf=gChi2[model].ndf, pValue=pValueToPrint)
+	lineForGChi2 = lineForGChi2.rstrip().rstrip('&')
+	lineForGChi2 += '\\\\'
 
-	tableFooter = '\t\end{tabular}\n'
-	if crossSectionType == 'normalised':
-		tableFooter += '\t\caption{Results of a $\chi^{2}$ test between the normalised cross sections in data and several MC models.}\n'
-		tableFooter += '\t\label{tb:Chi2_normalised}\n'
-	elif crossSectionType == 'absolute':
-		tableFooter += '\t\caption{Results of a $\chi^{2}$ test betweenthe absolute cross sections in data and several MC models.}\n'
-		tableFooter += '\t\label{tb:Chi2_absolute}\n'		
+	fullTable += lineForGChi2
+	fullTable += '\n\t\t\hline\n'
+
+	tableFooter = '\t\end{tabular}\n'	
 	tableFooter += '\\end{table}\n'
 
 	fullTable += tableFooter
@@ -155,8 +188,8 @@ if __name__ == '__main__':
 	    phase_space = 'VisiblePS'
 
 	channels = [
-		'electron', 
-		'muon', 
+		# 'electron', 
+		# 'muon', 
 		'combined', 
 		# 'combinedBeforeUnfolding',
 	]
@@ -181,6 +214,8 @@ if __name__ == '__main__':
 				)
 				chi2ForVariables[variable] = calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input, utype )
 
-			path_to_output = '{path}/{crossSectionType}/'.format(path=outputTablePath, channel=channel,crossSectionType=utype )
+			# Calculate the global chi2
+			gChi2 = calculateGlobalChi2( modelsForComparing, chi2ForVariables )
 
-			makeLatexTable( chi2=chi2ForVariables, outputPath=path_to_output, channel=channel, crossSectionType=utype )
+			path_to_output = '{path}/{crossSectionType}/'.format(path=outputTablePath, channel=channel,crossSectionType=utype )
+			makeLatexTable( chi2=chi2ForVariables, gChi2=gChi2, outputPath=path_to_output, channel=channel, crossSectionType=utype )

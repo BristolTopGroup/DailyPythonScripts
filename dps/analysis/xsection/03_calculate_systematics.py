@@ -102,7 +102,9 @@ if __name__ == '__main__':
     # Get list of all systematics
     all_systematics = measurement_config.list_of_systematics
     # Add in the PDF weights
-    all_systematics = append_PDF_uncertainties(all_systematics, measurement_config.pdfWeightMin, measurement_config.pdfWeightMax)
+    all_systematics = append_PDF_uncertainties(all_systematics)
+    all_systematics = append_PDF_uncertainties(all_systematics, pdfset='CT14')
+    all_systematics = append_PDF_uncertainties(all_systematics, pdfset='MMHT14')
 
     list_of_systematics = all_systematics
     # If you want different lists of systematics can just do some manipulation here

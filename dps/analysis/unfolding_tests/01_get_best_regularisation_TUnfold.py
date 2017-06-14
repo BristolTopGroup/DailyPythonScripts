@@ -323,13 +323,14 @@ def print_results_to_screen(result_dict):
         Print the results to the screen
         Can copy straight into config
     '''
-
+    print "\n Tau Scan Outcomes: \n"
     for com in result_dict.keys():
         for channel in result_dict[com].keys():
-            print "\nCHANNEL : ", channel
+            # Print in foprm such that neatly copy and paste into xsection.py
+            print "\t\tself.tau_values_{ch} = {{".format(ch = channel)
             for variable in result_dict[com][channel].keys():
-                print '"{0}" : {1},'.format(variable, result_dict[com][channel][variable])
-        
+                print '\t\t\t"{0}" : {1},'.format(variable, result_dict[com][channel][variable])
+            print "\t\t}"
 
 if __name__ == '__main__':
     set_root_defaults( set_batch = True, msg_ignore_level = 3001 )

@@ -12,7 +12,7 @@ from ROOT import TUnfoldDensity, TUnfold
 from ROOT import TH2D, TH1D, TGraph
 from rootpy import asrootpy
 from math import sqrt
-
+import numpy as np
 
 class Unfolding:
 
@@ -40,6 +40,7 @@ class Unfolding:
         self.unfolded_data = None
         self.refolded_data = None
         self.unfoldObject = None
+        self.prob_matrix = None
         self.verbose = verbose
         self.tau = float(tau)
         self.n_toy = n_toy
@@ -52,9 +53,11 @@ class Unfolding:
     def setup_unfolding(self):
         if not self.unfoldObject:
             if self.method == 'TUnfold':
-                self.unfoldObject = TUnfoldDensity(self.response, TUnfold.kHistMapOutputVert,
-                                                   TUnfold.kRegModeCurvature,
-                                                   )
+                self.unfoldObject = TUnfoldDensity(
+                    self.response, 
+                    TUnfold.kHistMapOutputVert,
+                    TUnfold.kRegModeCurvature,
+                )
                 self.unfoldObject.SetInput(self.data, 1.0)
 
                 # self.unfoldObject.ScanLcurve( 30, 0, 0 )
@@ -88,6 +91,18 @@ class Unfolding:
         else:
             print("Data has not been unfolded. You cannot refold something that hasn't been first unfolded")
         return self.refolded_data
+
+    def return_probability_matrix(self):
+        '''
+        Return the matrix of probabilities
+        '''
+        if self.unfolded_data is not None:
+            self.prob_matrix = asrootpy(
+                self.unfoldObject.GetProbabilityMatrix('ProbMatrix'))
+        else:
+            print("Data has not been unfolded.")
+        return self.prob_matrix
+
     def get_covariance_matrix(self):
         '''
         Get the covariance matrix from all contributions
@@ -97,7 +112,7 @@ class Unfolding:
         from numpy import array, matrix, zeros
         from numpy import sqrt as np_sqrt
         if self.unfolded_data is not None:
-            # Calculate the covariance from TUnfold
+            # Get the statistical data covariance from TUnfold
             covariance = asrootpy( 
                 self.unfoldObject.GetEmatrixInput('Covariance'))
 
@@ -113,7 +128,13 @@ class Unfolding:
             values_correlated = u.correlated_values( nominal_values, cov_matrix.tolist() )
             corr_matrix = matrix(u.correlation_matrix(values_correlated) )
 
-            return cov_matrix, corr_matrix
+            # Get the input MC statisical covariance for the response from TUnfold
+            inputMC_stat_covariance = asrootpy(
+                self.unfoldObject.GetEmatrixSysUncorr('InputMC_Stat_Covariance'))
+            z = list(inputMC_stat_covariance.z())
+            inputMC_cov_matrix = matrix(z)
+
+            return cov_matrix, corr_matrix, inputMC_cov_matrix
         else:
             print("Data has not been unfolded. Cannot return unfolding covariance matrix")
         return
@@ -317,3 +338,89 @@ def removeFakes(h_measured, h_fakes, h_data):
     nonFakeRatio = 1 - h_fakes / (h_measured + h_fakes)
     h_data *= nonFakeRatio
     return h_data
+
+
+def plot_probability_matrix(p_matrix, variable, channel):
+    '''
+    Plot the probability matrix
+    '''
+    from dps.config.variable_binning import bin_edges_vis
+    from dps.config.latex_labels import variables_latex
+    from dps.config import CMS
+    from dps.utils.file_utilities import make_folder_if_not_exists
+    from root_numpy import hist2array
+
+    import matplotlib as mpl
+    mpl.use( 'agg' )
+
+    import matplotlib.pyplot as plt
+    import matplotlib.cm as cm
+    my_cmap = cm.get_cmap( 'jet' )
+    import gc
+
+    from matplotlib import rc
+    rc( 'font', **CMS.font )
+    rc( 'text', usetex = True )
+
+    # hist to numpy array
+    values = hist2array(p_matrix)
+    edges = bin_edges_vis[variable]
+    bin_centres = [np.mean([edges[j],edges[j+1]]) for j in range(0, len(edges)-1)]
+    n_gen_bins  = len(values)
+
+    # Get underflow and strip underflow/overflow bins
+    underflow = p_matrix.underflow(axis=1)[1:-1]
+
+    # Fix array such that underflow is included
+    i=0
+    for u, row in zip(underflow, values):
+        newrow = row[:-1]
+        newrow = np.insert(newrow, 0, u)
+        values[i] = newrow
+        i+=1
+
+    # Cant easily rebin any more so done manually
+    rebinned_values = np.zeros((n_gen_bins,n_gen_bins))
+    i=0
+    for row in values:
+        newrow = [ row[j]+row[j+1] for j in range(0, len(row), 2)]
+        rebinned_values[i] = newrow
+        i+=1
+
+    X, Y = np.meshgrid(bin_centres, bin_centres)
+    x = X.ravel()
+    y = Y.ravel()
+    z = rebinned_values.ravel()
+
+    v_unit = '$'+variables_latex[variable]+'$'
+    if variable in ['HT', 'ST', 'MET', 'lepton_pt', 'WPT']: 
+        v_unit += ' [GeV]'
+    x_title = 'Reconstructed ' + v_unit
+    y_title = 'Generated ' + v_unit
+    # title = "channel = {}, variable = ${}$".format(channel, variables_latex[variable])
+    title = "Response Probability Matrix"
+    fig = plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
+    ax0 = fig.add_subplot(1,1,1)
+    ax0.set_aspect('equal')
+
+    plt.tick_params( **CMS.axis_label_major )
+    plt.tick_params( **CMS.axis_label_minor )
+    ax0.xaxis.labelpad = 12
+    ax0.yaxis.labelpad = 12
+
+    h2d = plt.hist2d(x, y, weights=z, bins=(edges, edges), cmap=my_cmap)
+    colorbar = plt.colorbar(h2d[3], fraction=0.046, pad=0.04)
+    colorbar.ax.tick_params( **CMS.axis_label_major )
+
+    plt.xlabel( x_title, CMS.x_axis_title )
+    plt.ylabel( y_title, CMS.y_axis_title )
+    plt.title( title, CMS.title )
+    plt.tight_layout()
+
+    # Output folder of covariance matrices
+    covariance_matrix_output_path = 'plots/binning/probability_matrices/'
+    make_folder_if_not_exists(covariance_matrix_output_path)
+    plt.savefig(covariance_matrix_output_path+variable+'_'+channel+'.pdf')
+    fig.clf()
+    plt.close()
+    gc.collect()

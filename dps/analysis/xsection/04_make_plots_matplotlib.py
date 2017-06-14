@@ -611,11 +611,10 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.tight_layout()
 
     # Save the plots
-    path = '{output_folder}/xsections/{phaseSpace}/{variable}/'
+    path = '{output_folder}/xsections/{phaseSpace}/'
     path = path.format(
         output_folder = output_folder,
         phaseSpace = phase_space,
-        variable = variable
     )
     make_folder_if_not_exists( path )
     for output_format in output_formats:
@@ -793,8 +792,8 @@ if __name__ == '__main__':
     all_measurements.extend( pdf_uncertainties )
 
     channel = [
-        'electron', 
-        'muon', 
+        # 'electron', 
+        # 'muon', 
         'combined', 
         # 'combinedBeforeUnfolding',
     ]

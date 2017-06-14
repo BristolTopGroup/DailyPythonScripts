@@ -49,31 +49,37 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
     ### Table Content
     #########################################################################################################
 	for bin in range (len(bin_edges_vis[variable])-1):
+		precision = '{0:g}'
+		if 'abs_lepton_eta' in variable:
+			precision = '{0:.2f}'
+
 		if 'absolute' in crossSectionType:
 			line_for_bin = '\t\t{edge_down}-{edge_up} \t& {val} \t& {stat} \t& {sys} \\\\ \n'.format(
-				edge_down = '\ensuremath{{ {0:g} }}'.format(bin_edges_vis[variable][bin]),
-				edge_up = '\ensuremath{{ {0:g} }}'.format(bin_edges_vis[variable][bin+1]),
-				val = '\ensuremath{{ {:.3g} }}'.format(xsections_abs['central'][bin]),
-				stat = '\ensuremath{{ {:.3g} }}'.format(xsections_abs['statistical'][bin]),
-				sys = '\ensuremath{{ {:.3g} }}'.format(xsections_abs['systematic'][bin]),
+				edge_down = precision.format(bin_edges_vis[variable][bin]),
+				edge_up = precision.format(bin_edges_vis[variable][bin+1]),
+				val = '{:.3g}'.format(xsections_abs['central'][bin]),
+				stat = '{:.3g}'.format(xsections_abs['statistical'][bin]),
+				sys = '{:.3g}'.format(xsections_abs['systematic'][bin]),
 				# tot = xsections_rel['total'][bin],
 			)
 		else:
 			line_for_bin = '\t\t{edge_down}-{edge_up} \t& {val} \t& {stat} \t& {sys} \\\\ \n'.format(
-				edge_down = '\ensuremath{{ {0:g} }}'.format(bin_edges_vis[variable][bin]),
-				edge_up = '\ensuremath{{ {0:g} }}'.format(bin_edges_vis[variable][bin+1]),
-				val = '\ensuremath{{ {:.3g} }}'.format(xsections_abs['central'][bin]),
-				stat = '\ensuremath{{ {:.3g} }}'.format(xsections_rel['statistical'][bin]),
-				sys = '\ensuremath{{ {:.3g} }}'.format(xsections_rel['systematic'][bin]),
+				edge_down = precision.format(bin_edges_vis[variable][bin]),
+				edge_up = precision.format(bin_edges_vis[variable][bin+1]),
+				val = '{:.3g}'.format(xsections_abs['central'][bin]),
+				stat = '{:.3g}'.format(xsections_rel['statistical'][bin]),
+				sys = '{:.3g}'.format(xsections_rel['systematic'][bin]),
 				# tot = xsections_rel['total'][bin],
 			)
 
-		# REPLACE e^ WITH x10^. ONLY WORKS FOR 1 e^ VALUE IN STRING [TO BE IMPROVED]
+		# REPLACE e^0N WITH x10^N. ONLY WORKS FOR 1 e^ VALUE IN STRING [TO BE IMPROVED]
 		if 'e-' in line_for_bin:
+			print(line_for_bin)
 			power = line_for_bin[line_for_bin.find("e-")+1:].split()[0]
-			new = '\\times 10^{{ {} }}'.format(power)
+			new = '\\times 10^{{ {} }}'.format(power.replace('0', ''))
 			old = 'e'+power
 			line_for_bin = line_for_bin.replace(old, new)
+			print(line_for_bin)
 
 		fullTable += line_for_bin
 
@@ -108,23 +114,30 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
 	output_file = open(file_template, 'w')
 	output_file.write(fullTable)
 	output_file.close()
+	print 'Written Results +- Stat +- Systematic'.format(variable)
+
 	return
 
-def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template, outputPath):
+def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template, outputPath, utype):
 	'''
 	Make a condensed table of all the (median) systematics
 	'''
 	d_summarised_syst = {}
 
 	for v in variables:
-		xsections_rel = file_to_df(inputPath.replace('VAR_TMP', v)+input_file_template.replace('absolute', 'relative').format(type = 'normalised'))
+		systematics = file_to_df(inputPath.replace('VAR_TMP', v)+input_file_template.replace('absolute', 'relative').format(type = utype))
 		d_median_variable = {}
-		for col in xsections_rel.columns:
-			# print xsections_rel[col]
-			# print np.median(xsections_rel[col])
-			median = np.median(xsections_rel[col])*100
-			# print median
-			d_median_variable[col] = median
+		d_median_variable['Min'] = {}
+		d_median_variable['Max'] = {}
+		d_median_variable['Med'] = {}
+
+		for col in systematics.columns:
+			minimum = np.min(systematics[col])*100
+			maximum = np.max(systematics[col])*100
+			median = np.median(systematics[col])*100
+			d_median_variable['Min'][col] = minimum
+			d_median_variable['Max'][col] = maximum
+			d_median_variable['Med'][col] = median
 		d_summarised_syst[v] = d_median_variable
 	# print d_summarised_syst
 
@@ -134,9 +147,13 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 	latexContent 	= ''
 	latexFooter 	= ''
 
+	latexHeader += '\\begin{landscape}\n'
 	latexHeader += '\\begin{table}\n'
+	latexHeader += '\t\label{{tb:syst_condensed_combined_{}}}\n'.format(utype)
+	latexHeader += '\t\caption{{ The upper and lower bounds, in \%, from each source of systematic uncertainty in the {t} differential cross section, over all bins of the measurement for each variable.  The bounds of the total relative uncertainty over all bins is also shown for each variable.}}\n'.format(t=utype)
 	# latexHeader += '\t\\tiny\n'
 	latexHeader += '\t\centering\n'
+	latexHeader += '\t\\footnotesize\n'
 	latexHeader += '\t\\begin{tabular}{lccccccc}\n'
 	latexHeader += '\t\t\hline\n'
 	latexHeader += '\t\t\hline\n'
@@ -152,49 +169,164 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 	)
 	latexTitle += '\t\t\hline\n'
 
-	for col in xsections_rel.columns:
+	for col in systematics.columns:
 		if 'central' in col or 'systematic' in col or 'statistical' in col: continue
 
+		HT_low 				= d_summarised_syst['HT']['Min'][col] 
+		ST_low 				= d_summarised_syst['ST']['Min'][col] 
+		MET_low 			= d_summarised_syst['MET']['Min'][col] 
+		WPT_low 			= d_summarised_syst['WPT']['Min'][col] 
+		lepton_pt_low	 	= d_summarised_syst['lepton_pt']['Min'][col] 
+		abs_lepton_eta_low 	= d_summarised_syst['abs_lepton_eta']['Min'][col] 
+		NJets_low 			= d_summarised_syst['NJets']['Min'][col]
+		HT_high 			= d_summarised_syst['HT']['Max'][col] 
+		ST_high 			= d_summarised_syst['ST']['Max'][col] 
+		MET_high 			= d_summarised_syst['MET']['Max'][col] 
+		WPT_high 			= d_summarised_syst['WPT']['Max'][col] 
+		lepton_pt_high	 	= d_summarised_syst['lepton_pt']['Max'][col] 
+		abs_lepton_eta_high = d_summarised_syst['abs_lepton_eta']['Max'][col] 
+		NJets_high 			= d_summarised_syst['NJets']['Max'][col]
+
+		# If less than 0.1 replace with '<0.1'
+		HT_dp_low = '{:.1f}'
+		HT_dp_high = ' - {:.1f}'
+		ST_dp_low = '{:.1f}'
+		ST_dp_high = ' - {:.1f}'
+		MET_dp_low = '{:.1f}'
+		MET_dp_high = ' - {:.1f}'
+		WPT_dp_low = '{:.1f}'
+		WPT_dp_high = ' - {:.1f}'
+		lepton_pt_dp_low = '{:.1f}'
+		lepton_pt_dp_high = ' - {:.1f}'
+		abs_lepton_eta_dp_low = '{:.1f}'
+		abs_lepton_eta_dp_high = ' - {:.1f}'
+		NJets_dp_low = '{:.1f}'
+		NJets_dp_high = ' - {:.1f}'
+
+		if HT_low < 0.1:
+			HT_dp_low = '{}'
+			HT_low = '$<$0.1'
+		if HT_high < 0.1:
+			HT_dp_high = '{}'
+			HT_high = ''
+		if ST_low < 0.1:
+			ST_dp_low = '{}'
+			ST_low = '$<$0.1'
+		if ST_high < 0.1:
+			ST_dp_high = '{}'
+			ST_high = ''
+		if MET_low < 0.1:
+			MET_dp_low = '{}'
+			MET_low = '$<$0.1'
+		if MET_high < 0.1:
+			MET_dp_high = '{}'
+			MET_high = ''
+		if WPT_low < 0.1:
+			WPT_dp_low = '{}'
+			WPT_low = '$<$0.1'
+		if WPT_high < 0.1:
+			WPT_dp_high = '{}'
+			WPT_high = ''
+		if lepton_pt_low < 0.1:
+			lepton_pt_dp_low = '{}'
+			lepton_pt_low = '$<$0.1'
+		if lepton_pt_high < 0.1:
+			lepton_pt_dp_high = '{}'
+			lepton_pt_high = ''
+		if abs_lepton_eta_low < 0.1:
+			abs_lepton_eta_dp_low = '{}'
+			abs_lepton_eta_low = '$<$0.1'
+		if abs_lepton_eta_high < 0.1:
+			abs_lepton_eta_dp_high = '{}'
+			abs_lepton_eta_high = ''
+		if NJets_low < 0.1:
+			NJets_dp_low = '{}'
+			NJets_low = '$<$0.1'
+		if NJets_high < 0.1:
+			NJets_dp_high = '{}'
+			NJets_high = ''
+
+		latexContent_met = '\t\t{{}}\t&\t{{}}\t&\t{ST_dp_low}{ST_dp_high}\t&\t{MET_dp_low}{MET_dp_high}\t&\t{WPT_dp_low}{WPT_dp_high}\t&\t{{}}\t&\t{{}}\t&\t{{}}\\\\ \n'.format(
+			ST_dp_low = ST_dp_low,
+			ST_dp_high = ST_dp_high,
+			MET_dp_low = MET_dp_low,
+			MET_dp_high = MET_dp_high,
+			WPT_dp_low = WPT_dp_low,
+			WPT_dp_high = WPT_dp_high,
+		)
+		latexContent_all = '\t\t{{}}\t&\t{HT_dp_low}{HT_dp_high}\t&\t{ST_dp_low}{ST_dp_high}\t&\t{MET_dp_low}{MET_dp_high}\t&\t{WPT_dp_low}{WPT_dp_high}\t&\t{lepton_pt_dp_low}{lepton_pt_dp_high}\t&\t{abs_lepton_eta_dp_low}{abs_lepton_eta_dp_high}\t&\t{NJets_dp_low}{NJets_dp_high}\\\\ \n'.format(
+			HT_dp_low = HT_dp_low,
+			HT_dp_high = HT_dp_high,
+			ST_dp_low = ST_dp_low,
+			ST_dp_high = ST_dp_high,
+			MET_dp_low = MET_dp_low,
+			MET_dp_high = MET_dp_high,
+			WPT_dp_low = WPT_dp_low,
+			WPT_dp_high = WPT_dp_high,
+			lepton_pt_dp_low = lepton_pt_dp_low,
+			lepton_pt_dp_high = lepton_pt_dp_high,
+			abs_lepton_eta_dp_low = abs_lepton_eta_dp_low,
+			abs_lepton_eta_dp_high = abs_lepton_eta_dp_high,
+			NJets_dp_low = NJets_dp_low,
+			NJets_dp_high = NJets_dp_high,
+		)
+
 		if col in measurement_config.systematic_group_met:
-			latexContent += '\t\t{}\t&\t{}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{}\t&\t{}\t&\t{}\\\\ \n'.format(
-			systematics_latex[col],
-			'--',
-			d_summarised_syst['ST'][col],
-			d_summarised_syst['MET'][col],
-			d_summarised_syst['WPT'][col],
-			'--',
-			'--',
-			'--',
+			latexContent += latexContent_met.format(
+				systematics_latex[col],
+				'--',
+				ST_low,
+				ST_high,
+				MET_low,
+				MET_high,
+				WPT_low,
+				WPT_high,
+				'--',
+				'--',
+				'--',
 			)
 		else:
-			latexContent += '\t\t{}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\\\\ \n'.format(
-			systematics_latex[col],
-			d_summarised_syst['HT'][col], 
-			d_summarised_syst['ST'][col], 
-			d_summarised_syst['MET'][col], 
-			d_summarised_syst['WPT'][col], 
-			d_summarised_syst['lepton_pt'][col], 
-			d_summarised_syst['abs_lepton_eta'][col], 
-			d_summarised_syst['NJets'][col],
+			latexContent += latexContent_all.format(
+				systematics_latex[col],
+				HT_low, 
+				HT_high, 
+				ST_low, 
+				ST_high, 
+				MET_low, 
+				MET_high, 
+				WPT_low, 
+				WPT_high, 
+				lepton_pt_low, 
+				lepton_pt_high, 
+				abs_lepton_eta_low, 
+				abs_lepton_eta_high, 
+				NJets_low,
+				NJets_high,
 			)
 
 	latexContent += '\t\t\hline\n'
-	latexContent += '\t\t{}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\t&\t{:.2f}\\\\ \n'.format(
+	latexContent += '\t\t{}\t&\t{:.1f} - {:.1f}\t&\t{:.1f} - {:.1f}\t&\t{:.1f} - {:.1f}\t&\t{:.1f} - {:.1f}\t&\t{:.1f} - {:.1f}\t&\t{:.1f} - {:.1f}\t&\t{:.1f} - {:.1f}\\\\ \n'.format(
 		'Total',
-		d_summarised_syst['HT']['systematic'], 
-		d_summarised_syst['ST']['systematic'], 
-		d_summarised_syst['MET']['systematic'], 
-		d_summarised_syst['WPT']['systematic'], 
-		d_summarised_syst['lepton_pt']['systematic'], 
-		d_summarised_syst['abs_lepton_eta']['systematic'], 
-		d_summarised_syst['NJets']['systematic'],
+		d_summarised_syst['HT']['Min']['systematic'], 
+		d_summarised_syst['HT']['Max']['systematic'], 
+		d_summarised_syst['ST']['Min']['systematic'], 
+		d_summarised_syst['ST']['Max']['systematic'], 
+		d_summarised_syst['MET']['Min']['systematic'], 
+		d_summarised_syst['MET']['Max']['systematic'], 
+		d_summarised_syst['WPT']['Min']['systematic'], 
+		d_summarised_syst['WPT']['Max']['systematic'], 
+		d_summarised_syst['lepton_pt']['Min']['systematic'], 
+		d_summarised_syst['lepton_pt']['Max']['systematic'], 
+		d_summarised_syst['abs_lepton_eta']['Min']['systematic'], 
+		d_summarised_syst['abs_lepton_eta']['Max']['systematic'], 
+		d_summarised_syst['NJets']['Min']['systematic'],
+		d_summarised_syst['NJets']['Max']['systematic'],
 	)
 	latexContent += '\t\t\hline\n'
 
 	latexFooter += '\t\end{tabular}\n'
-	latexFooter += '\t\caption{ Summary}\n'
-	latexFooter += '\t\label{tb:syst_condensed_combined}\n'
 	latexFooter += '\\end{table}\n'
+	latexFooter += '\\end{landscape}\n'
 	latexFooter += '\clearpage'
 
 	fullTable += latexHeader
@@ -206,10 +338,14 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
     ### Write Table
     #########################################################################################################
 	make_folder_if_not_exists(outputPath)
-	file_template = outputPath + '/CondensedSystematics.tex'
+	if 'normalised' in utype:
+		file_template = outputPath + '/CondensedNormalisedSystematics.tex'
+	else: 
+		file_template = outputPath + '/CondensedAbsoluteSystematics.tex'
 	output_file = open(file_template, 'w')
 	output_file.write(fullTable)
 	output_file.close()
+	print 'Written Median Systematics for all variables'
 	return
 
 
@@ -298,6 +434,8 @@ def makeExpandedSystematicLatexTable( xsections_rel, outputPath, variable ):
 	output_file = open(file_template, 'w')
 	output_file.write(fullTable)
 	output_file.close()
+	print 'Written Full Systematics for {}'.format(variable)
+
 	return
 
 
@@ -318,10 +456,10 @@ def makeBinningLatexTable():
 	tableHeader += '\t\centering\n'
 
 	colHeader =  ''
-	colHeader += '\t\\begin{tabular}{ccc}\n'
+	colHeader += '\t\\begin{tabular}{cccc}\n'
 	colHeader += '\t\t\hline\n'
 	colHeader += '\t\t\hline\n'
-	colHeader += '\t\t  & \t Bin Width \t & \t Resolution \\\\ \n'
+	colHeader += '\t\t  & \t Bin Width \t & \t Resolution \t & $\\frac{\\text{Resolution}}{\\text{Bin Width}}$\\\\ \n'
 
 	#########################################################################################################
 	### Table Content
@@ -329,19 +467,61 @@ def makeBinningLatexTable():
 	tableContent1 = ''
 	tableContent2 = ''
 	for variable in measurement_config.variables:
+
 		tableContent = ''
 		path_to_file = 'unfolding/13TeV/binning_combined_{}.txt'.format(variable)
 		binning_params = file_to_df(path_to_file)
 
-		tableContent += '\t\t\\textbf{{{var}}} \t &   &  \\\\ \n'.format(var=variables_latex[variable])
+		tableContent += '\t\t\\textbf{{{var}}} \t &   &	  & \\\\ \n'.format(var=variables_latex[variable])
 		tableContent += '\t\t\hline\n'
 
 		for bin in range (len(bin_edges_vis[variable])-1):
-			tableContent += '\t\t {edge_down}-{edge_up} \t & {bin_width} & {r} \\\\ \n'.format(
-				edge_down = bin_edges_vis[variable][bin], 
-				edge_up = bin_edges_vis[variable][bin+1],
-				bin_width = bin_edges_vis[variable][bin+1]-bin_edges_vis[variable][bin],
-				r = binning_params['Resolution'][bin],
+			bin_low = bin_edges_vis[variable][bin]
+			bin_high = bin_edges_vis[variable][bin+1]
+			bin_width = bin_high - bin_low
+			bin_res = binning_params['res'][bin]
+			bin_row = bin_res / bin_width
+
+			# Resolution of NJets is always 1
+			if 'NJets' in variable:
+				bin_res = 1
+				bin_row = bin_res / bin_width
+
+			# Insert different rounding here for each variable
+			bin_dp = ''
+			res_dp = ':.1f'
+			row_dp = ':.1f'
+			if 'abs_lepton_eta' in variable:
+				bin_dp = ':.2f'
+
+			# Tuning table to different d.p for each variable and replacing 0.0 with <0.1.
+			tableContent_tmp = ''
+			if bin_row < 0.1: 
+				bin_row = '$<$ 0.1'
+				tableContent_tmp = '\t\t {{{bin_dp}}} - {{{bin_dp}}} \t & \t {{{bin_dp}}} \t & \t {{{res_dp}}} \t & \t {{}} \\\\ \n'.format(
+					bin_dp = bin_dp,
+					res_dp = res_dp,
+				)
+				if bin_res < 0.1:
+					bin_res = '$<$ 0.1'
+					tableContent_tmp = '\t\t {{{bin_dp}}} - {{{bin_dp}}} \t & \t {{{bin_dp}}} \t & \t {{}} \t & \t {{}} \\\\ \n'.format(
+						bin_dp = bin_dp,
+						res_dp = res_dp,
+					)
+			else:
+				tableContent_tmp = '\t\t {{{bin_dp}}} - {{{bin_dp}}} \t & \t {{{bin_dp}}} \t & \t {{{res_dp}}} \t & \t {{{row_dp}}} \\\\ \n'.format(
+					bin_dp = bin_dp,
+					res_dp = res_dp,
+					row_dp = row_dp,
+				)
+			
+			# Edge Down - Edge Up | Bin Width | Resolution | Resolution / Bin Width
+			tableContent += tableContent_tmp.format(
+				bin_low, 
+				bin_high,
+				bin_width,
+				bin_res,
+				bin_row,
 			)
 
 		# For splitting into two tables
@@ -376,10 +556,8 @@ def makeBinningLatexTable():
 	output_file = open(file_template, 'w')
 	output_file.write(fullTable)
 	output_file.close()
+	print "Written Binning Table"
 	return
-
-
-
 
 
 
@@ -439,25 +617,32 @@ if __name__ == '__main__':
 			# Read cross sections and write tables
 			xsections_abs = file_to_df(path_to_input+input_file_template.format(type = utype))
 			xsections_rel = file_to_df(path_to_input+input_file_template.replace('absolute', 'relative').format(type = utype))
+			
+			########################################################################################################################
+			### RESULT +- STAT +- SYST
+			########################################################################################################################
 			makeResultLatexTable( xsections_abs=xsections_abs, xsections_rel=xsections_rel, outputPath=path_to_output, variable=variable, crossSectionType=utype )
+			
+			########################################################################################################################
+			### EXPANDED SYSTEMATIC UNCERTAINTIES (MEDIAN VALUES)
+			########################################################################################################################
 			makeExpandedSystematicLatexTable( xsections_rel=xsections_rel, outputPath=path_to_output, variable=variable )
 
-	# ########################################################################################################################
-	# ### CONDENSED SYSTEMATIC UNCERTAINTIES (MEDIAN VALUES)
-	# ########################################################################################################################
-	condensed_path_to_input = path_to_input_template.format(
-	    path = args.path, 
-	    com = 13,
-	    variable = 'VAR_TMP',
-	    phase_space = phase_space,
-	)
-	makeCondensedSystematicLatexTable( measurement_config.variables, condensed_path_to_input, input_file_template, 'tables/systematics/' )
-
+		########################################################################################################################
+		### CONDENSED SYSTEMATIC UNCERTAINTIES (MEDIAN VALUES)
+		########################################################################################################################
+		condensed_path_to_input = path_to_input_template.format(
+		    path = args.path, 
+		    com = 13,
+		    variable = 'VAR_TMP',
+		    phase_space = phase_space,
+		)
+		makeCondensedSystematicLatexTable( measurement_config.variables, condensed_path_to_input, input_file_template, 'tables/systematics/', utype )
 
 	########################################################################################################################
 	### PURITY/STABILITY/RESOLUTION 
 	########################################################################################################################
-	# makeBinningLatexTable()
+	makeBinningLatexTable()
 
 
 

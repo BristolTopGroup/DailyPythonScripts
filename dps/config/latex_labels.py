@@ -4,14 +4,14 @@ Created on 4 May 2013
 @author: kreczko
 '''
 b_tag_bins_latex = {'0btag': '0 b-tags',
-                    '0orMoreBtag': '$\geq$ 0 b-tags',
+                    '0orMoreBtag': ' $\geq$ 0 b-tags',
                     '1btag': '1 b-tag',
-                    '1orMoreBtag': '$\geq$ 1 b-tags',
+                    '1orMoreBtag': ' $\geq$ 1 b-tags',
                     '2btags': '2 b-tags',
-                    '2orMoreBtags': '$\geq$ 2 b-tags',
+                    '2orMoreBtags': ' $\geq$ 2 b-tags',
                     '3btags': '3 b-tags',
-                    '3orMoreBtags': '$\geq$ 3 b-tags',
-                    '4orMoreBtags': '$\geq$ 4 b-tags'
+                    '3orMoreBtags': ' $\geq$ 3 b-tags',
+                    '4orMoreBtags': ' $\geq$ 4 b-tags'
                     }
 
 variables_latex = {
@@ -39,7 +39,7 @@ variables_latex = {
 }
 
 variables_NonLatex = {
-    'MET': 'MET',
+    'MET': 'Missing Pt',
     'HT': 'HT',
     'ST': 'ST',
     'WPT': 'WPT',
@@ -52,6 +52,7 @@ control_plots_latex = {
     'NJets': '\ensuremath{N_{\mathrm{Jets}}}',
     'NBJets': '\ensuremath{N_{\mathrm{B Jets}}}',
     'pt': '\ensuremath{p_{\mathrm{T}}^{l}}',
+    'jpt': '\ensuremath{p_{\mathrm{T}}^{\\text{jet}}}',
     'eta': '\ensuremath{\eta^{l}}',
     'relIso_03_deltaBeta': "RelIso",
     'relIso_04_deltaBeta': "RelIso",
@@ -211,10 +212,10 @@ fit_variables_units_latex = {
 systematics_latex = {
     'Electron'                : 'Electron efficiency',
     'Muon'                    : 'Muon efficiency',
-    'ElectronEn'                : 'Electron energy in \ensuremath{E_{\mathrm{T}}^{\mathrm{miss}}}',
-    'MuonEn'                    : 'Muon energy in \ensuremath{E_{\mathrm{T}}^{\mathrm{miss}}}',
-    'TauEn'                     : 'Tau energy in \ensuremath{E_{\mathrm{T}}^{\mathrm{miss}}}',
-    'UnclusteredEn'             : 'Unclustered energy in \ensuremath{E_{\mathrm{T}}^{\mathrm{miss}}}',
+    'ElectronEn'                : 'Electron energy in \ensuremath{p_{\mathrm{T}}^{\mathrm{miss}}}',
+    'MuonEn'                    : 'Muon energy in \ensuremath{p_{\mathrm{T}}^{\mathrm{miss}}}',
+    'TauEn'                     : 'Tau energy in \ensuremath{p_{\mathrm{T}}^{\mathrm{miss}}}',
+    'UnclusteredEn'             : 'Unclustered energy in \ensuremath{p_{\mathrm{T}}^{\mathrm{miss}}}',
     'PileUp'                    : 'Pile-up',
     'BJet'                      : 'b-tagging efficiency',
     'JES'                       : 'JES',
