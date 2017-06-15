@@ -147,7 +147,7 @@ def read_xsection_measurement(options, category):
             norm        = norm,
         )
     measurement = read_tuple_from_file( filename )
-    xsection_unfolded = measurement['TTJet_unfolded']
+    xsection_unfolded = measurement['TTJets_unfolded']
     return xsection_unfolded  
 
 # @profile(stream=fp)

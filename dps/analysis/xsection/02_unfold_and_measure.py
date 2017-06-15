@@ -1186,7 +1186,7 @@ if __name__ == '__main__':
     all_measurements    = deepcopy( measurement_config.measurements )
     # Adding PDF Systematics
     pdf_uncertainties   = ['PDFWeights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.pdfWeightMax )]
-    # all_measurements.extend( pdf_uncertainties )
+    all_measurements.extend( pdf_uncertainties )
     if additionalPDFSets:
         ct14_uncertainties   = ['CT14Weights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.ct14WeightMax )]
         mmht14_uncertainties   = ['MMHT14Weights_%d' % index for index in range(measurement_config.pdfWeightMin, measurement_config.mmht14WeightMax )]
@@ -1200,7 +1200,6 @@ if __name__ == '__main__':
     for category in all_measurements:
         if run_just_central and not category == 'central': 
             continue
-        if category != 'QCD_cross_section': continue
 
         if ( variable in measurement_config.variables_no_met ) and (category in measurement_config.met_specific_systematics):
             continue
