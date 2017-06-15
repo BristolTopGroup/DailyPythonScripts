@@ -147,7 +147,7 @@ def read_xsection_measurement(options, category):
             norm        = norm,
         )
     measurement = read_tuple_from_file( filename )
-    xsection_unfolded = measurement['TTJet_unfolded']
+    xsection_unfolded = measurement['TTJets_unfolded']
     return xsection_unfolded  
 
 # @profile(stream=fp)
@@ -223,7 +223,7 @@ def get_cross_sections(options, list_of_systematics):
 
         elif (systematic == 'TTJets_scale'):
             unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
-            unf_env_lower, unf_env_upper = get_scale_envelope(options, unf_syst_unc_x_sec, central_measurement_unfolded)
+            unf_env_lower, unf_env_upper = get_scale_envelope(unf_syst_unc_x_sec, central_measurement_unfolded)
             unfolded_systematic_uncertainty_x_sections[systematic] = [
                 unf_env_lower,
                 unf_env_upper,
@@ -237,9 +237,8 @@ def get_cross_sections(options, list_of_systematics):
 
     return unfolded_systematic_uncertainty_x_sections
 
-
 # @profile(stream=fp)
-def get_scale_envelope(options, d_scale_syst, central):
+def get_scale_envelope(d_scale_syst, central):
     '''
     Calculate the scale envelope for the renormalisation/factorisation/combined systematic uncertainties
     For all up variations in a bin keep the highest
@@ -257,14 +256,10 @@ def get_scale_envelope(options, d_scale_syst, central):
 
     # Separate into up/down scale variations
     for scale_variation in d_scale_syst:
-
         scaleToAppend = []
         # Scale fsr in PS systematic
         if 'TTJets_fsrdown' in scale_variation or 'TTJets_fsrup' in scale_variation:
-            scale = sqrt(2) / 2
-            for variation, c in zip( d_scale_syst[scale_variation], central ):
-                diff = ( variation - c[0] ) * scale
-                scaleToAppend.append(c[0] + diff)
+            scaleToAppend = scaleFSR(d_scale_syst[scale_variation], central)
         else:
             scaleToAppend = d_scale_syst[scale_variation]
 
@@ -279,6 +274,16 @@ def get_scale_envelope(options, d_scale_syst, central):
 
     return envelope_down[0], envelope_up[0]
 
+def scaleFSR(scale_variation, central):
+    '''
+    Scale the fsr
+    '''
+    scaled_fsr = []
+    scale = sqrt(2) / 2
+    for variation, c in zip( scale_variation, central ):
+        diff = ( variation - c[0] ) * scale
+        scaled_fsr.append(c[0] + diff)
+    return scaled_fsr
 
 # @profile(stream=fp)
 def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values):
@@ -381,9 +386,10 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
         xsections_with_symmetrised_systematics['PDF'][0] = pdf_tot
         # TODO combine the signs....
 
-    # Add additional 50% uncertainty in QCD normalisation
-    if 'QCD_cross_section' in xsections_with_symmetrised_systematics:
-        xsections_with_symmetrised_systematics['QCD_cross_section'][0] = [1.5*val for val in xsections_with_symmetrised_systematics['QCD_cross_section'][0]]
+    # # Add additional 50% uncertainty in QCD normalisation
+    # This scales QCD uncertainty in all channels. It would be ok here if i know how to apply to the combined channel.
+    # if 'QCD_cross_section' in xsections_with_symmetrised_systematics:
+    #     xsections_with_symmetrised_systematics['QCD_cross_section'][0] = [1.5*val for val in xsections_with_symmetrised_systematics['QCD_cross_section'][0]]
 
     # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
     if 'LightJet' in xsections_with_symmetrised_systematics:
