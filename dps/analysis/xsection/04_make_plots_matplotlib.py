@@ -10,9 +10,9 @@ from dps.config.variable_binning import bin_edges_full, bin_edges_vis
 from dps.config.xsection import XSectionConfig
 from dps.utils.file_utilities import make_folder_if_not_exists
 from dps.utils.pandas_utilities import read_tuple_from_file, file_to_df, tupleise_cols
-from dps.utils.hist_utilities import value_error_tuplelist_to_hist, \
+from dps.utils.hist_utilities import value_error_tuplelist_to_hist, value_tuplelist_to_hist, \
 value_errors_tuplelist_to_graph, graph_to_value_errors_tuplelist
-
+from dps.utils.systematic import get_scale_envelope, scaleFSR
 # rootpy & matplotlib
 from ROOT import kBlue
 from dps.utils.ROOT_utils import set_root_defaults
@@ -35,7 +35,7 @@ from dps.utils.logger import log
 xsec_04_log = log["src/cross_section_measurement/04_make_plots_matplotlib"]
 
 @xsec_04_log.trace()
-def read_xsection_measurement_results( category, channel, unc_type ):
+def read_xsection_measurement_results( category, channel, unc_type, scale_uncertanties=False ):
     '''
     Reading the unfolded xsection results from DFs into graphs
     '''
@@ -58,36 +58,127 @@ def read_xsection_measurement_results( category, channel, unc_type ):
     if phase_space == 'VisiblePS':
         edges = bin_edges_vis[variable]
 
-
     # Collect the cross section measured/unfolded results from dataframes
     normalised_xsection_unfolded    = read_tuple_from_file( filename )
-    # h_normalised_xsection           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_measured'], edges )
-    h_normalised_xsection_unfolded  = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJet_unfolded'], edges )
+
+    # Create TTJets_Scale
+    d_scale_syst = {}
+    partonShower_uncertainties = measurement_config.list_of_systematics['TTJets_scale']
+    for psUnc in partonShower_uncertainties:
+        normalised_xsection_unfolded[psUnc] = [value for value, error in normalised_xsection_unfolded[psUnc]]
+        d_scale_syst[psUnc] = normalised_xsection_unfolded[psUnc]
+    normalised_xsection_unfolded['TTJets_scaledown'], normalised_xsection_unfolded['TTJets_scaleup'] = get_scale_envelope(
+        d_scale_syst, 
+        normalised_xsection_unfolded['TTJets_unfolded']
+    )
+
+    # Scale FSR
+    if scale_uncertanties:
+        normalised_xsection_unfolded['TTJets_fsrdown'] = scaleFSR(
+            normalised_xsection_unfolded['TTJets_fsrdown'],
+            normalised_xsection_unfolded['TTJets_unfolded']
+        )
+        normalised_xsection_unfolded['TTJets_fsrup'] = scaleFSR(
+            normalised_xsection_unfolded['TTJets_fsrup'], 
+            normalised_xsection_unfolded['TTJets_unfolded']
+        )
+
+    # h_normalised_xsection           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_measured'], edges )
+    h_normalised_xsection_unfolded  = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_unfolded'], edges )
 
     histograms_normalised_xsection_different_generators = {
         # 'measured':h_normalised_xsection,
         'unfolded':h_normalised_xsection_unfolded,
     }
+    histograms_normalised_xsection_different_systematics = {
+        'unfolded':h_normalised_xsection_unfolded,
+    }
 
     if category == 'central':
-
         # Add in distributions for the different MC to be shown
-        h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegPythia8'], edges )
-        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['amcatnlo'], edges )
-        h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['madgraphMLM'], edges )
-        h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['powhegHerwig'], edges )
-        h_normalised_xsection_massup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massup'], edges )
-        h_normalised_xsection_massdown          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['massdown'], edges )
+        h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_powhegPythia8'], edges )
+        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_amcatnlo'], edges )
+        h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_madgraphMLM'], edges )
+        h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_powhegHerwig'], edges )
+        # SCALE BREAKDOWN
+        h_normalised_xsection_fsrup             = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_fsrup'], edges )
+        h_normalised_xsection_fsrdown           = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_fsrdown'], edges )
+        h_normalised_xsection_isrdown           = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_isrdown'], edges )
+        h_normalised_xsection_isrup             = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_isrup'], edges )
+        h_normalised_xsection_factorisationup   = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_factorisationup'], edges )
+        h_normalised_xsection_factorisationdown = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_factorisationdown'], edges )
+        h_normalised_xsection_renormalisationup = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_renormalisationup'], edges )
+        h_normalised_xsection_renormalisationdown   = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_renormalisationdown'], edges )
+        h_normalised_xsection_combinedup        = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_combinedup'], edges )
+        h_normalised_xsection_combineddown      = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_combineddown'], edges )
+        # PARTON SHOWER
+        h_normalised_xsection_scaleup           = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_scaleup'], edges )
+        h_normalised_xsection_scaledown         = value_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_scaledown'], edges )
+        h_normalised_xsection_massup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_massup'], edges )
+        h_normalised_xsection_massdown          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_massdown'], edges )
+        h_normalised_xsection_ueup              = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_ueup'], edges )
+        h_normalised_xsection_uedown            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_uedown'], edges )
+        h_normalised_xsection_hdampup           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_hdampup'], edges )
+        h_normalised_xsection_hdampdown         = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_hdampdown'], edges )
+        h_normalised_xsection_erdOn             = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_erdOn'], edges )
+        h_normalised_xsection_QCDbased_erdOn    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_QCDbased_erdOn'], edges )
+        h_normalised_xsection_semiLepBrup       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_semiLepBrup'], edges )
+        h_normalised_xsection_semiLepBrdown     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_semiLepBrdown'], edges )
+        h_normalised_xsection_fragup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_fragup'], edges )
+        h_normalised_xsection_fragdown          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_fragdown'], edges )
+        h_normalised_xsection_petersonFrag      = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_petersonFrag'], edges )
+        # OTHER
+        # h_normalised_xsection_alphaSup          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_alphaSup'], edges )
+        # h_normalised_xsection_alphaSdown        = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_alphaSdown'], edges )
+        # h_normalised_xsection_topPt             = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_topPt'], edges )
 
         # And update
         histograms_normalised_xsection_different_generators.update( 
             {
-                'powhegPythia8'   : h_normalised_xsection_powhegPythia8,
-                'amcatnloPythia8' : h_normalised_xsection_amcatnlo,
-                'madgraphMLM'     : h_normalised_xsection_madgraphMLM,
-                'powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
+                'TTJets_powhegPythia8'   : h_normalised_xsection_powhegPythia8,
+                'TTJets_amcatnloPythia8' : h_normalised_xsection_amcatnlo,
+                'TTJets_madgraphMLM'     : h_normalised_xsection_madgraphMLM,
+                'TTJets_powhegHerwig'    : h_normalised_xsection_powhegHerwigpp,
             }
         )
+
+        if scale_uncertanties:
+            histograms_normalised_xsection_different_systematics.update( 
+                {
+                    'TTJets_powhegPythia8'  : h_normalised_xsection_powhegPythia8,
+                    'TTJets_fsrup'          : h_normalised_xsection_fsrup,
+                    'TTJets_fsrdown'        : h_normalised_xsection_fsrdown,
+                    'TTJets_isrdown'        : h_normalised_xsection_isrdown,
+                    'TTJets_isrup'          : h_normalised_xsection_isrup,
+                    'TTJets_factorisationup'    : h_normalised_xsection_factorisationup,
+                    'TTJets_factorisationdown'  : h_normalised_xsection_factorisationdown,
+                    'TTJets_renormalisationup'  : h_normalised_xsection_renormalisationup,
+                    'TTJets_renormalisationdown'    : h_normalised_xsection_renormalisationdown,
+                    'TTJets_combinedup'     : h_normalised_xsection_combinedup,
+                    'TTJets_combineddown'   : h_normalised_xsection_combineddown,
+                }
+            )
+        else:
+            histograms_normalised_xsection_different_systematics.update( 
+                {
+                    'TTJets_powhegPythia8'  : h_normalised_xsection_powhegPythia8,
+                    'TTJets_scaleup'        : h_normalised_xsection_scaleup,
+                    'TTJets_scaledown'      : h_normalised_xsection_scaledown,
+                    'TTJets_massup'         : h_normalised_xsection_massup,
+                    'TTJets_massdown'       : h_normalised_xsection_massdown,
+                    'TTJets_ueup'           : h_normalised_xsection_ueup,
+                    'TTJets_uedown'         : h_normalised_xsection_uedown,
+                    'TTJets_hdampup'        : h_normalised_xsection_hdampup,
+                    'TTJets_hdampdown'      : h_normalised_xsection_hdampdown,
+                    'TTJets_erdOn'          : h_normalised_xsection_erdOn,
+                    'TTJets_QCDbased_erdOn' : h_normalised_xsection_QCDbased_erdOn,
+                    'TTJets_semiLepBrup'    : h_normalised_xsection_semiLepBrup,
+                    'TTJets_semiLepBrdown'  : h_normalised_xsection_semiLepBrdown,
+                    'TTJets_fragup'         : h_normalised_xsection_fragup,
+                    'TTJets_fragdown'       : h_normalised_xsection_fragdown,
+                    'TTJets_petersonFrag'   : h_normalised_xsection_petersonFrag,
+                }
+            )
 
         filename = file_template.format(
             path = path_to_DF,
@@ -100,7 +191,7 @@ def read_xsection_measurement_results( category, channel, unc_type ):
 
         # Now for the systematic uncertainties
         normalised_xsection_unfolded_with_errors = file_to_df( filename )
-        normalised_xsection_unfolded_with_errors['TTJet_unfolded'] = tupleise_cols(
+        normalised_xsection_unfolded_with_errors['TTJets_unfolded'] = tupleise_cols(
             normalised_xsection_unfolded_with_errors['central'], 
             normalised_xsection_unfolded_with_errors['systematic'],
         )
@@ -109,15 +200,16 @@ def read_xsection_measurement_results( category, channel, unc_type ):
 
         # Transform unfolded data into graph form
         h_normalised_xsection_unfolded_with_errors_unfolded = value_errors_tuplelist_to_graph(
-            normalised_xsection_unfolded_with_errors['TTJet_unfolded'],
+            normalised_xsection_unfolded_with_errors['TTJets_unfolded'],
             edges, 
             is_symmetric_errors=True
         )
 
         # Add to list of histograms
         histograms_normalised_xsection_different_generators['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
+        histograms_normalised_xsection_different_systematics['unfolded_with_systematics'] = h_normalised_xsection_unfolded_with_errors_unfolded
 
-    return histograms_normalised_xsection_different_generators
+    return histograms_normalised_xsection_different_generators, histograms_normalised_xsection_different_systematics
 
 @xsec_04_log.trace()
 def get_cms_labels( channel ):
@@ -249,9 +341,9 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         zorder = sorted( histograms, reverse = False ).index( key )
 
         # Ordering such that systematic uncertainties are plotted first then central powhegPythia then data
-        if key == 'powhegPythia8' and zorder != len(histograms) - 3:
+        if key == 'TTJets_powhegPythia8' and zorder != len(histograms) - 3:
             zorder = len(histograms) - 3
-        elif key != 'powhegPythia8' and not 'unfolded' in key:
+        elif key != 'TTJets_powhegPythia8' and not 'unfolded' in key:
             while zorder >= len(histograms) - 3:
                 zorder = zorder - 1 
 
@@ -264,15 +356,30 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
                 linestyle = 'solid'
                 dashes[key] = None
                 hist.SetLineColor( 633 )
-            elif 'powhegHerwig' in key or 'massdown' in key:
+            elif 'powhegHerwig' in key or 'isr' in key or 'mass' in key:
                 hist.SetLineColor( kBlue )
                 dashes[key] = [25,5,5,5,5,5,5,5]
-            elif 'amcatnloPythia8' in key or 'massup' in key:
+            elif 'amcatnloPythia8' in key or 'fsr' in key or 'scale' in key:
                 hist.SetLineColor( 807 )
                 dashes[key] = [20,5]
-            elif 'madgraphMLM' in key:
+            elif 'madgraphMLM' in key or 'renormalisation' in key or 'ue' in key:
                 hist.SetLineColor( 417 )
                 dashes[key] = [5,5]
+            elif 'factorisation' in key or 'hdamp' in key:
+                hist.SetLineColor( 100 )
+                dashes[key] = [10,10]
+            elif 'combined' in key or 'semiLepBr' in key:
+                hist.SetLineColor( 200 )
+                dashes[key] = [20,10]
+            elif 'semiLepBr' in key:
+                hist.SetLineColor( 300 )
+                dashes[key] = [20,10,10,10]
+            elif 'frag' in key or 'Frag' in key:
+                hist.SetLineColor( 400 )
+                dashes[key] = [10,10,5,5]
+            elif 'erdOn' in key:
+                hist.SetLineColor( 500 )
+                dashes[key] = [10,10,5,5,5,5]
 
             if linestyle != None:
                 hist.linestyle = linestyle
@@ -299,14 +406,38 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     new_handles, new_labels = [], []
     zipped = dict( zip( labels, handles ) )
     labelOrder = ['data', 
-        measurements_latex['powhegPythia8'],
-        measurements_latex['amcatnloPythia8'],
-        measurements_latex['powhegHerwig'],
-        measurements_latex['madgraphMLM'],
-        measurements_latex['scaleup'], 
-        measurements_latex['scaledown'],
-        measurements_latex['massup'],
-        measurements_latex['massdown']
+        measurements_latex['TTJets_powhegPythia8'],
+        measurements_latex['TTJets_amcatnloPythia8'],
+        measurements_latex['TTJets_powhegHerwig'],
+        measurements_latex['TTJets_madgraphMLM'],
+        measurements_latex['TTJets_scaleup'], 
+        measurements_latex['TTJets_scaledown'],
+        measurements_latex['TTJets_massup'],
+        measurements_latex['TTJets_massdown'],
+        measurements_latex['TTJets_ueup'],
+        measurements_latex['TTJets_uedown'],
+        measurements_latex['TTJets_fsrup'],
+        measurements_latex['TTJets_fsrdown'],
+        measurements_latex['TTJets_isrdown'],
+        measurements_latex['TTJets_isrup'],
+        # measurements_latex['TTJets_alphaSup'],
+        # measurements_latex['TTJets_alphaSdown'],
+        # measurements_latex['TTJets_topPt'],
+        measurements_latex['TTJets_factorisationup'],
+        measurements_latex['TTJets_factorisationdown'],
+        measurements_latex['TTJets_renormalisationup'],
+        measurements_latex['TTJets_renormalisationdown'],
+        measurements_latex['TTJets_combinedup'],
+        measurements_latex['TTJets_combineddown'],
+        measurements_latex['TTJets_hdampup'],
+        measurements_latex['TTJets_hdampdown'],
+        measurements_latex['TTJets_erdOn'],
+        measurements_latex['TTJets_QCDbased_erdOn'],
+        measurements_latex['TTJets_semiLepBrup'],
+        measurements_latex['TTJets_semiLepBrdown'],
+        measurements_latex['TTJets_fragup'],
+        measurements_latex['TTJets_fragdown'],
+        measurements_latex['TTJets_petersonFrag'],
     ]
     for label in labelOrder:
         if label in labels:
@@ -565,7 +696,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         #draw a horizontal line at y=1 for central MC
         plt.axhline(y = 1, color = 'black', linewidth = 2)
 
-        central_mc = histograms['powhegPythia8']
+        central_mc = histograms['TTJets_powhegPythia8']
         for key, hist in sorted( histograms.iteritems() ):
             if not 'unfolded' in key and not 'measured' in key:
                 ratio = hist.Clone()
@@ -611,10 +742,11 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.tight_layout()
 
     # Save the plots
-    path = '{output_folder}/xsections/{phaseSpace}/'
+    path = '{output_folder}/xsections/{phaseSpace}/{variable}/'
     path = path.format(
         output_folder = output_folder,
         phaseSpace = phase_space,
+        variable = variable
     )
     make_folder_if_not_exists( path )
     for output_format in output_formats:
@@ -751,6 +883,11 @@ def parse_arguments():
         default = 'TUnfold',
         help    = "Unfolding method: TUnfold (default)" 
     )
+    parser.add_argument( "-s", "--show_scales", 
+        dest    = "plot_scale_uncertainties", 
+        action  = "store_true",
+        help    = "Show parton shower scale uncertainties" 
+    )
 
     args = parser.parse_args()
     return args
@@ -771,6 +908,7 @@ if __name__ == '__main__':
     show_generator_ratio    = args.show_generator_ratio
     visiblePS               = args.visiblePS
     output_folder           = args.output_folder
+    plot_scale_uncertainties= args.plot_scale_uncertainties
 
     if not output_folder.endswith( '/' ):
         output_folder += '/'
@@ -792,8 +930,8 @@ if __name__ == '__main__':
     all_measurements.extend( pdf_uncertainties )
 
     channel = [
-        # 'electron', 
-        # 'muon', 
+        'electron', 
+        'muon', 
         'combined', 
         # 'combinedBeforeUnfolding',
     ]
@@ -802,6 +940,10 @@ if __name__ == '__main__':
         'normalised',
         'absolute',
     ]
+
+    partonShower = ''
+    if plot_scale_uncertainties:
+        partonShower = '_partonShower'
 
     for ch in channel:
         for utype in unc_type:
@@ -812,7 +954,7 @@ if __name__ == '__main__':
                 if variable in measurement_config.variables_no_met and category in measurement_config.met_specific_systematics: continue
 
                 # Read the xsection results from dataframe
-                histograms_normalised_xsection_different_generators = read_xsection_measurement_results( category, ch, utype )
+                histograms_normalised_xsection_different_generators, histograms_normalised_xsection_different_systematics = read_xsection_measurement_results( category, ch, utype, scale_uncertanties=plot_scale_uncertainties )
                 
                 histname = '{variable}_{utype}_xsection_{ch}_{phase_space}_{method}'.format(
                     variable = variable, 
@@ -826,6 +968,16 @@ if __name__ == '__main__':
                     category, 
                     output_folder, 
                     histname + '_different_generators', 
+                    show_ratio = True,
+                    show_generator_ratio = show_generator_ratio ,
+                    utype = utype
+                )
+
+                make_plots( 
+                    histograms_normalised_xsection_different_systematics, 
+                    category, 
+                    output_folder, 
+                    histname + '_different_systematics'+partonShower, 
                     show_ratio = True,
                     show_generator_ratio = show_generator_ratio ,
                     utype = utype
