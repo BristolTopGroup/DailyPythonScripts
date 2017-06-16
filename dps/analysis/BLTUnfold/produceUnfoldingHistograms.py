@@ -227,7 +227,7 @@ def main():
 
     pdfWeight       = args.pdfWeight
     CT14Weight      = args.CT14Weight
-    MMHT14Weight    = args.MMHTWeight
+    MMHT14Weight    = args.MMHT14Weight
     muFmuRWeight    = args.muFmuRWeight
     alphaSWeight    = args.alphaSWeight
     semiLepBrWeight = args.semiLepBrWeight
@@ -282,8 +282,8 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
     elif CT14Weight >= 0 and CT14Weight <= 54:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_CT14Weight_%i.root' % ( energySuffix, CT14Weight )
-    elif MMHTWeight >= 0 and MMHTWeight <= 55:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_MMHTWeight_%i.root' % ( energySuffix, MMHTWeight )
+    elif MMHT14Weight >= 0 and MMHT14Weight <= 55:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_MMHT14Weight_%i.root' % ( energySuffix, MMHTWeight )
     elif 'central' not in args.sample:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, args.sample  )
     elif args.fineBinned :
