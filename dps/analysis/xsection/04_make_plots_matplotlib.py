@@ -67,20 +67,23 @@ def read_xsection_measurement_results( category, channel, unc_type, scale_uncert
     for psUnc in partonShower_uncertainties:
         normalised_xsection_unfolded[psUnc] = [value for value, error in normalised_xsection_unfolded[psUnc]]
         d_scale_syst[psUnc] = normalised_xsection_unfolded[psUnc]
+
     normalised_xsection_unfolded['TTJets_scaledown'], normalised_xsection_unfolded['TTJets_scaleup'] = get_scale_envelope(
         d_scale_syst, 
-        normalised_xsection_unfolded['TTJets_unfolded']
+        normalised_xsection_unfolded['TTJets_powhegPythia8'],
     )
 
+    # Need to strip errors from central before passing to scaleFSR()
+    central = [c[0] for c in normalised_xsection_unfolded['TTJets_powhegPythia8']]
     # Scale FSR
     if scale_uncertanties:
         normalised_xsection_unfolded['TTJets_fsrdown'] = scaleFSR(
             normalised_xsection_unfolded['TTJets_fsrdown'],
-            normalised_xsection_unfolded['TTJets_unfolded']
+            central,
         )
         normalised_xsection_unfolded['TTJets_fsrup'] = scaleFSR(
             normalised_xsection_unfolded['TTJets_fsrup'], 
-            normalised_xsection_unfolded['TTJets_unfolded']
+            central,
         )
 
     # h_normalised_xsection           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_measured'], edges )
