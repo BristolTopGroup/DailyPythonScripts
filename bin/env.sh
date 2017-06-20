@@ -59,11 +59,13 @@ else
    PYTHONPATH=$DPSROOT/python:$PYTHONPATH; export PYTHONPATH
 fi
 
-CONDAINSTALL=/software/miniconda
+CONDAINSTALL=/software/TopQuarkGroup/miniconda
 PATH=$CONDAINSTALL/bin:$PATH; export PATH
-export ENV_NAME=dps-new
+export ENV_NAME=test
 export CONDA_ENV_PATH=$CONDAINSTALL/envs/${ENV_NAME}
-source $CONDAINSTALL/bin/activate ${ENV_NAME}
 export PYTHONPATH=$PYTHONPATH:`pwd`
+
+source $CONDAINSTALL/bin/activate ${ENV_NAME}
+
 unset old_dpsbase
 unset envscript
