@@ -30,6 +30,7 @@ from matplotlib import rc
 rc( 'font', **CMS.font )
 rc( 'text', usetex = True )
 
+
 # from memory_profiler import profile
 # fp=open('memory_profiler.log','w')
 
@@ -323,11 +324,16 @@ def get_scale_envelope(d_scale_syst, central):
 
     d_scale_syst is a dictionary containing all the scale variations
     Retrieve the up(down) variations from d_scale_syst and choose max(min) value as the envelope for each bin
+
+    Need to store xsection giving largest difference to central, not just largest xsection
     '''
-    down_variations = []
-    up_variations = []
-    envelope_up = []
-    envelope_down = []
+    import pandas as pd
+
+    central = [c[0] for c in central]
+    down = pd.DataFrame()
+    up = pd.DataFrame()
+    down['central'] = central
+    up['central'] = central
 
     # Separate into up/down scale variations
     for scale_variation in d_scale_syst:
@@ -339,15 +345,31 @@ def get_scale_envelope(d_scale_syst, central):
             scaleToAppend = d_scale_syst[scale_variation]
 
         if 'down' in scale_variation:
-            down_variations.append(scaleToAppend)
+            down[scale_variation] = scaleToAppend
         elif 'up' in scale_variation:
-            up_variations.append(scaleToAppend)
+            up[scale_variation] = scaleToAppend
 
-    # find min/max
-    envelope_up.append( list( np.amax(up_variations,axis=0) ) )
-    envelope_down.append( list( np.amin(down_variations,axis=0) ) )
+    down_diff = down.subtract(central, axis='index')
+    down_diff = down_diff.abs()
+    down_diff['max'] = down_diff.max(axis = 1)
+    down_diff['index'] = down_diff.idxmax(axis = 1)
+    scale = []
+    for i, index in enumerate(down_diff['index']):
+        scale.append(down[index][i])
+    down['TTJets_scaledown']=scale
 
-    return envelope_down[0], envelope_up[0]
+    up_diff = up.subtract(central, axis='index')
+    up_diff = up_diff.abs()
+    up_diff['max'] = up_diff.max(axis = 1)
+    up_diff['index'] = up_diff.idxmax(axis = 1)
+    scale = []
+    for i, index in enumerate(up_diff['index']):
+        scale.append(up[index][i])
+    up['TTJets_scaleup']=scale
+    print( down )
+    print( up )
+
+    return down['TTJets_scaledown'], up['TTJets_scaleup']
 
 def scaleFSR(scale_variation, central):
     '''
@@ -355,10 +377,14 @@ def scaleFSR(scale_variation, central):
     '''
     scaled_fsr = []
     scale = sqrt(2) / 2
+    i=0
     for variation, c in zip( scale_variation, central ):
-        diff = ( variation - c[0] ) * scale
-        scaled_fsr.append(c[0] + diff)
-    return scaled_fsr
+        diff = ( variation - c ) * scale
+        # scaled_fsr.append(c + diff)
+        scale_variation[i] = c + diff
+        i+=1
+
+    return scale_variation
 
 # @profile(stream=fp)
 def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty_values):

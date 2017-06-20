@@ -69,7 +69,7 @@ measurements_latex = {
     'TTJets_madgraphMLM'        : r'\textsc{MG5}\_a\textsc{MC@NLO (MLM) \raisebox{.2ex}{+} Pythia8}',
     'TTJets_powhegPythia8'      : r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
     'TTJets_powhegHerwig'       : r'\textsc{Powheg \raisebox{.2ex}{+} Herwig\raisebox{.2ex}{++}}',
-    'TTJets_amcatnlo'    : r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
+    'TTJets_amcatnloPythia8'    : r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
 
     'TTJets_powhegPythia8_withMCTheoryUnc': r'with MC theory uncertainties',
 
@@ -92,6 +92,7 @@ measurements_latex = {
     'TTJets_semiLepBrdown'      : 'Decay Tables Down',
     'TTJets_erdOn'              : 'CR (erdOn)',
     'TTJets_QCDbased_erdOn'     : 'CR (QCD based)',
+    'TTJets_GluonMove'          : 'CR (Gluon Move)',
 
     'TTJets_isrdown'            : 'ISR Down',
     'TTJets_isrup'              : 'ISR Up',

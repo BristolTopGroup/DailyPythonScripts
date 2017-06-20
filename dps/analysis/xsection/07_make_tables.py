@@ -470,6 +470,9 @@ def makeBinningLatexTable():
 
 		tableContent = ''
 		path_to_file = 'unfolding/13TeV/binning_combined_{}.txt'.format(variable)
+		if not path_to_file.exists():
+			print "File does not exist. Please try again later"
+			return
 		binning_params = file_to_df(path_to_file)
 
 		tableContent += '\t\t\\textbf{{{var}}} \t &   &	  & \\\\ \n'.format(var=variables_latex[variable])

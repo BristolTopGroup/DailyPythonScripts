@@ -67,20 +67,23 @@ def read_xsection_measurement_results( category, channel, unc_type, scale_uncert
     for psUnc in partonShower_uncertainties:
         normalised_xsection_unfolded[psUnc] = [value for value, error in normalised_xsection_unfolded[psUnc]]
         d_scale_syst[psUnc] = normalised_xsection_unfolded[psUnc]
+
     normalised_xsection_unfolded['TTJets_scaledown'], normalised_xsection_unfolded['TTJets_scaleup'] = get_scale_envelope(
         d_scale_syst, 
-        normalised_xsection_unfolded['TTJets_unfolded']
+        normalised_xsection_unfolded['TTJets_powhegPythia8'],
     )
 
+    # Need to strip errors from central before passing to scaleFSR()
+    central = [c[0] for c in normalised_xsection_unfolded['TTJets_powhegPythia8']]
     # Scale FSR
     if scale_uncertanties:
         normalised_xsection_unfolded['TTJets_fsrdown'] = scaleFSR(
             normalised_xsection_unfolded['TTJets_fsrdown'],
-            normalised_xsection_unfolded['TTJets_unfolded']
+            central,
         )
         normalised_xsection_unfolded['TTJets_fsrup'] = scaleFSR(
             normalised_xsection_unfolded['TTJets_fsrup'], 
-            normalised_xsection_unfolded['TTJets_unfolded']
+            central,
         )
 
     # h_normalised_xsection           = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_measured'], edges )
@@ -122,6 +125,7 @@ def read_xsection_measurement_results( category, channel, unc_type, scale_uncert
         h_normalised_xsection_hdampdown         = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_hdampdown'], edges )
         h_normalised_xsection_erdOn             = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_erdOn'], edges )
         h_normalised_xsection_QCDbased_erdOn    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_QCDbased_erdOn'], edges )
+        # h_normalised_xsection_GluonMove         = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_GluonMove'], edges )
         h_normalised_xsection_semiLepBrup       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_semiLepBrup'], edges )
         h_normalised_xsection_semiLepBrdown     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_semiLepBrdown'], edges )
         h_normalised_xsection_fragup            = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_fragup'], edges )
@@ -130,7 +134,7 @@ def read_xsection_measurement_results( category, channel, unc_type, scale_uncert
         # OTHER
         # h_normalised_xsection_alphaSup          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_alphaSup'], edges )
         # h_normalised_xsection_alphaSdown        = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_alphaSdown'], edges )
-        # h_normalised_xsection_topPt             = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_topPt'], edges )
+        h_normalised_xsection_topPt             = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_topPt'], edges )
 
         # And update
         histograms_normalised_xsection_different_generators.update( 
@@ -172,12 +176,15 @@ def read_xsection_measurement_results( category, channel, unc_type, scale_uncert
                     'TTJets_hdampdown'      : h_normalised_xsection_hdampdown,
                     # 'TTJets_erdOn'          : h_normalised_xsection_erdOn,
                     # 'TTJets_QCDbased_erdOn' : h_normalised_xsection_QCDbased_erdOn,
-                    # 'TTJets_GluonMove' : h_normalised_xsection_QCDbased_erdOn,
+                    # 'TTJets_GluonMove'      : h_normalised_xsection_GluonMove,
+
                     # 'TTJets_semiLepBrup'    : h_normalised_xsection_semiLepBrup,
                     # 'TTJets_semiLepBrdown'  : h_normalised_xsection_semiLepBrdown,
                     # 'TTJets_fragup'         : h_normalised_xsection_fragup,
                     # 'TTJets_fragdown'       : h_normalised_xsection_fragdown,
                     # 'TTJets_petersonFrag'   : h_normalised_xsection_petersonFrag,
+
+                    'TTJets_topPt'          : h_normalised_xsection_topPt,
                 }
             )
 
@@ -372,7 +379,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             elif 'combined' in key or 'semiLepBr' in key:
                 hist.SetLineColor( 200 )
                 dashes[key] = [20,10]
-            elif 'semiLepBr' in key:
+            elif 'semiLepBr' in key or 'topPt' in key:
                 hist.SetLineColor( 300 )
                 dashes[key] = [20,10,10,10]
             elif 'frag' in key or 'Frag' in key:
@@ -423,7 +430,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         measurements_latex['TTJets_isrup'],
         # measurements_latex['TTJets_alphaSup'],
         # measurements_latex['TTJets_alphaSdown'],
-        # measurements_latex['TTJets_topPt'],
+        measurements_latex['TTJets_topPt'],
         measurements_latex['TTJets_factorisationup'],
         measurements_latex['TTJets_factorisationdown'],
         measurements_latex['TTJets_renormalisationup'],
@@ -434,6 +441,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         measurements_latex['TTJets_hdampdown'],
         measurements_latex['TTJets_erdOn'],
         measurements_latex['TTJets_QCDbased_erdOn'],
+        measurements_latex['TTJets_GluonMove'],
         measurements_latex['TTJets_semiLepBrup'],
         measurements_latex['TTJets_semiLepBrdown'],
         measurements_latex['TTJets_fragup'],

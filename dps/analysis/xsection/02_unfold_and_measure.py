@@ -53,7 +53,7 @@ def get_unfolding_files(measurement_config):
 
     unfolding_files['file_for_erdOn']              = File( measurement_config.unfolding_erdOn, 'read' )
     unfolding_files['file_for_QCDbased_erdOn']     = File( measurement_config.unfolding_QCDbased_erdOn, 'read' )
-    # unfolding_files['file_for_GluonMove']         = File( measurement_config.unfolding_GluonMove, 'read' )
+    unfolding_files['file_for_GluonMove']         = File( measurement_config.unfolding_GluonMove, 'read' )
 
     unfolding_files['file_for_semiLepBrdown']      = File( measurement_config.unfolding_semiLepBr_down, 'read' )
     unfolding_files['file_for_semiLepBrup']        = File( measurement_config.unfolding_semiLepBr_up, 'read' )
@@ -193,7 +193,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_petersonFrag'        :  unfolding_files['file_for_petersonFrag'],
         'TTJets_erdOn'               :  unfolding_files['file_for_erdOn'],
         'TTJets_QCDbased_erdOn'      :  unfolding_files['file_for_QCDbased_erdOn'],
-        # 'TTJets_GluonMove'          :  unfolding_files['file_for_GluonMove'],
+        'TTJets_GluonMove'           :  unfolding_files['file_for_GluonMove'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
@@ -873,6 +873,12 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
             luminosity, 
             branching_ratio 
         )
+        xsection_unfolded['TTJets_GluonMove'], _, _, _ = calculate_xsection( 
+            normalisation['TTJets_GluonMove'],
+            binWidths[variable],
+            luminosity, 
+            branching_ratio 
+        )
         xsection_unfolded['TTJets_semiLepBrup'], _, _, _ = calculate_xsection( 
             normalisation['TTJets_semiLepBrup'],
             binWidths[variable],
@@ -1077,6 +1083,11 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
             binWidths[variable],
             normalise_to_one, 
         )
+        normalised_xsection['TTJets_GluonMove'], _, _, _ = calculate_normalised_xsection( 
+            normalisation['TTJets_GluonMove'],
+            binWidths[variable],
+            normalise_to_one, 
+        )
         normalised_xsection['TTJets_semiLepBrup'], _, _, _ = calculate_normalised_xsection( 
             normalisation['TTJets_semiLepBrup'],
             binWidths[variable],
@@ -1199,7 +1210,7 @@ if __name__ == '__main__':
     for category in all_measurements:
         if run_just_central and not category == 'central': 
             continue
-
+            
         if ( variable in measurement_config.variables_no_met ) and (category in measurement_config.met_specific_systematics):
             continue
         print 'Unfolding category {}'.format(category)
