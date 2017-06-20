@@ -44,11 +44,18 @@ def main():
         default=True, 
         help="Print the debug information"
     )
+    parser.add_argument(
+        '--control_plot_binning', 
+        dest="control_plot_binning", 
+        action="store_true",
+        help="Use the binning for the control plots"
+    )
     args = parser.parse_args()
 
     options = {}
     options['com'] = args.CoM
     options['data_driven_qcd'] = args.data_driven_qcd
+    options['control_plot_binning'] = args.control_plot_binning
     if args.debug: log.setLevel(log.DEBUG)
 
 
@@ -145,12 +152,19 @@ def get_sample_info(options, xsec_config, sample):
             sample_info["branch"] += '_METUncertainties[{index}]'.format(index = str(xsec_config.met_systematics[options['category']]))
 
     # Bin Edges
-    if options['ps'] == 'VisiblePS':
-        sample_info["bin_edges"] = variable_binning.reco_bin_edges_vis[options['variable']]
-    elif options['ps'] == 'FullPS':
-        sample_info["bin_edges"] = variable_binning.reco_bin_edges_full[options['variable']]
+    if options['control_plot_binning']:
+        firstBin = variable_binning.control_plots_bins[options['variable']][0]
+        lastBin = variable_binning.control_plots_bins[options['variable']][-1]
+        nBins = variable_binning.control_plot_nbins[options['variable']]
+        binWidth =  ( lastBin - firstBin ) / nBins
+        sample_info["bin_edges"] =  [ firstBin + i * binWidth for i in range(0, nBins+1) ]
     else:
-        sample_info["bin_edges"] = None
+        if options['ps'] == 'VisiblePS':
+            sample_info["bin_edges"] = variable_binning.reco_bin_edges_vis[options['variable']]
+        elif options['ps'] == 'FullPS':
+            sample_info["bin_edges"] = variable_binning.reco_bin_edges_full[options['variable']]
+        else:
+            sample_info["bin_edges"] = None
 
     # Lumi Scale (Rate)
     # Normal lumi scale

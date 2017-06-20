@@ -9,6 +9,7 @@ from dps.config.variableBranchNames import branchNames, genBranchNames_particle,
 from dps.utils.file_utilities import make_folder_if_not_exists
 from math import trunc, exp, sqrt
 import numpy as np
+import glob
 
 import ROOT as ROOT
 ROOT.gROOT.SetBatch(True)
@@ -63,6 +64,29 @@ def calculateTopPtSystematicWeight( lepTopPt, hadTopPt ):
 def ptWeight( pt ):
     return exp( 0.0615 - 0.0005 * pt )
 
+def getUnmergedDirectory( f ) :
+    baseDir = f.split('combined')[0]
+    sampleName = f.split('combined')[-1].strip('/').split('_tree.root')[0]
+    print baseDir
+    print sampleName
+
+    if 'TTJets_amc' in sampleName:
+        sampleName = 'TTJets_amcatnloFXFX'
+    elif 'TTJets_madgraph' in sampleName:
+        sampleName = 'TTJets_madgraphMLM'
+    new_f = None
+    if 'plusJES' in f:
+        print 'HERE',sampleName.strip('_plusJES')
+        new_f = baseDir + '/' + sampleName.strip('_plusJES') + '/analysis_JES_up_job_*/*root'
+    elif 'minusJES' in f:
+        new_f = baseDir + '/' + sampleName.strip('_minusJES') + '/analysis_JES_down_job_*/*root'
+    elif 'plusJER' in f:
+        new_f = baseDir + '/' + sampleName.strip('_plusJER') + '/analysis_JetSmearing_up_job_*/*root'
+    elif 'minusJER' in f:
+        new_f = baseDir + '/' + sampleName.strip('_minusJER') + '/analysis_JetSmearing_down_job_*/*root'
+    else:
+        new_f = baseDir + '/' + sampleName + '/analysis_central_job_*/*root'
+    return new_f
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
@@ -92,6 +116,7 @@ def getFileName( com, sample, measurementConfig ) :
 
             'erdOn'           : measurementConfig.ttbar_erdOn_trees,
             'QCDbased_erdOn'           : measurementConfig.ttbar_QCDbased_erdOn_trees,
+            'GluonMove'           : measurementConfig.ttbar_GluonMove_trees,
 
             'massdown'          : measurementConfig.ttbar_mtop1695_trees,
             'massup'            : measurementConfig.ttbar_mtop1755_trees,
@@ -210,6 +235,11 @@ def parse_arguments():
         dest='fineBinned', 
         default=False
     )
+    parser.add_argument('--newPS',
+        action='store_true', 
+        dest='newPS', 
+        default=False
+    )
     args = parser.parse_args()
     return args
 
@@ -227,7 +257,7 @@ def main():
 
     pdfWeight       = args.pdfWeight
     CT14Weight      = args.CT14Weight
-    MMHT14Weight    = args.MMHTWeight
+    MMHT14Weight    = args.MMHT14Weight
     muFmuRWeight    = args.muFmuRWeight
     alphaSWeight    = args.alphaSWeight
     semiLepBrWeight = args.semiLepBrWeight
@@ -282,8 +312,8 @@ def main():
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_pdfWeight_%i.root' % ( energySuffix, pdfWeight )
     elif CT14Weight >= 0 and CT14Weight <= 54:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_CT14Weight_%i.root' % ( energySuffix, CT14Weight )
-    elif MMHTWeight >= 0 and MMHTWeight <= 55:
-        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_MMHTWeight_%i.root' % ( energySuffix, MMHTWeight )
+    elif MMHT14Weight >= 0 and MMHT14Weight <= 55:
+        outputFileName = outputFileDir+'/unfolding_TTJets_%s_asymmetric_MMHT14Weight_%i.root' % ( energySuffix, MMHT14Weight )
     elif 'central' not in args.sample:
         outputFileName = outputFileDir+'/unfolding_TTJets_%s_%s_asymmetric.root' % ( energySuffix, args.sample  )
     elif args.fineBinned :
@@ -299,13 +329,22 @@ def main():
     elif 'secondHalf' in args.sample:
         outputFileName = outputFileName.replace('asymmetric','asymmetric_secondHalf')
 
+    if args.newPS :
+        outputFileName = outputFileName.replace('asymmetric','asymmetric_newPS')
 
-    with root_open( file_name, 'read' ) as f, root_open( outputFileName, 'recreate') as out:
+    # Get the tree/chain
+    treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
+    print file_name
+    file_name = getUnmergedDirectory(file_name)
+    print file_name
+    tree = ROOT.TChain(treeName);
+    filenames = glob.glob( file_name )
+    for f in filenames:
+        tree.Add(f)
 
-            # Get the tree
-            treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
-            tree = f.Get(treeName)
+    with root_open( outputFileName, 'recreate') as out:
             nEntries = tree.GetEntries()
+            print 'Number of entries:',nEntries
 
             # For variables where you want bins to be symmetric about 0, use abs(variable) (but also make plots for signed variable)
             allVariablesBins = bin_edges_vis.copy()
@@ -361,12 +400,16 @@ def main():
                 genVariable_parton_name = None
                 if variable in genBranchNames_particle:
                     genVariable_particle_name = genBranchNames_particle[variable]
+                    if args.newPS and variable in ['HT', 'ST', 'NJets']:
+                        genVariable_particle_name += '_20GeVLastJet'
                 if variable in genBranchNames_parton:
                     genVariable_parton_name = genBranchNames_parton[variable]
 
                 recoVariableNames[variable] = recoVariableName
                 genVariable_particle_names[variable] = genVariable_particle_name
                 genVariable_parton_names[variable] = genVariable_parton_name 
+
+                reco_bin_edges_vis_to_use = reco_bin_edges_vis[variable]
 
                 for channel in channels:
                     # Make dir in output file
@@ -388,22 +431,22 @@ def main():
                     h['truth']                          = Hist( allVariablesBins[variable], name='truth')
                     h['truthVis']                       = Hist( allVariablesBins[variable], name='truthVis')
                     h['truth_parton']                   = Hist( allVariablesBins[variable], name='truth_parton')                
-                    h['measured']                       = Hist( reco_bin_edges_vis[variable], name='measured')
-                    h['measuredVis']                    = Hist( reco_bin_edges_vis[variable], name='measuredVis')
-                    h['measured_without_fakes']         = Hist( reco_bin_edges_vis[variable], name='measured_without_fakes')
-                    h['measuredVis_without_fakes']      = Hist( reco_bin_edges_vis[variable], name='measuredVis_without_fakes')
-                    h['fake']                           = Hist( reco_bin_edges_vis[variable], name='fake')
-                    h['fakeVis']                        = Hist( reco_bin_edges_vis[variable], name='fakeVis')
+                    h['measured']                       = Hist( reco_bin_edges_vis_to_use, name='measured')
+                    h['measuredVis']                    = Hist( reco_bin_edges_vis_to_use, name='measuredVis')
+                    h['measured_without_fakes']         = Hist( reco_bin_edges_vis_to_use, name='measured_without_fakes')
+                    h['measuredVis_without_fakes']      = Hist( reco_bin_edges_vis_to_use, name='measuredVis_without_fakes')
+                    h['fake']                           = Hist( reco_bin_edges_vis_to_use, name='fake')
+                    h['fakeVis']                        = Hist( reco_bin_edges_vis_to_use, name='fakeVis')
                     # 2D histograms
-                    h['response']                       = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response')
-                    h['response_without_fakes']         = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes')
-                    h['responseVis_without_fakes']      = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='responseVis_without_fakes')
-                    h['response_parton']                = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_parton')
-                    h['response_without_fakes_parton']  = Hist2D( reco_bin_edges_vis[variable], allVariablesBins[variable], name='response_without_fakes_parton')
+                    h['response']                       = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response')
+                    h['response_without_fakes']         = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_without_fakes')
+                    h['responseVis_without_fakes']      = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='responseVis_without_fakes')
+                    h['response_parton']                = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_parton')
+                    h['response_without_fakes_parton']  = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_without_fakes_parton')
 
                     if args.fineBinned:
                         minVar = trunc( allVariablesBins[variable][0] )
-                        maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( recoVariableNames[variable] ) ) * 1.2 )
+                        maxVar = trunc( max( tree.GetMaximum(genVariable_particle_names[variable]), tree.GetMaximum( reco_bin_edges_vis_to_use ) ) * 1.2 )
                         nBins = int(maxVar - minVar)
                         if variable is 'lepton_eta' or variable is 'bjets_eta':
                             maxVar = 2.4
@@ -551,6 +594,15 @@ def main():
                     genWeight *= branch('pdfWeight_%i' % pdfWeight)
                     pass
 
+                if MMHT14Weight >= 0:
+                    genWeight *= branch('MMHT14Weight_%i' % MMHT14Weight)
+                    print genWeight
+                    pass
+
+
+                if CT14Weight >= 0:
+                    genWeight *= branch('CT14Weight_%i' % CT14Weight)
+                    pass
 
                 if muFmuRWeight >= 0:
                     genWeight *= branch('muFmuRWeight_%i' % muFmuRWeight)
@@ -591,9 +643,13 @@ def main():
                     if channel.channelName is 'muPlusJets' :
                         genSelection = event.isSemiLeptonicMuon == 1
                         genSelectionVis = event.passesGenEventSelection == 1 and event.pseudoLepton_pdgId == 13
+                        if args.newPS:
+                            genSelectionVis = event.passesGenEventSelection_20GeVLastJet == 1 and event.pseudoLepton_pdgId == 13
                     elif channel.channelName is 'ePlusJets' :
                         genSelection = event.isSemiLeptonicElectron == 1
                         genSelectionVis = event.passesGenEventSelection == 1 and event.pseudoLepton_pdgId == 11
+                        if args.newPS:
+                            genSelectionVis = event.passesGenEventSelection_20GeVLastJet == 1 and event.pseudoLepton_pdgId == 11
 
                     # Offline level selection
                     offlineSelection = 0

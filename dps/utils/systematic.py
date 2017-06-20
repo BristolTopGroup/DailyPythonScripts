@@ -13,6 +13,7 @@ from dps.utils.file_utilities import make_folder_if_not_exists
 from dps.config import CMS
 from dps.config.latex_labels import variables_latex, variables_NonLatex
 from dps.config.xsection import XSectionConfig
+from copy import deepcopy
 measurement_config = XSectionConfig( 13 )
 template = '%.1f fb$^{-1}$ (%d TeV)'
 title = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
@@ -146,9 +147,83 @@ def read_xsection_measurement(options, category):
             method      = method,
             norm        = norm,
         )
+
+    print (filename)
     measurement = read_tuple_from_file( filename )
+
     xsection_unfolded = measurement['TTJets_unfolded']
+
+    if category is 'central':
+        theoryUncertaintySources = options['mcTheoryUncertainties']
+        xsection_mc = { 'central' : measurement['TTJets_powhegPythia8' ]}
+        for source in theoryUncertaintySources:
+            variations = theoryUncertaintySources[source]
+            if source is 'TTJets_scale':
+                scale_xsections = {}
+                for variation in variations:
+                    xsectionWithUncertainty = measurement[variation]
+                    for i in range(0,len(xsectionWithUncertainty)):
+                        xsectionWithUncertainty[i] = xsectionWithUncertainty[i][0]
+                    scale_xsections[variation] = xsectionWithUncertainty
+                scale_envelope_lower, scale_envelope_upper = get_scale_envelope(scale_xsections, measurement['TTJets_powhegPythia8' ])
+                xsection_mc[source] = [
+                                        scale_envelope_lower,
+                                        scale_envelope_upper
+                                        ]
+                pass
+            else:
+                xsectionWithUncertainty_lower = deepcopy( measurement[variations[0]] )
+                xsectionWithUncertainty_upper = deepcopy( measurement[variations[1]] )
+
+                for i in range(0,len(xsectionWithUncertainty_lower)):
+                    xsectionWithUncertainty_lower[i] = xsectionWithUncertainty_lower[i][0]
+                    xsectionWithUncertainty_upper[i] = xsectionWithUncertainty_upper[i][0]
+
+                xsection_mc[source] = [ 
+                                        xsectionWithUncertainty_lower,
+                                        xsectionWithUncertainty_upper
+                                        ]
+
+
+
+        return xsection_unfolded, xsection_mc
+
     return xsection_unfolded  
+
+def get_mc_data_difference(options, mc_xsections, data_xsections):
+
+    central_mc = mc_xsections['central']
+    central_data = data_xsections['central']
+
+    uncertainty_sources = data_xsections.keys()
+
+    data_mc_difference = {}
+
+    for source in uncertainty_sources:
+        if source in mc_xsections.keys():
+            data_mc_difference[source] = []
+            for i in range(0,len(data_xsections[source])):
+                diff = []
+                for j in range(0, len( data_xsections[source][i] )):
+                    diff.append( data_xsections[source][i][j] - mc_xsections[source][i][j] )
+                data_mc_difference[source].append( diff )
+        elif source is 'PDF':
+            data_mc_difference[source] = []
+            for pdfVariation in data_xsections[source]:
+                pdfDiff = []
+                for i in range(0,len(pdfVariation[-1])):
+                    pdfDiff.append( pdfVariation[1][i] - central_mc[i][0] )
+                data_mc_difference[source].append( [pdfVariation[0], pdfDiff] )
+
+        else:
+            data_mc_difference[source] = []
+            for i in range(0,len(data_xsections[source])):
+                diff = []
+                for j in range(0, len( data_xsections[source][i] )):
+                    diff.append( data_xsections[source][i][j] - central_mc[j][0] )
+                data_mc_difference[source].append( diff )
+
+    return data_mc_difference
 
 # @profile(stream=fp)
 def read_xsection_systematics(options, variation, is_multiple_sources=False):
@@ -211,7 +286,7 @@ def get_cross_sections(options, list_of_systematics):
     '''
     # Copy structure of the systmatic lists in order to replace systematic name with their normailsed x sections
     unfolded_systematic_uncertainty_x_sections = deepcopy(list_of_systematics)
-    central_measurement_unfolded = read_xsection_measurement(options, 'central')
+    central_measurement_unfolded, mc_xsection_variations = read_xsection_measurement(options, 'central')
     unfolded_systematic_uncertainty_x_sections['central'] = central_measurement_unfolded
 
     for systematic, variation in list_of_systematics.iteritems():
@@ -235,7 +310,7 @@ def get_cross_sections(options, list_of_systematics):
                 unf_syst_unc_x_sec['lower'],
             ]
 
-    return unfolded_systematic_uncertainty_x_sections
+    return unfolded_systematic_uncertainty_x_sections, mc_xsection_variations
 
 # @profile(stream=fp)
 def get_scale_envelope(d_scale_syst, central):
@@ -372,11 +447,12 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
                 signed_uncertainties,
             ]         
 
-    # Combine LightJet and BJet Systematics
-    bJet = xsections_with_symmetrised_systematics['BJet'][0]
-    lightJet = xsections_with_symmetrised_systematics['LightJet'][0]
-    bJet_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(bJet, lightJet)]
-    xsections_with_symmetrised_systematics['BJet'][0] = bJet_tot
+    if  'BJet' in xsections_with_symmetrised_systematics.keys() and 'LightJet' in xsections_with_symmetrised_systematics.keys():
+        # Combine LightJet and BJet Systematics
+        bJet = xsections_with_symmetrised_systematics['BJet'][0]
+        lightJet = xsections_with_symmetrised_systematics['LightJet'][0]
+        bJet_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(bJet, lightJet)]
+        xsections_with_symmetrised_systematics['BJet'][0] = bJet_tot
 
     # Combine PDF with alphaS variations
     if 'TTJets_alphaS' in xsections_with_symmetrised_systematics and 'PDF' in xsections_with_symmetrised_systematics:
@@ -418,12 +494,10 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
     number_of_bins = len(central_measurement)
     symm_uncerts = []
     sign_uncerts = []
-
     for c, u, l in zip(central_measurement, upper_measurement, lower_measurement):
         central = c[0] # Getting the measurement, not the stat unc [xsec, unc]
         upper = u
         lower = l
-
         upper_uncertainty = abs(central - upper)
         lower_uncertainty = abs(central - lower)
 
@@ -509,12 +583,15 @@ def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
     channel         = options['channel']
     path_to_DF      = options['path_to_DF']
     norm            = options['normalisation_type']
+    mcUncertainty   = options['mcUncertainty']
 
     statistic       = xsec_with_symmetrised_systematics['central'] # [Value, Stat]
 
     all_covariance_matrices     = []
     all_correlation_matrices    = []
     covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/{norm}/{sys}_{label}_{channel}.txt'
+    if mcUncertainty:
+        covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/{sys}_{label}_{channel}.txt'
 
     for syst_name, measurement in xsec_with_symmetrised_systematics.iteritems():
         if syst_name in ['central','CT14', 'MMHT14']: continue
@@ -611,6 +688,9 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     '''
     # Paths to statistical Covariance/Correlation matrices.
     covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
+    # if options['mcUncertainty']:
+    #     covariance_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
+
     cov_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
     cor_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
@@ -634,6 +714,9 @@ def generate_total_covariance(options, all_covariances, all_correlations):
 
     # Paths to output total Covariance/Correlation matrices.
     covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Total_{label}_{channel}.txt'
+    if options['mcUncertainty']:
+        covariance_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/Total_{label}_{channel}.txt'
+
     cov_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
     cor_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
 
@@ -692,6 +775,8 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
 
     # Output folder of covariance matrices
     covariance_matrix_output_path = 'plots/covariance_matrices/{phase_space}/{channel}/{norm}/'
+    if options['mcUncertainty']:
+        covariance_matrix_output_path = 'plots/covariance_matrices/mcUncertainty/{phase_space}/{channel}/{norm}/'
     covariance_matrix_output_path = covariance_matrix_output_path.format(
         channel = channel,
         phase_space = phase_space,

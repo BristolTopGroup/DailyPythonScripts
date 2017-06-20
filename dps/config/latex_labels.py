@@ -69,7 +69,9 @@ measurements_latex = {
     'TTJets_madgraphMLM'        : r'\textsc{MG5}\_a\textsc{MC@NLO (MLM) \raisebox{.2ex}{+} Pythia8}',
     'TTJets_powhegPythia8'      : r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
     'TTJets_powhegHerwig'       : r'\textsc{Powheg \raisebox{.2ex}{+} Herwig\raisebox{.2ex}{++}}',
-    'TTJets_amcatnloPythia8'    : r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
+    'TTJets_amcatnlo'    : r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
+
+    'TTJets_powhegPythia8_withMCTheoryUnc': r'with MC theory uncertainties',
 
     'TTJets_massdown'           : '$\mathrm{m}_{\mathrm{t}}$=169.5 GeV',
     'TTJets_massup'             : '$\mathrm{m}_{\mathrm{t}}$=175.5 GeV',
@@ -116,6 +118,7 @@ measurements_latex = {
     'PU_down'                   : 'Pile-up $-1\sigma$',
     'PU_up'                     : 'Pile-up $+1\sigma$',
     'PileUpSystematic'          : 'Pile-up',
+
     #'ptreweight_max': '$p_\mathrm{T}(t,\\bar{t})$ reweighting',
     'PDF_total_lower'           : 'PDF uncertainty $-1\sigma$',
     'PDF_total_upper'           : 'PDF uncertainty $+1\sigma$',
@@ -238,6 +241,8 @@ systematics_latex = {
     'TTJets_semiLepBr'          : 'B hadron decay semileptonic branching fraction',
     'TTJets_CR_erdOn'              : 'Colour reconnection (erdOn)',
     'TTJets_CR_QCDbased_erdOn'              : 'Colour reconnection (QCD based)',
+    'TTJets_CR_GluonMove'              : 'Colour reconnection (Gluon move)',
+    'inputMC'              : 'MC statistics',
     'central'                   : '',
     'systematic'                : '',
     'statistical'               : '',

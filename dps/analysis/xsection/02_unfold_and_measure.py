@@ -151,7 +151,6 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
 
         # Return the covariance matrices (They have been normailsed)
         covariance_matrix, correlation_matrix, inputMC_covariance_matrix = unfolding.get_covariance_matrix()
-
         # Write data statistical covariance matrices
         covariance_output_template = '{path_to_DF}/central/covarianceMatrices/unfoldedNumberOfEvents/{cat}_{label}_{channel}.txt'
         channelForOutputFile = channel
@@ -163,7 +162,7 @@ def unfold_results( results, category, channel, tau_value, h_truth, h_measured, 
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Correlation', cat='Stat_unfoldedNormalisation' )
         create_covariance_matrix( correlation_matrix, table_outfile)
         table_outfile=covariance_output_template.format( path_to_DF=path_to_DF, channel = channelForOutputFile, label='Covariance', cat='Stat_inputMC' )
-        create_covariance_matrix( covariance_matrix, table_outfile)
+        create_covariance_matrix( inputMC_covariance_matrix, table_outfile)
     del unfolding
     return hist_to_value_error_tuplelist( h_data_rebinned ), hist_to_value_error_tuplelist( h_unfolded_data ), hist_to_value_error_tuplelist( h_data_no_fakes ), covariance_matrix, inputMC_covariance_matrix
 

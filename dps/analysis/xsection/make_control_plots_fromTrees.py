@@ -43,7 +43,7 @@ def getHistograms( histogram_files,
     # Channel specific files and weights
     if 'electron' in channel:
         histogram_files['data'] = measurement_config.data_file_electron
-        histogram_files['QCD']  = measurement_config.electron_QCD_MC_trees[category]
+        histogram_files['QCD']  = measurement_config.electron_QCD_MC_trees
         if use_qcd_data_region:
             qcd_data_region     = qcd_data_region_electron
         # No Lepton Eff in QCD CR and PU distributions
@@ -52,7 +52,7 @@ def getHistograms( histogram_files,
 
     if 'muon' in channel:
         histogram_files['data'] = measurement_config.data_file_muon
-        histogram_files['QCD']  = measurement_config.muon_QCD_MC_trees[category]
+        histogram_files['QCD']  = measurement_config.muon_QCD_MC_trees
         if use_qcd_data_region:
             qcd_data_region     = qcd_data_region_muon
         if not 'QCD' in channel:
@@ -72,11 +72,11 @@ def getHistograms( histogram_files,
     if channel == 'combined':
         histogram_files_electron            = dict(histogram_files)
         histogram_files_electron['data']    = measurement_config.data_file_electron
-        histogram_files_electron['QCD']     = measurement_config.electron_QCD_MC_trees[category]
+        histogram_files_electron['QCD']     = measurement_config.electron_QCD_MC_trees
 
         histogram_files_muon                = dict(histogram_files)
         histogram_files_muon['data']        = measurement_config.data_file_muon
-        histogram_files_muon['QCD']         = measurement_config.muon_QCD_MC_trees[category]
+        histogram_files_muon['QCD']         = measurement_config.muon_QCD_MC_trees
 
         histograms_electron = get_histograms_from_trees( 
             trees = [signal_region_tree.replace('COMBINED','EPlusJets')], 
@@ -467,15 +467,15 @@ if __name__ == '__main__':
     
     # Retreive the appropriate sample histograms
     histogram_files = {
-        'TTJet'     : measurement_config.ttbar_trees[category],
-        'V+Jets'    : measurement_config.VJets_trees[category],
-        'QCD'       : measurement_config.electron_QCD_MC_trees[category],
-        'SingleTop' : measurement_config.SingleTop_trees[category],
+        'TTJet'     : measurement_config.ttbar_trees,
+        'V+Jets'    : measurement_config.VJets_trees,
+        'QCD'       : measurement_config.electron_QCD_MC_trees,
+        'SingleTop' : measurement_config.SingleTop_trees,
     }
 
     # Swap between plotting different generators
     if 'PowhegPythia8' not in generator:
-        histogram_files['TTJet'] = measurement_config.ttbar_trees[category].replace('PowhegPythia8', generator)
+        histogram_files['TTJet'] = measurement_config.ttbar_trees.replace('PowhegPythia8', generator)
 
     # Swap between different analysis modes
     if 'central' not in mode:

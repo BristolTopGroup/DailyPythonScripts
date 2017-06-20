@@ -1,24 +1,13 @@
 #!/usr/bin/env python
 from optparse import OptionParser
 import os
+from copy import deepcopy
 
 jobs = [
         # 13 TeV
         '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
-        '--centreOfMassEnergy 13 -s central --topPtReweighting 1',
-        '--centreOfMassEnergy 13 -s central --topPtReweighting -1',
-        '--centreOfMassEnergy 13 -s central --topEtaReweighting 1',
-        '--centreOfMassEnergy 13 -s central --topEtaReweighting -1',
-
-        # '--centreOfMassEnergy 13 -s central_70pc',
-        # '--centreOfMassEnergy 13 -s central_30pc',
-
-        # '--centreOfMassEnergy 13 -s central_70pc --topPtReweighting 1',
-        # '--centreOfMassEnergy 13 -s central_30pc --topPtReweighting 1',
-        # '--centreOfMassEnergy 13 -s central_70pc --topPtReweighting -1',
-        # '--centreOfMassEnergy 13 -s central_30pc --topPtReweighting -1',
 
         '--centreOfMassEnergy 13 -s central_firstHalf',
         '--centreOfMassEnergy 13 -s central_secondHalf',
@@ -39,11 +28,12 @@ jobs = [
         '--centreOfMassEnergy 13 -s ueup',
         '--centreOfMassEnergy 13 -s uedown',
 
-        # isr/fsr variations
+        # # isr/fsr variations
         '--centreOfMassEnergy 13 -s isrup',
         '--centreOfMassEnergy 13 -s isrdown',
         '--centreOfMassEnergy 13 -s fsrup',
         '--centreOfMassEnergy 13 -s fsrdown',
+
 
         # hdamp up/down
         '--centreOfMassEnergy 13 -s hdampup',
@@ -52,6 +42,7 @@ jobs = [
         # erdOn
         '--centreOfMassEnergy 13 -s erdOn',
         '--centreOfMassEnergy 13 -s QCDbased_erdOn',
+        '--centreOfMassEnergy 13 -s GluonMove',
 
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',
@@ -64,13 +55,13 @@ jobs = [
         '--centreOfMassEnergy 13 --alphaSWeight 0',
         '--centreOfMassEnergy 13 --alphaSWeight 1',
 
-        # B fragmentation weights
+        # # B fragmentation weights
         '--centreOfMassEnergy 13 --fragWeight 1',
         '--centreOfMassEnergy 13 --fragWeight 2',
         '--centreOfMassEnergy 13 --fragWeight 3',
         '--centreOfMassEnergy 13 --fragWeight 4',
 
-        # Semileptonic BR
+        # # Semileptonic BR
         '--centreOfMassEnergy 13 --semiLepBrWeight -1',
         '--centreOfMassEnergy 13 --semiLepBrWeight 1',
 
@@ -106,7 +97,7 @@ jobs = [
         '--centreOfMassEnergy 13 -s UnclusteredEnUp',
         '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
-#  Add pdf variations to list of jobs
+ # Add pdf variations to list of jobs
 minPDF = 0
 maxPDF = 99
 variation = minPDF
@@ -128,6 +119,11 @@ while variation <= maxPDF :
     jobs.append('--centreOfMassEnergy 13 --MMHT14Weight {} '.format(variation) )
     variation += 1
     pass
+
+jobsWithNewPS = deepcopy( jobs )
+for job in jobs:
+    jobsWithNewPS.append( job + ' --newPS')
+jobs = jobsWithNewPS
 
 def parse_args(parameters = []):
     parser = OptionParser( __doc__ )

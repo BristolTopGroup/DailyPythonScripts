@@ -47,17 +47,28 @@ def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input
 	# Convert to numpy matrix and create total
 	cov_full = matrix_from_df( file_to_df(covariance_filename) )
 
+	covariance_filename_withMCTheoryUncertainties = '{input_path}/covarianceMatrices/mcUncertainty/{type}/Total_Covariance_{channel}.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
+	cov_full_withMCTHeoryUncertainties = matrix_from_df( file_to_df(covariance_filename_withMCTheoryUncertainties) )
+
+
 	xsections_filename = '{input_path}/xsection_{type}_{channel}_TUnfold.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
 
 	# Collect the cross section measured/unfolded results from dataframes
 	xsections = read_tuple_from_file( xsections_filename )
-	xsection_unfolded    = [ i[0] for i in xsections['TTJet_unfolded'] ]
+	xsection_unfolded    = [ i[0] for i in xsections['TTJets_unfolded'] ]
 
 	xsectionsOfmodels = {}
 	chi2OfModels = {}
+
 	for model in modelsForComparing:
-		xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model] ] )
-		chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full)
+		chi2 = None
+		xsectionsOfmodels[model] = None
+		if 'withMCTheoryUnc' in model:
+			xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model.replace('_withMCTheoryUnc','')] ] )
+			chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full_withMCTHeoryUncertainties)
+		else:
+			xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model] ] )
+			chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full)
 		chi2OfModels[model] = chi2
 
 	chi2OfModels_df = pd.DataFrame( {
@@ -182,6 +193,8 @@ if __name__ == '__main__':
 	visiblePS               = args.visiblePS
 	outputTablePath 		= args.outputTablePath
 	modelsForComparing 		= measurement_config.samplesForChi2Comparison
+	if 'TTJets_powhegPythia8' in modelsForComparing:
+		modelsForComparing.insert(modelsForComparing.index('TTJets_powhegPythia8')+1,'TTJets_powhegPythia8_withMCTheoryUnc')
 
 	phase_space = 'FullPS'
 	if visiblePS:
@@ -216,6 +229,5 @@ if __name__ == '__main__':
 
 			# Calculate the global chi2
 			gChi2 = calculateGlobalChi2( modelsForComparing, chi2ForVariables )
-
 			path_to_output = '{path}/{crossSectionType}/'.format(path=outputTablePath, channel=channel,crossSectionType=utype )
 			makeLatexTable( chi2=chi2ForVariables, gChi2=gChi2, outputPath=path_to_output, channel=channel, crossSectionType=utype )

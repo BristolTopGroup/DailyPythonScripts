@@ -22,7 +22,8 @@ from dps.utils.systematic import append_PDF_uncertainties, print_dictionary,\
     get_cross_sections, get_symmetrised_systematic_uncertainty,\
     generate_covariance_matrices,\
     get_measurement_with_total_systematic_uncertainty,\
-    write_systematic_xsection_measurement
+    write_systematic_xsection_measurement, \
+    get_mc_data_difference
 
 def parse_arguments():
     parser = ArgumentParser()
@@ -71,6 +72,8 @@ if __name__ == '__main__':
     topMasses                   = measurement_config.topMasses
     topMassUncertainty          = measurement_config.topMassUncertainty
 
+    mcTheoryUncertainties       = measurement_config.mcTheoryUncertainties
+
     phase_space = 'VisiblePS'
     if not visiblePS:
         phase_space = 'FullPS'
@@ -97,14 +100,15 @@ if __name__ == '__main__':
         'topMasses' : topMasses,
         'topMassUncertainty' : topMassUncertainty,
         'phase_space' : phase_space,
+        'mcTheoryUncertainties' : mcTheoryUncertainties,
     }
 
     # Get list of all systematics
     all_systematics = measurement_config.list_of_systematics
     # Add in the PDF weights
     all_systematics = append_PDF_uncertainties(all_systematics)
-    all_systematics = append_PDF_uncertainties(all_systematics, pdfset='CT14')
-    all_systematics = append_PDF_uncertainties(all_systematics, pdfset='MMHT14')
+    # all_systematics = append_PDF_uncertainties(all_systematics, pdfset='CT14')
+    # all_systematics = append_PDF_uncertainties(all_systematics, pdfset='MMHT14')
 
     list_of_systematics = all_systematics
     # If you want different lists of systematics can just do some manipulation here
@@ -129,11 +133,41 @@ if __name__ == '__main__':
             args['channel'] = ch
             args['normalisation_type'] = utype
             # Retreive the normalised cross sections, for all groups in list_of_systematics.
-            unfolded_systematic_uncertainty = get_cross_sections(
+            unfolded_systematic_uncertainty, mc_xsection_variations = get_cross_sections(
                 args, 
                 list_of_systematics
             )
             # print_dictionary("Unfolded normalised cross sections of the systematics in use", unfolded_systematic_uncertainty)
+            uncertainties_in_mc_data_difference = get_mc_data_difference(
+                args,
+                mc_xsection_variations,
+                unfolded_systematic_uncertainty
+                )
+
+            mc_data_differences_with_uncertainties = get_symmetrised_systematic_uncertainty(
+                args, 
+                uncertainties_in_mc_data_difference 
+            )
+
+            args['mcUncertainty'] = True
+            generate_covariance_matrices(
+                args, 
+                mc_data_differences_with_uncertainties
+            )
+
+
+            # mc_with_theory_uncertainties = get_symmetrised_systematic_uncertainty(
+            #     args, 
+            #     mc_xsection_variations 
+            # )
+
+            # print ( mc_with_theory_uncertainties.keys())
+            # print ( unfolded_systematic_uncertainty.keys() )
+            # args['mcUncertainty'] = True
+            # generate_covariance_matrices(
+            #     args, 
+            #     mc_with_theory_uncertainties
+            # )
 
             # Get and symmetrise the uncertainties
             unfolded_x_sec_with_symmetrised_systematics = get_symmetrised_systematic_uncertainty(
@@ -142,7 +176,9 @@ if __name__ == '__main__':
             )
             # print_dictionary("Unfolded normalised cross sections of the systematics  with symmetrised uncertainties", unfolded_x_sec_with_symmetrised_systematics)
 
+
             # Create covariance matrices
+            args['mcUncertainty'] = False
             generate_covariance_matrices(
                 args, 
                 unfolded_x_sec_with_symmetrised_systematics

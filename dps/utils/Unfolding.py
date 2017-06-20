@@ -371,13 +371,13 @@ def plot_probability_matrix(p_matrix, variable, channel):
     # Get underflow and strip underflow/overflow bins
     underflow = p_matrix.underflow(axis=1)[1:-1]
 
-    # Fix array such that underflow is included
-    i=0
-    for u, row in zip(underflow, values):
-        newrow = row[:-1]
-        newrow = np.insert(newrow, 0, u)
-        values[i] = newrow
-        i+=1
+    # # Fix array such that underflow is included
+    # i=0
+    # for u, row in zip(underflow, values):
+    #     newrow = row[:-1]
+    #     newrow = np.insert(newrow, 0, u)
+    #     values[i] = newrow
+    #     i+=1
 
     # Cant easily rebin any more so done manually
     rebinned_values = np.zeros((n_gen_bins,n_gen_bins))
