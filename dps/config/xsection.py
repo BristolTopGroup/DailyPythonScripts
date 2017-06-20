@@ -154,37 +154,6 @@ class XSectionConfig():
 
         self.higgs_file = path_to_files + 'central/TTH_Inclusive_M-125' + middle + '.root'
 
-        # self.categories_and_prefixes = {
-        #     'central':'',
-        #     'Electron_down':'ElectronDown',
-        #     'Electron_up':'ElectronUp',
-        #     'Muon_down':'MuonDown',
-        #     'Muon_up':'MuonUp',
-        #     'BJet_down':'BJetDown',
-        #     'BJet_up':'BJetUp',
-        #     'LightJet_down':'LightJetDown',
-        #     'LightJet_up':'LightJetUp',
-        #     'JES_down':'_JESDown',
-        #     'JES_up':'_JESUp',
-        #     # 'JES_down_alphaCorr':'_JESDown_alphaCorr',
-        #     # 'JES_up_alphaCorr':'_JESUp_alphaCorr',
-        #     'JER_down':'_JERDown',
-        #     'JER_up':'_JERUp',
-
-        #     'PileUp_up' : '',
-        #     'PileUp_down' : '',
-
-        #     # Other MET uncertainties not already included
-        #     'ElectronEnUp' : '',
-        #     'ElectronEnDown' : '',
-        #     'MuonEnUp' : '',
-        #     'MuonEnDown' : '',
-        #     'TauEnUp' : '',
-        #     'TauEnDown' : '',
-        #     'UnclusteredEnUp' : '',
-        #     'UnclusteredEnDown' : '',
-        # }
-
         # Used in 01
         # Rename to normalisation_measurements?
         self.normalisation_systematics = [
@@ -547,11 +516,9 @@ class XSectionConfig():
         self.pdfWeightMax = 100
         self.ct14WeightMax = 54
         self.mmht14WeightMax = 55
-        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.pdfWeightMax )}
-        # self.unfolding_CT14weights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_CT14Weight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.ct14WeightMax )}
-        # self.unfolding_MMHT14weights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_MMHT14Weight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.mmht14WeightMax )}
-        self.unfolding_CT14weights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.ct14WeightMax )}
-        self.unfolding_MMHT14weights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.mmht14WeightMax )}
+        self.unfolding_pdfweights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_newPS_pdfWeight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.pdfWeightMax )}
+        self.unfolding_CT14weights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_newPS_CT14Weight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.ct14WeightMax )}
+        self.unfolding_MMHT14weights = {index : path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_asymmetric_newPS_MMHT14Weight_%d.root' % (self.centre_of_mass_energy, index) for index in range( self.pdfWeightMin, self.mmht14WeightMax )}
 
         # Used in 01
         self.tree_path = {

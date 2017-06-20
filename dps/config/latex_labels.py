@@ -92,6 +92,7 @@ measurements_latex = {
     'TTJets_semiLepBrdown'      : 'Decay Tables Down',
     'TTJets_erdOn'              : 'CR (erdOn)',
     'TTJets_QCDbased_erdOn'     : 'CR (QCD based)',
+    'TTJets_GluonMove'          : 'CR (Gluon Move)',
 
     'TTJets_isrdown'            : 'ISR Down',
     'TTJets_isrup'              : 'ISR Up',

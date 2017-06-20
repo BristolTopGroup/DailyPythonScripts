@@ -355,7 +355,8 @@ def plot_probability_matrix(p_matrix, variable, channel):
 
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
-    my_cmap = cm.get_cmap( 'jet' )
+    # my_cmap = cm.get_cmap( 'jet' )
+    my_cmap = cm.get_cmap( 'viridis' )
     import gc
 
     from matplotlib import rc
