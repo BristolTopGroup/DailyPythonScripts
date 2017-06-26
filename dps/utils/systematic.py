@@ -185,8 +185,6 @@ def read_xsection_measurement(options, category):
                                         xsectionWithUncertainty_upper
                                         ]
 
-
-
         return xsection_unfolded, xsection_mc
 
     return xsection_unfolded  
@@ -366,8 +364,8 @@ def get_scale_envelope(d_scale_syst, central):
     for i, index in enumerate(up_diff['index']):
         scale.append(up[index][i])
     up['TTJets_scaleup']=scale
-    print( down )
-    print( up )
+    # print( down )
+    # print( up )
 
     return down['TTJets_scaledown'], up['TTJets_scaleup']
 

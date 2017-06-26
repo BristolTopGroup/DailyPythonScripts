@@ -1,6 +1,6 @@
 from dps.utils.pandas_utilities import read_tuple_from_file
 from dps.utils.hist_utilities import value_error_tuplelist_to_hist
-from dps.config.variable_binning import reco_bin_edges_vis, bin_edges_vis, control_plots_bins, control_plot_nbins
+from dps.config.variable_binning import reco_bin_edges_vis, bin_edges_vis, control_plot_nbins, control_plots_bins_for01
 from dps.config.latex_labels import samples_latex
 from dps.config.histogram_colours import histogram_colours as colours
 from dps.utils.plotting import make_data_mc_comparison_plot, Histogram_properties
@@ -118,8 +118,8 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
     histogram_lables   = [
         'data',
         'QCD', 
-        'V+Jets', 
-        'Single-Top', 
+        'V+jets', 
+        'single-top', 
         samples_latex['TTJet'],
     ]
 
@@ -203,7 +203,7 @@ for variable in config.variables:
     histogramsForEachChannel = {}
     uncertaintiesForEachChannel = {}
 
-    binEdges = control_plots_bins[variable]
+    binEdges = control_plots_bins_for01[variable]
     bin_low = binEdges[0]
     bin_high = binEdges[-1]
     nBins = control_plot_nbins[variable] 

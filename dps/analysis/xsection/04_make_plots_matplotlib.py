@@ -364,22 +364,22 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
                 linestyle = 'solid'
                 dashes[key] = None
                 hist.SetLineColor( 633 )
-            elif 'powhegHerwig' in key or 'isr' in key or 'mass' in key:
+            elif 'powhegHerwig' in key or 'isr' in key or 'hdamp' in key:
                 hist.SetLineColor( kBlue )
                 dashes[key] = [25,5,5,5,5,5,5,5]
             elif 'amcatnloPythia8' in key or 'fsr' in key or 'scale' in key:
                 hist.SetLineColor( 807 )
                 dashes[key] = [20,5]
-            elif 'madgraphMLM' in key or 'renormalisation' in key or 'ue' in key:
+            elif 'madgraphMLM' in key or 'renormalisation' in key or 'topPt' in key:
                 hist.SetLineColor( 417 )
                 dashes[key] = [5,5]
-            elif 'factorisation' in key or 'hdamp' in key:
+            elif 'factorisation' in key or 'ue' in key:
                 hist.SetLineColor( 100 )
                 dashes[key] = [10,10]
             elif 'combined' in key or 'semiLepBr' in key:
                 hist.SetLineColor( 200 )
                 dashes[key] = [20,10]
-            elif 'semiLepBr' in key or 'topPt' in key:
+            elif 'semiLepBr' in key or 'mass' in key:
                 hist.SetLineColor( 300 )
                 dashes[key] = [20,10,10,10]
             elif 'frag' in key or 'Frag' in key:
