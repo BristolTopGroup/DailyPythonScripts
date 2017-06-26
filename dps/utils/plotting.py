@@ -480,6 +480,7 @@ def make_shape_comparison_plot( shapes = [],
                                    histogram_properties = Histogram_properties(),
                                    fill_area = True,
                                    make_ratio = False,
+                                   add_error_bars = True,
                                    alpha = 0.5,
                                    save_folder = 'plots/',
                                    save_as = ['pdf', 'png'],
@@ -538,8 +539,9 @@ def make_shape_comparison_plot( shapes = [],
     l1.set_zorder(102)
     #add error bars
     graphs = spread_x(shapes_, list(shapes_[0].xedges()))
-    for graph in graphs:
-        rplt.errorbar( graph, axes = axes )
+    if add_error_bars:
+        for graph in graphs:
+            rplt.errorbar( graph, axes = axes )
 
     adjust_axis_limits(axes, histogram_properties, shapes_)
     if make_ratio:
