@@ -8,7 +8,6 @@ from dps.utils.file_utilities import make_folder_if_not_exists
 from dps.config.latex_labels import variables_latex, variables_NonLatex
 from uncertainties import ufloat
 import ROOT as r
-
 from dps.utils.pandas_utilities import file_to_df
 import matplotlib.pyplot as plt
 import rootpy.plotting.root2matplotlib as rplt
@@ -126,6 +125,18 @@ for ch in channel:
 		rplt.errorbar(qcd_estimate_from_central, axes = ax, label = '')
 		rplt.errorbar(other_control_histograms['QCD'], axes = ax, label = '')
 
+		ax.set_ylim( ymin = 0.)
+		if 'NJets' in variable:
+			ax.set_xlim( xmin = 3.5, xmax = 9.5)
+		if variable in ['HT', 'ST']:
+			ax.set_xlim( xmin = 100., xmax = 1000)
+		if variable in ['WPT', 'lepton_pt']:
+			ax.set_xlim( xmin = 0., xmax = 500)
+		if 'MET' in variable:
+			ax.set_xlim( xmin = 0., xmax = 150)
+		if 'abs_lepton_eta' in variable:
+			ax.set_xlim( xmin = 0., xmax = 2.4)
+
 		leg = plt.legend(
 			loc='best',
 			prop = {'size':26},	
@@ -133,28 +144,40 @@ for ch in channel:
 		leg.draw_frame(False)	
 		plt.ylabel( 'Events', CMS.y_axis_title)
 
-		ax2 = plt.subplot( gs[1] )
-		plt.setp( ax.get_xticklabels(), visible = False )
-
-		ax2.minorticks_on()
-		ax2.xaxis.labelpad = 12
-		ax2.yaxis.labelpad = 12
-		ax2.set_ylim( ymin = 0, ymax = 2 )
-
-		plt.tick_params( **CMS.axis_label_major )
-		plt.tick_params( **CMS.axis_label_minor )
-
+		### RATIO
 		ratio = qcd_from_data_in_other / qcd_estimate_from_central
 		ratio.linewidth = 4
 		ratio.color = 'blue'
 		ratio.linestyle = 'solid'
+
+		plt.setp( ax.get_xticklabels(), visible = False )
+		ax2 = plt.subplot( gs[1] )
+		ax2.grid( True, 'major', linewidth = 0.5 )
+		ax2.axhline(y=1, linewidth = 2)
+		plt.ylabel( r'$\frac{\mathrm{data}}{\mathrm{pred.}}$', CMS.y_axis_title)
+		ax2.yaxis.set_label_coords(-0.115, 0.8)
+		
 		rplt.hist(ratio, axes = ax2)
+
+		ax2.set_ylim( ymin = 0., ymax = 2.)
+		if 'NJets' in variable:
+			ax2.set_xlim( xmin = 3.5, xmax = 9.5)
+		if variable in ['HT', 'ST']:
+			ax2.set_xlim( xmin = 100., xmax = 1000)
+		if variable in ['WPT', 'lepton_pt']:
+			ax2.set_xlim( xmin = 0., xmax = 500)
+		if 'MET' in variable:
+			ax2.set_xlim( xmin = 0., xmax = 150)
+		if 'abs_lepton_eta' in variable:
+			ax2.set_xlim( xmin = 0., xmax = 2.4)
+
+		plt.tick_params( **CMS.axis_label_major )
+		plt.tick_params( **CMS.axis_label_minor )
 
 		x_title = r''
 		x_title += variables_latex[variable]
 		if variable in ['HT', 'MET', 'WPT', 'ST', 'lepton_pt']:
 			x_title += ' [GeV]'
-		plt.ylabel( r'\ensuremath{ \frac{ Data }{ Estimate } }', CMS.y_axis_title)
 		plt.xlabel( x_title, CMS.x_axis_title )
 
 		plt.tight_layout()
