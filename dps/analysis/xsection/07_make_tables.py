@@ -31,7 +31,7 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
     #########################################################################################################
     ### Table Header
     #########################################################################################################
-	latexHeader =  '\\begin{table}\n'
+	latexHeader =  '\\begin{table}[!htbp]\n'
 	latexHeader += '\t\centering\n'
 	latexHeader += '\t\\begin{tabular}{cccc}\n'
 	latexHeader += '\t\t\hline\n'
@@ -76,7 +76,7 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
 		if 'e-' in line_for_bin:
 			print(line_for_bin)
 			power = line_for_bin[line_for_bin.find("e-")+1:].split()[0]
-			new = '\\times 10^{{ {} }}'.format(power.replace('0', ''))
+			new = '\ensuremath{{\\times 10^{{ {} }} }}'.format(power.replace('0', ''))
 			old = 'e'+power
 			line_for_bin = line_for_bin.replace(old, new)
 			print(line_for_bin)
@@ -104,7 +104,7 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
 	)	
 	tableFooter += '\\end{table}\n'
 	fullTable += tableFooter
-	fullTable += '\clearpage'
+	# fullTable += '\clearpage'
 
     #########################################################################################################
     ### Write Table
@@ -149,8 +149,8 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 
 	latexHeader += '\\begin{landscape}\n'
 	latexHeader += '\\begin{table}\n'
-	latexHeader += '\t\label{{tb:syst_condensed_combined_{}}}\n'.format(utype)
 	latexHeader += '\t\caption{{ The upper and lower bounds, in \%, from each source of systematic uncertainty in the {t} differential cross section, over all bins of the measurement for each variable.  The bounds of the total relative uncertainty over all bins is also shown for each variable.}}\n'.format(t=utype)
+	latexHeader += '\t\label{{tb:syst_condensed_combined_{}}}\n'.format(utype)
 	# latexHeader += '\t\\tiny\n'
 	latexHeader += '\t\centering\n'
 	latexHeader += '\t\\footnotesize\n'
