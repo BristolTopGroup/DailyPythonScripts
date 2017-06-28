@@ -157,6 +157,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
     histogram_properties.legend_location        = ( 0.9, 0.73 )
     histogram_properties.cms_logo_location      = 'left'
     histogram_properties.preliminary            = True
+    # histogram_properties.preliminary            = False
     histogram_properties.set_log_y              = False
     histogram_properties.legend_color           = False
     histogram_properties.ratio_y_limits     = [0.5, 1.5]
@@ -176,6 +177,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
         show_ratio = True, 
         normalise = False,
         systematics_for_ratio = uncertaintyBand,
+        systematics_for_plot = uncertaintyBand,
     )
 
     histogram_properties.set_log_y = True
@@ -191,6 +193,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
         show_ratio = True, 
         normalise = False,
         systematics_for_ratio = uncertaintyBand,
+        systematics_for_plot = uncertaintyBand,
     )    
 
 config = XSectionConfig(13)
@@ -214,7 +217,7 @@ for variable in config.variables:
     for channel in config.analysis_types.keys():
         if channel == 'combined': continue
 
-        path_to_DF = 'data/controlPlots_normalisation/data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
+        path_to_DF = 'data/data_normalisation/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
         normalisation_fileName = 'normalisation_{channel}.txt'.format(channel=channel)
         normalisation_results_electron  = read_tuple_from_file( '{path}/central/{filename}'.format(path=path_to_DF,filename=normalisation_fileName)  )
 
