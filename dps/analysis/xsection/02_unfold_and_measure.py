@@ -578,6 +578,16 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
+        h_truth_GluonMove, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['file_for_GluonMove'],
+            variable = variable,
+            channel = channel,
+            centre_of_mass = com,
+            ttbar_xsection = ttbar_xsection,
+            luminosity = luminosity,
+            load_fakes = True,
+            visiblePS = visiblePS,
+        )
         h_truth_semiLepBrup, _, _, _ = get_unfold_histogram_tuple( 
             inputfile = unfolding_files['file_for_semiLepBrup'],
             variable = variable,
@@ -655,6 +665,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         normalisation_unfolded['TTJets_hdampdown']     = hist_to_value_error_tuplelist( h_truth_hdampdown )
         normalisation_unfolded['TTJets_erdOn']         = hist_to_value_error_tuplelist( h_truth_erdOn )
         normalisation_unfolded['TTJets_QCDbased_erdOn']        = hist_to_value_error_tuplelist( h_truth_QCDbased_erdOn )
+        normalisation_unfolded['TTJets_GluonMove']        = hist_to_value_error_tuplelist( h_truth_GluonMove )
         normalisation_unfolded['TTJets_semiLepBrup']   = hist_to_value_error_tuplelist( h_truth_semiLepBrup )
         normalisation_unfolded['TTJets_semiLepBrdown'] = hist_to_value_error_tuplelist( h_truth_semiLepBrdown )
         normalisation_unfolded['TTJets_fragup']        = hist_to_value_error_tuplelist( h_truth_fragup )
