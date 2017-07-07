@@ -114,8 +114,8 @@ if __name__ == '__main__':
     # If you want different lists of systematics can just do some manipulation here
 
     channel = [
-        # 'electron', 
-        # 'muon', 
+        'electron', 
+        'muon', 
         'combined', 
         # 'combinedBeforeUnfolding',
     ]

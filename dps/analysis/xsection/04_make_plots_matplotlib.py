@@ -234,7 +234,7 @@ def get_cms_labels( channel ):
     return label, channel_label
 
 @xsec_04_log.trace()
-def make_plots( histograms, category, output_folder, histname, show_ratio = False, show_generator_ratio = False, show_before_unfolding = False, utype = 'normalised' ):
+def make_plots( histograms, category, output_folder, histname, show_ratio = False, show_generator_ratio = False, show_before_unfolding = False, utype = 'normalised', preliminary=True ):
     global variable, phase_space
 
     if show_generator_ratio and not show_ratio:
@@ -364,22 +364,22 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
                 linestyle = 'solid'
                 dashes[key] = None
                 hist.SetLineColor( 633 )
-            elif 'powhegHerwig' in key or 'isr' in key or 'mass' in key:
+            elif 'powhegHerwig' in key or 'isr' in key or 'hdamp' in key:
                 hist.SetLineColor( kBlue )
                 dashes[key] = [25,5,5,5,5,5,5,5]
             elif 'amcatnloPythia8' in key or 'fsr' in key or 'scale' in key:
                 hist.SetLineColor( 807 )
                 dashes[key] = [20,5]
-            elif 'madgraphMLM' in key or 'renormalisation' in key or 'ue' in key:
+            elif 'madgraphMLM' in key or 'renormalisation' in key or 'topPt' in key:
                 hist.SetLineColor( 417 )
                 dashes[key] = [5,5]
-            elif 'factorisation' in key or 'hdamp' in key:
+            elif 'factorisation' in key or 'ue' in key:
                 hist.SetLineColor( 100 )
                 dashes[key] = [10,10]
             elif 'combined' in key or 'semiLepBr' in key:
                 hist.SetLineColor( 200 )
                 dashes[key] = [20,10]
-            elif 'semiLepBr' in key or 'topPt' in key:
+            elif 'semiLepBr' in key or 'mass' in key:
                 hist.SetLineColor( 300 )
                 dashes[key] = [20,10,10,10]
             elif 'frag' in key or 'Frag' in key:
@@ -458,6 +458,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
     # Location of the legend
     legend_location = (0.95, 0.82)
+    prop = CMS.legend_properties
     if variable == 'MT':
         legend_location = (0.05, 0.82)
     elif variable == 'ST':
@@ -466,11 +467,14 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         legend_location = (1.0, 0.84)
     elif variable == 'abs_lepton_eta':
         legend_location = (0.97, 0.87)
+    elif variable == 'NJets':
+        # Reduce size of NJets legend
+        prop = {'size':30}
 
     # Add legend to plot
     plt.legend( new_handles, new_labels, 
         numpoints = 1, 
-        prop = CMS.legend_properties, 
+        prop = prop, 
         frameon = False, 
         bbox_to_anchor=legend_location,
         bbox_transform=plt.gcf().transFigure 
@@ -480,18 +484,30 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     # note: fontweight/weight does not change anything as we use Latex text!!!
     label, channel_label = get_cms_labels( channel )
     plt.title( label,loc='right', **CMS.title )
+
     # Locations of labels
     logo_location = (0.05, 0.97)
-    prelim_location = (0.05, 0.9)
-    channel_location = ( 0.5, 0.97)
-    if variable == 'WPT':
-        logo_location = (0.05, 0.97)
-        prelim_location = (0.05, 0.9)
-        channel_location = (0.5, 0.97)
-    elif variable == 'abs_lepton_eta':
-        logo_location = (0.05, 0.97)
+    channel_location = ( 0.05, 0.9)
+    if preliminary:
         prelim_location = (0.05, 0.9)
         channel_location = ( 0.5, 0.97)
+        # preliminary
+        plt.text(prelim_location[0], prelim_location[1], 
+            r"\emph{Preliminary}",
+            transform=axes.transAxes, 
+            fontsize=42,
+            verticalalignment='top',
+            horizontalalignment='left'
+        )
+
+    # if variable == 'WPT':
+    #     logo_location = (0.05, 0.97)
+    #     prelim_location = (0.05, 0.9)
+    #     channel_location = (0.5, 0.97)
+    # elif variable == 'abs_lepton_eta':
+    #     logo_location = (0.05, 0.97)
+    #     prelim_location = (0.05, 0.9)
+    #     channel_location = ( 0.5, 0.97)
 
     # Add labels to plot
     plt.text(logo_location[0], logo_location[1], 
@@ -501,14 +517,8 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         verticalalignment='top',
         horizontalalignment='left'
     )
-    # preliminary
-    plt.text(prelim_location[0], prelim_location[1], 
-        r"\emph{Preliminary}",
-        transform=axes.transAxes, 
-        fontsize=42,
-        verticalalignment='top',
-        horizontalalignment='left'
-    )
+
+
     # channel text
     plt.text(channel_location[0], channel_location[1], 
         r"%s"%channel_label, 
@@ -897,6 +907,11 @@ def parse_arguments():
         action  = "store_true",
         help    = "Show parton shower scale uncertainties" 
     )
+    parser.add_argument( "--final", 
+        dest    = "is_final", 
+        action  = "store_true",
+        help    = "Preliminary plot or not" 
+    )
 
     args = parser.parse_args()
     return args
@@ -918,6 +933,7 @@ if __name__ == '__main__':
     visiblePS               = args.visiblePS
     output_folder           = args.output_folder
     plot_scale_uncertainties= args.plot_scale_uncertainties
+    is_preliminary          = not args.is_final
 
     if not output_folder.endswith( '/' ):
         output_folder += '/'
@@ -979,7 +995,8 @@ if __name__ == '__main__':
                     histname + '_different_generators', 
                     show_ratio = True,
                     show_generator_ratio = show_generator_ratio ,
-                    utype = utype
+                    utype = utype,
+                    preliminary = is_preliminary,
                 )
 
                 make_plots( 
@@ -989,7 +1006,8 @@ if __name__ == '__main__':
                     histname + '_different_systematics'+partonShower, 
                     show_ratio = True,
                     show_generator_ratio = show_generator_ratio ,
-                    utype = utype
+                    utype = utype,
+                    preliminary = is_preliminary,
                 )
 
                 del histograms_normalised_xsection_different_generators

@@ -299,15 +299,15 @@ def make_plot( channel, x_axis_title, y_axis_title,
     histogram_lables   = [
         'data',
         'QCD', 
-        'V+Jets', 
-        'Single-Top', 
+        'V+jets', 
+        'single top',  
         samples_latex['TTJet'],
     ]
     histogram_colors   = [
         colours['data'], 
         colours['QCD'], 
         colours['V+Jets'], 
-        colours['Single-Top'], 
+        colours['Single-Top'],
         colours['TTJet'],
     ]
 
@@ -393,16 +393,58 @@ def print_output(signal_region_hists, qcd_from_data, output_folder_to_use, branc
     output_folder = output_folder_to_use + 'tables/'
     make_folder_if_not_exists(output_folder)
 
+    nBins = signal_region_hists['data'].nbins()
     summary = {}
-    summary['Data']         = [signal_region_hists['data'].integral(overflow=True)]
-    summary['TTJet']        = [signal_region_hists['TTJet'].integral(overflow=True)]
-    summary['SingleTop']    = [signal_region_hists['SingleTop'].integral(overflow=True)]
-    summary['V+Jets']       = [signal_region_hists['V+Jets'].integral(overflow=True)]
-    summary['QCD']          = [qcd_from_data.integral(overflow=True)]
-    summary['TotalData']    = [signal_region_hists['data'].integral(overflow=True)]
-    summary['TotalMC']      = [mcSum]
-    summary['DataToMC']     = [signal_region_hists['data'].integral(overflow=True) / mcSum]
-    order=['Data', 'TTJet', 'SingleTop', 'V+Jets', 'QCD', 'TotalData', 'TotalMC', 'DataToMC']
+    summary['Data']         = []
+    summary['TTJet']        = []
+    summary['SingleTop']    = []
+    summary['V+Jets']       = []
+    summary['QCD']          = []
+    summary['TotalMC']      = []
+    summary['DataToMC']     = []
+
+    # Bin by Bin
+    for bin in signal_region_hists['data'].bins_range():
+        data    = signal_region_hists['data'].integral(xbin1=bin, xbin2=bin, overflow=True)
+        tt      = signal_region_hists['TTJet'].integral(xbin1=bin, xbin2=bin, overflow=True)
+        st      = signal_region_hists['SingleTop'].integral(xbin1=bin, xbin2=bin, overflow=True)
+        vjets   = signal_region_hists['V+Jets'].integral(xbin1=bin, xbin2=bin, overflow=True)
+        qcd     = qcd_from_data.integral(xbin1=bin, xbin2=bin, overflow=True)
+        totalMC = tt + st + vjets + qcd
+        if totalMC > 0:
+            dataToMC = data / totalMC
+        else:
+            dataToMC = -99
+
+        summary['Data'].append(data)
+        summary['TTJet'].append(tt)
+        summary['SingleTop'].append(st)
+        summary['V+Jets'].append(vjets)
+        summary['QCD'].append(qcd)
+        summary['TotalMC'].append(totalMC)
+        summary['DataToMC'].append(dataToMC)
+
+    # Total
+    data    = signal_region_hists['data'].integral(overflow=True)
+    tt      = signal_region_hists['TTJet'].integral(overflow=True)
+    st      = signal_region_hists['SingleTop'].integral(overflow=True)
+    vjets   = signal_region_hists['V+Jets'].integral(overflow=True)
+    qcd     = qcd_from_data.integral(overflow=True)
+    totalMC = tt + st + vjets + qcd
+    if totalMC > 0:
+        dataToMC = data / totalMC
+    else:
+        dataToMC = -99
+
+    summary['Data'].append(data)
+    summary['TTJet'].append(tt)
+    summary['SingleTop'].append(st)
+    summary['V+Jets'].append(vjets)
+    summary['QCD'].append(qcd)
+    summary['TotalMC'].append(totalMC)
+    summary['DataToMC'].append(dataToMC)
+
+    order=['Data', 'TTJet', 'SingleTop', 'V+Jets', 'QCD', 'TotalMC', 'DataToMC']
 
     d = dict_to_df(summary)
     d = d[order]
@@ -508,6 +550,7 @@ if __name__ == '__main__':
         'AbsLeptonEta',
         'NJets',
         'NBJets',
+        'Tau',
 
         'NBJetsNoWeight',
         'NBJetsUp',
@@ -559,17 +602,17 @@ if __name__ == '__main__':
         special = special,
         sel = selection.replace(" ", "_"),
     )
-    output_folder = output_folder_tmp
-    make_folder_if_not_exists(output_folder)
 
     for channel, label in {
-        # 'electron' : 'EPlusJets', 
-        # 'muon'     : 'MuPlusJets',
+        'electron' : 'EPlusJets',
+        'muon'     : 'MuPlusJets',
         'combined' : 'COMBINED'
         }.iteritems() : 
 
         # Set folder for this batch of plots
         b_tag_bin = '2orMoreBtags'
+        output_folder = output_folder_tmp
+        make_folder_if_not_exists(output_folder)
 
         print '--->', channel
         ###################################################
@@ -770,7 +813,70 @@ if __name__ == '__main__':
                 use_qcd_data_region = useQCDControl,
                 log_y = True,
             )
-
+        ###################################################
+        # TauN
+        ###################################################
+        if 'Tau' in include_plots:
+            print '---> Tau1'
+            make_plot( channel,
+                x_axis_title = 'Tau 1',
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['Tau']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'tau1',
+                name_prefix = '%s_tau1_' % label,
+                x_limits = control_plots_bins['Tau'],
+                nBins = len(control_plots_bins['Tau'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> Tau2'
+            make_plot( channel,
+                x_axis_title = 'Tau 2',
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['Tau']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'tau2',
+                name_prefix = '%s_tau2_' % label,
+                x_limits = control_plots_bins['Tau'],
+                nBins = len(control_plots_bins['Tau'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> Tau3'
+            make_plot( channel,
+                x_axis_title = 'Tau 3',
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['Tau']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'tau3',
+                name_prefix = '%s_tau3_' % label,
+                x_limits = control_plots_bins['Tau'],
+                nBins = len(control_plots_bins['Tau'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
+            print '---> Tau4'
+            make_plot( channel,
+                x_axis_title = 'Tau 4',
+                y_axis_title = 'Events/(%i GeV)' % binWidth(control_plots_bins['Tau']),
+                signal_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                control_region_tree = 'TTbar_plus_X_analysis/{ch}/{sel}/AnalysisVariables'.format(ch=label, sel=selection),
+                branchName = 'tau4',
+                name_prefix = '%s_tau4_' % label,
+                x_limits = control_plots_bins['Tau'],
+                nBins = len(control_plots_bins['Tau'])-1,
+                rebin = 1,
+                legend_location = ( 0.9, 0.78 ),
+                cms_logo_location = 'right',
+                use_qcd_data_region = useQCDControl,
+            )
         # ###################################################
         # # Mjj
         # ###################################################
@@ -1395,7 +1501,23 @@ if __name__ == '__main__':
                 ratio_y_limits = [0.1,1.9],
                 cms_logo_location = 'right',
             )
-
+            print '---> QCD NJets'
+            make_plot( 
+                channel,
+                x_axis_title = '$%s$' % control_plots_latex['NJets'],
+                y_axis_title = 'Events',
+                signal_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                control_region_tree = 'TTbar_plus_X_analysis/{tree}/AnalysisVariables'.format(tree = treeName),
+                branchName = 'NJets',
+                name_prefix = '%s_NJets_' % channel,
+                x_limits = control_plots_bins['NJets'],
+                nBins = len(control_plots_bins['NJets'])-1,
+                rebin = 1,
+                legend_location = ( 0.95, 0.78 ),
+                ratio_y_limits = [0.1,1.9],
+                cms_logo_location = 'right',
+                log_y = True,
+            )
         ###################################################
         # Isolation
         ###################################################

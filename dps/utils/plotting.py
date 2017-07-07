@@ -188,8 +188,13 @@ def make_data_mc_comparison_plot( histograms = [],
                                  show_ratio = False,
                                  show_stat_errors_on_mc = False,
                                  draw_vertical_line = 0,
-                                 systematics_for_ratio = None
+                                 systematics_for_ratio = None,
+                                 systematics_for_plot = None
                                  ):
+    '''
+    systematics_for_plot takes the same input as systematics_for_ratio. There may be some repition with reagrds to 
+    mc_error and mc_relative_errors, but these only deal with a flat error up and down.
+    '''
     save_folder = check_save_folder(save_folder)
     # make copies in order not to mess with existing histograms
     histograms_ = deepcopy(histograms)     
@@ -236,9 +241,32 @@ def make_data_mc_comparison_plot( histograms = [],
         axes.set_yscale( 'log', nonposy = "clip" )
         axes.set_ylim( ymin = 1e-2 )
 
+    if systematics_for_plot != None:
+        plusErrors = [x+1 for x in systematics_for_plot]
+        minusErrors = [1-x for x in systematics_for_plot]
+
+        stack_lower = sum(stack.GetHists())
+        stack_upper = stack_lower.Clone('upper')
+
+        for bin_i in range( 1, stack_lower.GetNbinsX()+1 ):
+            central_value = stack_lower.GetBinContent(bin_i)
+            error_upper_bound = plusErrors[bin_i-1] * central_value
+            error_lower_bound = minusErrors[bin_i-1] * central_value
+            stack_upper.SetBinContent( bin_i, error_upper_bound )
+            stack_lower.SetBinContent( bin_i, error_lower_bound )
+        
+        rplt.fill_between( stack_lower, stack_upper, axes,
+                           hatch = '//',
+                           # facecolor = 'Black',
+                           facecolor = 'None',
+                           edgecolor='Grey',
+                           alpha = 1.,
+                           linewidth = 0.,
+                           zorder = len(histograms_) + 1
+                            )
+
     mc_error = histogram_properties.mc_error
     mc_relative_errors = histogram_properties.mc_relative_errors
-
     if mc_relative_errors:
         stack_lower = sum(stack.GetHists())
         stack_upper = stack_lower.Clone('upper')
@@ -480,6 +508,7 @@ def make_shape_comparison_plot( shapes = [],
                                    histogram_properties = Histogram_properties(),
                                    fill_area = True,
                                    make_ratio = False,
+                                   add_error_bars = True,
                                    alpha = 0.5,
                                    save_folder = 'plots/',
                                    save_as = ['pdf', 'png'],
@@ -538,8 +567,9 @@ def make_shape_comparison_plot( shapes = [],
     l1.set_zorder(102)
     #add error bars
     graphs = spread_x(shapes_, list(shapes_[0].xedges()))
-    for graph in graphs:
-        rplt.errorbar( graph, axes = axes )
+    if add_error_bars:
+        for graph in graphs:
+            rplt.errorbar( graph, axes = axes )
 
     adjust_axis_limits(axes, histogram_properties, shapes_)
     if make_ratio:
@@ -779,15 +809,22 @@ def set_labels( plt, histogram_properties, show_x_label = True,
     logo_location = (0.05, 0.98)
     prelim_location = (0.05, 0.92)
     additional_location = (0.95, 0.98)
+    if not histogram_properties.preliminary:
+        additional_location = (0.05, 0.92)
+
     loc = histogram_properties.cms_logo_location
     if loc == 'right':
         logo_location = (0.95, 0.98)
         prelim_location = (0.95, 0.92)
         additional_location = (0.95, 0.86)
+        if not histogram_properties.preliminary:
+            additional_location = (0.095, 0.92)
     elif loc == 'left':
         logo_location = (0.05, 0.98)
         prelim_location = (0.05, 0.92)
         additional_location = (0.05, 0.86)      
+        if not histogram_properties.preliminary:
+            additional_location = (0.05, 0.92)
         
     plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", 
              transform=axes.transAxes, fontsize=42,

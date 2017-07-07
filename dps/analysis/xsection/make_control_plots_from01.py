@@ -1,6 +1,6 @@
 from dps.utils.pandas_utilities import read_tuple_from_file
 from dps.utils.hist_utilities import value_error_tuplelist_to_hist
-from dps.config.variable_binning import reco_bin_edges_vis, bin_edges_vis, control_plots_bins, control_plot_nbins
+from dps.config.variable_binning import reco_bin_edges_vis, bin_edges_vis, control_plot_nbins, control_plots_bins_for01
 from dps.config.latex_labels import samples_latex
 from dps.config.histogram_colours import histogram_colours as colours
 from dps.utils.plotting import make_data_mc_comparison_plot, Histogram_properties
@@ -118,8 +118,8 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
     histogram_lables   = [
         'data',
         'QCD', 
-        'V+Jets', 
-        'Single-Top', 
+        'V+jets', 
+        'single-top', 
         samples_latex['TTJet'],
     ]
 
@@ -157,6 +157,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
     histogram_properties.legend_location        = ( 0.9, 0.73 )
     histogram_properties.cms_logo_location      = 'left'
     histogram_properties.preliminary            = True
+    # histogram_properties.preliminary            = False
     histogram_properties.set_log_y              = False
     histogram_properties.legend_color           = False
     histogram_properties.ratio_y_limits     = [0.5, 1.5]
@@ -176,6 +177,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
         show_ratio = True, 
         normalise = False,
         systematics_for_ratio = uncertaintyBand,
+        systematics_for_plot = uncertaintyBand,
     )
 
     histogram_properties.set_log_y = True
@@ -191,6 +193,7 @@ def drawHistograms( dictionaryOfHistograms, uncertaintyBand, config, channel, va
         show_ratio = True, 
         normalise = False,
         systematics_for_ratio = uncertaintyBand,
+        systematics_for_plot = uncertaintyBand,
     )    
 
 config = XSectionConfig(13)
@@ -203,7 +206,7 @@ for variable in config.variables:
     histogramsForEachChannel = {}
     uncertaintiesForEachChannel = {}
 
-    binEdges = control_plots_bins[variable]
+    binEdges = control_plots_bins_for01[variable]
     bin_low = binEdges[0]
     bin_high = binEdges[-1]
     nBins = control_plot_nbins[variable] 
@@ -214,7 +217,7 @@ for variable in config.variables:
     for channel in config.analysis_types.keys():
         if channel == 'combined': continue
 
-        path_to_DF = 'data/controlPlots_normalisation/data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
+        path_to_DF = 'data/data_normalisation/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
         normalisation_fileName = 'normalisation_{channel}.txt'.format(channel=channel)
         normalisation_results_electron  = read_tuple_from_file( '{path}/central/{filename}'.format(path=path_to_DF,filename=normalisation_fileName)  )
 
