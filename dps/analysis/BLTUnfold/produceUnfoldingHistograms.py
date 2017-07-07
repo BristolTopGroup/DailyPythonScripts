@@ -92,7 +92,6 @@ def getFileName( com, sample, measurementConfig ) :
     fileNames = {
         '13TeV' : {
             'central'           : measurementConfig.ttbar_trees,
-
             'central_70pc'           : measurementConfig.ttbar_trees,
             'central_30pc'           : measurementConfig.ttbar_trees,
 
@@ -566,7 +565,11 @@ def main():
                     leptonWeight = event.LeptonEfficiencyCorrectionDown
 
                 # B Jet Weight
-                bjetWeight = event.BJetWeight
+                # bjetWeight = event.BJetWeight
+                bjetWeight = event.BJetAlternativeWeight
+                if 'fsr' in args.sample:
+                    bjetWeight = event.BJetAlternativeWeight * event.BJetEfficiencyCorrectionWeight
+
                 if args.sample == "bjetup":
                     bjetWeight = event.BJetUpWeight
                 elif args.sample == "bjetdown":
