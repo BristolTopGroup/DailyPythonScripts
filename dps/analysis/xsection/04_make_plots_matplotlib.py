@@ -237,10 +237,6 @@ def get_cms_labels( channel ):
 def make_plots( histograms, category, output_folder, histname, show_ratio = False, show_generator_ratio = False, show_before_unfolding = False, utype = 'normalised', preliminary=True ):
     global variable, phase_space
 
-    if show_generator_ratio and not show_ratio:
-        print("Cannot be done, Use both show_ratio and show_generator_ratio")
-        sys.exit()
-
     channel = ''
     if 'electron' in histname:
         channel = 'electron'
@@ -602,7 +598,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
                 syst_rel_error_up = syst_error_up/syst_value
                 syst_lower.SetBinContent( bin_i, 1 - syst_rel_error_down )
                 syst_upper.SetBinContent( bin_i, 1 + syst_rel_error_up )
-       
+
         # Colour
         if category == 'central':
             rplt.fill_between( 
@@ -684,10 +680,15 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
 
     if show_generator_ratio:
 
-        # Remove Data/MC Ratio Axis
-        plt.setp( ax1.get_xticklabels(), visible = False ) 
+        ax2 = None
 
-        ax2 = plt.subplot( gs[2] )
+        # Remove Data/MC Ratio Axis
+        if show_ratio:
+            plt.setp( ax1.get_xticklabels(), visible = False ) 
+            ax2 = plt.subplot( gs[2] )
+        else:
+            plt.setp( axes.get_xticklabels(), visible = False )
+            ax2 = plt.subplot( gs[1] )
 
         # setting the x_limits identical to the main plot
         x_limits = axes.get_xlim()
@@ -707,23 +708,68 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             x_label += ' [GeV]'
         plt.xlabel( x_label, CMS.x_axis_title )
 
-        y_label = '$\\frac{\\textrm{generator}}{\\textrm{central}}$'
-        plt.ylabel( y_label, CMS.y_axis_title )
+        y_label = 'Ratio to \n$' + measurements_latex['TTJets_powhegPythia8'] + '$'
 
-        ax2.yaxis.set_label_coords(-0.115, 0.8)
-        
+        plt.ylabel( y_label, CMS.y_axis_title_tiny )
+
+        ax2.yaxis.set_label_coords(-0.115, 0.5)
+
         #draw a horizontal line at y=1 for central MC
         plt.axhline(y = 1, color = 'black', linewidth = 2)
 
         central_mc = histograms['TTJets_powhegPythia8']
         for key, hist in sorted( histograms.iteritems() ):
-            if not 'unfolded' in key and not 'measured' in key:
-                ratio = hist.Clone()
-                ratio.Divide( central_mc ) #divide by central mc sample
-                line, h = rplt.hist( ratio, axes = ax2, label = 'do_not_show' )
-                if dashes[key] != None:
-                    line.set_dashes(dashes[key])
-                    h.set_dashes(dashes[key])
+
+            if not 'measured' in key:
+
+                ratio = None
+                if not 'unfolded_with_systematics' in key:
+                    ratio = hist.Clone()
+                    ratio.Divide( central_mc ) #divide by central mc sample
+                else:
+                    ratio = central_mc.Clone()
+                    syst_errors = graph_to_value_errors_tuplelist(hist)
+                    for bin_i in range( 1, ratio.GetNbinsX() + 1 ):
+                        syst_value, syst_error_down, syst_error_up  = syst_errors[bin_i-1]
+
+                        mc = central_mc.GetBinContent(bin_i)
+                        data = list(hist.y())[bin_i-1]
+
+                        ratio.SetBinContent( bin_i, data / mc)
+                        ratio.SetBinError( bin_i, syst_error_down / mc )
+
+                if not 'unfolded' in key:
+                    line, h = rplt.hist( ratio, axes = ax2, label = 'do_not_show' )
+                    if dashes[key] != None:
+                        line.set_dashes(dashes[key])
+                        h.set_dashes(dashes[key])
+                elif 'unfolded_with_systematics' in key:
+                        ratio.markersize = 2
+                        ratio.marker = 'o'
+                        ratio.color = 'black'
+                        rplt.errorbar( 
+                            ratio, 
+                            axes = ax2, 
+                            label = 'do_not_show', 
+                            xerr = None, 
+                            capsize = 0, 
+                            elinewidth = 2, 
+                            zorder = len( histograms ) + 10
+                        )
+                else:
+                    ratio.markersize = 2
+                    ratio.marker = 'o'
+
+                    rplt.errorbar( ratio, 
+                        axes = ax2, 
+                        label = 'do_not_show', 
+                        xerr = None, 
+                        capsize = 15, 
+                        capthick = 3, 
+                        elinewidth = 2, 
+                        zorder = len( histograms ) + 9
+                    )
+
 
         if variable == 'MET':
             ax2.set_ylim( ymin = 0.8, ymax = 1.2 )
@@ -734,7 +780,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'HT':
-            ax2.set_ylim( ymin = 0.8, ymax = 1.37 )
+            ax2.set_ylim( ymin = 0.7, ymax = 1.3 )
             ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'ST':
@@ -882,10 +928,15 @@ def parse_arguments():
         dest    = "additional_plots",
         help    = "Draws additional plots like the comparison of different systematics to the central result."
     )
+    parser.add_argument( "-r", "--show-ratio", 
+        action  = "store_true", 
+        dest    = "show_ratio",
+        help    = "Show the ratio of different generators to central" 
+    )
     parser.add_argument( "-g", "--show-generator-ratio", 
         action  = "store_true", 
         dest    = "show_generator_ratio",
-        help    = "Show the ratio of generators to central" 
+        help    = "Show the ratio of generator variations to central" 
     )
     parser.add_argument( "-d", "--debug", 
         action  = "store_true", 
@@ -929,6 +980,7 @@ if __name__ == '__main__':
     # caching of variables for shorter access
     method                  = args.unfolding_method
     variable                = args.variable
+    show_ratio              = args.show_ratio
     show_generator_ratio    = args.show_generator_ratio
     visiblePS               = args.visiblePS
     output_folder           = args.output_folder
@@ -993,7 +1045,7 @@ if __name__ == '__main__':
                     category, 
                     output_folder, 
                     histname + '_different_generators', 
-                    show_ratio = True,
+                    show_ratio = show_ratio,
                     show_generator_ratio = show_generator_ratio ,
                     utype = utype,
                     preliminary = is_preliminary,
@@ -1004,7 +1056,7 @@ if __name__ == '__main__':
                     category, 
                     output_folder, 
                     histname + '_different_systematics'+partonShower, 
-                    show_ratio = True,
+                    show_ratio = show_ratio,
                     show_generator_ratio = show_generator_ratio ,
                     utype = utype,
                     preliminary = is_preliminary,
