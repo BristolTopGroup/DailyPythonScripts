@@ -2,7 +2,7 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.9/atOutput/combined/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.10/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:35900}
@@ -80,8 +80,8 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/Moriond2017/'
-        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
-        # self.path_to_unfolding_histograms = 'unfolding/13TeV/'
+        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
+        self.path_to_unfolding_histograms = 'unfolding/13TeV/'
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
 
         self.luminosity = self.luminosities[self.centre_of_mass_energy]
