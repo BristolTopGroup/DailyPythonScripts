@@ -27,6 +27,19 @@ def hist_to_value_error_tuplelist( hist ):
         add_error( get_bin_error( bin_i + 1 ) )
     return zip( values, errors )
 
+def hist_to_value_list( hist ):
+    values = list( hist.y() )
+    return values
+
+def hist_to_binEdges_list( hist ):
+    edges = list(hist.xedges())
+    return edges
+
+def hist2d_to_binEdges_list( hist ):
+    xedges = list(hist.xedges())
+    yedges = list(hist.yedges())
+    return xedges, yedges
+
 def values_and_errors_to_hist( values, errors, bins ):
     assert( len( bins ) == len( values ) + 1 )
     if len( errors ) == 0:
@@ -82,6 +95,21 @@ def value_tuplelist_to_hist( value_tuplelist, bin_edges ):
     set_bin_value = rootpy_hist.SetBinContent
     for bin_i, value in enumerate( value_tuplelist ):
         set_bin_value( bin_i + 1, value )
+    return rootpy_hist
+
+def matrix_to_hist2d( value_matrix, x_edges, y_edges ):
+    '''
+    numpy matrix of values and bin edges -> Hist2D
+    '''
+    from root_numpy import array2hist
+
+    rootpy_hist = Hist2D( x_edges, y_edges, type = 'D' )
+    array2hist(value_matrix, rootpy_hist)
+
+    # set_bin_value = rootpy_hist.SetBinContent
+    # for x in range(0, len(x_edges)-1):
+    #     for y in range(0, len(y_edges)-1):
+    #         set_bin_value( x+1, y+1, value_matrix.item(y, x) )
     return rootpy_hist
 
 def sum_histograms( histogram_dict, sample_list ):
