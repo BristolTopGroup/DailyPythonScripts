@@ -381,6 +381,7 @@ class XSectionConfig():
         # Used in 01
         self.ttbar_trees = path_to_files + 'TTJets_PowhegPythia8_tree.root'
         self.SingleTop_trees = path_to_files + 'SingleTop_tree.root'
+
         self.VJets_trees = path_to_files + 'VJets_tree.root'
         self.electron_QCD_MC_trees = path_to_files + 'QCD_Electron_tree.root'
         self.muon_QCD_MC_trees = path_to_files + 'QCD_Muon_tree.root'
@@ -614,6 +615,22 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         self.new_luminosity = 35900
+
+        ### Estimated luminosity for each period
+        # # B
+        # self.new_luminosity = 5790
+        # # C
+        # self.new_luminosity = 2570
+        # # D
+        # self.new_luminosity = 4250
+        # # E
+        # self.new_luminosity = 4010
+        # # F
+        # self.new_luminosity = 3100
+        # # G
+        # self.new_luminosiBty = 7540
+        # H
+        # self.new_luminosity = 8610
 
         self.ttbar_xsection = 831.76  # pb
 
