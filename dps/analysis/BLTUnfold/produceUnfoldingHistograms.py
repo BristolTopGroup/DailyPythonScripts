@@ -76,7 +76,6 @@ def getUnmergedDirectory( f ) :
         sampleName = 'TTJets_madgraphMLM'
     new_f = None
     if 'plusJES' in f:
-        print 'HERE',sampleName.strip('_plusJES')
         new_f = baseDir + '/' + sampleName.strip('_plusJES') + '/analysis_JES_up_job_*/*root'
     elif 'minusJES' in f:
         new_f = baseDir + '/' + sampleName.strip('_minusJES') + '/analysis_JES_down_job_*/*root'
@@ -533,7 +532,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n > 100000: break
+                # if n > 1000000: break
 
                 if maxEvents > 0 and n > maxEvents: break
 
@@ -565,10 +564,10 @@ def main():
                     leptonWeight = event.LeptonEfficiencyCorrectionDown
 
                 # B Jet Weight
-                # bjetWeight = event.BJetWeight
-                bjetWeight = event.BJetAlternativeWeight
+                bjetWeight = event.BJetWeight
+                # bjetWeight = event.BJetAlternativeWeight
                 if 'fsr' in args.sample:
-                    bjetWeight = event.BJetAlternativeWeight * event.BJetEfficiencyCorrectionWeight
+                    bjetWeight = event.BJetWeight * event.BJetEfficiencyCorrectionWeight
 
                 if args.sample == "bjetup":
                     bjetWeight = event.BJetUpWeight
@@ -599,7 +598,6 @@ def main():
 
                 if MMHT14Weight >= 0:
                     genWeight *= branch('MMHT14Weight_%i' % MMHT14Weight)
-                    print genWeight
                     pass
 
 
