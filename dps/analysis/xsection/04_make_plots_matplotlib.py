@@ -100,7 +100,7 @@ def read_xsection_measurement_results( category, channel, unc_type, scale_uncert
     if category == 'central':
         # Add in distributions for the different MC to be shown
         h_normalised_xsection_powhegPythia8     = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_powhegPythia8'], edges )
-        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_amcatnlo'], edges )
+        h_normalised_xsection_amcatnlo          = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_amcatnloPythia8'], edges )
         h_normalised_xsection_madgraphMLM       = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_madgraphMLM'], edges )
         h_normalised_xsection_powhegHerwigpp    = value_error_tuplelist_to_hist( normalised_xsection_unfolded['TTJets_powhegHerwig'], edges )
         # SCALE BREAKDOWN
@@ -709,10 +709,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.xlabel( x_label, CMS.x_axis_title )
 
         y_label = 'Ratio to \n$' + measurements_latex['TTJets_powhegPythia8'] + '$'
-
         plt.ylabel( y_label, CMS.y_axis_title_tiny )
-
-        ax2.yaxis.set_label_coords(-0.115, 0.5)
 
         #draw a horizontal line at y=1 for central MC
         plt.axhline(y = 1, color = 'black', linewidth = 2)
