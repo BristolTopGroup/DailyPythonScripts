@@ -11,14 +11,19 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
 	Generate and write the Latex table for the cross sections
 	'''
 	fullTable = ''
-	unit = ' '
-	unit_inv = ' '
+	var_unit = ''
+	xsec_unit = ''
 
+	if 'absolute' in crossSectionType:
+		xsec_unit += 'pb '
 	if variable in ['HT', 'ST', 'MET', 'WPT', 'lepton_pt']:
-		unit     += '(GeV)'
-		unit_inv     += '\\ensuremath{\\text{(GeV)}^{-1}}'
+		var_unit  += '(GeV)'
+		xsec_unit += '\\ensuremath{\\text{(GeV)}^{-1}}'
 
-	dxsec 	 = ' \\ensuremath{{ \\frac{{ 1 }}{{ \\text{{d}}\\sigma }} \\frac{{ \\text{{d}}\\sigma }}{{ \\text{{d}}{var} }} }} '.format(var = variables_latex[variable])
+	if 'absolute' in crossSectionType:
+		dxsec 	 = ' \\ensuremath{{ \\frac{{ \\text{{d}}\\sigma }}{{ \\text{{d}}{var} }} }} '.format(var = variables_latex[variable])
+	else:
+		dxsec 	 = ' \\ensuremath{{ \\frac{{ 1 }}{{ \\text{{d}}\\sigma }} \\frac{{ \\text{{d}}\\sigma }}{{ \\text{{d}}{var} }} }} '.format(var = variables_latex[variable])
 
     #########################################################################################################
     ### Round XSection Values
@@ -38,9 +43,9 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
 	latexHeader += '\t\t\hline\n'
 	latexHeader += '\t\t{var}'.format(var=variables_latex[variable]) + ' \t& ' + dxsec + ' \t& \ensuremath{\pm} Stat. \t& \ensuremath{\pm} Syst. \\\\ \n'
 	if 'absolute' in crossSectionType:
-		latexHeader += '\t\t'+unit+' \t& '+unit_inv+' \t& (N) \t& (N) \\\\ \n'
+		latexHeader += '\t\t'+var_unit+' \t& '+xsec_unit+' \t& (N) \t& (N) \\\\ \n'
 	else:
-		latexHeader += '\t\t'+unit+' \t& '+unit_inv+' \t& (\%) \t& (\%) \\\\ \n'
+		latexHeader += '\t\t'+var_unit+' \t& '+xsec_unit+' \t& (\%) \t& (\%) \\\\ \n'
 	latexHeader += '\t\t\hline\n'
 
 	fullTable += latexHeader
