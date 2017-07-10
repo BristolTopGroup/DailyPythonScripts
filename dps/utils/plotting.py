@@ -189,7 +189,8 @@ def make_data_mc_comparison_plot( histograms = [],
                                  show_stat_errors_on_mc = False,
                                  draw_vertical_line = 0,
                                  systematics_for_ratio = None,
-                                 systematics_for_plot = None
+                                 systematics_for_plot = None,
+                                 histograms_to_compare = None,
                                  ):
     '''
     systematics_for_plot takes the same input as systematics_for_ratio. There may be some repition with reagrds to 
@@ -316,7 +317,22 @@ def make_data_mc_comparison_plot( histograms = [],
                    xerr = histogram_properties.xerr,
                    elinewidth = 2, capsize = 10, capthick = 2,
                    zorder = len(histograms_) + 2 )
-    
+
+    if histograms_to_compare:
+        h_compare = {}
+        for h, l, c in zip (histograms_to_compare['hists'], histograms_to_compare['labels'], histograms_to_compare['colours']):
+            for histogram in histograms_:
+                if histogram.GetTitle() not in [histograms_to_compare['to_replace'], 'data']:
+                    h += histogram
+            h_compare[l] = [h,c]
+            rplt.step(
+                h,
+                axes=axes, 
+                label=l,
+                color=c,
+                linewidth=4,
+            )
+
     # put legend into the correct order (data is always first!)
     handles, labels = axes.get_legend_handles_labels()
     data_label_index = labels.index( 'data' )
@@ -371,6 +387,17 @@ def make_data_mc_comparison_plot( histograms = [],
         rplt.errorbar( ratio, emptybins = histogram_properties.emptybins, axes = ax1,
                        xerr = histogram_properties.xerr,
                        elinewidth = 1.5, capsize = 5, capthick = 1.5 )
+        if histograms_to_compare:
+            for l, h in h_compare.iteritems():
+                r = data.Clone(l).Divide(h[0])
+                rplt.step( 
+                    r, 
+                    axes = ax1,
+                    label='',
+                    colour=h[1],
+                    linewidth = 2, 
+                )
+
         if len( x_limits ) >= 2:
             ax1.set_xlim( xmin = x_limits[0], xmax = x_limits[-1] )
         if len( histogram_properties.ratio_y_limits ) >= 2:
@@ -809,6 +836,7 @@ def set_labels( plt, histogram_properties, show_x_label = True,
     logo_location = (0.05, 0.98)
     prelim_location = (0.05, 0.92)
     additional_location = (0.95, 0.98)
+    additional_location2 = (0.95, 0.92)
     if not histogram_properties.preliminary:
         additional_location = (0.05, 0.92)
 
@@ -817,14 +845,18 @@ def set_labels( plt, histogram_properties, show_x_label = True,
         logo_location = (0.95, 0.98)
         prelim_location = (0.95, 0.92)
         additional_location = (0.95, 0.86)
+        additional_location2 = (0.95, 0.8)
         if not histogram_properties.preliminary:
             additional_location = (0.095, 0.92)
+            additional_location2 = (0.095, 0.86)
     elif loc == 'left':
         logo_location = (0.05, 0.98)
         prelim_location = (0.05, 0.92)
         additional_location = (0.05, 0.86)      
+        additional_location2 = (0.05, 0.8)
         if not histogram_properties.preliminary:
             additional_location = (0.05, 0.92)
+            additional_location2 = (0.05, 0.86)
         
     plt.text(logo_location[0], logo_location[1], r"\textbf{CMS}", 
              transform=axes.transAxes, fontsize=42,
@@ -836,6 +868,11 @@ def set_labels( plt, histogram_properties, show_x_label = True,
     # channel text
     axes.text(additional_location[0], additional_location[1], 
               r"\emph{%s}" %histogram_properties.additional_text, 
+              transform=axes.transAxes, fontsize=40, verticalalignment='top',
+              horizontalalignment=loc)
+
+    axes.text(additional_location2[0], additional_location2[1], 
+              r"\emph{%s}" %histogram_properties.additional_text2, 
               transform=axes.transAxes, fontsize=40, verticalalignment='top',
               horizontalalignment=loc)
 

@@ -324,6 +324,32 @@ def make_plot( channel, x_axis_title, y_axis_title,
         histogram_properties.name               += '_' + category
     if normalise_to_data:
         histogram_properties.name               += '_normToData'
+
+    variation_dependent_text=''
+    if 'PU' in name_prefix:
+        variation_dependent_text='$\sigma_{{minbias}} = {}$ mb'
+        if 'NoWeight' in name_prefix: variation_dependent_text = 'No pile up reweighting'
+        elif 'Up' in name_prefix: variation_dependent_text = variation_dependent_text.format(72.2)
+        elif 'Down' in name_prefix: variation_dependent_text = variation_dependent_text.format(65.8)
+        else: variation_dependent_text = variation_dependent_text.format(69.0)
+    if 'NBJets' in name_prefix:
+        variation_dependent_text='b jet reweighting ({})'
+        if 'NoWeight' in name_prefix: variation_dependent_text = 'No b jet reweighting'
+        elif '_NBJetsUp' in name_prefix: variation_dependent_text = variation_dependent_text.format('bc up')
+        elif '_NBJetsDown' in name_prefix: variation_dependent_text = variation_dependent_text.format('bc down')
+        elif '_NBJets_LightUp' in name_prefix: variation_dependent_text = variation_dependent_text.format('udsg up')
+        elif '_NBJets_LightDown' in name_prefix: variation_dependent_text = variation_dependent_text.format('udsg down')
+        else: variation_dependent_text = 'b jet reweighting'
+
+    if 'JetPt' in name_prefix:
+        variation_dependent_text='All jets'
+        if 'JetPt0' in name_prefix: variation_dependent_text='Leading jet'
+        elif 'JetPt1' in name_prefix: variation_dependent_text='Sub-leading jet'
+        elif 'JetPt2' in name_prefix: variation_dependent_text='3rd jet'
+        elif 'JetPt3' in name_prefix: variation_dependent_text='4th jet'
+        elif 'JetPtAdd' in name_prefix: variation_dependent_text='Additional jets'
+
+
     histogram_properties.title                  = title
     histogram_properties.x_axis_title           = x_axis_title
     histogram_properties.y_axis_title           = y_axis_title
@@ -334,6 +360,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
     # workaround for rootpy issue #638
     histogram_properties.emptybins              = True
     histogram_properties.additional_text        = channel_latex[channel]
+    histogram_properties.additional_text2       = variation_dependent_text
     # if b_tag_bin:
     #     histogram_properties.additional_text    += b_tag_bins_latex[b_tag_bin]
     histogram_properties.legend_location        = legend_location
@@ -538,26 +565,26 @@ if __name__ == '__main__':
 
     # comment out plots you don't want
     include_plots = [
-        'HT',
-        'MET',
-        'ST',
-        'WPT',
-        'NVertex',
-        'NVertexNoWeight',
-        'NVertexUp',
-        'NVertexDown',
-        'LeptonPt',
-        'AbsLeptonEta',
-        'NJets',
-        'NBJets',
-        'Tau',
+        # 'HT',
+        # 'MET',
+        # 'ST',
+        # 'WPT',
+        # 'NVertex',
+        # 'NVertexNoWeight',
+        # 'NVertexUp',
+        # 'NVertexDown',
+        # 'LeptonPt',
+        # 'AbsLeptonEta',
+        # 'NJets',
+        # 'NBJets',
+        # 'Tau',
 
-        'NBJetsNoWeight',
-        'NBJetsUp',
-        'NBJetsDown',
-        'NBJets_LightUp',
-        'NBJets_LightDown',
-        'JetPt',
+        # 'NBJetsNoWeight',
+        # 'NBJetsUp',
+        # 'NBJetsDown',
+        # 'NBJets_LightUp',
+        # 'NBJets_LightDown',
+        # 'JetPt',
         
         # 'sigmaietaieta',
 
@@ -604,8 +631,8 @@ if __name__ == '__main__':
     )
 
     for channel, label in {
-        'electron' : 'EPlusJets',
-        'muon'     : 'MuPlusJets',
+        # 'electron' : 'EPlusJets',
+        # 'muon'     : 'MuPlusJets',
         'combined' : 'COMBINED'
         }.iteritems() : 
 
@@ -975,7 +1002,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['NBJets'],
                 nBins = len(control_plots_bins['NBJets'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = False,
             )
@@ -1065,7 +1092,7 @@ if __name__ == '__main__':
                 nBins = len(control_plots_bins['NVertex'])-1,
                 rebin = 1,
                 legend_location = ( 0.95, 0.78 ),
-                cms_logo_location = 'right',
+                cms_logo_location = 'left',
                 use_qcd_data_region = False,
             )
         if 'NVertexNoWeight' in include_plots:
@@ -1082,7 +1109,7 @@ if __name__ == '__main__':
                 nBins = len(control_plots_bins['NVertex'])-1,
                 rebin = 1,
                 legend_location = ( 0.95, 0.78 ),
-                cms_logo_location = 'right',
+                cms_logo_location = 'left',
                 use_qcd_data_region = False,
             )
         if 'NVertexUp' in include_plots:
@@ -1099,7 +1126,7 @@ if __name__ == '__main__':
                 nBins = len(control_plots_bins['NVertex'])-1,
                 rebin = 1,
                 legend_location = ( 0.95, 0.78 ),
-                cms_logo_location = 'right',
+                cms_logo_location = 'left',
                 use_qcd_data_region = False,
             )
         if 'NVertexDown' in include_plots:
@@ -1116,7 +1143,7 @@ if __name__ == '__main__':
                 nBins = len(control_plots_bins['NVertex'])-1,
                 rebin = 1,
                 legend_location = ( 0.95, 0.78 ),
-                cms_logo_location = 'right',
+                cms_logo_location = 'left',
                 use_qcd_data_region = False,
             )
 
@@ -1136,7 +1163,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['JetPt'],
                 nBins = len(control_plots_bins['JetPt'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = useQCDControl,
             )
@@ -1152,7 +1179,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['JetPt'],
                 nBins = len(control_plots_bins['JetPt'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = useQCDControl,
             )
@@ -1168,7 +1195,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['JetPt'],
                 nBins = len(control_plots_bins['JetPt'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = useQCDControl,
             )
@@ -1184,7 +1211,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['JetPt'],
                 nBins = len(control_plots_bins['JetPt'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = useQCDControl,
             )
@@ -1200,7 +1227,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['JetPt'],
                 nBins = len(control_plots_bins['JetPt'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = useQCDControl,
             )
@@ -1216,7 +1243,7 @@ if __name__ == '__main__':
                 x_limits = control_plots_bins['JetPt'],
                 nBins = len(control_plots_bins['JetPt'])-1,
                 rebin = 1,
-                legend_location = ( 0.95, 0.78 ),
+                legend_location = ( 0.9, 0.73 ),
                 cms_logo_location = 'right',
                 use_qcd_data_region = useQCDControl,
             )
