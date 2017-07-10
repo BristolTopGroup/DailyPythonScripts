@@ -78,6 +78,7 @@ class Unfolding:
 #         else:
 #             self.unfoldObject.SetVerbose( self.verbose )
 #             self.unfolded_data = asrootpy( self.unfoldObject.Hreco( self.error_treatment ) )
+
         return self.unfolded_data
 
     def refold(self):
@@ -115,6 +116,7 @@ class Unfolding:
             # Get the statistical data covariance from TUnfold
             covariance = asrootpy( 
                 self.unfoldObject.GetEmatrixInput('Covariance'))
+
 
             # Reformat into a numpy matrix
             zs = list(covariance.z())

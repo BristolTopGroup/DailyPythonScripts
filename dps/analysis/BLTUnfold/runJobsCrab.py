@@ -4,7 +4,7 @@ import os
 from copy import deepcopy
 
 jobs = [
-        # 13 TeV
+        # # 13 TeV
         '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
@@ -97,7 +97,8 @@ jobs = [
         '--centreOfMassEnergy 13 -s UnclusteredEnUp',
         '--centreOfMassEnergy 13 -s UnclusteredEnDown',
         ]
- # Add pdf variations to list of jobs
+
+#  Add pdf variations to list of jobs
 minPDF = 0
 maxPDF = 99
 variation = minPDF
