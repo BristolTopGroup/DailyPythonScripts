@@ -330,6 +330,8 @@ def main():
     if args.newPS :
         outputFileName = outputFileName.replace('asymmetric','asymmetric_newPS')
 
+    # outputFileName = outputFileName.replace('asymmetric','asymmetric_AlternativeWeightAndCorrection')
+
     # Get the tree/chain
     treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
     print file_name
@@ -532,7 +534,7 @@ def main():
                 branch = event.__getattr__
                 n+=1
                 if not n%100000: print 'Processing event %.0f Progress : %.2g %%' % ( n, float(n)/nEntries*100 )
-                # if n > 1000000: break
+                # if n > 100000: break
 
                 if maxEvents > 0 and n > maxEvents: break
 
@@ -557,16 +559,20 @@ def main():
 
                 # Lepton weight
                 leptonWeight = event.LeptonEfficiencyCorrection
+                leptonWeight_forLeptonEta = event.LeptonEfficiencyCorrection_etaBins
 
                 if args.sample == 'leptonup':
                     leptonWeight = event.LeptonEfficiencyCorrectionUp
+                    leptonWeight_forLeptonEta = event.LeptonEfficiencyCorrectionUp_etaBins
                 elif args.sample == 'leptondown':
                     leptonWeight = event.LeptonEfficiencyCorrectionDown
+                    leptonWeight_forLeptonEta = event.LeptonEfficiencyCorrectionDown_etaBins
 
                 # B Jet Weight
-                bjetWeight = event.BJetWeight
-                # bjetWeight = event.BJetAlternativeWeight
+                # bjetWeight = event.BJetWeight
+                bjetWeight = event.BJetAlternativeWeight
                 if 'fsr' in args.sample:
+                    # bjetWeight = event.BJetAlternativeWeight * event.BJetEfficiencyCorrectionWeight
                     bjetWeight = event.BJetWeight * event.BJetEfficiencyCorrectionWeight
 
                 if args.sample == "bjetup":
@@ -587,7 +593,10 @@ def main():
                 offlineWeight = 1
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
+
+                offlineWeight_forLeptonEta = offlineWeight
                 offlineWeight *= leptonWeight
+                offlineWeight_forLeptonEta *= leptonWeight_forLeptonEta
                 genWeight *= topPtSystematicWeight
                 
                 # Generator weight
@@ -684,6 +693,10 @@ def main():
                         variable in measurement_config.variables_no_met:
                             continue
 
+                        offlineWeight_toUse = offlineWeight
+                        if variable is 'abs_lepton_eta':
+                            offlineWeight_toUse = offlineWeight_forLeptonEta
+
                         # # #
                         # # # Variable to plot
                         # # #
@@ -713,38 +726,38 @@ def main():
                                 filledTruth = True
                                 histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
                             if offlineSelection:
-                                histogramsToFill['measured'].Fill( recoVariable, offlineWeight * genWeight )
-                                histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['measured'].Fill( recoVariable, offlineWeight_toUse * genWeight )
+                                histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                                 if genSelectionVis :
-                                    histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight * genWeight )
+                                    histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                                 if genSelection:
-                                    histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight * genWeight )
-                                histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight )
+                                    histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight_toUse * genWeight )
+                                histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight_toUse * genWeight )
                             
                             if offlineSelection and genSelection:
-                                histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight  ) 
-                                histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight ) * genWeight  ) 
+                                histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight_toUse * genWeight  ) 
+                                histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight_toUse ) * genWeight  ) 
                             elif genSelection:
                                 histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
                             
                             if offlineSelection and genSelectionVis:
-                                histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight )
-                                histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight ) * genWeight )
+                                histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight_toUse * genWeight )
+                                histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight_toUse ) * genWeight )
                                 filledResponse = True
                             elif genSelectionVis:
                                 histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
                                 filledResponse = True
                             
                             if fakeSelection:
-                                histogramsToFill['fake'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['fake'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                             if fakeSelectionVis:
-                                histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight_toUse * genWeight )
 
                             if args.extraHists:
                                 if genSelection:
                                     histogramsToFill['eventWeightHist'].Fill(event.EventWeight)
                                     histogramsToFill['genWeightHist'].Fill(genWeight)
-                                    histogramsToFill['offlineWeightHist'].Fill(offlineWeight )
+                                    histogramsToFill['offlineWeightHist'].Fill(offlineWeight_toUse )
 
                             if args.fineBinned:
                                 # Bin reco var is in
@@ -756,7 +769,7 @@ def main():
                                         else: break
                                     residual = abs(recoVariable - genVariable_particle)                                 
                                     if not residual > options['max']*0.1: 
-                                        residuals[variable][channel.channelName][i].Fill(residual, offlineWeight*genWeight)
+                                        residuals[variable][channel.channelName][i].Fill(residual, offlineWeight_toUse*genWeight)
 
             #
             # Output histgorams to file
@@ -802,6 +815,7 @@ def main():
         # Done all channels, now combine the two channels, and output to the same file
         for path, dirs, objects in out.walk():
             if 'electron' in path:
+                if 'Bins' in path or 'coarse' in path: continue
                 outputDir = out.mkdir(path.replace('electron','combined'))
                 outputDir.cd()
                 for h in objects:

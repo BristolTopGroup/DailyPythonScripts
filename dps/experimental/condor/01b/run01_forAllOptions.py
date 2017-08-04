@@ -17,6 +17,9 @@ vars = [
 	'NJets --visiblePS',
 	'lepton_pt --visiblePS',
 	'abs_lepton_eta --visiblePS',
+	'abs_lepton_eta_coarse --visiblePS',
+	'abs_lepton_eta_muonBins --visiblePS',
+	'abs_lepton_eta_electronBins --visiblePS',
 
 	# 'hadTopRap',
 	# 'lepTopPt',

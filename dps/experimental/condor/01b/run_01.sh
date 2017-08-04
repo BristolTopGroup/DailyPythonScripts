@@ -22,8 +22,8 @@ time python dps/experimental/condor/01b/run01_forAllOptions.py -n $1
 echo "Done"
 ls
 echo "Tarring"
-tar -cf output_$1.tar data
+tar -cf output_controlBins_$1.tar data
 ls
 echo "Moving"
-mv output_$1.tar ${_CONDOR_JOB_IWD}/.
+mv output_controlBins_$1.tar ${_CONDOR_JOB_IWD}/.
 ls ${_CONDOR_JOB_IWD}/

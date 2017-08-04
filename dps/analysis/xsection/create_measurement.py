@@ -153,8 +153,8 @@ def get_sample_info(options, xsec_config, sample):
 
     # Bin Edges
     if options['control_plot_binning']:
-        firstBin = variable_binning.control_plots_bins[options['variable']][0]
-        lastBin = variable_binning.control_plots_bins[options['variable']][-1]
+        firstBin = variable_binning.control_plots_bins_for01[options['variable']][0]
+        lastBin = variable_binning.control_plots_bins_for01[options['variable']][-1]
         nBins = variable_binning.control_plot_nbins[options['variable']]
         binWidth =  ( lastBin - firstBin ) / nBins
         sample_info["bin_edges"] =  [ firstBin + i * binWidth for i in range(0, nBins+1) ]
@@ -231,12 +231,20 @@ def get_sample_info(options, xsec_config, sample):
         # Lepton weights for nonisolated leptons are removed in measurement.py
         # The lepton sf are not derived for non isolated leptons
         if options['channel'] == 'muon':
-            if options['category'] == 'Muon_down':
-                weight_branches.append('MuonDown')
-            elif options['category'] == 'Muon_up':
-                weight_branches.append('MuonUp')
+            if options['variable'] == 'abs_lepton_eta':
+                if options['category'] == 'Muon_down':
+                    weight_branches.append('MuonDown_etaBins')
+                elif options['category'] == 'Muon_up':
+                    weight_branches.append('MuonUp_etaBins')
+                else:
+                    weight_branches.append('MuonEfficiencyCorrection_etaBins')
             else:
-                weight_branches.append('MuonEfficiencyCorrection')
+                if options['category'] == 'Muon_down':
+                    weight_branches.append('MuonDown')
+                elif options['category'] == 'Muon_up':
+                    weight_branches.append('MuonUp')
+                else:
+                    weight_branches.append('MuonEfficiencyCorrection')
         elif options['channel'] == 'electron':
             if options['category'] == 'Electron_down':
                 weight_branches.append('ElectronDown')

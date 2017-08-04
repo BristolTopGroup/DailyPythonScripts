@@ -5,7 +5,7 @@ def produce_reco_bin_edges( gen_bin_edges ):
     reco_bin_edges[variable] = []
     for i in range(0,len(edges)-1):
       reco_bin_edges[variable].append( edges[i])
-      reco_bin_edges[variable].append( round ( edges[i] + ( edges[i+1] - edges[i] ) / 2, 1 ) )
+      reco_bin_edges[variable].append( round ( edges[i] + ( edges[i+1] - edges[i] ) / 2, 2 ) )
     reco_bin_edges[variable].append(edges[-1])
   return reco_bin_edges
 
@@ -26,6 +26,11 @@ bin_edges_full = {
 'ST' : [136.0, 315.0, 390.0, 475.0, 565.0, 665.0, 770.0, 885.0, 1010.0, 1140.0, 1285.0, 1440.0, 1615.0, 2490.0],
 'MET' : [0.0, 50.0, 105.0, 175.0, 245.0, 315.0, 565.0],
 'abs_lepton_eta' : [0.0, 0.14, 0.27, 0.39, 0.53, 0.65, 0.78, 0.92, 1.05, 1.16, 1.27, 1.38, 1.48, 1.62, 1.72, 1.83, 2.0, 2.4],
+
+'abs_lepton_eta_coarse' : [0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.0, 2.4],
+'abs_lepton_eta_muonBins' : [0.0, 0.2, 0.3, 0.9, 1.2, 1.6, 2.1, 2.4],
+'abs_lepton_eta_electronBins' : [0,0.8,1.4442,1.566,2.0,2.4],
+
 }
 
 bin_edges_vis = {
@@ -36,6 +41,11 @@ bin_edges_vis = {
 'ST' : [136.0, 315.0, 390.0, 475.0, 565.0, 665.0, 770.0, 885.0, 1010.0, 1140.0, 1285.0, 1440.0, 1615.0, 2490.0],
 'MET' : [0.0, 50.0, 105.0, 175.0, 245.0, 315.0, 565.0],
 'abs_lepton_eta' : [0.0, 0.14, 0.27, 0.39, 0.53, 0.65, 0.78, 0.92, 1.05, 1.16, 1.27, 1.38, 1.48, 1.62, 1.72, 1.83, 2.0, 2.4],
+
+'abs_lepton_eta_coarse' : [0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.0, 2.4],
+'abs_lepton_eta_muonBins' : [0.0, 0.2, 0.3, 0.9, 1.2, 1.6, 2.1, 2.4],
+'abs_lepton_eta_electronBins' : [0,0.8,1.4442,1.566,2.0,2.4],
+
 }
 
 reco_bin_edges_vis = produce_reco_bin_edges( bin_edges_vis )
@@ -67,7 +77,12 @@ control_plots_bins = {
   'MuonPt' : [i * 10 for i in range ( 1, 40 )],
   'ElectronPt' : [i * 10 for i in range ( 1, 40 )],
 
-  'LeptonEta' : [i*0.5 for i in range( -25, 25 )],  
+  'LeptonEta' : [i*0.2 for i in range( -12, 13 )],
+
+    # 'LeptonEta' : [i*0.02 for i in range( -25, 26 )],
+    # 'LeptonEta' : [i*0.04 for i in range( -12, 13 )],
+
+    
   'AbsLeptonEta' : [i*0.1 for i in range( 0, 25 )],  
 
   'NBJets' : [i - 0.5 for i in range ( 0, 6 + 1 )],
@@ -96,6 +111,11 @@ control_plots_bins_for01 = {
   'ST'              : [100,2000],
   'Tau'             : [0,10000],
   'MT'              : [0, 900],
+
+  'abs_lepton_eta_coarse' : reco_bin_edges_vis['abs_lepton_eta_coarse'],
+  'abs_lepton_eta_muonBins' : reco_bin_edges_vis['abs_lepton_eta_muonBins'],
+  'abs_lepton_eta_electronBins' : reco_bin_edges_vis['abs_lepton_eta_electronBins'],
+
 }
 
 control_plot_nbins = {

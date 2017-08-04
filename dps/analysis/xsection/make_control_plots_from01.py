@@ -200,27 +200,29 @@ config = XSectionConfig(13)
 
 
 for variable in config.variables:
-    # if not 'HT' in variable: continue
+    if not 'Bins' in variable: continue
     print variable
 
     histogramsForEachChannel = {}
     uncertaintiesForEachChannel = {}
 
     binEdges = control_plots_bins_for01[variable]
-    bin_low = binEdges[0]
-    bin_high = binEdges[-1]
-    nBins = control_plot_nbins[variable] 
-    binWidth = ( bin_high - bin_low ) / nBins
+    # bin_low = binEdges[0]
+    # bin_high = binEdges[-1]
+    # nBins = control_plot_nbins[variable] 
+    # binWidth = ( bin_high - bin_low ) / nBins
 
-    reco_bin_edges = [ bin_low + binWidth * i for i in range(0, nBins + 1) ]
-
+    # reco_bin_edges = [ bin_low + binWidth * i for i in range(0, nBins + 1) ]
+    reco_bin_edges = binEdges
+    print reco_bin_edges
     for channel in config.analysis_types.keys():
         if channel == 'combined': continue
 
-        path_to_DF = 'data/data_normalisation/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
+        path_to_DF = 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
         normalisation_fileName = 'normalisation_{channel}.txt'.format(channel=channel)
         normalisation_results_electron  = read_tuple_from_file( '{path}/central/{filename}'.format(path=path_to_DF,filename=normalisation_fileName)  )
 
+        print normalisation_results_electron
         dict_histograms = getHistogramsFromNormalisationResults(normalisation_results_electron, reco_bin_edges )
 
         totalMC = sumMCHistograms( dict_histograms )

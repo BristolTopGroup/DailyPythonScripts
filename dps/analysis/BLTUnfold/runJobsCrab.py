@@ -5,17 +5,17 @@ from copy import deepcopy
 
 jobs = [
         # # 13 TeV
-        '--centreOfMassEnergy 13 -f',
+        # '--centreOfMassEnergy 13 -f',
 
         '--centreOfMassEnergy 13 -s central',
 
-        '--centreOfMassEnergy 13 -s central_firstHalf',
-        '--centreOfMassEnergy 13 -s central_secondHalf',
+        # '--centreOfMassEnergy 13 -s central_firstHalf',
+        # '--centreOfMassEnergy 13 -s central_secondHalf',
 
-        '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting 1',
-        '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting 1',
-        '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting -1',
-        '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting -1',
+        # '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting 1',
+        # '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting 1',
+        # '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting -1',
+        # '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting -1',
 
         '--centreOfMassEnergy 13 -s amcatnlo',
         '--centreOfMassEnergy 13 -s madgraph',
@@ -55,17 +55,17 @@ jobs = [
         '--centreOfMassEnergy 13 --alphaSWeight 0',
         '--centreOfMassEnergy 13 --alphaSWeight 1',
 
-        # # B fragmentation weights
+        # B fragmentation weights
         '--centreOfMassEnergy 13 --fragWeight 1',
         '--centreOfMassEnergy 13 --fragWeight 2',
         '--centreOfMassEnergy 13 --fragWeight 3',
         '--centreOfMassEnergy 13 --fragWeight 4',
 
-        # # Semileptonic BR
+        # Semileptonic BR
         '--centreOfMassEnergy 13 --semiLepBrWeight -1',
         '--centreOfMassEnergy 13 --semiLepBrWeight 1',
 
-        # # Top mass
+        # Top mass
         '--centreOfMassEnergy 13 -s massup',
         '--centreOfMassEnergy 13 -s massdown',
 
@@ -107,21 +107,22 @@ while variation <= maxPDF :
     variation += 1
     pass
 
-maxPDF = 54
-variation = minPDF
-while variation <= maxPDF :
-    jobs.append('--centreOfMassEnergy 13 --CT14Weight {} '.format(variation) )
-    variation += 1
-    pass
+# maxPDF = 54
+# variation = minPDF
+# while variation <= maxPDF :
+#     jobs.append('--centreOfMassEnergy 13 --CT14Weight {} '.format(variation) )
+#     variation += 1
+#     pass
 
-maxPDF = 55
-variation = minPDF
-while variation <= maxPDF :
-    jobs.append('--centreOfMassEnergy 13 --MMHT14Weight {} '.format(variation) )
-    variation += 1
-    pass
+# maxPDF = 55
+# variation = minPDF
+# while variation <= maxPDF :
+#     jobs.append('--centreOfMassEnergy 13 --MMHT14Weight {} '.format(variation) )
+#     variation += 1
+#     pass
 
-jobsWithNewPS = deepcopy( jobs )
+# jobsWithNewPS = deepcopy( jobs )
+jobsWithNewPS = []
 for job in jobs:
     jobsWithNewPS.append( job + ' --newPS')
 jobs = jobsWithNewPS

@@ -1303,19 +1303,19 @@ if __name__ == '__main__':
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon, input_mc_covariance_matrix = inputMC_covariance_muon )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel , True )
 
-        # Results where the channels are combined before unfolding (the 'combined in the response matrix')
-        channel = 'combinedBeforeUnfolding'
-        unfolded_normalisation_combinedBeforeUnfolding, covariance_combinedBeforeUnfolding, inputMC_covariance_combinedBeforeUnfolding = get_unfolded_normalisation(
-            TTJet_normalisation_results_combined,
-            category,
-            'combined', 
-            tau_value=tau_value_combined,
-            visiblePS=visiblePS,
-        )
-        # measure xsection
-        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding  )
-        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding )
-        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
+        # # Results where the channels are combined before unfolding (the 'combined in the response matrix')
+        # channel = 'combinedBeforeUnfolding'
+        # unfolded_normalisation_combinedBeforeUnfolding, covariance_combinedBeforeUnfolding, inputMC_covariance_combinedBeforeUnfolding = get_unfolded_normalisation(
+        #     TTJet_normalisation_results_combined,
+        #     category,
+        #     'combined', 
+        #     tau_value=tau_value_combined,
+        #     visiblePS=visiblePS,
+        # )
+        # # measure xsection
+        # calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding  )
+        # calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding )
+        # calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
 
         # Results where the channels are combined after unfolding
         channel = 'combined'

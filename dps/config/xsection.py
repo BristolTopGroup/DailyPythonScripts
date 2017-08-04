@@ -2,7 +2,7 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.10/atOutput/combined/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.12/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:35900}
@@ -52,7 +52,10 @@ class XSectionConfig():
         'WPT',
         'NJets',
         'lepton_pt',
-        'abs_lepton_eta'
+        'abs_lepton_eta',
+        'abs_lepton_eta_muonBins',
+        'abs_lepton_eta_electronBins',
+        'abs_lepton_eta_coarse'
     ]
 
     # Used in 01
@@ -64,7 +67,10 @@ class XSectionConfig():
         'abs_lepton_eta', 
         'bjets_pt', 
         'bjets_eta',
-        'abs_bjets_eta'
+        'abs_bjets_eta',
+        'abs_lepton_eta_muonBins',
+        'abs_lepton_eta_electronBins',
+        'abs_lepton_eta_coarse'
     ]
 
     def __init__( self, centre_of_mass_energy ):
@@ -361,7 +367,7 @@ class XSectionConfig():
         self.samplesForChi2Comparison = [
             'TTJets_powhegPythia8',
             'TTJets_powhegHerwig',
-            'TTJets_amcatnlo',
+            # 'TTJets_amcatnlo',
             'TTJets_madgraphMLM'
         ]
         # now fill in the centre of mass dependent values
@@ -615,23 +621,19 @@ class XSectionConfig():
         path_to_files = self.path_to_files
 
         self.new_luminosity = 35900
-
-        ### Estimated luminosity for each period
-        # # B
-        # self.new_luminosity = 5790
-        # # C
-        # self.new_luminosity = 2570
-        # # D
-        # self.new_luminosity = 4250
-        # # E
-        # self.new_luminosity = 4010
-        # # F
-        # self.new_luminosity = 3100
-        # # G
-        # self.new_luminosiBty = 7540
-        # H
         # self.new_luminosity = 8610
 
+        ### Estimated luminosity for each period
+        # B
+        self.new_luminosity_periods = {
+            'B' : 5790,
+            'C' : 2570,
+            'D' : 4250,
+            'E' : 4010,
+            'F' : 3100,
+            'G' : 7540,
+            'H' : 8610,
+        }
         self.ttbar_xsection = 831.76  # pb
 
         self.rate_changing_systematics = {
@@ -648,6 +650,9 @@ class XSectionConfig():
             "ST" : 0.0014859830286,
             "MET" : 0.00186599526208,
             "abs_lepton_eta" : 1.1970850305e-08,
+            "abs_lepton_eta_muonBins" : 1.1970850305e-08,
+            "abs_lepton_eta_electronBins" : 1.1970850305e-08,
+            "abs_lepton_eta_coarse" : 1.1970850305e-08,
         }
 
         self.tau_values_muon = {
@@ -658,6 +663,10 @@ class XSectionConfig():
             "ST" : 0.00192109241721,
             "MET" : 0.00240030731786,
             "abs_lepton_eta" : 2.29348568572e-06,
+            "abs_lepton_eta_muonBins" : 2.29348568572e-06,
+            "abs_lepton_eta_electronBins" : 2.29348568572e-06,
+            "abs_lepton_eta_coarse" : 2.29348568572e-06,
+
         }
 
         self.tau_values_combined = {
@@ -668,6 +677,10 @@ class XSectionConfig():
             "ST" : 0,
             "MET" : 0,
             "abs_lepton_eta" : 0,
+            "abs_lepton_eta_muonBins" : 0,
+            "abs_lepton_eta_electronBins" : 0,
+            "abs_lepton_eta_coarse" : 0,
+
            }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'

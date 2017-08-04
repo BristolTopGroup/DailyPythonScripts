@@ -33,6 +33,10 @@ branchNames = {
     'lepton_pt_-': 'leptonPt',
     'lepton_eta': 'leptonEta',
     'abs_lepton_eta': 'leptonEta',
+    'abs_lepton_eta_muonBins': 'leptonEta',
+    'abs_lepton_eta_electronBins': 'leptonEta',
+    'abs_lepton_eta_coarse': 'leptonEta',
+
 }
 
 genBranchNames_particle = {
@@ -65,6 +69,9 @@ genBranchNames_particle = {
     'lepton_pt_-': 'pseudoLepton_pT',
     'lepton_eta': 'pseudoLepton_eta',
     'abs_lepton_eta': 'pseudoLepton_eta',
+    'abs_lepton_eta_muonBins': 'pseudoLepton_eta',
+    'abs_lepton_eta_electronBins': 'pseudoLepton_eta',
+    'abs_lepton_eta_coarse': 'pseudoLepton_eta',
 }
 
 genBranchNames_parton = {
