@@ -33,7 +33,7 @@ def main():
 
     for ch in channels:
         for var in measurement_config.variables:
-            if args.variable not in var: continue
+            if not args.variable == var: continue
             qcd_transfer_factor = {}
 
             # Create measurement_filepath
