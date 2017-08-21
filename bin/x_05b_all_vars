@@ -18,7 +18,7 @@ i=0
 
 echo "Now visible phase space"
 
-for var in MET HT ST WPT lepton_pt abs_lepton_eta NJets; do
+for var in MET HT ST WPT lepton_pt abs_lepton_eta abs_lepton_eta_coarse NJets; do
 	echo "Tabulating diff. x-section for distribution: $var"
 	nohup time python dps/analysis/xsection/05_make_systematic_plots.py -v $var --visiblePS &> logs/05_${var}_table_13TeV.log &
 	let i+=1

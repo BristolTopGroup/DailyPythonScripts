@@ -28,8 +28,6 @@ bin_edges_full = {
 'abs_lepton_eta' : [0.0, 0.14, 0.27, 0.39, 0.53, 0.65, 0.78, 0.92, 1.05, 1.16, 1.27, 1.38, 1.48, 1.62, 1.72, 1.83, 2.0, 2.4],
 
 'abs_lepton_eta_coarse' : [0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.0, 2.4],
-'abs_lepton_eta_muonBins' : [0.0, 0.2, 0.3, 0.9, 1.2, 1.6, 2.1, 2.4],
-'abs_lepton_eta_electronBins' : [0,0.8,1.4442,1.566,2.0,2.4],
 
 }
 
@@ -43,8 +41,6 @@ bin_edges_vis = {
 'abs_lepton_eta' : [0.0, 0.14, 0.27, 0.39, 0.53, 0.65, 0.78, 0.92, 1.05, 1.16, 1.27, 1.38, 1.48, 1.62, 1.72, 1.83, 2.0, 2.4],
 
 'abs_lepton_eta_coarse' : [0.0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.0, 2.4],
-'abs_lepton_eta_muonBins' : [0.0, 0.2, 0.3, 0.9, 1.2, 1.6, 2.1, 2.4],
-'abs_lepton_eta_electronBins' : [0,0.8,1.4442,1.566,2.0,2.4],
 
 }
 
@@ -83,7 +79,8 @@ control_plots_bins = {
     # 'LeptonEta' : [i*0.04 for i in range( -12, 13 )],
 
     
-  'AbsLeptonEta' : [i*0.1 for i in range( 0, 25 )],  
+  # 'AbsLeptonEta' : [i*0.1 for i in range( 0, 25 )],  
+  'AbsLeptonEta' : [i*0.3 for i in range( 0, 9 )],  
 
   'NBJets' : [i - 0.5 for i in range ( 0, 6 + 1 )],
   'NVertex' : [i for i in range ( 0,40 + 1 )],
@@ -112,16 +109,15 @@ control_plots_bins_for01 = {
   'Tau'             : [0,10000],
   'MT'              : [0, 900],
 
-  'abs_lepton_eta_coarse' : reco_bin_edges_vis['abs_lepton_eta_coarse'],
-  'abs_lepton_eta_muonBins' : reco_bin_edges_vis['abs_lepton_eta_muonBins'],
-  'abs_lepton_eta_electronBins' : reco_bin_edges_vis['abs_lepton_eta_electronBins'],
+  'abs_lepton_eta_coarse' : bin_edges_vis['abs_lepton_eta_coarse'],
 
 }
 
 control_plot_nbins = {
   'NJets' : 13,
   'lepton_pt' : 38,
-  'abs_lepton_eta' : 24,  
+  'abs_lepton_eta' : 24,
+  'abs_lepton_eta_coarse' : 8,
   'MET' : 39,
   'WPT' : 16,
   'HT' : 20,
