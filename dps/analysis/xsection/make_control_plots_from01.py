@@ -220,7 +220,6 @@ for variable in config.variables:
         normalisation_fileName = 'normalisation_{channel}.txt'.format(channel=channel)
         normalisation_results_electron  = read_tuple_from_file( '{path}/central/{filename}'.format(path=path_to_DF,filename=normalisation_fileName)  )
 
-        print normalisation_results_electron
         dict_histograms = getHistogramsFromNormalisationResults(normalisation_results_electron, reco_bin_edges )
 
         totalMC = sumMCHistograms( dict_histograms )
@@ -261,8 +260,6 @@ for variable in config.variables:
             for i in range(0,len(uncertainties)):
                 newUncertainty = math.sqrt( combinedUncertainties[i] ** 2 + uncertainties[i] ** 2 )
                 combinedUncertainties[i] = newUncertainty
-
-    print combinedHistograms
 
     ttbarMC = combinedHistograms['TTJet']
     data = combinedHistograms['Data']

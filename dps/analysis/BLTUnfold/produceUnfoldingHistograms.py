@@ -332,8 +332,6 @@ def main():
     if args.newPS :
         outputFileName = outputFileName.replace('asymmetric','asymmetric_newPS')
 
-    # outputFileName = outputFileName.replace('asymmetric','asymmetric_AlternativeWeightAndCorrection')
-
     # Get the tree/chain
     treeName = "TTbar_plus_X_analysis/Unfolding/Unfolding"
     print file_name
@@ -835,7 +833,7 @@ def main():
         # Done all channels, now combine the two channels, and output to the same file
         for path, dirs, objects in out.walk():
             if 'electron' in path:
-                if 'Bins' in path or 'coarse' in path: continue
+                if 'coarse' in path: continue
                 outputDir = out.mkdir(path.replace('electron','combined'))
                 outputDir.cd()
                 for h in objects:

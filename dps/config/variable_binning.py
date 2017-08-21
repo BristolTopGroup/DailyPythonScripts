@@ -75,11 +75,6 @@ control_plots_bins = {
 
   'LeptonEta' : [i*0.2 for i in range( -12, 13 )],
 
-    # 'LeptonEta' : [i*0.02 for i in range( -25, 26 )],
-    # 'LeptonEta' : [i*0.04 for i in range( -12, 13 )],
-
-    
-  # 'AbsLeptonEta' : [i*0.1 for i in range( 0, 25 )],  
   'AbsLeptonEta' : [i*0.3 for i in range( 0, 9 )],  
 
   'NBJets' : [i - 0.5 for i in range ( 0, 6 + 1 )],

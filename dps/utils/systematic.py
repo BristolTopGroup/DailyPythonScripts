@@ -219,12 +219,6 @@ def get_mc_data_difference(options, mc_xsections, data_xsections):
                 diff = []
                 for j in range(0, len( data_xsections[source][i] )):
                     diff.append( data_xsections[source][i][j] - central_mc[j][0] )
-                #     if source is 'Muon' and j == 1:
-                #         print (source, diff)
-                #         diff[-1] *= 1000
-                #         print (diff)
-                # if source is 'Muon':
-                #     print (diff)
                 data_mc_difference[source].append( diff )
 
     return data_mc_difference
@@ -754,10 +748,10 @@ def generate_total_covariance(options, all_covariances, all_correlations):
     create_covariance_matrix( cor_tot, cor_outfile )
 
     # Plot the total matrices
-    # make_covariance_plot( options, 'Stat', cov_stat, label='Covariance' )
-    # make_covariance_plot( options, 'Total', cov_tot, label='Covariance' )
-    # make_covariance_plot( options, 'Stat', cor_stat, label='Correlation' )
-    # make_covariance_plot( options, 'Total', cor_tot, label='Correlation' )
+    make_covariance_plot( options, 'Stat', cov_stat, label='Covariance' )
+    make_covariance_plot( options, 'Total', cov_tot, label='Covariance' )
+    make_covariance_plot( options, 'Stat', cor_stat, label='Correlation' )
+    make_covariance_plot( options, 'Total', cor_tot, label='Correlation' )
     return
 
 # @profile(stream=fp)

@@ -492,8 +492,6 @@ class XSectionConfig():
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric_newPS.root' % self.centre_of_mass_energy
-        # self.unfolding_Lepton_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptondown_asymmetric_newPS.root' % self.centre_of_mass_energy
-        # self.unfolding_Lepton_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptonup_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_Electron_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_electrondown_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_Electron_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_electronup_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_Muon_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_muondown_asymmetric_newPS.root' % self.centre_of_mass_energy
@@ -651,8 +649,6 @@ class XSectionConfig():
             "ST" : 0.0014859830286,
             "MET" : 0.00186599526208,
             "abs_lepton_eta" : 1.1970850305e-08,
-            "abs_lepton_eta_muonBins" : 1.1970850305e-08,
-            "abs_lepton_eta_electronBins" : 1.1970850305e-08,
             "abs_lepton_eta_coarse" : 1.1970850305e-08,
         }
 
@@ -664,8 +660,6 @@ class XSectionConfig():
             "ST" : 0.00192109241721,
             "MET" : 0.00240030731786,
             "abs_lepton_eta" : 2.29348568572e-06,
-            "abs_lepton_eta_muonBins" : 2.29348568572e-06,
-            "abs_lepton_eta_electronBins" : 2.29348568572e-06,
             "abs_lepton_eta_coarse" : 2.29348568572e-06,
 
         }
@@ -678,8 +672,6 @@ class XSectionConfig():
             "ST" : 0,
             "MET" : 0,
             "abs_lepton_eta" : 0,
-            "abs_lepton_eta_muonBins" : 0,
-            "abs_lepton_eta_electronBins" : 0,
             "abs_lepton_eta_coarse" : 0,
 
            }
