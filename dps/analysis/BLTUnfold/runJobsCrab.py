@@ -76,8 +76,10 @@ jobs = [
         '--centreOfMassEnergy 13 -s jerup',
         '--centreOfMassEnergy 13 -s jerdown',
 
-        '--centreOfMassEnergy 13 -s leptonup',
-        '--centreOfMassEnergy 13 -s leptondown',
+        '--centreOfMassEnergy 13 -s electronup',
+        '--centreOfMassEnergy 13 -s electrondown',
+        '--centreOfMassEnergy 13 -s muonup',
+        '--centreOfMassEnergy 13 -s muondown',
 
         '--centreOfMassEnergy 13 -s bjetup',
         '--centreOfMassEnergy 13 -s bjetdown',

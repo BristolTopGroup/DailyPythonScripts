@@ -231,7 +231,7 @@ def get_sample_info(options, xsec_config, sample):
         # Lepton weights for nonisolated leptons are removed in measurement.py
         # The lepton sf are not derived for non isolated leptons
         if options['channel'] == 'muon':
-            if options['variable'] == 'abs_lepton_eta':
+            if 'abs_lepton_eta' in options['variable']:
                 if options['category'] == 'Muon_down':
                     weight_branches.append('MuonDown_etaBins')
                 elif options['category'] == 'Muon_up':

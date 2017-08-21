@@ -53,8 +53,6 @@ class XSectionConfig():
         'NJets',
         'lepton_pt',
         'abs_lepton_eta',
-        'abs_lepton_eta_muonBins',
-        'abs_lepton_eta_electronBins',
         'abs_lepton_eta_coarse'
     ]
 
@@ -68,8 +66,6 @@ class XSectionConfig():
         'bjets_pt', 
         'bjets_eta',
         'abs_bjets_eta',
-        'abs_lepton_eta_muonBins',
-        'abs_lepton_eta_electronBins',
         'abs_lepton_eta_coarse'
     ]
 
@@ -367,7 +363,7 @@ class XSectionConfig():
         self.samplesForChi2Comparison = [
             'TTJets_powhegPythia8',
             'TTJets_powhegHerwig',
-            # 'TTJets_amcatnlo',
+            'TTJets_amcatnlo',
             'TTJets_madgraphMLM'
         ]
         # now fill in the centre of mass dependent values
@@ -496,8 +492,13 @@ class XSectionConfig():
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric_newPS.root' % self.centre_of_mass_energy
-        self.unfolding_Lepton_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptondown_asymmetric_newPS.root' % self.centre_of_mass_energy
-        self.unfolding_Lepton_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptonup_asymmetric_newPS.root' % self.centre_of_mass_energy
+        # self.unfolding_Lepton_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptondown_asymmetric_newPS.root' % self.centre_of_mass_energy
+        # self.unfolding_Lepton_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_leptonup_asymmetric_newPS.root' % self.centre_of_mass_energy
+        self.unfolding_Electron_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_electrondown_asymmetric_newPS.root' % self.centre_of_mass_energy
+        self.unfolding_Electron_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_electronup_asymmetric_newPS.root' % self.centre_of_mass_energy
+        self.unfolding_Muon_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_muondown_asymmetric_newPS.root' % self.centre_of_mass_energy
+        self.unfolding_Muon_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_muonup_asymmetric_newPS.root' % self.centre_of_mass_energy
+        
         self.unfolding_jes_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jesdown_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_jes_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jesup_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_jer_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_jerdown_asymmetric_newPS.root' % self.centre_of_mass_energy

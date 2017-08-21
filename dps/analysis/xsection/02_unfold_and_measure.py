@@ -84,8 +84,10 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_lightjetdown']        = File( measurement_config.unfolding_lightjet_down, 'read' )
     unfolding_files['file_for_lightjetup']          = File( measurement_config.unfolding_lightjet_up, 'read' )
 
-    unfolding_files['file_for_LeptonDown']          = File( measurement_config.unfolding_Lepton_down, 'read' )
-    unfolding_files['file_for_LeptonUp']            = File( measurement_config.unfolding_Lepton_up, 'read' )
+    unfolding_files['file_for_ElectronDown']          = File( measurement_config.unfolding_Electron_down, 'read' )
+    unfolding_files['file_for_ElectronUp']            = File( measurement_config.unfolding_Electron_up, 'read' )
+    unfolding_files['file_for_MuonDown']          = File( measurement_config.unfolding_Muon_down, 'read' )
+    unfolding_files['file_for_MuonUp']            = File( measurement_config.unfolding_Muon_up, 'read' )
 
     unfolding_files['file_for_ElectronEnDown']      = File( measurement_config.unfolding_ElectronEn_down, 'read' )
     unfolding_files['file_for_ElectronEnUp']        = File( measurement_config.unfolding_ElectronEn_up, 'read' )
@@ -227,10 +229,10 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'UnclusteredEnUp'            :  unfolding_files['file_for_UnclusteredEnUp'],
         'UnclusteredEnDown'          :  unfolding_files['file_for_UnclusteredEnDown'],
 
-        'Muon_up'                    :  unfolding_files['file_for_LeptonUp'],
-        'Muon_down'                  :  unfolding_files['file_for_LeptonDown'],
-        'Electron_up'                :  unfolding_files['file_for_LeptonUp'],
-        'Electron_down'              :  unfolding_files['file_for_LeptonDown'],
+        'Muon_up'                    :  unfolding_files['file_for_ElectronUp'],
+        'Muon_down'                  :  unfolding_files['file_for_ElectronDown'],
+        'Electron_up'                :  unfolding_files['file_for_MuonUp'],
+        'Electron_down'              :  unfolding_files['file_for_MuonDown'],
 
         'PileUp_up'                  :  unfolding_files['file_for_PUUp'],
         'PileUp_down'                :  unfolding_files['file_for_PUDown'],

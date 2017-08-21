@@ -129,8 +129,10 @@ def getFileName( com, sample, measurementConfig ) :
             'lightjetdown'      : measurementConfig.ttbar_trees,
             'lightjetup'        : measurementConfig.ttbar_trees,
 
-            'leptondown'        : measurementConfig.ttbar_trees,
-            'leptonup'          : measurementConfig.ttbar_trees,
+            'electrondown'        : measurementConfig.ttbar_trees,
+            'electronup'          : measurementConfig.ttbar_trees,
+            'muondown'        : measurementConfig.ttbar_trees,
+            'muonup'          : measurementConfig.ttbar_trees,
             'pileupUp'          : measurementConfig.ttbar_trees,
             'pileupDown'        : measurementConfig.ttbar_trees,
 
@@ -557,17 +559,6 @@ def main():
                 # Generator level weight
                 genWeight = event.EventWeight * measurement_config.luminosity_scale
 
-                # Lepton weight
-                leptonWeight = event.LeptonEfficiencyCorrection
-                leptonWeight_forLeptonEta = event.LeptonEfficiencyCorrection_etaBins
-
-                if args.sample == 'leptonup':
-                    leptonWeight = event.LeptonEfficiencyCorrectionUp
-                    leptonWeight_forLeptonEta = event.LeptonEfficiencyCorrectionUp_etaBins
-                elif args.sample == 'leptondown':
-                    leptonWeight = event.LeptonEfficiencyCorrectionDown
-                    leptonWeight_forLeptonEta = event.LeptonEfficiencyCorrectionDown_etaBins
-
                 # B Jet Weight
                 # bjetWeight = event.BJetWeight
                 bjetWeight = event.BJetAlternativeWeight
@@ -595,8 +586,6 @@ def main():
                 offlineWeight *= bjetWeight
 
                 offlineWeight_forLeptonEta = offlineWeight
-                offlineWeight *= leptonWeight
-                offlineWeight_forLeptonEta *= leptonWeight_forLeptonEta
                 genWeight *= topPtSystematicWeight
                 
                 # Generator weight
@@ -661,6 +650,35 @@ def main():
                         if args.newPS:
                             genSelectionVis = event.passesGenEventSelection_20GeVLastJet == 1 and event.pseudoLepton_pdgId == 11
 
+                    # Lepton weight
+                    # Channel specific
+                    leptonWeight = 1
+                    leptonWeight_forLeptonEta = 1
+
+                    if channel.channelName is 'muPlusJets' :
+                        leptonWeight = event.MuonEfficiencyCorrection
+                        leptonWeight_forLeptonEta = event.MuonEfficiencyCorrection_etaBins
+
+                        if args.sample == 'muonup':
+                            leptonWeight = event.MuonEfficiencyCorrectionUp
+                            leptonWeight_forLeptonEta = event.MuonEfficiencyCorrectionUp_etaBins
+                        elif args.sample == 'muondown':
+                            leptonWeight = event.MuonEfficiencyCorrectionDown
+                            leptonWeight_forLeptonEta = event.MuonEfficiencyCorrectionDown_etaBins
+                    elif channel.channelName is 'ePlusJets' :
+                        leptonWeight = event.ElectronEfficiencyCorrection
+                        leptonWeight_forLeptonEta = event.ElectronEfficiencyCorrection_etaBins
+
+                        if args.sample == 'electronup':
+                            leptonWeight = event.ElectronEfficiencyCorrectionUp
+                            leptonWeight_forLeptonEta = event.ElectronEfficiencyCorrectionUp_etaBins
+                        elif args.sample == 'electrondown':
+                            leptonWeight = event.ElectronEfficiencyCorrectionDown
+                            leptonWeight_forLeptonEta = event.ElectronEfficiencyCorrectionDown_etaBins
+
+                    offlineWeight_withLeptonWeight = offlineWeight * leptonWeight
+                    offlineWeight_withLeptonWeight_forLeptonEta = offlineWeight_forLeptonEta * leptonWeight_forLeptonEta
+
                     # Offline level selection
                     offlineSelection = 0
 
@@ -693,9 +711,9 @@ def main():
                         variable in measurement_config.variables_no_met:
                             continue
 
-                        offlineWeight_toUse = offlineWeight
-                        if variable is 'abs_lepton_eta':
-                            offlineWeight_toUse = offlineWeight_forLeptonEta
+                        offlineWeight_toUse = offlineWeight_withLeptonWeight
+                        if 'abs_lepton_eta' in variable:
+                            offlineWeight_toUse = offlineWeight_withLeptonWeight_forLeptonEta
 
                         # # #
                         # # # Variable to plot
@@ -714,6 +732,7 @@ def main():
                         genVariable_particle = branch(genVariable_particle_names[variable])
                         if 'abs' in variable:
                             genVariable_particle = abs(genVariable_particle)
+
                         # #
                         # # Fill histograms
                         # #
@@ -725,6 +744,7 @@ def main():
                             if genSelectionVis:
                                 filledTruth = True
                                 histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
+
                             if offlineSelection:
                                 histogramsToFill['measured'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                                 histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight_toUse * genWeight )
