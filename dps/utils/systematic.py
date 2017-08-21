@@ -471,22 +471,6 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
                 isTopMassSystematic,
             )
 
-            # if systematic is 'Muon' or systematic is 'Electron':
-            #     for i in range(0,len(symmetrised_uncertainties)):
-            #         symmetrised_uncertainties[i] *=150
-
-            # if systematic is 'Muon':
-            #     symmetrised_uncertainties[1] *= 150
-            #     symmetrised_uncertainties[10] *= 150
-            #     symmetrised_uncertainties[11] *= 150
-            #     symmetrised_uncertainties[12] *= 150
-
-                # print ('Muon',symmetrised_uncertainties)
-
-            # if systematic is 'Electron':
-            #     symmetrised_uncertainties[0] *= 100
-            #     print ('Electron',symmetrised_uncertainties)
-
             xsections_with_symmetrised_systematics[systematic] = [
                 symmetrised_uncertainties, 
                 signed_uncertainties,
