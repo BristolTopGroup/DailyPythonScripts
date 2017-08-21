@@ -246,12 +246,20 @@ def get_sample_info(options, xsec_config, sample):
                 else:
                     weight_branches.append('MuonEfficiencyCorrection')
         elif options['channel'] == 'electron':
-            if options['category'] == 'Electron_down':
-                weight_branches.append('ElectronDown')
-            elif options['category'] == 'Electron_up':
-                weight_branches.append('ElectronUp')
+            if 'abs_lepton_eta' in options['variable']:
+                if options['category'] == 'Electron_down':
+                    weight_branches.append('ElectronDown_etaBins')
+                elif options['category'] == 'Electron_up':
+                    weight_branches.append('ElectronUp_etaBins')
+                else:
+                    weight_branches.append('ElectronEfficiencyCorrection_etaBins')
             else:
-                weight_branches.append('ElectronEfficiencyCorrection')
+                if options['category'] == 'Electron_down':
+                    weight_branches.append('ElectronDown')
+                elif options['category'] == 'Electron_up':
+                    weight_branches.append('ElectronUp')
+                else:
+                    weight_branches.append('ElectronEfficiencyCorrection')
     sample_info["weight_branches"] = weight_branches
 
     # Input File and Tree
