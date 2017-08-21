@@ -200,21 +200,19 @@ config = XSectionConfig(13)
 
 
 for variable in config.variables:
-    if not 'Bins' in variable: continue
     print variable
 
     histogramsForEachChannel = {}
     uncertaintiesForEachChannel = {}
 
     binEdges = control_plots_bins_for01[variable]
-    # bin_low = binEdges[0]
-    # bin_high = binEdges[-1]
-    # nBins = control_plot_nbins[variable] 
-    # binWidth = ( bin_high - bin_low ) / nBins
+    bin_low = binEdges[0]
+    bin_high = binEdges[-1]
+    nBins = control_plot_nbins[variable] 
+    binWidth = ( bin_high - bin_low ) / nBins
 
-    # reco_bin_edges = [ bin_low + binWidth * i for i in range(0, nBins + 1) ]
-    reco_bin_edges = binEdges
-    print reco_bin_edges
+    reco_bin_edges = [ bin_low + binWidth * i for i in range(0, nBins + 1) ]
+
     for channel in config.analysis_types.keys():
         if channel == 'combined': continue
 
