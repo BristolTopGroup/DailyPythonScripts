@@ -17,7 +17,7 @@ jobs = [
         # '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting -1',
         # '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting -1',
 
-        '--centreOfMassEnergy 13 -s amcatnlo',
+        '--centreOfMassEnergy 13 -s amcatnloPythia8',
         '--centreOfMassEnergy 13 -s madgraph',
         '--centreOfMassEnergy 13 -s powhegherwigpp',
 

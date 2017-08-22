@@ -97,7 +97,7 @@ def getFileName( com, sample, measurementConfig ) :
             'central_firstHalf'           : measurementConfig.ttbar_trees,
             'central_secondHalf'           : measurementConfig.ttbar_trees,
 
-            'amcatnlo'          : measurementConfig.ttbar_amc_trees,
+            'amcatnloPythia8'          : measurementConfig.ttbar_amc_trees,
             'madgraph'          : measurementConfig.ttbar_madgraph_trees,
             'powhegherwigpp'    : measurementConfig.ttbar_powhegherwigpp_trees,
 

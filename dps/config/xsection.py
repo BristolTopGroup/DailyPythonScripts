@@ -25,7 +25,7 @@ class XSectionConfig():
         'ttbar_theory_systematic_prefix', 'ttbar_xsection',
         'unfolding_central', 'unfolding_central_raw',
         'unfolding_powheg_pythia8', 'unfolding_powheg_pythia8_raw',
-        'unfolding_amcatnlo', 'unfolding_amcatnlo_raw', 
+        'unfolding_amcatnlo_pythia8', 'unfolding_amcatnlo_pythia8_raw', 
         'unfolding_madgraphMLM', 'unfolding_madgraphMLM_raw',
         'unfolding_hdamp_down', 'unfolding_hdamp_down_raw',
         'unfolding_hdamp_up', 'unfolding_hdamp_up_raw',
@@ -363,7 +363,7 @@ class XSectionConfig():
         self.samplesForChi2Comparison = [
             'TTJets_powhegPythia8',
             'TTJets_powhegHerwig',
-            'TTJets_amcatnlo',
+            'TTJets_amcatnloPythia8',
             'TTJets_madgraphMLM'
         ]
         # now fill in the centre of mass dependent values
@@ -429,7 +429,7 @@ class XSectionConfig():
 
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
-        self.unfolding_amcatnlo_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnlo.root' % self.centre_of_mass_energy
+        self.unfolding_amcatnlo_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnloPythia8.root' % self.centre_of_mass_energy
         self.unfolding_madgraphMLM_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_madgraph.root' % self.centre_of_mass_energy
         self.unfolding_powheg_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_powhegherwigpp.root' % self.centre_of_mass_energy
         self.unfolding_amcatnlo_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnloherwigpp.root' % self.centre_of_mass_energy
@@ -440,7 +440,7 @@ class XSectionConfig():
 
         # Raw --> asymmetric
         self.unfolding_powheg_pythia8 = self.unfolding_powheg_pythia8_raw.replace( '.root', '_asymmetric_newPS.root' )
-        self.unfolding_amcatnlo = self.unfolding_amcatnlo_raw.replace( '.root', '_asymmetric_newPS.root' )
+        self.unfolding_amcatnlo_pythia8 = self.unfolding_amcatnlo_pythia8_raw.replace( '.root', '_asymmetric_newPS.root' )
         self.unfolding_madgraphMLM = self.unfolding_madgraphMLM_raw.replace( '.root', '_asymmetric_newPS.root' )
         self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric_newPS.root' )
         self.unfolding_amcatnlo_herwig = self.unfolding_amcatnlo_herwig_raw.replace( '.root', '_asymmetric_newPS.root' )
