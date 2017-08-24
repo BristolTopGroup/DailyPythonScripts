@@ -361,7 +361,7 @@ class XSectionConfig():
         self.samplesForChi2Comparison = [
             'TTJets_powhegPythia8',
             'TTJets_powhegHerwig',
-            'TTJets_amcatnlo',
+            'TTJets_amcatnloPythia8',
             'TTJets_madgraphMLM'
         ]
         # now fill in the centre of mass dependent values
@@ -648,6 +648,7 @@ class XSectionConfig():
             "ST" : 0.0014859830286,
             "MET" : 0.00186599526208,
             "abs_lepton_eta" : 1.1970850305e-08,
+            # "abs_lepton_eta" : 0,
         }
 
         self.tau_values_muon = {
@@ -658,6 +659,7 @@ class XSectionConfig():
             "ST" : 0.00192109241721,
             "MET" : 0.00240030731786,
             "abs_lepton_eta" : 2.29348568572e-06,
+            # "abs_lepton_eta" : 0,
         }
 
         self.tau_values_combined = {

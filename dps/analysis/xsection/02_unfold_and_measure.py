@@ -640,7 +640,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         )   
 
         normalisation_unfolded['TTJets_powhegPythia8'] = hist_to_value_error_tuplelist( h_truth_powhegPythia8 )
-        normalisation_unfolded['TTJets_amcatnlo']      = hist_to_value_error_tuplelist( h_truth_amcatnlo )
+        normalisation_unfolded['TTJets_amcatnloPythia8']      = hist_to_value_error_tuplelist( h_truth_amcatnlo )
         normalisation_unfolded['TTJets_madgraphMLM']   = hist_to_value_error_tuplelist( h_truth_madgraphMLM )
         normalisation_unfolded['TTJets_powhegHerwig']  = hist_to_value_error_tuplelist( h_truth_powheg_herwig )
 
@@ -739,8 +739,8 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['TTJets_amcatnlo'], _, _, _ = calculate_xsection( 
-            normalisation['TTJets_amcatnlo'],
+        xsection_unfolded['TTJets_amcatnloPythia8'], _, _, _ = calculate_xsection( 
+            normalisation['TTJets_amcatnloPythia8'],
             binWidths[variable],
             luminosity, 
             branching_ratio 
@@ -973,8 +973,8 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
             binWidths[variable], 
             normalise_to_one, 
         )
-        normalised_xsection['TTJets_amcatnlo'], _, _, _ = calculate_normalised_xsection( 
-            normalisation['TTJets_amcatnlo'], 
+        normalised_xsection['TTJets_amcatnloPythia8'], _, _, _ = calculate_normalised_xsection( 
+            normalisation['TTJets_amcatnloPythia8'], 
             binWidths[variable], 
             normalise_to_one, 
         )
