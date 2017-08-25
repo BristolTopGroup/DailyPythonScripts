@@ -200,7 +200,6 @@ config = XSectionConfig(13)
 
 
 for variable in config.variables:
-    # if not 'HT' in variable: continue
     print variable
 
     histogramsForEachChannel = {}
@@ -217,7 +216,7 @@ for variable in config.variables:
     for channel in config.analysis_types.keys():
         if channel == 'combined': continue
 
-        path_to_DF = 'data/data_normalisation/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
+        path_to_DF = 'data/normalisation/background_subtraction/13TeV/{variable}/VisiblePS/'.format( variable = variable )
         normalisation_fileName = 'normalisation_{channel}.txt'.format(channel=channel)
         normalisation_results_electron  = read_tuple_from_file( '{path}/central/{filename}'.format(path=path_to_DF,filename=normalisation_fileName)  )
 
@@ -261,8 +260,6 @@ for variable in config.variables:
             for i in range(0,len(uncertainties)):
                 newUncertainty = math.sqrt( combinedUncertainties[i] ** 2 + uncertainties[i] ** 2 )
                 combinedUncertainties[i] = newUncertainty
-
-    print combinedHistograms
 
     ttbarMC = combinedHistograms['TTJet']
     data = combinedHistograms['Data']

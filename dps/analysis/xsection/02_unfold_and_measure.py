@@ -84,8 +84,10 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_lightjetdown']        = File( measurement_config.unfolding_lightjet_down, 'read' )
     unfolding_files['file_for_lightjetup']          = File( measurement_config.unfolding_lightjet_up, 'read' )
 
-    unfolding_files['file_for_LeptonDown']          = File( measurement_config.unfolding_Lepton_down, 'read' )
-    unfolding_files['file_for_LeptonUp']            = File( measurement_config.unfolding_Lepton_up, 'read' )
+    unfolding_files['file_for_ElectronDown']          = File( measurement_config.unfolding_Electron_down, 'read' )
+    unfolding_files['file_for_ElectronUp']            = File( measurement_config.unfolding_Electron_up, 'read' )
+    unfolding_files['file_for_MuonDown']          = File( measurement_config.unfolding_Muon_down, 'read' )
+    unfolding_files['file_for_MuonUp']            = File( measurement_config.unfolding_Muon_up, 'read' )
 
     unfolding_files['file_for_ElectronEnDown']      = File( measurement_config.unfolding_ElectronEn_down, 'read' )
     unfolding_files['file_for_ElectronEnUp']        = File( measurement_config.unfolding_ElectronEn_up, 'read' )
@@ -102,7 +104,7 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_ptreweight']          = File( measurement_config.unfolding_ptreweight, 'read' )
 
     unfolding_files['file_for_powhegPythia8']       = File( measurement_config.unfolding_powheg_pythia8, 'read')
-    unfolding_files['file_for_amcatnlo']            = File( measurement_config.unfolding_amcatnlo, 'read')
+    unfolding_files['file_for_amcatnloPythia8']            = File( measurement_config.unfolding_amcatnlo_pythia8, 'read')
     unfolding_files['file_for_madgraphMLM']         = File( measurement_config.unfolding_madgraphMLM, 'read')
     unfolding_files['file_for_powheg_herwig']       = File( measurement_config.unfolding_powheg_herwig, 'read' )
     return unfolding_files
@@ -227,10 +229,10 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'UnclusteredEnUp'            :  unfolding_files['file_for_UnclusteredEnUp'],
         'UnclusteredEnDown'          :  unfolding_files['file_for_UnclusteredEnDown'],
 
-        'Muon_up'                    :  unfolding_files['file_for_LeptonUp'],
-        'Muon_down'                  :  unfolding_files['file_for_LeptonDown'],
-        'Electron_up'                :  unfolding_files['file_for_LeptonUp'],
-        'Electron_down'              :  unfolding_files['file_for_LeptonDown'],
+        'Muon_up'                    :  unfolding_files['file_for_ElectronUp'],
+        'Muon_down'                  :  unfolding_files['file_for_ElectronDown'],
+        'Electron_up'                :  unfolding_files['file_for_MuonUp'],
+        'Electron_down'              :  unfolding_files['file_for_MuonDown'],
 
         'PileUp_up'                  :  unfolding_files['file_for_PUUp'],
         'PileUp_down'                :  unfolding_files['file_for_PUDown'],
@@ -418,8 +420,8 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
-        h_truth_amcatnlo, _, _, _ = get_unfold_histogram_tuple( 
-            inputfile = unfolding_files['file_for_amcatnlo'],
+        h_truth_amcatnloPythia8, _, _, _ = get_unfold_histogram_tuple( 
+            inputfile = unfolding_files['file_for_amcatnloPythia8'],
             variable = variable,
             channel = channel,
             centre_of_mass = com,
@@ -640,7 +642,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         )   
 
         normalisation_unfolded['TTJets_powhegPythia8'] = hist_to_value_error_tuplelist( h_truth_powhegPythia8 )
-        normalisation_unfolded['TTJets_amcatnloPythia8']      = hist_to_value_error_tuplelist( h_truth_amcatnlo )
+        normalisation_unfolded['TTJets_amcatnloPythia8']      = hist_to_value_error_tuplelist( h_truth_amcatnloPythia8 )
         normalisation_unfolded['TTJets_madgraphMLM']   = hist_to_value_error_tuplelist( h_truth_madgraphMLM )
         normalisation_unfolded['TTJets_powhegHerwig']  = hist_to_value_error_tuplelist( h_truth_powheg_herwig )
 
@@ -1303,19 +1305,19 @@ if __name__ == '__main__':
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel, covariance_matrix=covariance_muon, input_mc_covariance_matrix = inputMC_covariance_muon )
         calculate_normalised_xsections( unfolded_normalisation_muon, category, channel , True )
 
-        # Results where the channels are combined before unfolding (the 'combined in the response matrix')
-        channel = 'combinedBeforeUnfolding'
-        unfolded_normalisation_combinedBeforeUnfolding, covariance_combinedBeforeUnfolding, inputMC_covariance_combinedBeforeUnfolding = get_unfolded_normalisation(
-            TTJet_normalisation_results_combined,
-            category,
-            'combined', 
-            tau_value=tau_value_combined,
-            visiblePS=visiblePS,
-        )
-        # measure xsection
-        calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding  )
-        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding )
-        calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
+        # # Results where the channels are combined before unfolding (the 'combined in the response matrix')
+        # channel = 'combinedBeforeUnfolding'
+        # unfolded_normalisation_combinedBeforeUnfolding, covariance_combinedBeforeUnfolding, inputMC_covariance_combinedBeforeUnfolding = get_unfolded_normalisation(
+        #     TTJet_normalisation_results_combined,
+        #     category,
+        #     'combined', 
+        #     tau_value=tau_value_combined,
+        #     visiblePS=visiblePS,
+        # )
+        # # measure xsection
+        # calculate_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding  )
+        # calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel, covariance_matrix=covariance_combinedBeforeUnfolding, input_mc_covariance_matrix = inputMC_covariance_combinedBeforeUnfolding )
+        # calculate_normalised_xsections( unfolded_normalisation_combinedBeforeUnfolding, category, channel , True )
 
         # Results where the channels are combined after unfolding
         channel = 'combined'

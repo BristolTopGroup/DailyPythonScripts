@@ -76,7 +76,6 @@ def getUnmergedDirectory( f ) :
         sampleName = 'TTJets_madgraphMLM'
     new_f = None
     if 'plusJES' in f:
-        print 'HERE',sampleName.strip('_plusJES')
         new_f = baseDir + '/' + sampleName.strip('_plusJES') + '/analysis_JES_up_job_*/*root'
     elif 'minusJES' in f:
         new_f = baseDir + '/' + sampleName.strip('_minusJES') + '/analysis_JES_down_job_*/*root'
@@ -98,7 +97,7 @@ def getFileName( com, sample, measurementConfig ) :
             'central_firstHalf'           : measurementConfig.ttbar_trees,
             'central_secondHalf'           : measurementConfig.ttbar_trees,
 
-            'amcatnlo'          : measurementConfig.ttbar_amc_trees,
+            'amcatnloPythia8'          : measurementConfig.ttbar_amc_trees,
             'madgraph'          : measurementConfig.ttbar_madgraph_trees,
             'powhegherwigpp'    : measurementConfig.ttbar_powhegherwigpp_trees,
 
@@ -130,8 +129,10 @@ def getFileName( com, sample, measurementConfig ) :
             'lightjetdown'      : measurementConfig.ttbar_trees,
             'lightjetup'        : measurementConfig.ttbar_trees,
 
-            'leptondown'        : measurementConfig.ttbar_trees,
-            'leptonup'          : measurementConfig.ttbar_trees,
+            'electrondown'        : measurementConfig.ttbar_trees,
+            'electronup'          : measurementConfig.ttbar_trees,
+            'muondown'        : measurementConfig.ttbar_trees,
+            'muonup'          : measurementConfig.ttbar_trees,
             'pileupUp'          : measurementConfig.ttbar_trees,
             'pileupDown'        : measurementConfig.ttbar_trees,
 
@@ -556,19 +557,12 @@ def main():
                 # Generator level weight
                 genWeight = event.EventWeight * measurement_config.luminosity_scale
 
-                # Lepton weight
-                leptonWeight = event.LeptonEfficiencyCorrection
-
-                if args.sample == 'leptonup':
-                    leptonWeight = event.LeptonEfficiencyCorrectionUp
-                elif args.sample == 'leptondown':
-                    leptonWeight = event.LeptonEfficiencyCorrectionDown
-
                 # B Jet Weight
                 # bjetWeight = event.BJetWeight
                 bjetWeight = event.BJetAlternativeWeight
                 if 'fsr' in args.sample:
-                    bjetWeight = event.BJetAlternativeWeight * event.BJetEfficiencyCorrectionWeight
+                    # bjetWeight = event.BJetAlternativeWeight * event.BJetEfficiencyCorrectionWeight
+                    bjetWeight = event.BJetWeight * event.BJetEfficiencyCorrectionWeight
 
                 if args.sample == "bjetup":
                     bjetWeight = event.BJetUpWeight
@@ -588,7 +582,8 @@ def main():
                 offlineWeight = 1
                 offlineWeight *= pileupWeight
                 offlineWeight *= bjetWeight
-                offlineWeight *= leptonWeight
+
+                offlineWeight_forLeptonEta = offlineWeight
                 genWeight *= topPtSystematicWeight
                 
                 # Generator weight
@@ -599,7 +594,6 @@ def main():
 
                 if MMHT14Weight >= 0:
                     genWeight *= branch('MMHT14Weight_%i' % MMHT14Weight)
-                    print genWeight
                     pass
 
 
@@ -654,6 +648,35 @@ def main():
                         if args.newPS:
                             genSelectionVis = event.passesGenEventSelection_20GeVLastJet == 1 and event.pseudoLepton_pdgId == 11
 
+                    # Lepton weight
+                    # Channel specific
+                    leptonWeight = 1
+                    leptonWeight_forLeptonEta = 1
+
+                    if channel.channelName is 'muPlusJets' :
+                        leptonWeight = event.MuonEfficiencyCorrection
+                        leptonWeight_forLeptonEta = event.MuonEfficiencyCorrection_etaBins
+
+                        if args.sample == 'muonup':
+                            leptonWeight = event.MuonEfficiencyCorrectionUp
+                            leptonWeight_forLeptonEta = event.MuonEfficiencyCorrectionUp_etaBins
+                        elif args.sample == 'muondown':
+                            leptonWeight = event.MuonEfficiencyCorrectionDown
+                            leptonWeight_forLeptonEta = event.MuonEfficiencyCorrectionDown_etaBins
+                    elif channel.channelName is 'ePlusJets' :
+                        leptonWeight = event.ElectronEfficiencyCorrection
+                        leptonWeight_forLeptonEta = event.ElectronEfficiencyCorrection_etaBins
+
+                        if args.sample == 'electronup':
+                            leptonWeight = event.ElectronEfficiencyCorrectionUp
+                            leptonWeight_forLeptonEta = event.ElectronEfficiencyCorrectionUp_etaBins
+                        elif args.sample == 'electrondown':
+                            leptonWeight = event.ElectronEfficiencyCorrectionDown
+                            leptonWeight_forLeptonEta = event.ElectronEfficiencyCorrectionDown_etaBins
+
+                    offlineWeight_withLeptonWeight = offlineWeight * leptonWeight
+                    offlineWeight_withLeptonWeight_forLeptonEta = offlineWeight_forLeptonEta * leptonWeight_forLeptonEta
+
                     # Offline level selection
                     offlineSelection = 0
 
@@ -686,6 +709,10 @@ def main():
                         variable in measurement_config.variables_no_met:
                             continue
 
+                        offlineWeight_toUse = offlineWeight_withLeptonWeight
+                        if 'abs_lepton_eta' in variable:
+                            offlineWeight_toUse = offlineWeight_withLeptonWeight_forLeptonEta
+
                         # # #
                         # # # Variable to plot
                         # # #
@@ -703,6 +730,7 @@ def main():
                         genVariable_particle = branch(genVariable_particle_names[variable])
                         if 'abs' in variable:
                             genVariable_particle = abs(genVariable_particle)
+
                         # #
                         # # Fill histograms
                         # #
@@ -714,39 +742,40 @@ def main():
                             if genSelectionVis:
                                 filledTruth = True
                                 histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
+
                             if offlineSelection:
-                                histogramsToFill['measured'].Fill( recoVariable, offlineWeight * genWeight )
-                                histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['measured'].Fill( recoVariable, offlineWeight_toUse * genWeight )
+                                histogramsToFill['measuredVis'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                                 if genSelectionVis :
-                                    histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight * genWeight )
+                                    histogramsToFill['measuredVis_without_fakes'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                                 if genSelection:
-                                    histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight * genWeight )
-                                histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight )
+                                    histogramsToFill['measured_without_fakes'].Fill( recoVariable, offlineWeight_toUse * genWeight )
+                                histogramsToFill['response'].Fill( recoVariable, genVariable_particle, offlineWeight_toUse * genWeight )
                             
                             if offlineSelection and genSelection:
-                                histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight  ) 
-                                histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight ) * genWeight  ) 
+                                histogramsToFill['response_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight_toUse * genWeight  ) 
+                                histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight_toUse ) * genWeight  ) 
                             elif genSelection:
                                 histogramsToFill['response_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
                             
                             if offlineSelection and genSelectionVis:
-                                histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight * genWeight )
-                                histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight ) * genWeight )
+                                histogramsToFill['responseVis_without_fakes'].Fill( recoVariable, genVariable_particle, offlineWeight_toUse * genWeight )
+                                histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, ( 1 - offlineWeight_toUse ) * genWeight )
                                 filledResponse = True
                             elif genSelectionVis:
                                 histogramsToFill['responseVis_without_fakes'].Fill( allVariablesBins[variable][0]-1, genVariable_particle, genWeight )
                                 filledResponse = True
                             
                             if fakeSelection:
-                                histogramsToFill['fake'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['fake'].Fill( recoVariable, offlineWeight_toUse * genWeight )
                             if fakeSelectionVis:
-                                histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight * genWeight )
+                                histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight_toUse * genWeight )
 
                             if args.extraHists:
                                 if genSelection:
                                     histogramsToFill['eventWeightHist'].Fill(event.EventWeight)
                                     histogramsToFill['genWeightHist'].Fill(genWeight)
-                                    histogramsToFill['offlineWeightHist'].Fill(offlineWeight )
+                                    histogramsToFill['offlineWeightHist'].Fill(offlineWeight_toUse )
 
                             if args.fineBinned:
                                 # Bin reco var is in
@@ -758,7 +787,7 @@ def main():
                                         else: break
                                     residual = abs(recoVariable - genVariable_particle)                                 
                                     if not residual > options['max']*0.1: 
-                                        residuals[variable][channel.channelName][i].Fill(residual, offlineWeight*genWeight)
+                                        residuals[variable][channel.channelName][i].Fill(residual, offlineWeight_toUse*genWeight)
 
             #
             # Output histgorams to file
@@ -804,6 +833,7 @@ def main():
         # Done all channels, now combine the two channels, and output to the same file
         for path, dirs, objects in out.walk():
             if 'electron' in path:
+                if 'coarse' in path: continue
                 outputDir = out.mkdir(path.replace('electron','combined'))
                 outputDir.cd()
                 for h in objects:

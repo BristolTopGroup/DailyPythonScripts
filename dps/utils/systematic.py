@@ -149,7 +149,6 @@ def read_xsection_measurement(options, category):
             norm        = norm,
         )
 
-    print (filename)
     measurement = read_tuple_from_file( filename )
 
     xsection_unfolded = measurement['TTJets_unfolded']

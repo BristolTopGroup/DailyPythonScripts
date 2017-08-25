@@ -12,10 +12,19 @@ from dps.utils.pandas_utilities import dict_to_df, df_to_file
 from dps.utils.latex import setup_matplotlib
 from uncertainties import ufloat
 import pandas as pd 
+import glob
 
 # latex, font, etc
 setup_matplotlib()
 title_template = '%.1f fb$^{-1}$ (%d TeV)'
+
+def getUnmergedDirectory( f ) :
+    baseDir = f.split('combined')[0]
+    sampleName = f.split('combined')[-1].strip('/').split('_tree.root')[0]
+    print baseDir
+    print sampleName
+    new_f = baseDir + '/' + sampleName + '/analysis_central_job_*/*root'
+    return new_f
 
 def binWidth(binning):
     return  ( binning[-1] - binning[0] ) / ( len(binning)-1 )
@@ -82,7 +91,6 @@ def getHistograms( histogram_files,
             trees = [signal_region_tree.replace('COMBINED','EPlusJets')], 
             branch = branchName, 
             weightBranch = weightBranchSignalRegion + ' * ElectronEfficiencyCorrection', 
-            # weightBranch = weightBranchSignalRegion, 
             files = histogram_files_electron, 
             nBins = nBins, 
             xMin = x_limits[0], 
@@ -93,7 +101,6 @@ def getHistograms( histogram_files,
             trees = [signal_region_tree.replace('COMBINED','MuPlusJets')], 
             branch = branchName, 
             weightBranch = weightBranchSignalRegion + ' * MuonEfficiencyCorrection', 
-            # weightBranch = weightBranchSignalRegion, 
             files = histogram_files_muon, 
             nBins = nBins, 
             xMin = x_limits[0], 
@@ -263,7 +270,7 @@ def make_plot( channel, x_axis_title, y_axis_title,
         else: weightBranchSignalRegion += ' * BJetWeight'
 
     # Selections
-    if branchName == 'abs(lepton_eta)' :
+    if branchName == 'abs(lepton_eta)' or branchName == 'lepton_eta' :
         selectionSignalRegion = 'lepton_eta > -10'
     else:
         selectionSignalRegion = '%s >= 0' % branchName
@@ -324,6 +331,8 @@ def make_plot( channel, x_axis_title, y_axis_title,
         histogram_properties.name               += '_' + category
     if normalise_to_data:
         histogram_properties.name               += '_normToData'
+    if data_period != '':
+        histogram_properties.name               += '_dataPeriod_{period}'.format(period=data_period)
 
     variation_dependent_text=''
     if 'PU' in name_prefix:
@@ -516,6 +525,11 @@ def parse_arguments():
         dest = "additional_QCD_plots",
         help = "creates a set of QCD plots for exclusive bins for all variables" 
     )
+    parser.add_argument( "-p", "--data_period", 
+        dest = "data_period", 
+        default = '',
+        help = "Use specific data taking period, and normalise MC to data" 
+    )
     args = parser.parse_args()
     return args
 
@@ -527,7 +541,13 @@ if __name__ == '__main__':
     measurement_config = XSectionConfig( args.CoM )
     
     normalise_to_data = args.normalise_to_data
-    
+    data_period = args.data_period
+
+    if data_period != '':
+        measurement_config.data_file_electron = measurement_config.data_file_electron.replace('tree','{period}_tree'.format(period=data_period))
+        measurement_config.data_file_muon = measurement_config.data_file_muon.replace('tree','{period}_tree'.format(period=data_period))
+        measurement_config.new_luminosity = measurement_config.new_luminosity_periods[data_period]
+        measurement_config.luminosity_scale = float( measurement_config.new_luminosity ) / measurement_config.luminosity
 
     category = args.category
     generator = args.generator
@@ -541,6 +561,9 @@ if __name__ == '__main__':
         'QCD'       : measurement_config.electron_QCD_MC_trees,
         'SingleTop' : measurement_config.SingleTop_trees,
     }
+
+    # If you want to run over the unmerged output from AT, you can try this:
+    # histogram_files['TTJet'] = glob.glob( getUnmergedDirectory(histogram_files['TTJet']) )
 
     # Swap between plotting different generators
     if 'PowhegPythia8' not in generator:
@@ -565,26 +588,27 @@ if __name__ == '__main__':
 
     # comment out plots you don't want
     include_plots = [
-        # 'HT',
-        # 'MET',
-        # 'ST',
-        # 'WPT',
-        # 'NVertex',
-        # 'NVertexNoWeight',
-        # 'NVertexUp',
-        # 'NVertexDown',
-        # 'LeptonPt',
-        # 'AbsLeptonEta',
-        # 'NJets',
-        # 'NBJets',
-        # 'Tau',
+        'HT',
+        'MET',
+        'ST',
+        'WPT',
+        'NVertex',
+        'NVertexNoWeight',
+        'NVertexUp',
+        'NVertexDown',
+        'LeptonPt',
+        'LeptonEta',
+        'AbsLeptonEta',
+        'NJets',
+        'NBJets',
+        'Tau',
 
-        # 'NBJetsNoWeight',
-        # 'NBJetsUp',
-        # 'NBJetsDown',
-        # 'NBJets_LightUp',
-        # 'NBJets_LightDown',
-        # 'JetPt',
+        'NBJetsNoWeight',
+        'NBJetsUp',
+        'NBJetsDown',
+        'NBJets_LightUp',
+        'NBJets_LightDown',
+        'JetPt',
         
         # 'sigmaietaieta',
 
@@ -759,9 +783,6 @@ if __name__ == '__main__':
         ###################################################
         if 'LeptonEta' in include_plots:
             print '---> Lepton Eta'
-            treeName = 'Electron/Electrons'
-            if channel == 'muon':
-                treeName = 'Muon/Muons'
 
             make_plot( 
                 channel,
@@ -772,10 +793,11 @@ if __name__ == '__main__':
                 branchName = 'lepton_eta',
                 name_prefix = '%s_LeptonEta_' % label,
                 x_limits = control_plots_bins['LeptonEta'],
+                y_max_scale = 1.4,
                 nBins = len(control_plots_bins['LeptonEta'])-1,
                 rebin = 1,
-                legend_location = ( 0.9, 0.73 ),
-                cms_logo_location = 'right',
+                legend_location = ( 0.99, 0.79 ),
+                cms_logo_location = 'left',
                 use_qcd_data_region = useQCDControl,
             )
 

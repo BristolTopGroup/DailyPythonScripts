@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "Recreating Config Files (Just in case you forgot...)"
-python dps/analysis/xsection/create_measurement.py
+# python dps/analysis/xsection/create_measurement.py
 echo "Tarring DailyPythonScripts..."
-tar -cf dps.tar ../DailyPythonScripts/ --exclude ../DailyPythonScripts/data --exclude ../DailyPythonScripts/plots --exclude ../DailyPythonScripts/tables  --exclude ../DailyPythonScripts/jobs --exclude ../DailyPythonScripts/unfolding --exclude ../DailyPythonScripts/dps.tar
+tar -cf dps.tar ../DailyPythonScripts/ --exclude ../DailyPythonScripts/.git --exclude ../DailyPythonScripts/data --exclude ../DailyPythonScripts/plots --exclude ../DailyPythonScripts/tables  --exclude ../DailyPythonScripts/jobs --exclude ../DailyPythonScripts/unfolding --exclude ../DailyPythonScripts/dps.tar 
 echo "Submitting jobs to DICE..."
 condor_submit dps/experimental/condor/01b/01_fit.description
 echo "Done."

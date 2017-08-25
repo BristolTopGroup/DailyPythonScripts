@@ -6,6 +6,7 @@ Created on 19 Jan 2013
 from rootpy.logger import logging
 from rootpy.io import File
 from ROOT import gROOT, TH1F
+from rootpy.tree import TreeChain
 from rootpy.plotting import Hist
 gcd = gROOT.cd
 import dps.config.summations_common as sumations
@@ -130,9 +131,7 @@ def get_histograms_from_trees(
     weightAndSelection = '( %s ) * ( %s )' % ( weightBranch, selection )
 
     for sample, input_file in files.iteritems():
-        root_file = File( input_file )
 
-        get_tree = root_file.Get
         histograms[sample] = {}
 
         for tree in trees:
@@ -141,9 +140,19 @@ def get_histograms_from_trees(
             if 'data' in sample and ( 'Up' in tempTree or 'Down' in tempTree ) :
                 tempTree = tempTree.replace('_'+tempTree.split('_')[-1],'')
 
-            currentTree = get_tree( tempTree )
+
+            chain = None;
+            if isinstance( input_file, list ):
+                for f in input_file:
+                    chain.Add(f)
+            else:
+                chain = TreeChain(tempTree, [input_file]);
+
+
+            weightAndSelection = '( %s ) * ( %s )' % ( weightBranch, selection )
+
             root_histogram = Hist( nBins, xMin, xMax)
-            currentTree.Draw(branch, weightAndSelection, hist = root_histogram)
+            chain.Draw(branch, weightAndSelection, hist = root_histogram)
             if not is_valid_histogram( root_histogram, tree, input_file):
                 return
 
@@ -156,7 +165,6 @@ def get_histograms_from_trees(
             nHistograms += 1
             histograms[sample][tree] = root_histogram.Clone()
 
-        root_file.Close()
     return histograms
 
 @rul.trace()

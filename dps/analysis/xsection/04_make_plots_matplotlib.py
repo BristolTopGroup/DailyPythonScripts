@@ -461,7 +461,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         legend_location = (0.97, 0.82)
     elif variable == 'WPT':
         legend_location = (1.0, 0.84)
-    elif variable == 'abs_lepton_eta':
+    elif variable == 'abs_lepton_eta' or variable =='abs_lepton_eta_coarse':
         legend_location = (0.97, 0.87)
     elif variable == 'NJets':
         # Reduce size of NJets legend
@@ -529,7 +529,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
     if ylim[0] < 0:
         axes.set_ylim( ymin = 0.)
     axes.set_ylim(ymax = ylim[1]*1.1)
-    if variable == 'abs_lepton_eta':
+    if variable == 'abs_lepton_eta' or variable == 'abs_lepton_eta_coarse':
         axes.set_ylim(ymax = ylim[1]*1.6)
 
     # Now to show either of the ratio plots
@@ -626,7 +626,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             loc = 'lower left'
         elif variable == 'NJets':
             loc = 'lower left'
-        elif variable == 'abs_lepton_eta':
+        elif variable == 'abs_lepton_eta' or variable == 'abs_lepton_eta_coarse':
             loc = 'upper left'
         elif variable == 'lepton_pt':
             loc = 'lower left'
@@ -668,7 +668,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
-        elif variable == 'abs_lepton_eta':
+        elif variable == 'abs_lepton_eta' or variable == 'abs_lepton_eta_coarse':
             ax1.set_ylim( ymin = 0.6, ymax = 1.4 )
             ax1.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax1.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
@@ -790,7 +790,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
             ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )
         elif variable == 'NJets':
             ax2.set_ylim( ymin = 0.7, ymax = 1.5 )
-        elif variable == 'abs_lepton_eta':
+        elif variable == 'abs_lepton_eta' or variable == 'abs_lepton_eta_coarse':
             ax2.set_ylim( ymin = 0.8, ymax = 1.2 )
             ax2.yaxis.set_major_locator( MultipleLocator( 0.2 ) )
             ax2.yaxis.set_minor_locator( MultipleLocator( 0.1 ) )

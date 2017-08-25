@@ -49,6 +49,7 @@ def calculateGlobalChi2(modelsForComparing, chi2_Models):
 def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input, uncertainty_type ):
 	# Paths to statistical Covariance/Correlation matrices.
 	covariance_filename = '{input_path}/covarianceMatrices/{type}/Total_Covariance_{channel}.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
+
 	# Convert to numpy matrix and create total
 	cov_full = matrix_from_df( file_to_df(covariance_filename) )
 
@@ -205,8 +206,8 @@ if __name__ == '__main__':
 	    phase_space = 'VisiblePS'
 
 	channels = [
-		# 'electron', 
-		# 'muon', 
+		'electron', 
+		'muon', 
 		'combined', 
 		# 'combinedBeforeUnfolding',
 	]

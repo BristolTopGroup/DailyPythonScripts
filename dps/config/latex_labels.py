@@ -33,6 +33,7 @@ variables_latex = {
     'lepton_pt_-': '\ensuremath{ p_{\mathrm{T}-}^\mathrm{l} }',
     'lepton_eta': '\ensuremath{ \eta^\mathrm{l} }',
     'abs_lepton_eta': '\ensuremath{ |\eta^\mathrm{l}| }',
+    'abs_lepton_eta_coarse': '\ensuremath{ |\eta^\mathrm{l}| }',
     'bjets_pt': '\ensuremath{ \mathrm{b-jet} p_{\mathrm{T}} }',
     'bjets_eta': '\ensuremath{ \mathrm{b-jet} \eta }',
     'sigmaietaieta' : '\ensuremath{\sigma_{i\eta i \eta}}',
@@ -46,6 +47,7 @@ variables_NonLatex = {
     'NJets': 'N Jets',
     'lepton_pt': 'lepton pt',
     'abs_lepton_eta': 'lepton eta',
+    'abs_lepton_eta_coarse': 'lepton eta',
 }
 
 control_plots_latex = {
