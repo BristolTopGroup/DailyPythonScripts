@@ -2,6 +2,41 @@
 Created on 31 Oct 2012
 
 @author: kreczko
+
+//////////////////////////////////////////////////////////////////////////
+//                                                                      //
+//  TUnfold provides functionality to correct data                      //
+//   for migration effects.                                             //
+//                                                                      //
+//  Citation: S.Schmitt, JINST 7 (2012) T10003 [arXiv:1205.6201]        //
+//                                                                      //
+//  TUnfold solves the inverse problem                                  //
+//                                                                      //
+//                   T   -1            2          T                     //
+//    chi**2 = (y-Ax) Vyy  (y-Ax) + tau  (L(x-x0)) L(x-x0)              //
+//                                                                      //
+//  Monte Carlo input                                                   //
+//    y: vector of measured quantities  (dimension ny)                  //
+//    Vyy: covariance matrix for y (dimension ny x ny)                  //
+//    A: migration matrix               (dimension ny x nx)             //
+//    x: unknown underlying distribution (dimension nx)                 //
+//  Regularisation                                                      //
+//    tau: parameter, defining the regularisation strength              //
+//    L: matrix of regularisation conditions (dimension nl x nx)        //
+//    x0: underlying distribution bias                                  //
+//                                                                      //
+//  where chi**2 is minimized as a function of x                        //
+//                                                                      //
+//  The algorithm is based on "standard" matrix inversion, with the     //
+//  known limitations in numerical accuracy and computing cost for      //
+//  matrices with large dimensions.                                     //
+//                                                                      //
+//  Thus the algorithm should not used for large dimensions of x and y  //
+//    dim(x) should not exceed O(100)                                   //
+//    dim(y) should not exceed O(500)                                   //
+//                                                                      //
+//////////////////////////////////////////////////////////////////////////
+
 '''
 from __future__ import division
 from ROOT import gSystem, cout, TDecompSVD
@@ -92,6 +127,29 @@ class Unfolding:
         else:
             print("Data has not been unfolded. You cannot refold something that hasn't been first unfolded")
         return self.refolded_data
+
+    def get_bias(self):
+        '''
+        Return the bias vector
+        '''
+        self.bias = asrootpy(
+            self.unfoldObject.GetBias('BiasVector'))
+        return self.bias
+
+    def get_chi2(self):
+        '''
+                       T   -1            2          T                     
+        chi**2 = (y-Ax) Vyy  (y-Ax) + tau  (L(x-x0)) L(x-x0)
+
+        get: 
+        Chi2A : get chi**2 contribution from (y-Ax)V(y-Ax)
+        Chi2L : get chi**2 contribution from tauSquared * (x-s*x0)LSquared(x-s*x0)
+        NDF
+        '''
+        chi2a = self.unfoldObject.GetChi2A()
+        chi2l = self.unfoldObject.GetChi2L()
+        ndf = self.unfoldObject.GetNdf()
+        return chi2a, chi2l, ndf
 
     def return_probability_matrix(self):
         '''
