@@ -661,7 +661,6 @@ class XSectionConfig():
             "MET" : 0.00240030731786,
             "abs_lepton_eta" : 2.29348568572e-06,
             "abs_lepton_eta_coarse" : 2.29348568572e-06,
-
         }
 
         self.tau_values_combined = {

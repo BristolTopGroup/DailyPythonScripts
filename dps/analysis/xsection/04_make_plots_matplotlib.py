@@ -709,10 +709,7 @@ def make_plots( histograms, category, output_folder, histname, show_ratio = Fals
         plt.xlabel( x_label, CMS.x_axis_title )
 
         y_label = 'Ratio to \n$' + measurements_latex['TTJets_powhegPythia8'] + '$'
-
         plt.ylabel( y_label, CMS.y_axis_title_tiny )
-
-        ax2.yaxis.set_label_coords(-0.115, 0.5)
 
         #draw a horizontal line at y=1 for central MC
         plt.axhline(y = 1, color = 'black', linewidth = 2)

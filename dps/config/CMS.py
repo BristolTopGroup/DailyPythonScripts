@@ -25,7 +25,15 @@ y_axis_title_small = {
               'fontsize':30,
               'position' : (0, 1.),
               'verticalalignment': 'bottom',
-              'horizontalalignment': 'right'
+              'horizontalalignment': 'right',
+              }
+
+y_axis_title_tiny = {
+              'fontsize':25,
+              'position' : (0, 1.),
+              'verticalalignment': 'bottom',
+              'horizontalalignment': 'right',
+              'multialignment':'center'
               }
 
 axis_label_major = {

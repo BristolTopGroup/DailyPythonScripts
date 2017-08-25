@@ -68,10 +68,10 @@ measurements_latex = {
     'measured'                  : 'measured',
     'central'                   : 'central',
 
-    'TTJets_madgraphMLM'        : r'\textsc{MG5}\_a\textsc{MC@NLO (MLM) \raisebox{.2ex}{+} Pythia8}',
+    'TTJets_madgraphMLM'        : r'\textsc{MG5}\_a\textsc{MC@NLO (LO) \raisebox{.2ex}{+} Pythia8}',
     'TTJets_powhegPythia8'      : r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
     'TTJets_powhegHerwig'       : r'\textsc{Powheg \raisebox{.2ex}{+} Herwig\raisebox{.2ex}{++}}',
-    'TTJets_amcatnloPythia8'    : r'\textsc{MG5}\_a\textsc{MC@NLO (FxFx) \raisebox{.2ex}{+} Pythia8}',
+    'TTJets_amcatnloPythia8'    : r'\textsc{MG5}\_a\textsc{MC@NLO (NLO) \raisebox{.2ex}{+} Pythia8}',
 
     'TTJets_powhegPythia8_withMCTheoryUnc': r'with MC theory uncertainties',
 

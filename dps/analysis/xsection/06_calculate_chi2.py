@@ -7,6 +7,10 @@ import numpy as np
 from ROOT import TMath
 import pandas as pd 
 from dps.utils.file_utilities import make_folder_if_not_exists
+np.set_printoptions(
+	precision = 3,
+	linewidth = 400,
+)
 
 class chi2Info:
 	def __init__(self, chi2, ndf, pValue):
@@ -34,7 +38,8 @@ def calculateGlobalChi2(modelsForComparing, chi2_Models):
 		chi2_all, ndf_all = 0, 0
 		for var, chi2_Info in chi2_Models.iteritems():
 			for m, c, n in zip(chi2_Info['Model'], chi2_Info['Chi2'], chi2_Info['NDF']):
-				if model in m:
+				# changed to exact match to avoid double counting PP8 in PP8+Model
+				if m == model:
 					chi2_all += c
 					ndf_all += n
 		prob_all = TMath.Prob( chi2_all, ndf_all )
@@ -50,7 +55,6 @@ def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input
 
 	covariance_filename_withMCTheoryUncertainties = '{input_path}/covarianceMatrices/mcUncertainty/{type}/Total_Covariance_{channel}.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
 	cov_full_withMCTHeoryUncertainties = matrix_from_df( file_to_df(covariance_filename_withMCTheoryUncertainties) )
-
 
 	xsections_filename = '{input_path}/xsection_{type}_{channel}_TUnfold.txt'.format(input_path=path_to_input, type = uncertainty_type, channel=channel)
 
@@ -94,7 +98,7 @@ def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
 		latexHeader += '\t\caption{Results of a $\chi^{2}$ test between the normalised cross sections in data and several MC models.}\n'
 		latexHeader += '\t\label{tb:Chi2_normalised}\n'
 	elif crossSectionType == 'absolute':
-		latexHeader += '\t\caption{Results of a $\chi^{2}$ test betweenthe absolute cross sections in data and several MC models.}\n'
+		latexHeader += '\t\caption{Results of a $\chi^{2}$ test between the absolute cross sections in data and several MC models.}\n'
 		latexHeader += '\t\label{tb:Chi2_absolute}\n'	
 	latexHeader += '\t\centering\n'
 	latexHeader += '\t\\scriptsize\n'
@@ -218,7 +222,6 @@ if __name__ == '__main__':
 
 			chi2ForVariables = {}
 			for variable in measurement_config.variables:
-				print variable
 				path_to_input = '{path}/{com}TeV/{variable}/{phase_space}/central/'
 				path_to_input = path_to_input.format(
 				    path = args.path, 
