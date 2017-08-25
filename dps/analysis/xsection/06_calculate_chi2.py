@@ -69,9 +69,11 @@ def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input
 		chi2 = None
 		xsectionsOfmodels[model] = None
 		if 'withMCTheoryUnc' in model:
+			print "With Theory Uncertainties"
 			xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model.replace('_withMCTheoryUnc','')] ] )
 			chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full_withMCTHeoryUncertainties)
 		else:
+			print "Without Theory Uncertainties"
 			xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model] ] )
 			chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full)
 		chi2OfModels[model] = chi2
@@ -162,12 +164,44 @@ def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
 	tableFooter += '\\end{table}\n'
 
 	fullTable += tableFooter
-
 	make_folder_if_not_exists(outputPath)
 	file_template = outputPath + '/chi2_{channel}.tex'.format(channel=channel)
 	output_file = open(file_template, 'w')
 	output_file.write(fullTable)
 	output_file.close()
+
+
+def makeChi2Table( chi2, gChi2, outputPath, channel, crossSectionType ):
+	'''
+	Make a nice dataframe of chi2 to print to screen for debugging
+	'''
+	print "- "*50
+	print "Chi2 for the {} cross sections measured in the {} channel ".format(crossSectionType, channel)
+	vs, ms, cs = [], [], []
+
+	for v, chi2_df in chi2.iteritems():
+		for m, c in zip(chi2_df['Model'], chi2_df['Chi2']):
+			vs.append(v)
+			ms.append(m)
+			cs.append(round(c, 2))
+	# Adding global if required
+	# for m, gcs in gChi2.iteritems():
+	# 	vs.append('Global')
+	# 	ms.append(m)
+	# 	cs.append(round(gcs.chi2, 2))
+
+	df = pd.DataFrame({
+		'Model': ms,
+        'Chi2' : cs,
+        'Variable': vs
+    })
+
+	df = df.pivot(index='Variable', columns='Model', values='Chi2')
+	print df
+	return
+
+
+
 
 def parse_arguments():
     parser = ArgumentParser()
@@ -217,11 +251,14 @@ if __name__ == '__main__':
 	]
 
 	for channel in channels:
+		print '-'*100
 		print 'Channel :',channel
 		for utype in unc_type:
 
 			chi2ForVariables = {}
 			for variable in measurement_config.variables:
+				if 'eta' not in variable: continue
+				if variable != 'abs_lepton_eta': continue
 				path_to_input = '{path}/{com}TeV/{variable}/{phase_space}/central/'
 				path_to_input = path_to_input.format(
 				    path = args.path, 
@@ -229,9 +266,11 @@ if __name__ == '__main__':
 				    variable = variable,
 				    phase_space = phase_space,
 				)
+
 				chi2ForVariables[variable] = calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input, utype )
 
 			# Calculate the global chi2
 			gChi2 = calculateGlobalChi2( modelsForComparing, chi2ForVariables )
 			path_to_output = '{path}/{crossSectionType}/'.format(path=outputTablePath, channel=channel,crossSectionType=utype )
 			makeLatexTable( chi2=chi2ForVariables, gChi2=gChi2, outputPath=path_to_output, channel=channel, crossSectionType=utype )
+			makeChi2Table( chi2=chi2ForVariables, gChi2=gChi2, outputPath=path_to_output, channel=channel, crossSectionType=utype )
