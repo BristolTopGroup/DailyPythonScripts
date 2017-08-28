@@ -66,14 +66,15 @@ def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input
 	chi2OfModels = {}
 
 	for model in modelsForComparing:
+		# print "\nModel is {} for {} {}".format(model, uncertainty_type, channel)
 		chi2 = None
 		xsectionsOfmodels[model] = None
 		if 'withMCTheoryUnc' in model:
-			print "With Theory Uncertainties"
+			# print "With Theory Uncertainties"
 			xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model.replace('_withMCTheoryUnc','')] ] )
 			chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full_withMCTHeoryUncertainties)
 		else:
-			print "Without Theory Uncertainties"
+			# print "Without Theory Uncertainties"
 			xsectionsOfmodels[model] = np.array( [ i[0] for i in xsections[model] ] )
 			chi2 = calculateChi2( xsection_unfolded, xsectionsOfmodels[model], cov_full)
 		chi2OfModels[model] = chi2
@@ -185,10 +186,10 @@ def makeChi2Table( chi2, gChi2, outputPath, channel, crossSectionType ):
 			ms.append(m)
 			cs.append(round(c, 2))
 	# Adding global if required
-	# for m, gcs in gChi2.iteritems():
-	# 	vs.append('Global')
-	# 	ms.append(m)
-	# 	cs.append(round(gcs.chi2, 2))
+	for m, gcs in gChi2.iteritems():
+		vs.append('Global')
+		ms.append(m)
+		cs.append(round(gcs.chi2, 2))
 
 	df = pd.DataFrame({
 		'Model': ms,
@@ -197,6 +198,7 @@ def makeChi2Table( chi2, gChi2, outputPath, channel, crossSectionType ):
     })
 
 	df = df.pivot(index='Variable', columns='Model', values='Chi2')
+	df_to_file(outputPath+'/chi2_{channel}.txt'.format(channel=channel), df)
 	print df
 	return
 
@@ -219,6 +221,11 @@ def parse_arguments():
         dest    = "outputTablePath",
         default = 'tables/chi2/',
         help    = "Output path for chi2 tables" 
+    )
+    parser.add_argument( '--variable','-v', 
+        dest    = "varToDO",
+        default = None,
+        help    = "DEBUG: Test a particular variable" 
     )
     args = parser.parse_args()
     return args
@@ -243,7 +250,6 @@ if __name__ == '__main__':
 		'electron', 
 		'muon', 
 		'combined', 
-		# 'combinedBeforeUnfolding',
 	]
 	unc_type = [
 		'normalised',
@@ -257,8 +263,8 @@ if __name__ == '__main__':
 
 			chi2ForVariables = {}
 			for variable in measurement_config.variables:
-				if 'eta' not in variable: continue
-				if variable != 'abs_lepton_eta': continue
+				if args.varToDO and variable != args.varToDO: continue
+
 				path_to_input = '{path}/{com}TeV/{variable}/{phase_space}/central/'
 				path_to_input = path_to_input.format(
 				    path = args.path, 
