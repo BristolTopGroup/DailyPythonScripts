@@ -30,7 +30,10 @@ from matplotlib import rc
 rc( 'font', **CMS.font )
 rc( 'text', usetex = True )
 
-
+np.set_printoptions(
+    precision = 3,
+    linewidth = 400,
+)
 # from memory_profiler import profile
 # fp=open('memory_profiler.log','w')
 
@@ -168,7 +171,7 @@ def read_xsection_measurement(options, category):
                 scale_envelope_lower, scale_envelope_upper = get_scale_envelope(scale_xsections, measurement['TTJets_powhegPythia8' ])
                 xsection_mc[source] = [
                                         scale_envelope_lower,
-                                        scale_envelope_upper
+                                        scale_envelope_upper,
                                         ]
                 pass
             else:
@@ -181,7 +184,7 @@ def read_xsection_measurement(options, category):
 
                 xsection_mc[source] = [ 
                                         xsectionWithUncertainty_lower,
-                                        xsectionWithUncertainty_upper
+                                        xsectionWithUncertainty_upper,
                                         ]
 
         return xsection_unfolded, xsection_mc
@@ -198,13 +201,23 @@ def get_mc_data_difference(options, mc_xsections, data_xsections):
     data_mc_difference = {}
 
     for source in uncertainty_sources:
+        # Difference between up-up, down-down and central-central for unfolded-ttbarPP8
         if source in mc_xsections.keys():
-            data_mc_difference[source] = []
-            for i in range(0,len(data_xsections[source])):
-                diff = []
-                for j in range(0, len( data_xsections[source][i] )):
-                    diff.append( data_xsections[source][i][j] - mc_xsections[source][i][j] )
-                data_mc_difference[source].append( diff )
+            if 'central' in source:
+                data_mc_difference[source] = []
+                for i in range(0,len(data_xsections[source])):
+                    diff = []
+                    diff.append(data_xsections[source][i][0] - mc_xsections[source][i][0])
+                    diff.append(combine_errors_in_quadrature([data_xsections[source][i][1], mc_xsections[source][i][1]]))
+                    data_mc_difference[source].append(diff)
+            else:
+                data_mc_difference[source] = []
+                for i in range(0,len(data_xsections[source])):
+                    diff = []
+                    for j in range(0, len( data_xsections[source][i] )):
+                        diff.append( data_xsections[source][i][j] - mc_xsections[source][i][j] )
+                    data_mc_difference[source].append( diff )
+        # Differnece between pdf variation (unfolded) and PP8
         elif source is 'PDF':
             data_mc_difference[source] = []
             for pdfVariation in data_xsections[source]:
@@ -212,7 +225,6 @@ def get_mc_data_difference(options, mc_xsections, data_xsections):
                 for i in range(0,len(pdfVariation[-1])):
                     pdfDiff.append( pdfVariation[1][i] - central_mc[i][0] )
                 data_mc_difference[source].append( [pdfVariation[0], pdfDiff] )
-
         else:
             data_mc_difference[source] = []
             for i in range(0,len(data_xsections[source])):
@@ -277,8 +289,8 @@ def get_cross_sections(options, list_of_systematics):
             \/
 
     [central]               =   [[x sec, unc], [x sec, unc]...[x sec, unc]] For N Bins
-    [Upper Measurement]     =   [[x sec], [x sec]...[x sec]] For N Bins
-    [Lower Measurement]     =   [[x sec], [x sec]...[x sec]] For N Bins
+    [Upper Measurement]     =   [x sec,  x sec, ... x sec] For N Bins
+    [Lower Measurement]     =   [x sec,  x sec, ... x sec] For N Bins
 
     For PDF there is an additional nest for each variation
     '''
@@ -304,8 +316,8 @@ def get_cross_sections(options, list_of_systematics):
         else :
             unf_syst_unc_x_sec = read_xsection_systematics(options, variation)
             unfolded_systematic_uncertainty_x_sections[systematic] = [
-                unf_syst_unc_x_sec['upper'], 
                 unf_syst_unc_x_sec['lower'],
+                unf_syst_unc_x_sec['upper'], 
             ]
 
     return unfolded_systematic_uncertainty_x_sections, mc_xsection_variations
@@ -452,8 +464,8 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
         elif systematic == 'central':
             xsections_with_symmetrised_systematics['central'] = central_measurement
         else:
-            upper_measurement = variation[0]
-            lower_measurement = variation[1]
+            lower_measurement = variation[0]
+            upper_measurement = variation[1]
 
             isTopMassSystematic = True if systematic == 'TTJets_mass' else False
 
