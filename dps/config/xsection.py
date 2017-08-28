@@ -81,9 +81,9 @@ class XSectionConfig():
         self.path_to_files = self.current_analysis_path
         path_to_files = self.path_to_files
 
-        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/Moriond2017/'
-        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
-        self.path_to_unfolding_histograms = 'unfolding/13TeV/'
+        # self.path_to_unfolding_histograms = '/storage/ec6821/DailyPythonScripts/new/DailyPythonScripts/unfolding/13TeV/'
+        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
+        # self.path_to_unfolding_histograms = 'unfolding/13TeV/'
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
 
         self.luminosity = self.luminosities[self.centre_of_mass_energy]
@@ -305,6 +305,7 @@ class XSectionConfig():
             'TTJets_petersonFrag'           : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
             'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
             'TTJets_CR_QCDbased_erdOn'           : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
+            'TTJets_CR_GluonMove'           : ['TTJets_CR_GluonMove', 'TTJets_CR_GluonMove'],
         }
 
         self.systematic_group_bkg = [
