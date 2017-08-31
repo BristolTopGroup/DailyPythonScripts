@@ -119,6 +119,16 @@ def append_PDF_uncertainties(all_systematics, pdfset=''):
     all_systematics[pdf] = variation
     return all_systematics
 
+def remove_MET_uncertainties(all_systematics):
+    '''
+    Remove MET uncertainty calculations from MET independent measurements
+    '''
+    del all_systematics['ElectronEn']
+    del all_systematics['MuonEn']
+    del all_systematics['TauEn']
+    del all_systematics['UnclusteredEn']
+    return all_systematics
+
 # @profile(stream=fp)
 def read_xsection_measurement(options, category):
     '''
@@ -162,6 +172,7 @@ def read_xsection_measurement(options, category):
         for source in theoryUncertaintySources:
             variations = theoryUncertaintySources[source]
             if source is 'TTJets_scale':
+            # if source is 'TTJets_scale' or source is 'TTJets_CR':
                 scale_xsections = {}
                 for variation in variations:
                     xsectionWithUncertainty = measurement[variation]
@@ -305,7 +316,7 @@ def get_cross_sections(options, list_of_systematics):
             unfolded_systematic_uncertainty_x_sections[systematic] = []
             for weight, vals in unf_syst_unc_x_sec.iteritems():
                 unfolded_systematic_uncertainty_x_sections[systematic].append([weight, vals])
-
+        # elif (systematic == 'TTJets_scale' or systematic == 'TTJets_CR'):
         elif (systematic == 'TTJets_scale'):
             unf_syst_unc_x_sec = read_xsection_systematics(options, variation, is_multiple_sources=True)
             unf_env_lower, unf_env_upper = get_scale_envelope(unf_syst_unc_x_sec, central_measurement_unfolded)
@@ -357,6 +368,9 @@ def get_scale_envelope(d_scale_syst, central):
             down[scale_variation] = scaleToAppend
         elif 'up' in scale_variation:
             up[scale_variation] = scaleToAppend
+        else:
+            down[scale_variation] = scaleToAppend
+            up[scale_variation] = scaleToAppend
 
     down_diff = down.subtract(central, axis='index')
     down_diff = down_diff.abs()
@@ -365,7 +379,7 @@ def get_scale_envelope(d_scale_syst, central):
     scale = []
     for i, index in enumerate(down_diff['index']):
         scale.append(down[index][i])
-    down['TTJets_scaledown']=scale
+    down['envelope_down']=scale
 
     up_diff = up.subtract(central, axis='index')
     up_diff = up_diff.abs()
@@ -374,11 +388,9 @@ def get_scale_envelope(d_scale_syst, central):
     scale = []
     for i, index in enumerate(up_diff['index']):
         scale.append(up[index][i])
-    up['TTJets_scaleup']=scale
-    # print( down )
-    # print( up )
+    up['envelope_up']=scale
 
-    return down['TTJets_scaledown'], up['TTJets_scaleup']
+    return down['envelope_down'], up['envelope_up']
 
 def scaleFSR(scale_variation, central):
     '''
@@ -431,7 +443,7 @@ def calculate_total_PDFuncertainty(options, central_measurement, pdf_uncertainty
 
 
 # @profile(stream=fp)
-def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
+def get_symmetrised_systematic_uncertainty( options, syst_unc_x_secs ):
     '''
     Returns the symmetrised uncertainties on the normalised cross sections.
 
@@ -482,34 +494,47 @@ def get_symmetrised_systematic_uncertainty(options, syst_unc_x_secs ):
                 signed_uncertainties,
             ]         
 
-    if  'BJet' in xsections_with_symmetrised_systematics.keys() and 'LightJet' in xsections_with_symmetrised_systematics.keys():
+    # Add the inputMC statistics
+    xsections_with_symmetrised_systematics['inputMC'], _ = add_inputMC_systematic(options)
+
+    # Generate the Covariance Matrices
+    d_Cov_Cor = generate_covariance_matrices(
+        options, 
+        xsections_with_symmetrised_systematics
+    )
+
+    # Combine Covariance Matrices
+    if  'BJet' in xsections_with_symmetrised_systematics and 'LightJet' in xsections_with_symmetrised_systematics:
         # Combine LightJet and BJet Systematics
         bJet = xsections_with_symmetrised_systematics['BJet'][0]
         lightJet = xsections_with_symmetrised_systematics['LightJet'][0]
         bJet_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(bJet, lightJet)]
         xsections_with_symmetrised_systematics['BJet'][0] = bJet_tot
+        del xsections_with_symmetrised_systematics['LightJet']
 
-    # Combine PDF with alphaS variations
-    if 'TTJets_alphaS' in xsections_with_symmetrised_systematics and 'PDF' in xsections_with_symmetrised_systematics:
-        alphaS = xsections_with_symmetrised_systematics['TTJets_alphaS'][0]
+        # Combine the covariance matrices
+        l_Cov = [d_Cov_Cor['BJet'][0], d_Cov_Cor['LightJet'][0]]
+        d_Cov_Cor['BJet'] = combine_covariance_matrices(l_Cov)
+        del d_Cov_Cor['LightJet']
+
+    if 'PDF' in xsections_with_symmetrised_systematics and 'TTJets_alphaS' in xsections_with_symmetrised_systematics:
+        # Combine PDF with alphaS variations
         pdf = xsections_with_symmetrised_systematics['PDF'][0]
+        alphaS = xsections_with_symmetrised_systematics['TTJets_alphaS'][0]
         pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
         xsections_with_symmetrised_systematics['PDF'][0] = pdf_tot
-        # TODO combine the signs....
-
-    # # Add additional 50% uncertainty in QCD normalisation
-    # This scales QCD uncertainty in all channels. It would be ok here if i know how to apply to the combined channel.
-    # if 'QCD_cross_section' in xsections_with_symmetrised_systematics:
-    #     xsections_with_symmetrised_systematics['QCD_cross_section'][0] = [1.5*val for val in xsections_with_symmetrised_systematics['QCD_cross_section'][0]]
-
-    # Now alphaS is combined with pdfs dont need it in dictionary anymore. nor LightJet
-    if 'LightJet' in xsections_with_symmetrised_systematics:
-        del xsections_with_symmetrised_systematics['LightJet']
-    if 'TTJets_alphaS' in xsections_with_symmetrised_systematics:
         del xsections_with_symmetrised_systematics['TTJets_alphaS']
 
-    xsections_with_symmetrised_systematics['inputMC'], _ = add_inputMC_systematic(options)
+        # Combine the covariance matrices
+        l_Cov = [d_Cov_Cor['PDF'][0], d_Cov_Cor['TTJets_alphaS'][0]]
+        d_Cov_Cor['PDF'] = combine_covariance_matrices(l_Cov)
+        del d_Cov_Cor['TTJets_alphaS']
 
+    # Create covariance matrices
+    d_Cov_Cor['Stat'] = add_covariance( options, d_Cov_Cor, addStat = True )
+    d_Cov_Cor['inputMC'] = add_covariance( options, d_Cov_Cor, addInputMCStat = True )
+    d_Cov_Cor['Total'] = add_covariance( options, d_Cov_Cor, addTotal = True )
+    save_covariance_matrices( options, d_Cov_Cor )
     return xsections_with_symmetrised_systematics           
 
 
@@ -607,65 +632,26 @@ def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetr
 # ------------------------------------------------------------------------------------------------------------------
 # COVARIANCE MATRICES
 # ------------------------------------------------------------------------------------------------------------------
-
-# @profile(stream=fp)
+### Generate Base Covariances
 def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
     '''
-    Iterates through each group of systematics generating and plotting the covariance matrix of the systematic
+    Generates the list of base covariance matrices
     '''
     number_of_bins  = options['number_of_bins']    
-    variable        = options['variable']
-    channel         = options['channel']
-    path_to_DF      = options['path_to_DF']
-    norm            = options['normalisation_type']
-    mcUncertainty   = options['mcUncertainty']
 
-    statistic       = xsec_with_symmetrised_systematics['central'] # [Value, Stat]
+    d_Cov_Cor       = {}
+    for syst, measurement in xsec_with_symmetrised_systematics.iteritems():
+        if syst in ['central','CT14', 'MMHT14']: continue
+        if syst in ['inputMC']: continue
 
-    all_covariance_matrices     = []
-    all_correlation_matrices    = []
-    covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/{norm}/{sys}_{label}_{channel}.txt'
-    if mcUncertainty:
-        covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/{sys}_{label}_{channel}.txt'
-
-    for syst_name, measurement in xsec_with_symmetrised_systematics.iteritems():
-        if syst_name in ['central','CT14', 'MMHT14']: continue
-        if syst_name in ['inputMC']: continue
-
-        systematic = measurement[0]
-        sign = measurement[1]
+        systematic  = measurement[0]
+        sign        = measurement[1]
 
         # Create the matrices in numpy.matrix format
         covariance_matrix, correlation_matrix = generate_covariance_matrix(number_of_bins, systematic, sign)
-        all_covariance_matrices.append(covariance_matrix)
-        all_correlation_matrices.append(correlation_matrix)
+        d_Cov_Cor[syst] = [covariance_matrix, correlation_matrix]
+    return d_Cov_Cor
 
-        # Convert the matrices to DF format, output and plot them
-        table_outfile = covariance_output_template.format( 
-            path_to_DF=path_to_DF, 
-            sys=syst_name, 
-            channel=channel, 
-            label='Covariance',
-            norm=norm,
-        )
-        create_covariance_matrix(covariance_matrix, table_outfile)
-        # make_covariance_plot(options, syst_name, covariance_matrix, label='Covariance')
-
-        table_outfile = covariance_output_template.format( 
-            path_to_DF=path_to_DF, 
-            sys=syst_name, 
-            channel=channel, 
-            label='Correlation',
-            norm=norm,
-        )
-        create_covariance_matrix(correlation_matrix, table_outfile)
-        # make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
-
-    generate_total_covariance(options, all_covariance_matrices, all_correlation_matrices)
-
-    return
-
-# @profile(stream=fp)
 def generate_covariance_matrix(number_of_bins, systematic, sign):
     '''
     Variance_ii = (Unc_i) * (Unc_i)
@@ -682,12 +668,78 @@ def generate_covariance_matrix(number_of_bins, systematic, sign):
             covariance_matrix[i,j] = (sign[i]*systematic[i]) *  (sign[j]*systematic[j])
 
     # Create correlation matrix from covariance matrix
+    correlation_matrix = correlation_from_covariance(covariance_matrix)
+
+    return covariance_matrix, correlation_matrix
+
+def correlation_from_covariance(covariance_matrix):
+    '''
+    Return the correlation matrix from the covariance matrix
+    '''
+    # Create correlation matrix from covariance matrix
     correlation_matrix = np.matrix( np.zeros( ( covariance_matrix.shape[0], covariance_matrix.shape[1] ) ) )
     for i in range( 0, covariance_matrix.shape[0] ):
         for j in range(0, covariance_matrix.shape[1] ):
             correlation_matrix[i,j] = covariance_matrix[i,j] / sqrt( covariance_matrix[i,i] * covariance_matrix[j,j] )
+    return correlation_matrix
 
-    return covariance_matrix, correlation_matrix
+### Add / Combine Covariances
+def combine_covariance_matrices(l_cov):
+    '''
+    Return combined covariance matrices and resulting correlation matrix
+    '''
+    cov_combined = np.matrix( np.zeros( ( l_cov[0].shape[0], l_cov[0].shape[1] ) ) ) # Initialise
+    for cov in l_cov:
+        cov_combined+=cov
+
+    # Remake correlation matrix
+    cor_combined = np.matrix( np.zeros( ( cov_combined.shape[0], cov_combined.shape[1] ) ) )
+    for i in range( 0, cov_combined.shape[0] ):
+        for j in range(0, cov_combined.shape[1] ):
+            cor_combined[i,j] = cov_combined[i,j] / sqrt( cov_combined[i,i] * cov_combined[j,j] )
+    return [cov_combined, cor_combined]
+
+def add_covariance(options, d_Cov_Cor, addStat=False, addInputMCStat=False, addTotal=False):
+    '''
+    Add covariances together for total covariance matrix
+
+    Cov_tot = Cov_stat + Cov_PDF + Cov_BJet ...
+    Similarly for Correlation
+    '''
+    # Convert to numpy matrix and create total
+    if addStat:
+        covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
+        cov_path=covariance_template.format(
+            norm=options['normalisation_type'], 
+            path_to_DF=options['path_to_DF'], 
+            channel=options['channel'], 
+            label='Covariance',
+        )
+        cor_path = cov_path.replace('Covariance', 'Correlation')
+
+        cov_stat = file_to_df(cov_path)
+        cor_stat = file_to_df(cor_path)
+        cov_stat = matrix_from_df(cov_stat)
+        cor_stat = matrix_from_df(cor_stat)
+        return [cov_stat, cor_stat]
+
+    # inputMC covariance matrix
+    if addInputMCStat:
+        _, cov_inputMC = add_inputMC_systematic(options)
+        cor_inputMC = correlation_from_covariance(cov_inputMC)
+        return [cov_inputMC, cor_inputMC]
+
+    if addTotal:
+        if 'Stat' not in d_Cov_Cor.keys():
+            d_Cov_Cor['Stat'] = add_covariance(options, d_Cov_Cor, addStat=True)
+        if 'inputMC' not in d_Cov_Cor.keys():
+            d_Cov_Cor['inputMC'] = add_covariance(options, d_Cov_Cor, addInputMCStat=True)
+        cov_tot = np.matrix( np.zeros( ( d_Cov_Cor['Stat'][0].shape[0], d_Cov_Cor['Stat'][0].shape[1] ) ) ) # Initialise
+        for syst, cov_cor in d_Cov_Cor.iteritems():
+            cov_tot += cov_cor[0]
+        cor_tot = correlation_from_covariance(cov_tot)
+        return [cov_tot, cor_tot]
+    return None
 
 def add_inputMC_systematic(options):
     '''
@@ -713,60 +765,39 @@ def add_inputMC_systematic(options):
 
     return [unc, sign], cov_inputMC
 
-# @profile(stream=fp)
-def generate_total_covariance(options, all_covariances, all_correlations):
+### OUTPUT COVARIANCES
+def save_covariance_matrices(options, d_Cov_Cor_matrices):
     '''
-    Add covariances together for total covariance matrix
-
-    Cov_tot = Cov_stat + Cov_PDF + Cov_BJet ...
-    Similarly for Correlation
+    Save covariance matrices
     '''
-    # Paths to statistical Covariance/Correlation matrices.
-    covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
-    # if options['mcUncertainty']:
-    #     covariance_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/Stat_{norm}Xsection_{label}_{channel}.txt'
+    path_to_DF      = options['path_to_DF']
+    channel         = options['channel']
+    norm            = options['normalisation_type']
 
-    cov_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
-    cor_path=covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
-
-    # inputMC covariance matrix
-    _, cov_inputMC = add_inputMC_systematic(options)
-
-    # Convert to numpy matrix and create total
-    cov_stat = file_to_df(cov_path)
-    cov_stat = matrix_from_df(cov_stat)
-    cov_tot = cov_stat
-    cov_tot += cov_inputMC
-    for m in all_covariances:
-        cov_tot+=m
-
-    cor_stat = file_to_df(cor_path)
-    cor_stat = matrix_from_df(cor_stat)
-    cor_tot = np.matrix( np.zeros( ( cov_tot.shape[0], cov_tot.shape[1] ) ) )
-    for i in range( 0, cov_tot.shape[0] ):
-        for j in range(0, cov_tot.shape[1] ):
-            cor_tot[i,j] = cov_tot[i,j] / sqrt( cov_tot[i,i] * cov_tot[j,j] )
-
-    # Paths to output total Covariance/Correlation matrices.
-    covariance_template = '{path_to_DF}/central/covarianceMatrices/{norm}/Total_{label}_{channel}.txt'
+    covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/{norm}/{sys}_{label}_{channel}.txt'
     if options['mcUncertainty']:
-        covariance_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/Total_{label}_{channel}.txt'
+        covariance_output_template  = '{path_to_DF}/central/covarianceMatrices/mcUncertainty/{norm}/{sys}_{label}_{channel}.txt'
 
-    cov_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Covariance')
-    cor_outfile = covariance_template.format(norm=options['normalisation_type'], path_to_DF=options['path_to_DF'], channel=options['channel'], label='Correlation')
+    for syst, cov_cor in d_Cov_Cor_matrices.iteritems():
+        cov = cov_cor[0]
+        cor = cov_cor[1]
 
-    # Save the total matrices
-    create_covariance_matrix( cov_tot, cov_outfile )
-    create_covariance_matrix( cor_tot, cor_outfile )
+        # Convert the matrices to DF format, output and plot them
+        table_outfile = covariance_output_template.format( 
+            path_to_DF=path_to_DF, 
+            sys=syst, 
+            channel=channel, 
+            label='Covariance',
+            norm=norm,
+        )
+        create_covariance_matrix(cov, table_outfile)
+        # make_covariance_plot(options, syst_name, covariance_matrix, label='Covariance')
 
-    # Plot the total matrices
-    make_covariance_plot( options, 'Stat', cov_stat, label='Covariance' )
-    make_covariance_plot( options, 'Total', cov_tot, label='Covariance' )
-    make_covariance_plot( options, 'Stat', cor_stat, label='Correlation' )
-    make_covariance_plot( options, 'Total', cor_tot, label='Correlation' )
+        table_outfile = table_outfile.replace("Covariance", "Correlation")
+        create_covariance_matrix(cor, table_outfile)
+        # make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
     return
 
-# @profile(stream=fp)
 def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):    
     '''
     Take the matrix in list form and bin edges in list form to create a TH2F of the covariance matrix
@@ -784,7 +815,6 @@ def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):
         return
 
     fig = plt.figure( figsize = CMS.figsize, dpi = CMS.dpi, facecolor = CMS.facecolor )
-    # fig = plt.figure( )
     ax = fig.add_subplot(1,1,1)
     ax.set_aspect('equal')
     if label=='Correlation':
