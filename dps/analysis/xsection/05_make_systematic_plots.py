@@ -19,7 +19,7 @@ from operator import itemgetter
 # rc( 'font', **CMS.font )
 # rc( 'text', usetex = False )
 
-def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder, subcategories = [], subname = '', plot_largest = False):
+def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder, subcategories = [], subname = '', plot_largest = False, plot_foreground = None):
 	'''
 	Plot the systematic uncertainties
 	'''
@@ -75,7 +75,7 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	plt.tick_params( **CMS.axis_label_major )
 	plt.tick_params( **CMS.axis_label_minor )
 
-	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'gold', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink', 'deepskyblue' ] * 2
+	colours = ['red', 'blue', 'green', 'chartreuse', 'indigo', 'magenta', 'darkmagenta', 'hotpink', 'cyan', 'darkred', 'darkgoldenrod', 'mediumvioletred', 'mediumspringgreen', 'darkgoldenrod', 'slategray', 'dodgerblue', 'cadetblue', 'darkblue', 'seagreen', 'deeppink', 'deepskyblue' ] * 2
 	if len(colours) < len(error_hists_up.keys()):
 		print '---> Need to add more colours!!!'
 
@@ -90,10 +90,16 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 					hist.alpha = 0.4	
 					hist.linewidth = 2
 			# Only label systematic once
+			if plot_foreground and plot_foreground in error_hists.keys(): source = ''
 			if error_hists == error_hists_up:
 				rplt.hist( hist, stacked=False, label = source )
 			else:
 				rplt.hist( hist, stacked=False, label = '' )
+		if plot_foreground and plot_foreground in error_hists.keys():
+			hist = error_hists[plot_foreground]
+			hist.color = 'black'
+			rplt.hist( hist, stacked=False, label = source )
+
 
 	leg = plt.legend(loc='upper right',prop={'size':25},ncol=3)
 	# leg = plt.legend(loc='upper right',prop={'size':20},ncol=4)
@@ -252,6 +258,8 @@ if __name__ == '__main__':
 			l_ps = measurement_config.systematic_group_partonShower
 			l_otherTheoretical = measurement_config.systematic_group_otherTheoretical
 			l_pdf = measurement_config.systematic_group_pdf
+			l_col = measurement_config.systematic_group_colourReconnection
+			l_ss = measurement_config.systematic_group_showerScale
 			l_other = measurement_config.systematic_other
 
 			# # Plot them
@@ -263,4 +271,6 @@ if __name__ == '__main__':
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_ps, "partonShower")
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_otherTheoretical, "otherTheoretical")
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_pdf, "pdf")
+			# plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_ss, "showerScale")
+			# plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_col, "colourReconnection", plot_foreground="TTJets_CR")
 			plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable, output_folder,l_other, "other")
