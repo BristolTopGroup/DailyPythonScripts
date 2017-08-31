@@ -310,8 +310,8 @@ class XSectionConfig():
             # 'TTJets_CR'                 : ['TTJets_erdOn', 'TTJets_QCDbased_erdOn', 'TTJets_GluonMove', 'TTJets_GluonMove_erdOn'],
             'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
             'TTJets_CR_QCDbased_erdOn'           : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
-            'TTJets_CR_GluonMove'           : ['TTJets_CR_GluonMove', 'TTJets_CR_GluonMove'],
-            # 'TTJets_CR_GluonMove_erdOn'           : ['TTJets_CR_GluonMove_erdOn', 'TTJets_CR_GluonMove_erdOn'],
+            'TTJets_CR_GluonMove'           : ['TTJets_GluonMove', 'TTJets_GluonMove'],
+            # 'TTJets_CR_GluonMove_erdOn'           : ['TTJets_GluonMove_erdOn', 'TTJets_GluonMove_erdOn'],
         }
 
         self.systematic_group_bkg = [

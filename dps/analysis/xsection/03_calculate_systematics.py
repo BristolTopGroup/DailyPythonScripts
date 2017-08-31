@@ -129,6 +129,7 @@ if __name__ == '__main__':
 
     for ch in channel:
         for utype in unc_type:
+            print "Calculating uncertainties for {} in the {} {} channel".format(variable, utype, unc_type)
 
             # Add channel specific args to list of args
             args['channel'] = ch
