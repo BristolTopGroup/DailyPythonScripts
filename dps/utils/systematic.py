@@ -468,7 +468,6 @@ def get_symmetrised_systematic_uncertainty( options, syst_unc_x_secs ):
                 central_measurement, 
                 variation,
             )
-            # TODO Find signs etc... i.e. do proper covariance for PDF
             xsections_with_symmetrised_systematics[systematic] = [
                 pdf_sym, 
                 pdf_sign
@@ -683,7 +682,7 @@ def correlation_from_covariance(covariance_matrix):
             correlation_matrix[i,j] = covariance_matrix[i,j] / sqrt( covariance_matrix[i,i] * covariance_matrix[j,j] )
     return correlation_matrix
 
-### Add / Combine Covariances
+### Add Covariances
 def combine_covariance_matrices(l_cov):
     '''
     Return combined covariance matrices and resulting correlation matrix
@@ -692,11 +691,8 @@ def combine_covariance_matrices(l_cov):
     for cov in l_cov:
         cov_combined+=cov
 
-    # Remake correlation matrix
-    cor_combined = np.matrix( np.zeros( ( cov_combined.shape[0], cov_combined.shape[1] ) ) )
-    for i in range( 0, cov_combined.shape[0] ):
-        for j in range(0, cov_combined.shape[1] ):
-            cor_combined[i,j] = cov_combined[i,j] / sqrt( cov_combined[i,i] * cov_combined[j,j] )
+    cor_combined = correlation_from_covariance(cov_combined)
+
     return [cov_combined, cor_combined]
 
 def add_covariance(options, d_Cov_Cor, addStat=False, addInputMCStat=False, addTotal=False):
@@ -730,11 +726,8 @@ def add_covariance(options, d_Cov_Cor, addStat=False, addInputMCStat=False, addT
         return [cov_inputMC, cor_inputMC]
 
     if addTotal:
-        if 'Stat' not in d_Cov_Cor.keys():
-            d_Cov_Cor['Stat'] = add_covariance(options, d_Cov_Cor, addStat=True)
-        if 'inputMC' not in d_Cov_Cor.keys():
-            d_Cov_Cor['inputMC'] = add_covariance(options, d_Cov_Cor, addInputMCStat=True)
-        cov_tot = np.matrix( np.zeros( ( d_Cov_Cor['Stat'][0].shape[0], d_Cov_Cor['Stat'][0].shape[1] ) ) ) # Initialise
+        number_of_bins = options['number_of_bins']
+        cov_tot  = np.matrix( np.zeros( ( number_of_bins, number_of_bins ) ) )
         for syst, cov_cor in d_Cov_Cor.iteritems():
             cov_tot += cov_cor[0]
         cor_tot = correlation_from_covariance(cov_tot)
@@ -791,11 +784,14 @@ def save_covariance_matrices(options, d_Cov_Cor_matrices):
             norm=norm,
         )
         create_covariance_matrix(cov, table_outfile)
-        # make_covariance_plot(options, syst_name, covariance_matrix, label='Covariance')
-
         table_outfile = table_outfile.replace("Covariance", "Correlation")
         create_covariance_matrix(cor, table_outfile)
-        # make_covariance_plot(options, syst_name, correlation_matrix, label='Correlation')
+
+        if syst == 'Total':
+            make_covariance_plot(options, syst, cov, label='Covariance')
+            make_covariance_plot(options, syst, cor, label='Correlation')
+        # make_covariance_plot(options, syst, cov, label='Covariance')
+        # make_covariance_plot(options, syst, cor, label='Correlation')
     return
 
 def make_covariance_plot( options, syst_name, matrix, label='Covariance' ):    
