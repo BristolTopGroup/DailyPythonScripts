@@ -2,7 +2,8 @@ from __future__ import division
 import dps.utils.measurement
 
 class XSectionConfig():
-    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.12/atOutput/combined/'
+    # current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.12/atOutput/combined/'
+    current_analysis_path = '/hdfs/TopQuarkGroup/ec6821/1.0.13/atOutput/combined/'
     known_centre_of_mass_energies = [13]
     # has to be separate as many variables depend on it
     luminosities = {13:35900}
@@ -81,9 +82,9 @@ class XSectionConfig():
         self.path_to_files = self.current_analysis_path
         path_to_files = self.path_to_files
 
-        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/Moriond2017/'
-        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
-        self.path_to_unfolding_histograms = 'unfolding/13TeV/'
+        # self.path_to_unfolding_histograms = '/storage/ec6821/DailyPythonScripts/new/DailyPythonScripts/unfolding/13TeV/'
+        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
+        # self.path_to_unfolding_histograms = 'unfolding/13TeV/'
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
 
         self.luminosity = self.luminosities[self.centre_of_mass_energy]
@@ -218,9 +219,11 @@ class XSectionConfig():
             'TTJets_combineddown',
             'TTJets_hdampup', 
             'TTJets_hdampdown',
+            'TTJets_CR',
             'TTJets_erdOn',
             'TTJets_QCDbased_erdOn',
             'TTJets_GluonMove',
+            'TTJets_GluonMove_erdOn',
             'TTJets_semiLepBrup', 
             'TTJets_semiLepBrdown',
             'TTJets_fragup', 
@@ -257,15 +260,16 @@ class XSectionConfig():
             # 'TTJets_fsr'                   :    ['TTJets_fsrup', 'TTJets_fsrdown'],
             # 'TTJets_isr'                   :    ['TTJets_isrup', 'TTJets_isrdown'],
 
-
             'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
-            'TTJets_hdamp'           : ['TTJets_hdampup', 'TTJets_hdampdown'],
-            'TTJets_semiLepBr'           : ['TTJets_semiLepBrup', 'TTJets_semiLepBrdown'],
-            'TTJets_frag'           : ['TTJets_fragup', 'TTJets_fragdown'],
-            'TTJets_petersonFrag'           : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
+            'TTJets_hdamp'              : ['TTJets_hdampup', 'TTJets_hdampdown'],
+            'TTJets_semiLepBr'          : ['TTJets_semiLepBrup', 'TTJets_semiLepBrdown'],
+            'TTJets_frag'               : ['TTJets_fragup', 'TTJets_fragdown'],
+            'TTJets_petersonFrag'       : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
+            # 'TTJets_CR'                 : ['TTJets_erdOn', 'TTJets_QCDbased_erdOn', 'TTJets_GluonMove', 'TTJets_GluonMove_erdOn'],
             'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
-            'TTJets_CR_QCDbased_erdOn'           : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
-            'TTJets_CR_GluonMove'           : ['TTJets_GluonMove', 'TTJets_GluonMove'],
+            'TTJets_CR_QCDbased_erdOn'  : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
+            'TTJets_CR_GluonMove'       : ['TTJets_GluonMove', 'TTJets_GluonMove'],
+            # 'TTJets_CR_GluonMove_erdOn' : ['TTJets_GluonMove_erdOn', 'TTJets_GluonMove_erdOn'],
 
             # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
@@ -303,8 +307,11 @@ class XSectionConfig():
             'TTJets_semiLepBr'           : ['TTJets_semiLepBrup', 'TTJets_semiLepBrdown'],
             'TTJets_frag'           : ['TTJets_fragup', 'TTJets_fragdown'],
             'TTJets_petersonFrag'           : ['TTJets_petersonFrag', 'TTJets_petersonFrag'],
+            # 'TTJets_CR'                 : ['TTJets_erdOn', 'TTJets_QCDbased_erdOn', 'TTJets_GluonMove', 'TTJets_GluonMove_erdOn'],
             'TTJets_CR_erdOn'           : ['TTJets_erdOn', 'TTJets_erdOn'],
             'TTJets_CR_QCDbased_erdOn'           : ['TTJets_QCDbased_erdOn', 'TTJets_QCDbased_erdOn'],
+            'TTJets_CR_GluonMove'           : ['TTJets_GluonMove', 'TTJets_GluonMove'],
+            # 'TTJets_CR_GluonMove_erdOn'           : ['TTJets_GluonMove_erdOn', 'TTJets_GluonMove_erdOn'],
         }
 
         self.systematic_group_bkg = [
@@ -331,19 +338,28 @@ class XSectionConfig():
         ]
         self.systematic_group_partonShower = [
             'TTJets_scale',
-
-            # 'TTJets_fsr',
-            # 'TTJets_isr',
-
             'TTJets_ue',
             'TTJets_hdamp',
             'TTJets_semiLepBr',
             'TTJets_frag',
             'TTJets_petersonFrag',
+            'TTJets_CR',
+            # 'TTJets_CR_erdOn',
+            # 'TTJets_CR_QCDbased_erdOn',
+            # 'TTJets_CR_GluonMove',
+            # 'JES',
+        ]
+        self.systematic_group_showerScale = [
+            'TTJets_scale',
+            'TTJets_fsr',
+            'TTJets_isr',
+        ]
+        self.systematic_group_colourReconnection = [
+            'TTJets_CR',
             'TTJets_CR_erdOn',
             'TTJets_CR_QCDbased_erdOn',
             'TTJets_CR_GluonMove',
-            'JES',
+            'TTJets_CR_GluonMove_erdOn',
         ]
         self.systematic_group_otherTheoretical = [
             'PDF',
@@ -426,6 +442,7 @@ class XSectionConfig():
         self.ttbar_erdOn_trees = path_to_files + '/TTJets_PowhegPythia8_erdOn_tree.root'
         self.ttbar_QCDbased_erdOn_trees = path_to_files + '/TTJets_PowhegPythia8_QCDbased_erdOn_tree.root'
         self.ttbar_GluonMove_trees = path_to_files + '/TTJets_PowhegPythia8_GluonMove_tree.root'
+        self.ttbar_GluonMove_erdOn_trees = path_to_files + '/TTJets_PowhegPythia8_GluonMove_erdOn_tree.root'
 
         # Unfolding MC Different Generator Samples
         self.unfolding_powheg_pythia8_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV.root' % self.centre_of_mass_energy
@@ -489,6 +506,7 @@ class XSectionConfig():
         self.unfolding_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_erdOn_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_QCDbased_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_QCDbased_erdOn_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_GluonMove = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_GluonMove_asymmetric_newPS.root' % self.centre_of_mass_energy
+        self.unfolding_GluonMove_erdOn = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_GluonMove_erdOn_asymmetric_newPS.root' % self.centre_of_mass_energy
 
         self.unfolding_mass_down = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massdown_asymmetric_newPS.root' % self.centre_of_mass_energy
         self.unfolding_mass_up = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_massup_asymmetric_newPS.root' % self.centre_of_mass_energy

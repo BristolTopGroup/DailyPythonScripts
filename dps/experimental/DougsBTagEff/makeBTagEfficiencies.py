@@ -68,7 +68,7 @@ def main():
 		"TTJets_PowhegPythia8_hdampdown_tree.root" 	: "PowhegPythia8_hdampdown", 
 		"TTJets_PowhegPythia8_erdOn_tree.root" 		: "PowhegPythia8_erdOn", 
 		"TTJets_PowhegPythia8_QCDbased_erdOn_tree.root" 		: "PowhegPythia8_QCDbased_erdOn", 
-
+		"TTJets_PowhegPythia8_GluonMove_tree.root" 	: "PowhegPythia8_GluonMove", 
 
 		"TTJets_PowhegPythia8_plusJES_tree.root" 	: "PowhegPythia8_plusJES", 
 		"TTJets_PowhegPythia8_minusJES_tree.root" 	: "PowhegPythia8_minusJES", 
@@ -108,7 +108,7 @@ def main():
 	print 'Calculating efficiencies for following files:'
 	for in_file, sample in input_files.iteritems():
 		input_file = basepath+in_file
-		print input_file
+		print '\t',input_file
 		if not os.path.isfile(input_file):
 			print "---> File doesn't exist, exiting"
 			sys.exit()

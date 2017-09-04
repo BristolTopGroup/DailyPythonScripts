@@ -5,8 +5,8 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.max_colwidth', 4096)
 pd.set_option('display.max_rows', 50)
 pd.set_option('display.width', 1000)
-pd.set_option('precision',10)
-
+# pd.set_option('precision',5)
+pd.set_option('display.float_format','{:.7g}'.format)
 def dict_to_df(d):
 	'''
 	Transform a dictionary nto a dataframe
@@ -34,7 +34,7 @@ def df_to_file(filename, df, index=True):
 	with open(filename,'w') as f:
 		df.to_string(f, index=index)
 		f.write('\n')
-		print('DataFrame written to {}'.format(f))
+		# print('DataFrame written to {}'.format(f))
 		f.close()
 	return
 
@@ -205,7 +205,6 @@ def create_covariance_matrix( matrix, outfile ):
 	2	| Cov_21 | Cov_22 | Cov_2N
 	N	| Cov_N1 | Cov_N2 | Cov_NN
 	'''
-
 	df = pd.DataFrame(matrix)
 	df_to_file(outfile, df)
 	return

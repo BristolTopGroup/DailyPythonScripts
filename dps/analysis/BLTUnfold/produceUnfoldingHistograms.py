@@ -86,6 +86,7 @@ def getUnmergedDirectory( f ) :
     else:
         new_f = baseDir + '/' + sampleName + '/analysis_central_job_*/*root'
     return new_f
+    
 def getFileName( com, sample, measurementConfig ) :
 
     fileNames = {
@@ -112,9 +113,10 @@ def getFileName( com, sample, measurementConfig ) :
             'hdampup'             : measurementConfig.ttbar_hdampup_trees,
             'hdampdown'           : measurementConfig.ttbar_hdampdown_trees,
 
-            'erdOn'           : measurementConfig.ttbar_erdOn_trees,
-            'QCDbased_erdOn'           : measurementConfig.ttbar_QCDbased_erdOn_trees,
-            'GluonMove'           : measurementConfig.ttbar_GluonMove_trees,
+            'erdOn'             : measurementConfig.ttbar_erdOn_trees,
+            'QCDbased_erdOn'    : measurementConfig.ttbar_QCDbased_erdOn_trees,
+            'GluonMove'         : measurementConfig.ttbar_GluonMove_trees,
+            'GluonMove_erdOn'   : measurementConfig.ttbar_GluonMove_erdOn_trees,
 
             'massdown'          : measurementConfig.ttbar_mtop1695_trees,
             'massup'            : measurementConfig.ttbar_mtop1755_trees,

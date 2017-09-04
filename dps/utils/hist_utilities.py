@@ -112,6 +112,16 @@ def matrix_to_hist2d( value_matrix, x_edges, y_edges ):
     #         set_bin_value( x+1, y+1, value_matrix.item(y, x) )
     return rootpy_hist
 
+def hist2d_to_matrix( hist2d ):
+    '''
+    hist2d to matrix + bin edges
+    '''
+    from root_numpy import hist2array
+    values = hist2array(hist2d)
+    xedges = list(hist2d.xedges())
+    yedges = list(hist2d.yedges())
+    return values, xedges, yedges
+
 def sum_histograms( histogram_dict, sample_list ):
     # histogram_dict = {sample:{histogram_name:histogram}
     summary = {}
