@@ -5,6 +5,7 @@ from dps.config.latex_labels import variables_latex, systematics_latex
 from dps.config.variable_binning import bin_edges_vis
 from dps.utils.file_utilities import make_folder_if_not_exists
 import numpy as np
+import os
 
 def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, crossSectionType ):
 	'''
@@ -78,13 +79,13 @@ def makeResultLatexTable( xsections_abs, xsections_rel, outputPath, variable, cr
 			)
 
 		# REPLACE e^0N WITH x10^N. ONLY WORKS FOR 1 e^ VALUE IN STRING [TO BE IMPROVED]
-		if 'e-' in line_for_bin:
-			print(line_for_bin)
-			power = line_for_bin[line_for_bin.find("e-")+1:].split()[0]
-			new = '\ensuremath{{\\times 10^{{ {} }} }}'.format(power.replace('0', ''))
-			old = 'e'+power
-			line_for_bin = line_for_bin.replace(old, new)
-			print(line_for_bin)
+		# if 'e-' in line_for_bin:
+		# 	print(line_for_bin)
+		# 	power = line_for_bin[line_for_bin.find("e-")+1:].split()[0]
+		# 	new = '\ensuremath{{\\times 10^{{ {} }} }}'.format(power.replace('0', ''))
+		# 	old = 'e'+power
+		# 	line_for_bin = line_for_bin.replace(old, new)
+		# 	print(line_for_bin)
 
 		fullTable += line_for_bin
 
@@ -169,7 +170,7 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 		variables_latex['MET'], 
 		variables_latex['WPT'], 
 		variables_latex['lepton_pt'], 
-		variables_latex['abs_lepton_eta'], 
+		variables_latex['abs_lepton_eta_coarse'], 
 		variables_latex['NJets']
 	)
 	latexTitle += '\t\t\hline\n'
@@ -182,14 +183,14 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 		MET_low 			= d_summarised_syst['MET']['Min'][col] 
 		WPT_low 			= d_summarised_syst['WPT']['Min'][col] 
 		lepton_pt_low	 	= d_summarised_syst['lepton_pt']['Min'][col] 
-		abs_lepton_eta_low 	= d_summarised_syst['abs_lepton_eta']['Min'][col] 
+		abs_lepton_eta_coarse_low 	= d_summarised_syst['abs_lepton_eta_coarse']['Min'][col] 
 		NJets_low 			= d_summarised_syst['NJets']['Min'][col]
 		HT_high 			= d_summarised_syst['HT']['Max'][col] 
 		ST_high 			= d_summarised_syst['ST']['Max'][col] 
 		MET_high 			= d_summarised_syst['MET']['Max'][col] 
 		WPT_high 			= d_summarised_syst['WPT']['Max'][col] 
 		lepton_pt_high	 	= d_summarised_syst['lepton_pt']['Max'][col] 
-		abs_lepton_eta_high = d_summarised_syst['abs_lepton_eta']['Max'][col] 
+		abs_lepton_eta_coarse_high = d_summarised_syst['abs_lepton_eta_coarse']['Max'][col] 
 		NJets_high 			= d_summarised_syst['NJets']['Max'][col]
 
 		# If less than 0.1 replace with '<0.1'
@@ -203,8 +204,8 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 		WPT_dp_high = ' - {:.1f}'
 		lepton_pt_dp_low = '{:.1f}'
 		lepton_pt_dp_high = ' - {:.1f}'
-		abs_lepton_eta_dp_low = '{:.1f}'
-		abs_lepton_eta_dp_high = ' - {:.1f}'
+		abs_lepton_eta_coarse_dp_low = '{:.1f}'
+		abs_lepton_eta_coarse_dp_high = ' - {:.1f}'
 		NJets_dp_low = '{:.1f}'
 		NJets_dp_high = ' - {:.1f}'
 
@@ -238,12 +239,12 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 		if lepton_pt_high < 0.1:
 			lepton_pt_dp_high = '{}'
 			lepton_pt_high = ''
-		if abs_lepton_eta_low < 0.1:
-			abs_lepton_eta_dp_low = '{}'
-			abs_lepton_eta_low = '$<$0.1'
-		if abs_lepton_eta_high < 0.1:
-			abs_lepton_eta_dp_high = '{}'
-			abs_lepton_eta_high = ''
+		if abs_lepton_eta_coarse_low < 0.1:
+			abs_lepton_eta_coarse_dp_low = '{}'
+			abs_lepton_eta_coarse_low = '$<$0.1'
+		if abs_lepton_eta_coarse_high < 0.1:
+			abs_lepton_eta_coarse_dp_high = '{}'
+			abs_lepton_eta_coarse_high = ''
 		if NJets_low < 0.1:
 			NJets_dp_low = '{}'
 			NJets_low = '$<$0.1'
@@ -259,7 +260,7 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 			WPT_dp_low = WPT_dp_low,
 			WPT_dp_high = WPT_dp_high,
 		)
-		latexContent_all = '\t\t{{}}\t&\t{HT_dp_low}{HT_dp_high}\t&\t{ST_dp_low}{ST_dp_high}\t&\t{MET_dp_low}{MET_dp_high}\t&\t{WPT_dp_low}{WPT_dp_high}\t&\t{lepton_pt_dp_low}{lepton_pt_dp_high}\t&\t{abs_lepton_eta_dp_low}{abs_lepton_eta_dp_high}\t&\t{NJets_dp_low}{NJets_dp_high}\\\\ \n'.format(
+		latexContent_all = '\t\t{{}}\t&\t{HT_dp_low}{HT_dp_high}\t&\t{ST_dp_low}{ST_dp_high}\t&\t{MET_dp_low}{MET_dp_high}\t&\t{WPT_dp_low}{WPT_dp_high}\t&\t{lepton_pt_dp_low}{lepton_pt_dp_high}\t&\t{abs_lepton_eta_coarse_dp_low}{abs_lepton_eta_coarse_dp_high}\t&\t{NJets_dp_low}{NJets_dp_high}\\\\ \n'.format(
 			HT_dp_low = HT_dp_low,
 			HT_dp_high = HT_dp_high,
 			ST_dp_low = ST_dp_low,
@@ -270,8 +271,8 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 			WPT_dp_high = WPT_dp_high,
 			lepton_pt_dp_low = lepton_pt_dp_low,
 			lepton_pt_dp_high = lepton_pt_dp_high,
-			abs_lepton_eta_dp_low = abs_lepton_eta_dp_low,
-			abs_lepton_eta_dp_high = abs_lepton_eta_dp_high,
+			abs_lepton_eta_coarse_dp_low = abs_lepton_eta_coarse_dp_low,
+			abs_lepton_eta_coarse_dp_high = abs_lepton_eta_coarse_dp_high,
 			NJets_dp_low = NJets_dp_low,
 			NJets_dp_high = NJets_dp_high,
 		)
@@ -303,8 +304,8 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 				WPT_high, 
 				lepton_pt_low, 
 				lepton_pt_high, 
-				abs_lepton_eta_low, 
-				abs_lepton_eta_high, 
+				abs_lepton_eta_coarse_low, 
+				abs_lepton_eta_coarse_high, 
 				NJets_low,
 				NJets_high,
 			)
@@ -322,8 +323,8 @@ def makeCondensedSystematicLatexTable(variables, inputPath, input_file_template,
 		d_summarised_syst['WPT']['Max']['systematic'], 
 		d_summarised_syst['lepton_pt']['Min']['systematic'], 
 		d_summarised_syst['lepton_pt']['Max']['systematic'], 
-		d_summarised_syst['abs_lepton_eta']['Min']['systematic'], 
-		d_summarised_syst['abs_lepton_eta']['Max']['systematic'], 
+		d_summarised_syst['abs_lepton_eta_coarse']['Min']['systematic'], 
+		d_summarised_syst['abs_lepton_eta_coarse']['Max']['systematic'], 
 		d_summarised_syst['NJets']['Min']['systematic'],
 		d_summarised_syst['NJets']['Max']['systematic'],
 	)
@@ -475,7 +476,7 @@ def makeBinningLatexTable():
 
 		tableContent = ''
 		path_to_file = 'unfolding/13TeV/binning_combined_{}.txt'.format(variable)
-		if not path_to_file.exists():
+		if not os.path.isfile(path_to_file):
 			print "File does not exist. Please try again later"
 			return
 		binning_params = file_to_df(path_to_file)
