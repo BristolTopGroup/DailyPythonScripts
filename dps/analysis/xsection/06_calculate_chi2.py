@@ -139,11 +139,10 @@ def makeTableContent(chi2, gChi2, models=[], spacing=False):
 			label_header += '$\\chi^{2}$ / ndf & p-value &\t'
 	model_header = model_header.rstrip().rstrip('&')
 	model_header += '\\\\ \n'
-	if 'TTJets_powhegPythia8_withMCTheoryUnc' in models:
-		model_header += '\t\t&\t&\t&\t\multicolumn{2}{c}{including simulation theory uncertainties} \\\\ \n'
-
-	label_header = label_header.rstrip().rstrip('&')
-	label_header += '\\\\ \n'
+	# if 'TTJets_powhegPythia8_withMCTheoryUnc' in models:
+	# 	model_header += '\t\t&\t&\t&\t\multicolumn{2}{c}{including simulation theory uncertainties} \\\\ \n'
+	# label_header = label_header.rstrip().rstrip('&')
+	# label_header += '\\\\ \n'
 
 	fullTable = latexHeader
 	fullTable += model_header
