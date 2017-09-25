@@ -93,9 +93,10 @@ def calculateChi2ForModels( modelsForComparing, variable, channel, path_to_input
 	return chi2OfModels_df
 
 def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
-
+	'''
+	Make the chi2 latex table
+	'''
 	models = chi2[chi2.keys()[0]]['Model']
-
 	latexHeader = '\\begin{table}\n'
 	if crossSectionType == 'normalised':
 		latexHeader += '\t\caption{Results of a $\chi^{2}$ test between the normalised cross sections in data and several MC models.}\n'
@@ -105,7 +106,26 @@ def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
 		latexHeader += '\t\label{tb:Chi2_absolute}\n'	
 	latexHeader += '\t\centering\n'
 	latexHeader += '\t\\scriptsize\n'
-	latexHeader += '\t\\begin{tabular}{c'
+
+	latexContent = ''
+	latexContent += makeTableContent(chi2, gChi2, models = ["TTJets_powhegPythia8", "TTJets_powhegPythia8_withMCTheoryUnc"], spacing=True)
+	latexContent += makeTableContent(chi2, gChi2, models = ["TTJets_powhegHerwig", "TTJets_amcatnloPythia8", "TTJets_madgraphMLM"])
+
+	latexFooter = '\\end{table}\n'
+	latexTable = latexHeader+latexContent+latexFooter
+
+	print latexTable
+	make_folder_if_not_exists(outputPath)
+	file_template = outputPath + '/chi2_{channel}.tex'.format(channel=channel)
+	output_file = open(file_template, 'w')
+	output_file.write(latexTable)
+	output_file.close()
+
+def makeTableContent(chi2, gChi2, models=[], spacing=False):
+	'''
+	Add sets of chi2 tables
+	'''
+	latexHeader = '\t\\begin{tabular}{c'
 	for i in range(0,len(models)): latexHeader += 'cc'
 	latexHeader += '}\n'
 	latexHeader += '\t\t\hline\n'
@@ -113,19 +133,20 @@ def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
 
 	model_header = '\t\t&\t'
 	label_header = '\t\t&\t'
-	for model in models:
-		model_header += ' \multicolumn{{2}}{{c}}{{{model}}} & \t'.format(model=measurements_latex[model])
-		label_header += '$\\chi^{2}$ / ndf & p-value &\t'
+	for model in chi2[chi2.keys()[0]]['Model']:
+		if model in models:
+			model_header += ' \multicolumn{{2}}{{c}}{{{model}}} & \t'.format(model=measurements_latex[model])
+			label_header += '$\\chi^{2}$ / ndf & p-value &\t'
 	model_header = model_header.rstrip().rstrip('&')
-	model_header += '\\\\'
-	label_header = label_header.rstrip().rstrip('&')
-	label_header += '\\\\'
+	model_header += '\\\\ \n'
+	# if 'TTJets_powhegPythia8_withMCTheoryUnc' in models:
+	# 	model_header += '\t\t&\t&\t&\t\multicolumn{2}{c}{including simulation theory uncertainties} \\\\ \n'
+	# label_header = label_header.rstrip().rstrip('&')
+	# label_header += '\\\\ \n'
 
 	fullTable = latexHeader
 	fullTable += model_header
-	fullTable += '\n'
 	fullTable += label_header
-	fullTable += '\n'
 	fullTable += '\t\t\\hline\n'
 	for var in chi2:
 		lineForVar = '\t\t{var} &\t'.format(var=variables_latex[var])
@@ -160,16 +181,13 @@ def makeLatexTable( chi2, gChi2, outputPath, channel, crossSectionType ):
 
 	fullTable += lineForGChi2
 	fullTable += '\n\t\t\hline\n'
+	if spacing:
+		fullTable += '\t\t\\vspace*{0.2cm} \n'
+		fullTable += '\t\t\\newline \n'
 
-	tableFooter = '\t\end{tabular}\n'	
-	tableFooter += '\\end{table}\n'
-
+	tableFooter = '\t\end{tabular}\n'
 	fullTable += tableFooter
-	make_folder_if_not_exists(outputPath)
-	file_template = outputPath + '/chi2_{channel}.tex'.format(channel=channel)
-	output_file = open(file_template, 'w')
-	output_file.write(fullTable)
-	output_file.close()
+	return fullTable
 
 
 def makeChi2Table( chi2, gChi2, outputPath, channel, crossSectionType ):
@@ -201,9 +219,6 @@ def makeChi2Table( chi2, gChi2, outputPath, channel, crossSectionType ):
 	df_to_file(outputPath+'/chi2_{channel}.txt'.format(channel=channel), df)
 	print df
 	return
-
-
-
 
 def parse_arguments():
     parser = ArgumentParser()
@@ -247,8 +262,8 @@ if __name__ == '__main__':
 	    phase_space = 'VisiblePS'
 
 	channels = [
-		'electron', 
-		'muon', 
+		# 'electron', 
+		# 'muon', 
 		'combined', 
 	]
 	unc_type = [
@@ -264,6 +279,7 @@ if __name__ == '__main__':
 			chi2ForVariables = {}
 			for variable in measurement_config.variables:
 				if args.varToDO and variable != args.varToDO: continue
+				if variable == 'abs_lepton_eta': continue
 
 				path_to_input = '{path}/{com}TeV/{variable}/{phase_space}/central/'
 				path_to_input = path_to_input.format(

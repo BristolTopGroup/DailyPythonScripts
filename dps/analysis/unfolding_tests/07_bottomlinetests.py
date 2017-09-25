@@ -18,6 +18,8 @@ from dps.utils.latex import setup_matplotlib
 from dps.utils.pandas_utilities import file_to_df, read_tuple_from_file, dict_to_df, matrix_from_df
 import matplotlib.pyplot as plt
 from ROOT import TMath
+from dps.utils.file_utilities import make_folder_if_not_exists
+from dps.config.latex_labels import variables_latex
 
 import numpy as np
 np.set_printoptions(
@@ -93,10 +95,89 @@ def calculateChi2(data,model,covariance):
 	prob = TMath.Prob( chi2, ndf )
 	return chi2, ndf, prob 
 
+def create_latex_tables(d_bottom_line_test):
+	'''
+	Create latex output for bottom line test
+	'''
+	for var, d_ch_bottomline in d_bottom_line_test.iteritems():
+		isFirstChannel = True
+		fullTable = ''
+		latexHeader =  '\\begin{landscape}\n'
+		latexHeader += '\\begin{table}[!htbp]\n'
+		latexHeader += '\t\centering\n'
+		latexHeader += '\t\\tiny\n'
+		fullTable 	+= latexHeader
+		for ch, d_bottomline in d_ch_bottomline.iteritems():
+			ncols = 'c'*(len(d_bottomline['Smeared']['N_DATA'])+2)
+
+
+			latexColHeader 	= '\t\\begin{{tabular}}{{{}}}\n'.format(ncols)
+			latexColHeader 	+= '\t\t\hline\n'
+			latexColHeader 	+= '\t\t\hline\n'
+			latexColHeader 	+= '\t\t{var} '.format(var=variables_latex[var])
+			for bin in range (len(bin_edges_vis[var])-1):
+				latexColHeader += '\t & \t {edge_down}-{edge_up}'.format(
+					edge_down = bin_edges_vis[var][bin], 
+					edge_up = bin_edges_vis[var][bin+1],
+				)
+			latexColHeader 	+= '\t & \ensuremath{\chi^{2}}'
+			latexColHeader 	+= '\\\\ \n'
+			latexColHeader 	+= '\t\t\hline\n'
+			fullTable 		+= latexColHeader
+
+			latexContent = ''
+			latexContent += '\t\tData '
+			for a in d_bottomline['Smeared']['N_DATA']:
+				latexContent += '\t & \t {val}'.format( val = '{:.1f}'.format(a) )
+			latexContent += '\t & \\\\ \n'
+
+			latexContent += '\t\tSmeared MC'
+			for a in d_bottomline['Smeared']['N_MC']:
+				latexContent += '\t & \t {val}'.format( val = '{:.1f}'.format(a) )
+			latexContent += '\t & {chi2} \\\\ \n'.format( chi2 = '{:.1f}'.format(d_bottomline['Smeared']['Chi2'].item(0)))
+
+			latexContent += '\t\tUnfolded Data'
+			for a in d_bottomline['Unfolded']['N_DATA']:
+				latexContent += '\t & \t {val}'.format( val = '{:.1f}'.format(a) )
+			latexContent += '\t & \\\\ \n'
+
+			latexContent += '\t\tTrue MC'
+			for a in d_bottomline['Unfolded']['N_MC']:
+				latexContent += '\t & \t {val}'.format( val = '{:.1f}'.format(a) )
+			latexContent += '\t & {chi2} \\\\ \n'.format( chi2 = '{:.1f}'.format(d_bottomline['Unfolded']['Chi2'].item(0)))
+			fullTable 		+= latexContent
+
+			latexFooter = '\t\t\hline\n'
+			latexFooter += '\t\end{tabular}\n'
+			latexFooter += '\t\caption{{ Bottom line test of the unfolding for {var} in the {ch} channel.}}\n'.format( var = variables_latex[var], ch=ch )
+			latexFooter += '\t\label{{tb:bottomline_{var}_{ch}}}\n'.format( var = var, ch=ch )	
+			if isFirstChannel:
+				isFirstChannel = False
+				latexFooter += '\t\\vspace*{1cm} \n'
+				latexFooter += '\t\\newline \n'
+				fullTable	+= latexFooter
+			else:
+				fullTable 	+= latexFooter
+		
+		latexTableFooter 	= '\\end{table}\n'
+		latexTableFooter 	+= '\\end{landscape}\n'
+		fullTable 			+= latexTableFooter
+		print fullTable
+
+		#########################################################################################################
+		### Write Table
+		#########################################################################################################
+		make_folder_if_not_exists('tables/bottomline')
+		file_template = 'tables/bottomline/{var}_bottomlinetest.tex'.format(var=var)
+		output_file = open(file_template, 'w')
+		output_file.write(fullTable)
+		output_file.close()
+		print 'Written Bottom Line Test for {} in the {} channel'.format(var, ch)
 
 def main():
 	'''
 	'''
+	debug  = False
 	config = XSectionConfig(13)
 
 	file_for_smeared_space_template = 'data/normalisation/background_subtraction/13TeV/{var}/VisiblePS/central/normalisation_{ch}.txt'
@@ -115,17 +196,15 @@ def main():
 		'electron',
 		'muon',
 	]
-	for ch in channel:
-		for var in config.variables:
+	d_bottom_line_test = {}
+	for var in config.variables:
+		d_bottom_line_test[var] = {}
+		for ch in channel:
+			d_bottom_line_test[var][ch] = {}
 			opts['variable'] 			= var
 			opts['channel'] 			= ch
 			# if 'electron' not in ch: continue 
 			# if 'HT' not in var: continue
-			print ""
-			print "="*160
-			print "Bottom Line Test for {} in the {} Channel".format(var,ch)
-			print '- '*80
-			print ""
 
 			# File for unfolding
 			file_for_smeared_space = file_for_smeared_space_template.format( var = var, ch = ch )
@@ -153,96 +232,52 @@ def main():
 			unfolded_data = np.array(hist_to_value_list(ut.h_data_particleLevel))
 			unfolded_mc = np.array(hist_to_value_list(ut.h_mc_particleLevel))
 			unfolded_chi, unfolded_ndf, unfolded_pvalue = calculateChi2(unfolded_data, unfolded_mc, unfolded_covariance)
-
-			print unfolded_data
-			print unfolded_mc
-			print unfolded_covariance
-			print ""
-			print 'Unfolded Level Chi2 : {}'.format(unfolded_chi)
-			print '-'*160
+			d_bottom_line_test[var][ch]['Unfolded'] = {
+				'N_MC' 		: unfolded_mc,
+				'N_DATA' 	: unfolded_data,
+				'Chi2' 		: unfolded_chi,
+				'NDF' 		: unfolded_ndf,
+				'P_VALUE'	: unfolded_pvalue,
+			}
 
 			# Get smeared data and rebin
-			ut.h_refolded_smeared = unfolding.refold()
-			ut.h_refolded_smeared = ut.h_refolded_smeared.rebinned(2)
+			# ut.h_refolded_smeared = unfolding.refold()
+			# ut.h_refolded_smeared = ut.h_refolded_smeared.rebinned(2)
+			ut.h_data_smeared_no_fakes = ut.h_data_smeared_no_fakes.rebinned(2)
 			ut.h_mc_smeared = ut.h_mc_smeared.rebinned(2)
 
 			# Reconstructed level covariance matrices, data and mc ==> chi2
-			smeared_covariance = np.matrix(np.diag( [e**2 for (v,e) in hist_to_value_error_tuplelist(ut.h_refolded_smeared)] ) )
-			smeared_data = np.array(hist_to_value_list(ut.h_refolded_smeared))
+			smeared_covariance = np.matrix(np.diag( [e**2 for (v,e) in hist_to_value_error_tuplelist(ut.h_data_smeared_no_fakes)] ) ) + np.matrix(np.diag( [e**2 for (v,e) in hist_to_value_error_tuplelist(ut.h_data_smeared_no_fakes)] ) )
+			# smeared_data = np.array(hist_to_value_list(ut.h_refolded_smeared))
+			smeared_data = np.array(hist_to_value_list(ut.h_data_smeared_no_fakes))
 			smeared_mc = np.array(hist_to_value_list(ut.h_mc_smeared))
 			smeared_chi, smeared_ndf, smeared_pvalue = calculateChi2(smeared_data, smeared_mc, smeared_covariance)
-
-			print np.array(hist_to_value_list(ut.h_data_smeared_no_fakes.rebinned(2)))
-			print smeared_data
-			print smeared_mc
-			print smeared_covariance
-			print ""
-			print 'Smeared Level Chi2 : {}'.format(smeared_chi)
-			print "="*160
-
-
-
-
-			# Unfolded Level Data: Y (unfolded)
-			# Unfolded Level MC: Y (truth from response)
-			# Unfolded Covariance: Data Stat + MC Stat Y
-			# Smeared Level Data: Y (Unfolded/Refolded Data)
-			# Smeared Level MC: N ()
-			# Smeared Covariance: Just diagonal unc on refolded? data
-
-
-
-			# file_for_smeared_space = file_for_smeared_space_template.format( var = var, ch = ch )
-			# file_for_smeared_covariance = file_for_smeared_covariance_template.format( var = var, ch = ch )
-
-			# smeared_space = file_to_df(file_for_smeared_space)
-			# smeared_covariance = matrix_from_df(file_to_df(file_for_smeared_covariance))
-
-			# smeared_data = smeared_space['TTJet']
-			# smeared_mc = smeared_space['TTJet_MC']
-			# smeared_data = np.array( [ smeared_data[i]+smeared_data[i+1] for i in range(0, len(smeared_data), 2)] )
-			# smeared_mc = np.array([smeared_mc[i]+smeared_mc[i+1] for i in range(0, len(smeared_mc), 2)] )
-			# print '-'*160
-			# print 'Data : '
-			# print smeared_data
-			# print '-'*160
-			# print 'Smeared MC : '
-			# print smeared_mc
-			# print '-'*160
-			# print 'Statistical Covariance : '
-			# print smeared_covariance
-			# s_chi, s_ndf, s_pvalue = calculateChi2(smeared_data, smeared_mc, smeared_covariance)
-			# print '-'*160
-			# print 'Smeared Level Chi2 : '
-			# print s_chi
-			# print '-'*160
-
-			# print ''
-
-			# file_for_unfolded_space = file_for_unfolded_space_template.format( var = var, ch = ch )
-			# file_for_unfolded_covariance = file_for_unfolded_covariance_template.format( var = var, ch = ch )
-			# unfolded_space = file_to_df(file_for_unfolded_space)
-			# unfolded_covariance = matrix_from_df(file_to_df(file_for_unfolded_covariance))
-			# unfolded_data = np.array(unfolded_space['TTJets_unfolded'])
-			# unfolded_mc = np.array(unfolded_space['TTJets_powhegPythia8'])
-			# print '-'*160
-			# print 'Unfolded Data : '
-			# print unfolded_data
-			# print '-'*160
-			# print 'Particle Level MC : '
-			# print unfolded_mc
-			# print '-'*160
-			# print 'Some Matrix as Yet Unknown : '
-			# print unfolded_covariance
-			# u_chi, u_ndf, u_pvalue = calculateChi2(unfolded_data, unfolded_mc, unfolded_covariance)
-			# print '-'*160
-			# print 'Unfolded Level Chi2 : '
-			# print u_chi
-			# print '-'*160
-
-
-
-
+			d_bottom_line_test[var][ch]['Smeared'] = {
+				'N_MC' 		: smeared_mc,
+				'N_DATA' 	: smeared_data,
+				'Chi2' 		: smeared_chi,
+				'NDF' 		: smeared_ndf,
+				'P_VALUE'	: smeared_pvalue,
+			}
+			if debug:
+				print ""
+				print "="*160
+				print "Bottom Line Test for {} in the {} Channel".format(var,ch)
+				print '- '*80
+				print ""
+				print unfolded_data
+				print unfolded_mc
+				print unfolded_covariance
+				print ""
+				print 'Unfolded Level Chi2 : {}|{}; p={}'.format(unfolded_chi, unfolded_ndf, unfolded_pvalue)
+				print '-'*160
+				print smeared_data
+				print smeared_mc
+				print smeared_covariance
+				print ""
+				print 'Smeared Level Chi2 : {}|{}; p={}'.format(smeared_chi, smeared_ndf, smeared_pvalue)
+				print "="*160
+	create_latex_tables(d_bottom_line_test)
 if __name__ == '__main__':
 	main()
 			

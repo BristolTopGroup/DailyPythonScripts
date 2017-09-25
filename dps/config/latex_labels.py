@@ -74,6 +74,7 @@ measurements_latex = {
     'TTJets_amcatnloPythia8'    : r'\textsc{MG5}\_a\textsc{MC@NLO (NLO) \raisebox{.2ex}{+} Pythia8}',
 
     'TTJets_powhegPythia8_withMCTheoryUnc': r'with MC theory uncertainties',
+    # 'TTJets_powhegPythia8_withMCTheoryUnc': r'\textsc{Powheg \raisebox{.2ex}{+} Pythia8}',
 
     'TTJets_massdown'           : '$\mathrm{m}_{\mathrm{t}}$=169.5 GeV',
     'TTJets_massup'             : '$\mathrm{m}_{\mathrm{t}}$=175.5 GeV',
