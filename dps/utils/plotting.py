@@ -40,6 +40,7 @@ class Histogram_properties:
     ratio_y_limits = [0.7, 1.3] #[min, max]
     rebin = 1
     additional_text = ''
+    additional_text2 = ''
     preliminary = True
     cms_logo_location = 'left' # left|right
     ratio_y_title = 'I am the ratio'
@@ -743,6 +744,7 @@ def compare_measurements( models = {}, measurements = {},
         histogram.linewidth = 4
         histogram.color = next( colorcycler )
         histogram.linestyle = next( linecycler ) 
+        histogram.fillstyle = 0
         rplt.hist( histogram, axex = axes, label = label )
     
     if match_models_to_measurements:

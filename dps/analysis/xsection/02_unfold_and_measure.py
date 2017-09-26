@@ -54,7 +54,7 @@ def get_unfolding_files(measurement_config):
     unfolding_files['file_for_erdOn']              = File( measurement_config.unfolding_erdOn, 'read' )
     unfolding_files['file_for_QCDbased_erdOn']     = File( measurement_config.unfolding_QCDbased_erdOn, 'read' )
     unfolding_files['file_for_GluonMove']          = File( measurement_config.unfolding_GluonMove, 'read' )
-    unfolding_files['file_for_GluonMove_erdOn']    = File( measurement_config.unfolding_GluonMove_erdOn, 'read' )
+    # unfolding_files['file_for_GluonMove_erdOn']    = File( measurement_config.unfolding_GluonMove_erdOn, 'read' )
 
     unfolding_files['file_for_semiLepBrdown']      = File( measurement_config.unfolding_semiLepBr_down, 'read' )
     unfolding_files['file_for_semiLepBrup']        = File( measurement_config.unfolding_semiLepBr_up, 'read' )
@@ -197,7 +197,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'TTJets_erdOn'               :  unfolding_files['file_for_erdOn'],
         'TTJets_QCDbased_erdOn'      :  unfolding_files['file_for_QCDbased_erdOn'],
         'TTJets_GluonMove'           :  unfolding_files['file_for_GluonMove'],
-        'TTJets_GluonMove_erdOn'     :  unfolding_files['file_for_GluonMove_erdOn'],
+        # 'TTJets_GluonMove_erdOn'     :  unfolding_files['file_for_GluonMove_erdOn'],
 
         'TTJets_isrdown'             :  unfolding_files['file_for_isrdown'],
         'TTJets_isrup'               :  unfolding_files['file_for_isrup'],
@@ -231,10 +231,10 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         'UnclusteredEnUp'            :  unfolding_files['file_for_UnclusteredEnUp'],
         'UnclusteredEnDown'          :  unfolding_files['file_for_UnclusteredEnDown'],
 
-        'Muon_up'                    :  unfolding_files['file_for_ElectronUp'],
-        'Muon_down'                  :  unfolding_files['file_for_ElectronDown'],
-        'Electron_up'                :  unfolding_files['file_for_MuonUp'],
-        'Electron_down'              :  unfolding_files['file_for_MuonDown'],
+        'Electron_up'                :  unfolding_files['file_for_ElectronUp'],
+        'Electron_down'              :  unfolding_files['file_for_ElectronDown'],
+        'Muon_up'                    :  unfolding_files['file_for_MuonUp'],
+        'Muon_down'                  :  unfolding_files['file_for_MuonDown'],
 
         'PileUp_up'                  :  unfolding_files['file_for_PUUp'],
         'PileUp_down'                :  unfolding_files['file_for_PUDown'],
@@ -258,6 +258,8 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
+
+
     # PDF Uncertainties
     elif category in pdf_uncertainties:
         print 'Doing category',category,'by changing response matrix'
@@ -592,16 +594,16 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
             load_fakes = True,
             visiblePS = visiblePS,
         )
-        h_truth_GluonMove_erdOn, _, _, _ = get_unfold_histogram_tuple( 
-            inputfile = unfolding_files['file_for_GluonMove_erdOn'],
-            variable = variable,
-            channel = channel,
-            centre_of_mass = com,
-            ttbar_xsection = ttbar_xsection,
-            luminosity = luminosity,
-            load_fakes = True,
-            visiblePS = visiblePS,
-        )
+        # h_truth_GluonMove_erdOn, _, _, _ = get_unfold_histogram_tuple( 
+        #     inputfile = unfolding_files['file_for_GluonMove_erdOn'],
+        #     variable = variable,
+        #     channel = channel,
+        #     centre_of_mass = com,
+        #     ttbar_xsection = ttbar_xsection,
+        #     luminosity = luminosity,
+        #     load_fakes = True,
+        #     visiblePS = visiblePS,
+        # )
         h_truth_semiLepBrup, _, _, _ = get_unfold_histogram_tuple( 
             inputfile = unfolding_files['file_for_semiLepBrup'],
             variable = variable,
@@ -680,7 +682,7 @@ def get_unfolded_normalisation( TTJet_normalisation_results, category, channel, 
         normalisation_unfolded['TTJets_erdOn']         = hist_to_value_error_tuplelist( h_truth_erdOn )
         normalisation_unfolded['TTJets_QCDbased_erdOn']        = hist_to_value_error_tuplelist( h_truth_QCDbased_erdOn )
         normalisation_unfolded['TTJets_GluonMove']        = hist_to_value_error_tuplelist( h_truth_GluonMove )
-        normalisation_unfolded['TTJets_GluonMove_erdOn']        = hist_to_value_error_tuplelist( h_truth_GluonMove_erdOn )
+        # normalisation_unfolded['TTJets_GluonMove_erdOn']        = hist_to_value_error_tuplelist( h_truth_GluonMove_erdOn )
         normalisation_unfolded['TTJets_semiLepBrup']   = hist_to_value_error_tuplelist( h_truth_semiLepBrup )
         normalisation_unfolded['TTJets_semiLepBrdown'] = hist_to_value_error_tuplelist( h_truth_semiLepBrdown )
         normalisation_unfolded['TTJets_fragup']        = hist_to_value_error_tuplelist( h_truth_fragup )
@@ -752,7 +754,7 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
             normalisation['TTJets_powhegPythia8'],
             binWidths[variable],
             luminosity, 
-            branching_ratio 
+            branching_ratio
         )
         xsection_unfolded['TTJets_amcatnloPythia8'], _, _, _ = calculate_xsection( 
             normalisation['TTJets_amcatnloPythia8'],
@@ -905,12 +907,12 @@ def calculate_xsections( normalisation, category, channel, covariance_matrix=Non
             luminosity, 
             branching_ratio 
         )
-        xsection_unfolded['TTJets_GluonMove_erdOn'], _, _, _ = calculate_xsection( 
-            normalisation['TTJets_GluonMove_erdOn'],
-            binWidths[variable],
-            luminosity, 
-            branching_ratio 
-        )
+        # xsection_unfolded['TTJets_GluonMove_erdOn'], _, _, _ = calculate_xsection( 
+        #     normalisation['TTJets_GluonMove_erdOn'],
+        #     binWidths[variable],
+        #     luminosity, 
+        #     branching_ratio 
+        # )
         xsection_unfolded['TTJets_semiLepBrup'], _, _, _ = calculate_xsection( 
             normalisation['TTJets_semiLepBrup'],
             binWidths[variable],
@@ -1120,11 +1122,11 @@ def calculate_normalised_xsections( normalisation, category, channel, normalise_
             binWidths[variable],
             normalise_to_one, 
         )
-        normalised_xsection['TTJets_GluonMove_erdOn'], _, _, _ = calculate_normalised_xsection( 
-            normalisation['TTJets_GluonMove_erdOn'],
-            binWidths[variable],
-            normalise_to_one, 
-        )
+        # normalised_xsection['TTJets_GluonMove_erdOn'], _, _, _ = calculate_normalised_xsection( 
+        #     normalisation['TTJets_GluonMove_erdOn'],
+        #     binWidths[variable],
+        #     normalise_to_one, 
+        # )
         normalised_xsection['TTJets_semiLepBrup'], _, _, _ = calculate_normalised_xsection( 
             normalisation['TTJets_semiLepBrup'],
             binWidths[variable],

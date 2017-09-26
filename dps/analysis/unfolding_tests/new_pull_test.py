@@ -125,6 +125,7 @@ def main():
 
 	print variable
 	tau_value = get_tau_value(config, channel, variable)
+	print tau_value
 	pullHistogram = None
 
 	for file_for_response in files_for_response:

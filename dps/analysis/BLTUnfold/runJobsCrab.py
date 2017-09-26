@@ -9,13 +9,13 @@ jobs = [
 
         '--centreOfMassEnergy 13 -s central',
 
-        # '--centreOfMassEnergy 13 -s central_firstHalf',
-        # '--centreOfMassEnergy 13 -s central_secondHalf',
+        '--centreOfMassEnergy 13 -s central_firstHalf',
+        '--centreOfMassEnergy 13 -s central_secondHalf',
 
-        # '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting 1',
-        # '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting 1',
-        # '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting -1',
-        # '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting -1',
+        '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting 1',
+        '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting 1',
+        '--centreOfMassEnergy 13 -s central_firstHalf --topPtReweighting -1',
+        '--centreOfMassEnergy 13 -s central_secondHalf --topPtReweighting -1',
 
         '--centreOfMassEnergy 13 -s amcatnloPythia8',
         '--centreOfMassEnergy 13 -s madgraph',
@@ -43,7 +43,6 @@ jobs = [
         '--centreOfMassEnergy 13 -s erdOn',
         '--centreOfMassEnergy 13 -s QCDbased_erdOn',
         '--centreOfMassEnergy 13 -s GluonMove',
-        '--centreOfMassEnergy 13 -s GluonMove_erdOn',
 
         # ME scale weights
         '--centreOfMassEnergy 13 --muFmuRWeight 1',

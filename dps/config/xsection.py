@@ -52,8 +52,10 @@ class XSectionConfig():
         'WPT',
         'NJets',
         'lepton_pt',
-        # 'abs_lepton_eta',
-        'abs_lepton_eta_coarse'
+        'abs_lepton_eta',
+        'abs_lepton_eta_coarse',
+        'abs_lepton_eta_muonBins',
+
     ]
 
     # Used in 01
@@ -66,7 +68,8 @@ class XSectionConfig():
         'bjets_pt', 
         'bjets_eta',
         'abs_bjets_eta',
-        'abs_lepton_eta_coarse'
+        'abs_lepton_eta_coarse',
+        'abs_lepton_eta_muonBins'
     ]
 
     def __init__( self, centre_of_mass_energy ):
@@ -81,9 +84,10 @@ class XSectionConfig():
         self.path_to_files = self.current_analysis_path
         path_to_files = self.path_to_files
 
-        # self.path_to_unfolding_histograms = '/storage/ec6821/DailyPythonScripts/new/DailyPythonScripts/unfolding/13TeV/'
-        self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
-        # self.path_to_unfolding_histograms = 'unfolding/13TeV/'
+        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/Moriond2017/'
+        # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
+        self.path_to_unfolding_histograms = 'unfolding/13TeV/'
+
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
 
         self.luminosity = self.luminosities[self.centre_of_mass_energy]
@@ -451,11 +455,11 @@ class XSectionConfig():
         self.unfolding_amcatnlo_herwig_raw = path_to_unfolding_histograms + 'unfolding_TTJets_%dTeV_amcatnloherwigpp.root' % self.centre_of_mass_energy
 
         # Choose central MC Sample
-        # self.unfolding_central_raw = self.unfolding_powheg_pythia8_raw
-        self.unfolding_central_raw = 'unfolding/13TeV/unfolding_TTJets_13TeV.root'
+        self.unfolding_central_raw = self.unfolding_powheg_pythia8_raw
 
         # Raw --> asymmetric
         self.unfolding_powheg_pythia8 = self.unfolding_powheg_pythia8_raw.replace( '.root', '_asymmetric_newPS.root' )
+
         self.unfolding_amcatnlo_pythia8 = self.unfolding_amcatnlo_pythia8_raw.replace( '.root', '_asymmetric_newPS.root' )
         self.unfolding_madgraphMLM = self.unfolding_madgraphMLM_raw.replace( '.root', '_asymmetric_newPS.root' )
         self.unfolding_powheg_herwig = self.unfolding_powheg_herwig_raw.replace( '.root', '_asymmetric_newPS.root' )
@@ -667,6 +671,7 @@ class XSectionConfig():
             "MET" : 0.00186599526208,
             "abs_lepton_eta" : 1.1970850305e-08,
             "abs_lepton_eta_coarse" : 1.1970850305e-08,
+            "abs_lepton_eta_muonBins" : 1.1970850305e-08,
         }
 
         self.tau_values_muon = {
@@ -678,6 +683,7 @@ class XSectionConfig():
             "MET" : 0.00240030731786,
             "abs_lepton_eta" : 2.29348568572e-06,
             "abs_lepton_eta_coarse" : 2.29348568572e-06,
+            "abs_lepton_eta_muonBins" : 2.29348568572e-06,
         }
 
         self.tau_values_combined = {
@@ -689,7 +695,7 @@ class XSectionConfig():
             "MET" : 0,
             "abs_lepton_eta" : 0,
             "abs_lepton_eta_coarse" : 0,
-
+            "abs_lepton_eta_muonBins" : 0,
            }
 
         # self.categories_and_prefixes['PU_down'] = '_PU_65835mb'

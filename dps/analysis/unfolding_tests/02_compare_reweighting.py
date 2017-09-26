@@ -17,7 +17,7 @@ def main():
 	file_for_powhegPythia  		= File(config.unfolding_central_firstHalf, 'read')
 	file_for_ptReweight_up 		= File(config.unfolding_ptreweight_up_firstHalf, 'read')
 	file_for_ptReweight_down 	= File(config.unfolding_ptreweight_down_firstHalf, 'read')
-	file_for_amcatnlo 			= File(config.unfolding_amcatnlo, 'read')
+	file_for_amcatnlo_pythia8 			= File(config.unfolding_amcatnlo_pythia8, 'read')
 	file_for_powhegHerwig 		= File(config.unfolding_powheg_herwig, 'read')
 	file_for_etaReweight_up 	= File(config.unfolding_etareweight_up, 'read')
 	file_for_etaReweight_down 	= File(config.unfolding_etareweight_down, 'read')
@@ -92,8 +92,8 @@ def main():
 			# truth_eta_reweighted_down = asrootpy(response_eta_reweighted_down.ProjectionY())
 
 			# Get the distributions for other MC models
-			_, _, response_amcatnlo, _ = get_unfold_histogram_tuple(
-				inputfile=file_for_amcatnlo,
+			_, _, response_amcatnlo_pythia8, _ = get_unfold_histogram_tuple(
+				inputfile=file_for_amcatnlo_pythia8,
 				variable=variable,
 				channel=channel,
 				centre_of_mass=13,
@@ -101,8 +101,8 @@ def main():
 				visiblePS=True
 			)
 
-			measured_amcatnlo = asrootpy(response_amcatnlo.ProjectionX('px',1))
-			truth_amcatnlo = asrootpy(response_amcatnlo.ProjectionY())
+			measured_amcatnlo_pythia8 = asrootpy(response_amcatnlo_pythia8.ProjectionX('px',1))
+			truth_amcatnlo_pythia8 = asrootpy(response_amcatnlo_pythia8.ProjectionY())
 
 			_, _, response_powhegHerwig, _ = get_unfold_histogram_tuple(
 				inputfile=file_for_powhegHerwig,
@@ -147,14 +147,14 @@ def main():
 			measured_pt_reweighted_down.Rebin(2)
 			# measured_eta_reweighted_up.Rebin(2)
 			# measured_eta_reweighted_down.Rebin(2)
-			measured_amcatnlo.Rebin(2)
+			measured_amcatnlo_pythia8.Rebin(2)
 			measured_powhegHerwig.Rebin(2)
 			data.Rebin(2)
 
 			measured_central.Scale( 1 / measured_central.Integral() )
 			measured_pt_reweighted_up.Scale( 1 / measured_pt_reweighted_up.Integral() )
 			measured_pt_reweighted_down.Scale( 1 / measured_pt_reweighted_down.Integral() )
-			measured_amcatnlo.Scale( 1 / measured_amcatnlo.Integral() )
+			measured_amcatnlo_pythia8.Scale( 1 / measured_amcatnlo_pythia8.Integral() )
 			measured_powhegHerwig.Scale( 1 / measured_powhegHerwig.Integral() )
 
 			# measured_eta_reweighted_up.Scale( 1 / measured_eta_reweighted_up.Integral() )
@@ -162,9 +162,13 @@ def main():
 
 			data.Scale( 1 / data.Integral() )
 
+			print list(measured_central.y())
+			print list(measured_amcatnlo_pythia8.y())
+			print list(measured_powhegHerwig.y())
+			print list(data.y())
 			compare_measurements(
 				# models = {'Central' : measured_central, 'PtReweighted Up' : measured_pt_reweighted_up, 'PtReweighted Down' : measured_pt_reweighted_down, 'EtaReweighted Up' : measured_eta_reweighted_up, 'EtaReweighted Down' : measured_eta_reweighted_down},
-				models = OrderedDict([('Central' , measured_central), ('PtReweighted Up' , measured_pt_reweighted_up), ('PtReweighted Down' , measured_pt_reweighted_down), ('amc@nlo' , measured_amcatnlo), ('powhegHerwig' , measured_powhegHerwig) ] ),
+				models = OrderedDict([('Central' , measured_central), ('PtReweighted Up' , measured_pt_reweighted_up), ('PtReweighted Down' , measured_pt_reweighted_down), ('amc@nlo' , measured_amcatnlo_pythia8), ('powhegHerwig' , measured_powhegHerwig) ] ),
 				measurements = {'Data' : data},
 				show_measurement_errors=True,
 				histogram_properties=hp,
@@ -174,7 +178,7 @@ def main():
 				show_ratio_for_pairs = OrderedDict( [ 
 					('PtUpVsCentral' , [ measured_pt_reweighted_up, measured_central ] ),
 					('PtDownVsCentral' , [ measured_pt_reweighted_down, measured_central ] ),
-					('amcatnloVsCentral' , [ measured_amcatnlo, measured_central ] ),
+					('amcatnloVsCentral' , [ measured_amcatnlo_pythia8, measured_central ] ),
 					('powhegHerwigVsCentral' , [ measured_powhegHerwig, measured_central ] ),
 					('DataVsCentral' , [data, measured_central] ) 
 					]),

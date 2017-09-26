@@ -26,7 +26,7 @@ def main():
     file_for_powhegPythia  = File(config.unfolding_central_firstHalf, 'read')
     file_for_ptReweight_up  = File(config.unfolding_ptreweight_up_firstHalf, 'read')
     file_for_ptReweight_down  = File(config.unfolding_ptreweight_down_firstHalf, 'read')
-    file_for_amcatnlo           = File(config.unfolding_amcatnlo, 'read')
+    file_for_amcatnlo_pythia8           = File(config.unfolding_amcatnlo_pythia8, 'read')
     file_for_powhegHerwig       = File(config.unfolding_powheg_herwig, 'read')
     file_for_etaReweight_up = File(config.unfolding_etareweight_up, 'read')
     file_for_etaReweight_down = File(config.unfolding_etareweight_down, 'read')
@@ -36,7 +36,7 @@ def main():
     'Nominal' : file_for_response,
     'PtReweighted Up' : file_for_ptReweight_up,
     'PtReweighted Down' : file_for_ptReweight_down,
-    # 'amcatnlo' : file_for_amcatnlo,
+    # 'amcatnlo_pythia8' : file_for_amcatnlo_pythia8,
     # 'powhegHerwig' : file_for_powhegHerwig,
     # 'EtaReweighted Up' : file_for_etaReweight_up,
     # 'EtaReweighted Down' : file_for_etaReweight_down,
@@ -236,7 +236,7 @@ def plot_bias(unfolded_and_truths, variable, channel, come, method, prefix, plot
 
 def calculate_xsection( nEventsHistogram, variable ):
     resultsAsTuple = hist_to_value_error_tuplelist( nEventsHistogram )
-    normalised_xsection, _, _ = calculate_normalised_xsection( resultsAsTuple, bin_widths_visiblePS[variable], False )
+    normalised_xsection, _, _, _ = calculate_normalised_xsection( resultsAsTuple, bin_widths_visiblePS[variable], False )
 
     return value_error_tuplelist_to_hist(normalised_xsection, bin_edges_vis[variable])
 

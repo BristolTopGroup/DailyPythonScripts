@@ -92,6 +92,7 @@ def getFileName( com, sample, measurementConfig ) :
     fileNames = {
         '13TeV' : {
             'central'           : measurementConfig.ttbar_trees,
+
             'central_70pc'           : measurementConfig.ttbar_trees,
             'central_30pc'           : measurementConfig.ttbar_trees,
 
@@ -430,21 +431,22 @@ def main():
                     # 1D histograms
                     histograms[variable][channel.channelName] = {}
                     h = histograms[variable][channel.channelName]
-                    h['truth']                          = Hist( allVariablesBins[variable], name='truth')
-                    h['truthVis']                       = Hist( allVariablesBins[variable], name='truthVis')
-                    h['truth_parton']                   = Hist( allVariablesBins[variable], name='truth_parton')                
-                    h['measured']                       = Hist( reco_bin_edges_vis_to_use, name='measured')
-                    h['measuredVis']                    = Hist( reco_bin_edges_vis_to_use, name='measuredVis')
-                    h['measured_without_fakes']         = Hist( reco_bin_edges_vis_to_use, name='measured_without_fakes')
-                    h['measuredVis_without_fakes']      = Hist( reco_bin_edges_vis_to_use, name='measuredVis_without_fakes')
-                    h['fake']                           = Hist( reco_bin_edges_vis_to_use, name='fake')
-                    h['fakeVis']                        = Hist( reco_bin_edges_vis_to_use, name='fakeVis')
+                    h['truth']                          = Hist( allVariablesBins[variable], name='truth', type='D')
+                    h['truthVis']                       = Hist( allVariablesBins[variable], name='truthVis', type='D')
+                    h['truthVis_noWeight']                       = Hist( allVariablesBins[variable], name='truthVis_noWeight', type='D')
+                    h['truth_parton']                   = Hist( allVariablesBins[variable], name='truth_parton', type='D')                
+                    h['measured']                       = Hist( reco_bin_edges_vis_to_use, name='measured', type='D')
+                    h['measuredVis']                    = Hist( reco_bin_edges_vis_to_use, name='measuredVis', type='D')
+                    h['measured_without_fakes']         = Hist( reco_bin_edges_vis_to_use, name='measured_without_fakes', type='D')
+                    h['measuredVis_without_fakes']      = Hist( reco_bin_edges_vis_to_use, name='measuredVis_without_fakes', type='D')
+                    h['fake']                           = Hist( reco_bin_edges_vis_to_use, name='fake', type='D')
+                    h['fakeVis']                        = Hist( reco_bin_edges_vis_to_use, name='fakeVis', type='D')
                     # 2D histograms
-                    h['response']                       = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response')
-                    h['response_without_fakes']         = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_without_fakes')
-                    h['responseVis_without_fakes']      = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='responseVis_without_fakes')
-                    h['response_parton']                = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_parton')
-                    h['response_without_fakes_parton']  = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_without_fakes_parton')
+                    h['response']                       = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response', type='D')
+                    h['response_without_fakes']         = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_without_fakes', type='D')
+                    h['responseVis_without_fakes']      = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='responseVis_without_fakes', type='D')
+                    h['response_parton']                = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_parton', type='D')
+                    h['response_without_fakes_parton']  = Hist2D( reco_bin_edges_vis_to_use, allVariablesBins[variable], name='response_without_fakes_parton', type='D')
 
                     if args.fineBinned:
                         minVar = trunc( allVariablesBins[variable][0] )
@@ -470,6 +472,7 @@ def main():
 
                         h['truth']                          = Hist( nBins, minVar, maxVar, name='truth')
                         h['truthVis']                       = Hist( nBins, minVar, maxVar, name='truthVis')
+                        h['truthVis_noWeight']              = Hist( nBins, minVar, maxVar, name='truthVis_noWeight')
                         h['truth_parton']                   = Hist( nBins, minVar, maxVar, name='truth_parton')
                         h['measured']                       = Hist( nBins, minVar, maxVar, name='measured')
                         h['measuredVis']                    = Hist( nBins, minVar, maxVar, name='measuredVis')
@@ -500,13 +503,14 @@ def main():
                     # Some interesting histograms
                     h['puOffline']          = Hist( 20, 0, 2, name='puWeights_offline')
                     h['eventWeightHist']    = Hist( 100, -2, 2, name='eventWeightHist')                    
-                    h['genWeightHist']      = Hist( 100, -2, 2, name='genWeightHist')
+                    h['genWeightHist']      = Hist( 1000, 0, 1, name='genWeightHist')
                     h['offlineWeightHist']  = Hist( 100, -2, 2, name='offlineWeightHist')
                     h['phaseSpaceInfoHist'] = Hist( 10, 0, 1, name='phaseSpaceInfoHist')
 
             print("Initialisation of Histograms Complete")
 
             # Counters for studying phase space
+            nPassGenSelection = 0
             nVis            = {c.channelName : 0 for c in channels}
             nVisNotOffline  = {c.channelName : 0 for c in channels}
             nOffline        = {c.channelName : 0 for c in channels}
@@ -697,6 +701,7 @@ def main():
                         if offlineSelection:
                             nOfflineSL[channel.channelName] += genWeight
                     if genSelectionVis:
+                        nPassGenSelection += 1
                         nVis[channel.channelName] += genWeight
                         if not offlineSelection:
                             nVisNotOffline[channel.channelName] += genWeight
@@ -744,6 +749,7 @@ def main():
                             if genSelectionVis:
                                 filledTruth = True
                                 histogramsToFill['truthVis'].Fill( genVariable_particle, genWeight)
+                                histogramsToFill['truthVis_noWeight'].Fill( genVariable_particle, 1)
 
                             if offlineSelection:
                                 histogramsToFill['measured'].Fill( recoVariable, offlineWeight_toUse * genWeight )
@@ -774,7 +780,7 @@ def main():
                                 histogramsToFill['fakeVis'].Fill( recoVariable, offlineWeight_toUse * genWeight )
 
                             if args.extraHists:
-                                if genSelection:
+                                if genSelectionVis:
                                     histogramsToFill['eventWeightHist'].Fill(event.EventWeight)
                                     histogramsToFill['genWeightHist'].Fill(genWeight)
                                     histogramsToFill['offlineWeightHist'].Fill(offlineWeight_toUse )
@@ -830,7 +836,7 @@ def main():
                             residuals[variable][channel.channelName][r].Write()
 
 
-
+            print 'N events passing gen selection : ',nPassGenSelection
     with root_open( outputFileName, 'update') as out:
         # Done all channels, now combine the two channels, and output to the same file
         for path, dirs, objects in out.walk():

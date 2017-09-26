@@ -4,7 +4,7 @@ Output = bltUnfold.job.$(cluster).$(process).out
 Error = bltUnfold.job.$(cluster).$(process).err
 Log = bltUnfold.job.$(cluster).$(process).log
 arguments = $(process) $(cluster)
-Requirements = (!stringListMember(substr(Target.Machine, 0, 2), "sm,bs"))
+Requirements = (!stringListMember(substr(Target.Machine, 0, 2), "sm,bs,gr"))
 
 transfer_input_files = dps.tar
 should_transfer_files = YES
@@ -16,4 +16,4 @@ request_memory=500
 # use the ENV that is provided
 getenv = true
 
-queue 155
+queue 160

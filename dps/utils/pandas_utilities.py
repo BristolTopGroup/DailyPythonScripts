@@ -7,6 +7,7 @@ pd.set_option('display.max_rows', 50)
 pd.set_option('display.width', 1000)
 # pd.set_option('precision',5)
 pd.set_option('display.float_format','{:.7g}'.format)
+
 def dict_to_df(d):
 	'''
 	Transform a dictionary nto a dataframe

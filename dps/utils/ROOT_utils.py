@@ -151,7 +151,7 @@ def get_histograms_from_trees(
 
             weightAndSelection = '( %s ) * ( %s )' % ( weightBranch, selection )
 
-            root_histogram = Hist( nBins, xMin, xMax)
+            root_histogram = Hist( nBins, xMin, xMax, type='D')
             chain.Draw(branch, weightAndSelection, hist = root_histogram)
             if not is_valid_histogram( root_histogram, tree, input_file):
                 return
