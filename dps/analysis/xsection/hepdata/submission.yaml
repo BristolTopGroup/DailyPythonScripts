@@ -1,0 +1,620 @@
+comment: "CERN-LHC. Measurements of differential tt production cross sections are presented in the single-lepton decay channel, as a function of a number of kinematic event variables.  The measurements are performed with proton-proton collision data at a centre-of-mass energy of 13 TeV, collected by the CMS experiment at the LHC during 2016, with an integrated luminosity of 35.9/fb.  The data are compared to a variety of state-of-the-art leading-order and next-to-leading-order tt simulations."
+
+---
+name: "Table 1"
+location: "Page 24 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_NJets.yaml
+
+---
+name: "Table 2"
+location: "Page 24 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_HT.yaml
+
+---
+name: "Table 3"
+location: "Page 25 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_ST.yaml
+
+---
+name: "Table 4"
+location: "Page 25 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_MET.yaml
+
+---
+name: "Table 5"
+location: "Page 26 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_WPT.yaml
+
+---
+name: "Table 6"
+location: "Page 26 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_lepton_pt.yaml
+
+---
+name: "Table 7"
+location: "Page 27 of preprint"
+description: "Normalized differential cross sections with relative uncertainties with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_abs_lepton_eta.yaml
+
+
+---
+name: "Table 8"
+location: "Page 28 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_NJets.yaml
+
+---
+name: "Table 9"
+location: "Page 28 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_HT.yaml
+
+---
+name: "Table 10"
+location: "Page 29 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_ST.yaml
+
+---
+name: "Table 11"
+location: "Page 29 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_MET.yaml
+
+---
+name: "Table 12"
+location: "Page 30 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_WPT.yaml
+
+---
+name: "Table 13"
+location: "Page 30 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_lepton_pt.yaml
+
+---
+name: "Table 14"
+location: "Page 31 of preprint"
+description: "Absolute differential cross sections with relative uncertainties with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_abs_lepton_eta.yaml
+
+---
+name: "Table 15"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_NJets_covariance.yaml
+
+---
+name: "Table 16"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_HT_covariance.yaml
+
+---
+name: "Table 17"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_ST_covariance.yaml
+
+---
+name: "Table 18"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_MET_covariance.yaml
+
+---
+name: "Table 19"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_WPT_covariance.yaml
+
+---
+name: "Table 20"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_lepton_pt_covariance.yaml
+
+---
+name: "Table 21"
+location: ""
+description: "Covariance matrix of normalized differential cross section with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_xsection_abs_lepton_eta_covariance.yaml
+
+---
+name: "Table 22"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_NJets_covariance.yaml
+
+---
+name: "Table 23"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_HT_covariance.yaml
+
+---
+name: "Table 24"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_ST_covariance.yaml
+
+---
+name: "Table 25"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_MET_covariance.yaml
+
+---
+name: "Table 26"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_WPT_covariance.yaml
+
+---
+name: "Table 27"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_lepton_pt_covariance.yaml
+
+---
+name: "Table 28"
+location: ""
+description: "Covariance matrix of absolute differential cross section with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_xsection_abs_lepton_eta_covariance.yaml
+
+---
+name: "Table 29"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_NJets.yaml
+
+---
+name: "Table 30"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_HT.yaml
+
+---
+name: "Table 31"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_ST.yaml
+
+---
+name: "Table 32"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_MET.yaml
+
+---
+name: "Table 33"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_WPT.yaml
+
+---
+name: "Table 34"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_lepton_pt.yaml
+
+---
+name: "Table 35"
+location: ""
+description: "Normalized differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_abs_lepton_eta.yaml
+
+
+---
+name: "Table 36"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_NJets.yaml
+
+---
+name: "Table 37"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_HT.yaml
+
+---
+name: "Table 38"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_ST.yaml
+
+---
+name: "Table 39"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_MET.yaml
+
+---
+name: "Table 40"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_WPT.yaml
+
+---
+name: "Table 41"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_lepton_pt.yaml
+
+---
+name: "Table 42"
+location: ""
+description: "Absolute differential cross sections, obtained with unregularised unfolding, with relative uncertainties, and with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_abs_lepton_eta.yaml
+
+---
+name: "Table 43"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_NJets_covariance.yaml
+
+---
+name: "Table 44"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_HT_covariance.yaml
+
+---
+name: "Table 45"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_ST_covariance.yaml
+
+---
+name: "Table 46"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_MET_covariance.yaml
+
+---
+name: "Table 47"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_WPT_covariance.yaml
+
+---
+name: "Table 48"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_lepton_pt_covariance.yaml
+
+---
+name: "Table 49"
+location: ""
+description: "Covariance matrix of normalized differential cross section, obtained with unregularised unfolding, with respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: normalised_unregularised_xsection_abs_lepton_eta_covariance.yaml
+
+---
+name: "Table 50"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $N_{\text{jets}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DNJETS]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_NJets_covariance.yaml
+
+---
+name: "Table 51"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $H_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DHT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_HT_covariance.yaml
+
+---
+name: "Table 52"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $S_{\\mathrm{T}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DST]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_ST_covariance.yaml
+
+---
+name: "Table 53"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $p_{\text{T}}^\text{miss}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DMET]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_MET_covariance.yaml
+
+---
+name: "Table 54"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $p_{\text{T}}^{\PW}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DWPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_WPT_covariance.yaml
+
+---
+name: "Table 55"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $p_{\text{T}}^{\ell}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DLEPTONPT]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_lepton_pt_covariance.yaml
+
+---
+name: "Table 56"
+location: ""
+description: "Covariance matrix of absolute differential cross section, obtained with unregularised unfolding,ith respect to $\abs{\eta^{\ell}}$."
+keywords:
+ - {name: reactions, values: [P P --> TOP TOPBAR X]}
+ - {name: observables, values: [DSIG/DABSLEPTONETA]}
+ - {name: cmenergies, values: [13000]}
+ - {name: phrases, values: [Top, Differential Cross Section, Proton-Proton Scattering, Top Production] }
+data_file: absolute_unregularised_xsection_abs_lepton_eta_covariance.yaml
+
