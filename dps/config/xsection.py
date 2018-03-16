@@ -52,9 +52,9 @@ class XSectionConfig():
         'WPT',
         'NJets',
         'lepton_pt',
-        'abs_lepton_eta',
+        # 'abs_lepton_eta',
         'abs_lepton_eta_coarse',
-        'abs_lepton_eta_muonBins',
+        # 'abs_lepton_eta_muonBins',
 
     ]
 

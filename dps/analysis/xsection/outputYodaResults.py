@@ -7,7 +7,12 @@ import numpy as np
 
 measurement_config = XSectionConfig(13)
 
-path = '/storage/ec6821/DailyPythonScripts/new/DailyPythonScripts/data/normalisation/background_subtraction/'
+# path = '/storage/ec6821/DailyPythonScripts/new/DailyPythonScripts/data/normalisation/background_subtraction/'
+
+# Regularised in paper
+path = '/scratch/db0268/DPS/DPSTestingGround/DailyPythonScripts/data_X_allFixes/normalisation/background_subtraction/'
+# Unregularised, for hepdata
+# path = '/scratch/db0268/DPS/DPSTestingGround/DailyPythonScripts/data_X_allFixes_allTau0/normalisation/background_subtraction/'
 
 normalised_number = {
 			'MET' : '01',
