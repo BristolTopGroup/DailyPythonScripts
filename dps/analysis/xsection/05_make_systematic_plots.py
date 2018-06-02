@@ -28,6 +28,8 @@ def plot_systematic_uncertainties(systematic_uncertainties, bin_edges, variable,
 	x_limits = [bin_edges[0], bin_edges[-1]]
 	# y_limits = [-0.6,0.6]
 	y_limits = [0,0.4]
+	if 'abs_lepton_eta' in variable and 'normalised' in output_folder:
+		y_limits = [0,0.05]
 
 	fig_syst = plt.figure( figsize = ( 20, 16 ), dpi = 400, facecolor = 'white' )
 	ax_syst = fig_syst.add_subplot(1, 1, 1)

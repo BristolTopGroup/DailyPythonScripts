@@ -86,7 +86,7 @@ class XSectionConfig():
 
         # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/Moriond2017/'
         # self.path_to_unfolding_histograms = '/hdfs/TopQuarkGroup/run2/unfolding/13TeV/EPS2017/'
-        self.path_to_unfolding_histograms = 'unfolding/13TeV/'
+        self.path_to_unfolding_histograms = 'unfolding/13TeV_debug/'
 
         path_to_unfolding_histograms = self.path_to_unfolding_histograms
 
@@ -203,6 +203,12 @@ class XSectionConfig():
             'QCD_cross_section', 
             'QCD_shape',
 
+            'QCD_cross_section_electron',
+            'QCD_shape_electron',
+
+            'QCD_cross_section_muon',
+            'QCD_shape_muon',
+
             'QCD_other_control_region',
             'QCD_signal_MC'
         ]
@@ -243,14 +249,24 @@ class XSectionConfig():
         self.measurements = self.normalisation_systematics + self.generator_systematics
 
         self.list_of_systematics = {
-            # Theoretical Uncertainties (Rate Changing)
+            # # Theoretical Uncertainties (Rate Changing)
             'V+Jets_cross_section'      : ['V+Jets_cross_section+', 'V+Jets_cross_section-'],
-            'QCD_cross_section'         : ['QCD_cross_section', 'QCD_cross_section'],
+            # 'QCD_cross_section'         : ['QCD_cross_section', 'QCD_cross_section'],
             'SingleTop_cross_section'   : ['SingleTop_cross_section+', 'SingleTop_cross_section-'],
             'luminosity'                : ['luminosity+', 'luminosity-'],
             # QCD Shape
-            'QCD_shape'                 : ['QCD_shape', 'QCD_shape'],
-            # Generator Uncertainties
+            # 'QCD_shape'                 : ['QCD_shape', 'QCD_shape'],
+
+            'QCD_shape_electron'                 : ['QCD_shape_electron', 'QCD_shape_electron'],
+            'QCD_cross_section_electron'         : ['QCD_cross_section_electron', 'QCD_cross_section_electron'],
+
+            'QCD_shape_muon'                 : ['QCD_shape_muon', 'QCD_shape_muon'],
+            'QCD_cross_section_muon'         : ['QCD_cross_section_muon', 'QCD_cross_section_muon'],
+
+            # 'QCD_other_control_region'         : ['QCD_other_control_region', 'QCD_other_control_region'],
+
+
+            # # Generator Uncertainties
             'TTJets_mass'               : ['TTJets_massup', 'TTJets_massdown'],
             'TTJets_ue'                 : ['TTJets_ueup', 'TTJets_uedown'],
             'TTJets_topPt'              : ['TTJets_topPt', 'TTJets_topPt'],
@@ -260,10 +276,10 @@ class XSectionConfig():
                                             'TTJets_fsrup', 'TTJets_fsrdown',
                                             'TTJets_isrup', 'TTJets_isrdown'
                                             ],
-            # 'TTJets_fsr'                   :    ['TTJets_fsrup', 'TTJets_fsrdown'],
-            # 'TTJets_isr'                   :    ['TTJets_isrup', 'TTJets_isrdown'],
+            # # 'TTJets_fsr'                   :    ['TTJets_fsrup', 'TTJets_fsrdown'],
+            # # 'TTJets_isr'                   :    ['TTJets_isrup', 'TTJets_isrdown'],
 
-            'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
+            # 'TTJets_alphaS'             : ['TTJets_alphaSup', 'TTJets_alphaSdown'],
             'TTJets_hdamp'              : ['TTJets_hdampup', 'TTJets_hdampdown'],
             'TTJets_semiLepBr'          : ['TTJets_semiLepBrup', 'TTJets_semiLepBrdown'],
             'TTJets_frag'               : ['TTJets_fragup', 'TTJets_fragdown'],
@@ -274,7 +290,7 @@ class XSectionConfig():
             'TTJets_CR_GluonMove'       : ['TTJets_GluonMove', 'TTJets_GluonMove'],
             # 'TTJets_CR_GluonMove_erdOn' : ['TTJets_GluonMove_erdOn', 'TTJets_GluonMove_erdOn'],
 
-            # Event Reweighting
+            # # Event Reweighting
             'PileUp'                    : ['PileUp_up', 'PileUp_down'],
             'JES'                       : ['JES_up', 'JES_down'],
             'JER'                       : ['JER_up', 'JER_down'],
@@ -284,7 +300,7 @@ class XSectionConfig():
             'Electron'                  : ['Electron_up', 'Electron_down'],
             'Muon'                      : ['Muon_up', 'Muon_down'],
             # PDF Uncertainties
-            'PDF'                       : ['PDF', 'PDF'],
+            # 'PDF'                       : ['PDF', 'PDF'],
             # MET Uncertainties
             'ElectronEn'                : ['ElectronEnUp', 'ElectronEnDown'],
             'MuonEn'                    : ['MuonEnUp', 'MuonEnDown'],
@@ -322,6 +338,10 @@ class XSectionConfig():
             'SingleTop_cross_section', 
             'QCD_cross_section', 
             'QCD_shape',
+            'QCD_cross_section_electron',
+            'QCD_shape_electron',
+            'QCD_cross_section_muon',
+            'QCD_shape_muon',
         ]
         self.systematic_group_met = [
             'ElectronEn',

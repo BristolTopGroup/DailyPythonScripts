@@ -14,6 +14,7 @@ from dps.config import CMS
 from dps.config.latex_labels import variables_latex, variables_NonLatex
 from dps.config.xsection import XSectionConfig
 from copy import deepcopy
+from itertools import product
 measurement_config = XSectionConfig( 13 )
 template = '%.1f fb$^{-1}$ (%d TeV)'
 title = template % ( measurement_config.new_luminosity/1000, measurement_config.centre_of_mass_energy)
@@ -381,6 +382,7 @@ def get_scale_envelope(d_scale_syst, central):
         scale.append(down[index][i])
     down['envelope_down']=scale
 
+
     up_diff = up.subtract(central, axis='index')
     up_diff = up_diff.abs()
     up_diff['max'] = up_diff.max(axis = 1)
@@ -459,7 +461,9 @@ def get_symmetrised_systematic_uncertainty( options, syst_unc_x_secs ):
     Combine PDFs and alphaS systematics
     '''
     xsections_with_symmetrised_systematics = deepcopy(syst_unc_x_secs)
+    xsections_with_uncertainties_and_covariance = {}
     central_measurement = syst_unc_x_secs['central']
+    d_Cov_Cor = {}
     for systematic, variation in syst_unc_x_secs.iteritems():
         if (systematic in ['PDF', 'CT14', 'MMHT14']):
             # Replace all PDF weights with full PDF combination
@@ -471,58 +475,110 @@ def get_symmetrised_systematic_uncertainty( options, syst_unc_x_secs ):
             xsections_with_symmetrised_systematics[systematic] = [
                 pdf_sym, 
                 pdf_sign
-            ]  
+            ]
         elif systematic == 'central':
             xsections_with_symmetrised_systematics['central'] = central_measurement
+            xsections_with_uncertainties_and_covariance['central'] = central_measurement
         else:
             lower_measurement = variation[0]
             upper_measurement = variation[1]
 
             isTopMassSystematic = True if systematic == 'TTJets_mass' else False
 
-            symmetrised_uncertainties, signed_uncertainties = get_symmetrised_errors(
-                central_measurement, 
-                upper_measurement, 
-                lower_measurement, 
-                options, 
-                isTopMassSystematic,
-            )
+            # The commented code in the remainder of this function
+            # is used to calcualte the uncertainties and covariance
+            # by taking the maximum uncertainty in each bin
+            # symmetrised_uncertainties, signed_uncertainties = get_symmetrised_errors(
+            #     central_measurement, 
+            #     upper_measurement, 
+            #     lower_measurement, 
+            #     options, 
+            #     isTopMassSystematic,
+            #     systematic
+            # )
 
-            xsections_with_symmetrised_systematics[systematic] = [
+            # xsections_with_symmetrised_systematics[systematic] = [
+            #     symmetrised_uncertainties, 
+            #     signed_uncertainties,
+            # ]     
+
+            # This code replace the previous lines (similar for the rest of this function)
+            # and calculates the uncertainty and covariance by averaging the up/down
+            # variations of each source
+            # If only one variation is available (e.g. a colour reconnection sample)
+            # then it will give identical results to the previous method
+            symmetrised_uncertainties, covariance_matrix = get_average_covariance_matrix(
+                central_measurement,
+                upper_measurement,
+                lower_measurement,
+                options,
+                isTopMassSystematic,
+                systematic
+                )
+
+            xsections_with_uncertainties_and_covariance[systematic] = [
                 symmetrised_uncertainties, 
-                signed_uncertainties,
-            ]         
+                covariance_matrix,
+            ]
+            d_Cov_Cor[systematic] = [ covariance_matrix, correlation_from_covariance(covariance_matrix) ]
 
     # Add the inputMC statistics
-    xsections_with_symmetrised_systematics['inputMC'], _ = add_inputMC_systematic(options)
+    # xsections_with_symmetrised_systematics['inputMC'], _ = add_inputMC_systematic(options)
+    inputMCUncertainties, inputMCCovariance = add_inputMC_systematic(options)
+    xsections_with_uncertainties_and_covariance['inputMC'] = [ inputMCUncertainties[0], inputMCCovariance ]
+    d_Cov_Cor['inputMC'] = inputMCCovariance
 
-    # Generate the Covariance Matrices
-    d_Cov_Cor = generate_covariance_matrices(
-        options, 
-        xsections_with_symmetrised_systematics
-    )
+    # # Generate the Covariance Matrices
+    # d_Cov_Cor = generate_covariance_matrices(
+    #     options, 
+    #     xsections_with_symmetrised_systematics
+    # )
 
     # Combine Covariance Matrices
-    if  'BJet' in xsections_with_symmetrised_systematics and 'LightJet' in xsections_with_symmetrised_systematics:
+    # if  'BJet' in xsections_with_symmetrised_systematics and 'LightJet' in xsections_with_symmetrised_systematics:
+    #     # Combine LightJet and BJet Systematics
+    #     bJet = xsections_with_symmetrised_systematics['BJet'][0]
+    #     lightJet = xsections_with_symmetrised_systematics['LightJet'][0]
+    #     bJet_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(bJet, lightJet)]
+    #     xsections_with_symmetrised_systematics['BJet'][0] = bJet_tot
+    #     del xsections_with_symmetrised_systematics['LightJet']
+
+    #     # Combine the covariance matrices
+    #     l_Cov = [d_Cov_Cor['BJet'][0], d_Cov_Cor['LightJet'][0]]
+    #     d_Cov_Cor['BJet'] = combine_covariance_matrices(l_Cov)
+    #     del d_Cov_Cor['LightJet']
+    if  'BJet' in xsections_with_uncertainties_and_covariance and 'LightJet' in xsections_with_uncertainties_and_covariance:
         # Combine LightJet and BJet Systematics
-        bJet = xsections_with_symmetrised_systematics['BJet'][0]
-        lightJet = xsections_with_symmetrised_systematics['LightJet'][0]
+        bJet = xsections_with_uncertainties_and_covariance['BJet'][0]
+        lightJet = xsections_with_uncertainties_and_covariance['LightJet'][0]
         bJet_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(bJet, lightJet)]
-        xsections_with_symmetrised_systematics['BJet'][0] = bJet_tot
-        del xsections_with_symmetrised_systematics['LightJet']
+        xsections_with_uncertainties_and_covariance['BJet'][0] = bJet_tot
+        del xsections_with_uncertainties_and_covariance['LightJet']
 
         # Combine the covariance matrices
         l_Cov = [d_Cov_Cor['BJet'][0], d_Cov_Cor['LightJet'][0]]
         d_Cov_Cor['BJet'] = combine_covariance_matrices(l_Cov)
         del d_Cov_Cor['LightJet']
 
-    if 'PDF' in xsections_with_symmetrised_systematics and 'TTJets_alphaS' in xsections_with_symmetrised_systematics:
+    # if 'PDF' in xsections_with_symmetrised_systematics and 'TTJets_alphaS' in xsections_with_symmetrised_systematics:
+    #     # Combine PDF with alphaS variations
+    #     pdf = xsections_with_symmetrised_systematics['PDF'][0]
+    #     alphaS = xsections_with_symmetrised_systematics['TTJets_alphaS'][0]
+    #     pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
+    #     xsections_with_symmetrised_systematics['PDF'][0] = pdf_tot
+    #     del xsections_with_symmetrised_systematics['TTJets_alphaS']
+
+    #     # Combine the covariance matrices
+    #     l_Cov = [d_Cov_Cor['PDF'][0], d_Cov_Cor['TTJets_alphaS'][0]]
+    #     d_Cov_Cor['PDF'] = combine_covariance_matrices(l_Cov)
+    #     del d_Cov_Cor['TTJets_alphaS']
+    if 'PDF' in xsections_with_uncertainties_and_covariance and 'TTJets_alphaS' in xsections_with_uncertainties_and_covariance:
         # Combine PDF with alphaS variations
-        pdf = xsections_with_symmetrised_systematics['PDF'][0]
-        alphaS = xsections_with_symmetrised_systematics['TTJets_alphaS'][0]
+        pdf = xsections_with_uncertainties_and_covariance['PDF'][0]
+        alphaS = xsections_with_uncertainties_and_covariance['TTJets_alphaS'][0]
         pdf_tot = [combine_errors_in_quadrature([e1, e2]) for e1, e2 in zip(alphaS, pdf)]
-        xsections_with_symmetrised_systematics['PDF'][0] = pdf_tot
-        del xsections_with_symmetrised_systematics['TTJets_alphaS']
+        xsections_with_uncertainties_and_covariance['PDF'][0] = pdf_tot
+        del xsections_with_uncertainties_and_covariance['TTJets_alphaS']
 
         # Combine the covariance matrices
         l_Cov = [d_Cov_Cor['PDF'][0], d_Cov_Cor['TTJets_alphaS'][0]]
@@ -534,11 +590,49 @@ def get_symmetrised_systematic_uncertainty( options, syst_unc_x_secs ):
     d_Cov_Cor['inputMC'] = add_covariance( options, d_Cov_Cor, addInputMCStat = True )
     d_Cov_Cor['Total'] = add_covariance( options, d_Cov_Cor, addTotal = True )
     save_covariance_matrices( options, d_Cov_Cor )
-    return xsections_with_symmetrised_systematics           
+    return xsections_with_uncertainties_and_covariance           
 
+
+def get_average_covariance_matrix( central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic, systematic ) :
+    '''
+    Calculates the covariance matrix for each source, by averaging the up/down variations in each bin:
+        C(i,j) = 1 / 2 * ( up(i) * up(j) + down(i) * down(j) )
+
+        Returns the covariance matrix, and the uncertainties in each bin (which are just the sqrt of the diagonal elements)
+
+    '''
+
+    number_of_bins = len(central_measurement)
+    bin_indices = range(number_of_bins)
+    covariance_matrix  = np.matrix( np.zeros( ( number_of_bins, number_of_bins ) ) )
+    for i, j in product( bin_indices, bin_indices ):
+        central_i = central_measurement[i][0]
+        central_j = central_measurement[j][0]
+
+        upper_variation_i = central_i - upper_measurement[i]
+        upper_variation_j = central_j - upper_measurement[j]
+
+        lower_variation_i = central_i - lower_measurement[i]
+        lower_variation_j = central_j - lower_measurement[j]
+
+        if isTopMassSystematic:
+            upper_variation_i, lower_variation_i = scaleTopMassSystematic( upper_variation_i, lower_variation_i, options['topMasses'], options['topMassUncertainty'] )
+            upper_variation_j, lower_variation_j = scaleTopMassSystematic( upper_variation_j, lower_variation_j, options['topMasses'], options['topMassUncertainty'] )
+
+
+        covariance_ij = 0.5 * ( upper_variation_i * upper_variation_j + lower_variation_i * lower_variation_j )
+
+        covariance_matrix[i,j] = covariance_ij
+
+    # Extract uncertainties (for compatability later on)
+    uncertainties = []
+    for i in bin_indices:
+        uncertainties.append( np.sqrt( covariance_matrix[i,i] ) )
+
+    return uncertainties, covariance_matrix
 
 # @profile(stream=fp)
-def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic=False ):
+def get_symmetrised_errors(central_measurement, upper_measurement, lower_measurement, options, isTopMassSystematic=False, systematic=None ):
     '''
     Returns the symmetric error in each bin for a specific systematic and also the sign of the systematic.
     Sign is used for calculating the covariance matrices. 
@@ -553,6 +647,7 @@ def get_symmetrised_errors(central_measurement, upper_measurement, lower_measure
     number_of_bins = len(central_measurement)
     symm_uncerts = []
     sign_uncerts = []
+
     for c, u, l in zip(central_measurement, upper_measurement, lower_measurement):
         central = c[0] # Getting the measurement, not the stat unc [xsec, unc]
         upper = u
@@ -624,7 +719,8 @@ def get_measurement_with_total_systematic_uncertainty(options, xsec_with_symmetr
         for systematic, measurement in xsec_with_symmetrised_systematics.iteritems():
             if systematic in ['central','CT14', 'MMHT14']: continue
             sys_unc += measurement[0][bin_i]**2
-        measurement_with_total_uncertainty.append( [central[0], sqrt(sys_unc), sqrt(sys_unc)] )
+
+        measurement_with_total_uncertainty.append( [central[0], np.sqrt(sys_unc), np.sqrt(sys_unc)] )
     return measurement_with_total_uncertainty
 
 
@@ -647,11 +743,11 @@ def generate_covariance_matrices(options, xsec_with_symmetrised_systematics):
         sign        = measurement[1]
 
         # Create the matrices in numpy.matrix format
-        covariance_matrix, correlation_matrix = generate_covariance_matrix(number_of_bins, systematic, sign)
+        covariance_matrix, correlation_matrix = generate_covariance_matrix(number_of_bins, systematic, sign, syst)
         d_Cov_Cor[syst] = [covariance_matrix, correlation_matrix]
     return d_Cov_Cor
 
-def generate_covariance_matrix(number_of_bins, systematic, sign):
+def generate_covariance_matrix(number_of_bins, systematic, sign, syst):
     '''
     Variance_ii = (Unc_i) * (Unc_i)
     Covariance_ij = (Sign_i*Unc_i) * (Sign_j*Unc_j)
@@ -679,7 +775,10 @@ def correlation_from_covariance(covariance_matrix):
     correlation_matrix = np.matrix( np.zeros( ( covariance_matrix.shape[0], covariance_matrix.shape[1] ) ) )
     for i in range( 0, covariance_matrix.shape[0] ):
         for j in range(0, covariance_matrix.shape[1] ):
-            correlation_matrix[i,j] = covariance_matrix[i,j] / sqrt( covariance_matrix[i,i] * covariance_matrix[j,j] )
+            if ( covariance_matrix[i,i] * covariance_matrix[j,j] == 0 ):
+                correlation_matrix[i,j] = 0
+            else:
+                correlation_matrix[i,j] = covariance_matrix[i,j] / sqrt( covariance_matrix[i,i] * covariance_matrix[j,j] )
     return correlation_matrix
 
 ### Add Covariances

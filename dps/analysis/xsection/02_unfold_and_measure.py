@@ -1249,7 +1249,6 @@ if __name__ == '__main__':
     for category in all_measurements:
         if run_just_central and not category == 'central': 
             continue
-            
         if ( variable in measurement_config.variables_no_met ) and (category in measurement_config.met_specific_systematics):
             continue
         print 'Unfolding category {}'.format(category)
@@ -1280,13 +1279,26 @@ if __name__ == '__main__':
         elif category == 'Electron_up' or category == 'Electron_down':
             normalisation_results_electron  = read_tuple_from_file( electron_file )
             normalisation_results_muon      = read_tuple_from_file( path_to_DF + '/central/normalisation_muon.txt' )
+        elif category == 'QCD_shape_electron' or category == 'QCD_cross_section_electron':
+            if category == 'QCD_shape_electron':
+                normalisation_results_electron  = read_tuple_from_file( electron_file.replace('QCD_shape_electron','QCD_shape') )
+            else:
+                normalisation_results_electron  = read_tuple_from_file( electron_file.replace('QCD_cross_section_electron','QCD_cross_section') )
+
+            normalisation_results_muon      = read_tuple_from_file( path_to_DF + '/central/normalisation_muon.txt' )
+        elif category == 'QCD_shape_muon' or category == 'QCD_cross_section_muon':
+            normalisation_results_electron  = read_tuple_from_file( path_to_DF + '/central/normalisation_electron.txt' )
+            if category == 'QCD_shape_muon':
+                normalisation_results_muon  = read_tuple_from_file( muon_file.replace('QCD_shape_muon','QCD_shape') )
+            else:
+                normalisation_results_muon  = read_tuple_from_file( muon_file.replace('QCD_cross_section_muon','QCD_cross_section') )
         else:
             normalisation_results_electron  = read_tuple_from_file( electron_file )
             normalisation_results_muon      = read_tuple_from_file( muon_file )
 
         # Add additional 50% uncertainty here instead of 03. Can do it before combining channels.
         # I think this is the correct way of doing it.
-        if category == 'QCD_cross_section':
+        if category == 'QCD_cross_section' or category == 'QCD_cross_section_electron':
             for i in range(0, len(normalisation_results_electron['QCD']) ):
                 normalisation_results_electron['QCD'][i] = tuple([1.5*x for x in normalisation_results_electron['QCD'][i]])
 
